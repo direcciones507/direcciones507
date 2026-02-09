@@ -3,10 +3,10 @@ name: 🚀 Actualizar datos desde Excel
 on:
   push:
     paths:
-      - 'AD507_MASTER_FINAL_PANAMA.xlsx'  # Se ejecuta cuando cambia el Excel
+      - 'AD507_MASTER_FINAL_PANAMA.xlsx'
   schedule:
-    - cron: '0 8,20 * * *'  # Se ejecuta 2 veces al día (8 AM y 8 PM)
-  workflow_dispatch:  # Permite ejecución manual
+    - cron: '0 */6 * * *'  # Cada 6 horas
+  workflow_dispatch:  # Ejecución manual
 
 jobs:
   update-json:
@@ -19,7 +19,7 @@ jobs:
       - name: 🐍 Configurar Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10'
           
       - name: 📦 Instalar dependencias
         run: |
@@ -29,22 +29,14 @@ jobs:
         run: |
           python convert_excel_to_json.py
           
-      - name: ✅ Verificar cambios
-        id: check-changes
-        run: |
-          git diff --quiet datos/clientes.json || echo "has_changes=true" >> $GITHUB_OUTPUT
-          
-      - name: 📤 Subir cambios si hay actualizaciones
-        if: steps.check-changes.outputs.has_changes == 'true'
+      - name: 📤 Subir cambios automáticamente
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "🤖 GitHub Actions"
           git add datos/clientes.json
-          git commit -m "📊 Actualizar datos desde Excel - $(date '+%Y-%m-%d %H:%M')"
-          git push
+          git diff --quiet && git diff --staged --quiet || (git commit -m "📊 Actualizar datos desde Excel - $(date '+%Y-%m-%d %H:%M')" && git push)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: 🎉 Completado
-        if: steps.check-changes.outputs.has_changes != 'true'
-        run: echo "✅ No hay cambios en los datos"
+        run: echo "✅ Proceso completado"

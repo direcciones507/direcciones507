@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "ultima_actualizacion": "2024-01-15",
+  "total_clientes": 3,
+  "clientes": [
+    {
+      "codigo": "AD507-0001",
+      "nombre": "Juan Pérez",
+      "telefono": "63564932",
+      "provincia": "Panamá",
+      "referencia": "Frente al supermercado El Machetazo",
+      "coordenadas": "9.006347, -79.504055",
+      "fecha_creacion": "2024-01-15",
+      "valido": true,
+      "notas": "Cliente preferencial"
+    },
+    {
+      "codigo": "AD507-0002",
+      "nombre": "María González",
+      "telefono": "61234567",
+      "provincia": "Panamá",
+      "referencia": "Casa verde con portón blanco, segunda entrada",
+      "coordenadas": "9.006590, -79.504045",
+      "fecha_creacion": "2024-01-15",
+      "valido": true,
+      "notas": ""
+    },
+    {
+      "codigo": "AD507-0003",
+      "nombre": "Carlos Rodríguez",
+      "telefono": "68765432",
+      "provincia": "Panamá Oeste",
+      "referencia": "Edificio azul, piso 3, apartamento 302",
+      "coordenadas": "9.004203, -79.507043",
+      "fecha_creacion": "2024-01-15",
+      "valido": true,
+      "notas": "Confirmar antes de enviar"
+    }
+  ]
+}

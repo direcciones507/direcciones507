@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Dirección - AD507</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #283593;
+            --accent: #5c6bc0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --light: #f5f5f5;
+            --dark: #212121;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--accent), var(--success));
+        }
+        
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .client-code {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin: 15px 0;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .client-name {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .client-subtitle {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            color: var(--dark);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+        
+        .info-title {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .info-grid {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            width: 100px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            flex: 1;
+            color: var(--dark);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .actions-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.6s ease-out 0.3s both;
+        }
+        
+        .actions-title {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 20px;
+            text-align: center;
+        }
+        
+        .action-buttons {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
+        }
+        
+        .action-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: currentColor;
+            opacity: 0.2;
+        }
+        
+        .btn-icon {
+            font-size: 28px;
+            margin-right: 20px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .btn-text {
+            flex: 1;
+        }
+        
+        .btn-arrow {
+            font-size: 20px;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .action-btn:hover .btn-arrow {
+            opacity: 1;
+            transform: translateX(5px);
+        }
+        
+        .btn-maps { color: #4285f4; }
+        .btn-waze { color: #33ccff; }
+        .btn-uber { color: #000000; }
+        .btn-whatsapp { color: #25d366; }
+        
+        .qr-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            color: var(--dark);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.6s ease-out 0.4s both;
+        }
+        
+        .qr-title {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .qr-container {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
+        }
+        
+        .qr-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .qr-note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        
+        .footer-logo {
+            font-weight: 800;
+            font-size: 16px;
+            color: white;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header, .info-card, .actions-card, .qr-card { padding: 20px; }
+            .client-code { font-size: 28px; }
+            .qr-container { width: 180px; height: 180px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">
+                <i class="fas fa-check-circle"></i> VÁLIDO
+            </div>
+            <div class="client-code" id="clientCode">AD507-0000</div>
+            <div class="client-name" id="clientName">[Nombre del Cliente]</div>
+            <div class="client-subtitle">Panel de Navegación y Dirección</div>
+        </div>
+        
+        <div class="info-card">
+            <div class="info-title">
+                <i class="fas fa-info-circle"></i>
+                Información del Cliente
+            </div>
+            <div class="info-grid">
+                <div class="info-row">
+                    <div class="info-label">Teléfono:</div>
+                    <div class="info-value" id="clientPhone">[Teléfono]</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Referencia:</div>
+                    <div class="info-value" id="clientRef">[Referencia]</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Coordenadas:</div>
+                    <div class="info-value" id="clientCoords">[Latitud, Longitud]</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions-card">
+            <div class="actions-title">
+                <i class="fas fa-directions"></i>
+                Navegación y Acciones
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn btn-maps" id="mapsBtn">
+                    <div class="btn-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div class="btn-text">
+                        <div style="font-size: 18px;">Google Maps</div>
+                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Abrir en Google Maps</div>
+                    </div>
+                    <div class="btn-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </button>
+                
+                <button class="action-btn btn-waze" id="wazeBtn">
+                    <div class="btn-icon">
+                        <i class="fab fa-waze"></i>
+                    </div>
+                    <div class="btn-text">
+                        <div style="font-size: 18px;">Waze</div>
+                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Rutas en tiempo real</div>
+                    </div>
+                    <div class="btn-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </button>
+                
+                <button class="action-btn btn-uber" id="uberBtn">
+                    <div class="btn-icon">
+                        <i class="fab fa-uber"></i>
+                    </div>
+                    <div class="btn-text">
+                        <div style="font-size: 18px;">Uber</div>
+                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Pedir viaje a esta dirección</div>
+                    </div>
+                    <div class="btn-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </button>
+                
+                <button class="action-btn btn-whatsapp" id="whatsappBtn">
+                    <div class="btn-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <div class="btn-text">
+                        <div style="font-size: 18px;">Avisar Llegada</div>
+                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Enviar mensaje por WhatsApp</div>
+                    </div>
+                    <div class="btn-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <div class="qr-card">
+            <div class="qr-title">
+                <i class="fas fa-qrcode"></i>
+                QR de la Ubicación
+            </div>
+            <div class="qr-container" id="qrCode">
+                <!-- QR se generará aquí -->
+            </div>
+            <div class="qr-note">
+                Escanea este código QR para abrir la ubicación en Google Maps
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-logo">AD507 PANAMÁ</div>
+            <p>Sistema de gestión de direcciones • Solo para uso en Panamá</p>
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Volver al buscador
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Función para obtener parámetros de la URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param) || '';
+        }
+        
+        // Cargar datos del cliente
+        function cargarDatosCliente() {
+            // Obtener datos de la URL
+            const codigo = getQueryParam('codigo') || 'AD507-0001';
+            const nombre = decodeURIComponent(getQueryParam('nombre') || 'Cliente Ejemplo');
+            const telefono = getQueryParam('telefono') || '63564932';
+            const referencia = decodeURIComponent(getQueryParam('referencia') || 'Referencia no especificada');
+            const lat = getQueryParam('lat') || '9.006347';
+            const lng = getQueryParam('lng') || '-79.504055';
+            
+            // Actualizar interfaz
+            document.getElementById('clientCode').textContent = codigo;
+            document.getElementById('clientName').textContent = nombre;
+            document.getElementById('clientPhone').textContent = formatearTelefono(telefono);
+            document.getElementById('clientRef').textContent = referencia;
+            document.getElementById('clientCoords').textContent = `${lat}, ${lng}`;
+            
+            // Actualizar título de la página
+            document.title = `${codigo} - Panel AD507`;
+            
+            // Configurar coordenadas
+            const coords = `${lat},${lng}`;
+            
+            // Configurar botones
+            configurarBotones(codigo, coords, telefono);
+            
+            // Generar QR
+            generarQR(coords);
+            
+            // Intentar cargar datos adicionales de JSON
+            cargarDatosAdicionales(codigo);
+        }
+        
+        // Formatear número de teléfono
+        function formatearTelefono(tel) {
+            const num = tel.replace(/\D/g, '');
+            if (num.length === 8) {
+                return `${num.substring(0,4)}-${num.substring(4)}`;
+            }
+            return tel;
+        }
+        
+        // Configurar acciones de los botones
+        function configurarBotones(codigo, coords, telefono) {
+            // Google Maps
+            document.getElementById('mapsBtn').onclick = () => {
+                window.open(`https://www.google.com/maps/search/?api=1&query=${coords}`, '_blank');
+            };
+            
+            // Waze
+            document.getElementById('wazeBtn').onclick = () => {
+                window.open(`https://waze.com/ul?ll=${coords}&navigate=yes`, '_blank');
+            };
+            
+            // Uber
+            const [lat, lng] = coords.split(',');
+            document.getElementById('uberBtn').onclick = () => {
+                window.open(`https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`, '_blank');
+            };
+            
+            // WhatsApp
+            document.getElementById('whatsappBtn').onclick = () => {
+                const mensaje = `✅ Ya llegué. Código: ${codigo}. Ubicación: https://www.google.com/maps/search/?api=1&query=${coords}`;
+                const telefonoLimpio = telefono.replace(/\D/g, '');
+                const urlWhatsApp = `https://wa.me/507${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
+                window.open(urlWhatsApp, '_blank');
+            };
+        }
+        
+        // Generar código QR
+        function generarQR(coords) {
+            const qrUrl = `https://www.google.com/maps/search/?api=1&query=${coords}`;
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrUrl)}&format=png&margin=10`;
+            
+            document.getElementById('qrCode').innerHTML = `
+                <img src="${qrImageUrl}" alt="QR Code de ubicación">
+            `;
+        }
+        
+        // Cargar datos adicionales de un JSON externo
+        async function cargarDatosAdicionales(codigo) {
+            try {
+                const response = await fetch('data/clientes.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    const cliente = data.clientes?.find(c => c.codigo === codigo);
+                    
+                    if (cliente) {
+                        // Actualizar con datos adicionales del JSON
+                        console.log('Datos adicionales cargados del JSON:', cliente);
+                    }
+                }
+            } catch (error) {
+                console.log('Usando datos de URL');
+            }
+        }
+        
+        // Inicializar cuando la página cargue
+        document.addEventListener('DOMContentLoaded', cargarDatosCliente);
+        
+        // Agregar animación de pulsación al QR al hacer hover
+        document.addEventListener('DOMContentLoaded', () => {
+            const qrContainer = document.getElementById('qrCode');
+            if (qrContainer) {
+                qrContainer.addEventListener('mouseenter', () => {
+                    qrContainer.style.animation = 'pulse 1s infinite';
+                });
+                
+                qrContainer.addEventListener('mouseleave', () => {
+                    qrContainer.style.animation = '';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

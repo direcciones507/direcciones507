@@ -1,0 +1,50 @@
+name: 🚀 Actualizar datos desde Excel
+
+on:
+  push:
+    paths:
+      - 'AD507_MASTER_FINAL_PANAMA.xlsx'  # Se ejecuta cuando cambia el Excel
+  schedule:
+    - cron: '0 8,20 * * *'  # Se ejecuta 2 veces al día (8 AM y 8 PM)
+  workflow_dispatch:  # Permite ejecución manual
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Descargar código
+        uses: actions/checkout@v3
+        
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: 📦 Instalar dependencias
+        run: |
+          pip install pandas openpyxl
+          
+      - name: 🔄 Convertir Excel a JSON
+        run: |
+          python convert_excel_to_json.py
+          
+      - name: ✅ Verificar cambios
+        id: check-changes
+        run: |
+          git diff --quiet datos/clientes.json || echo "has_changes=true" >> $GITHUB_OUTPUT
+          
+      - name: 📤 Subir cambios si hay actualizaciones
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "🤖 GitHub Actions"
+          git add datos/clientes.json
+          git commit -m "📊 Actualizar datos desde Excel - $(date '+%Y-%m-%d %H:%M')"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 🎉 Completado
+        if: steps.check-changes.outputs.has_changes != 'true'
+        run: echo "✅ No hay cambios en los datos"

@@ -1,160 +1,143 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Generador de Enlaces - AD507</title>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f5f5f5; padding: 20px; max-width: 1000px; margin: auto; }
-        .header { background: #1a237e; color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center; }
-        h1 { margin: 0; }
-        .subtitle { opacity: 0.9; }
-        .client-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .client-info h3 { margin: 0 0 8px 0; color: #1a237e; }
-        .client-details { color: #666; font-size: 0.9em; }
-        .btn-copy { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
-        .btn-copy:hover { background: #388E3C; }
-        .btn-copy.copied { background: #1a237e; }
-        .controls { margin-bottom: 25px; text-align: center; }
-        #searchInput { width: 70%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Generador de Enlaces AD507</title>
+  <style>
+    body{font-family:system-ui,Arial;max-width:780px;margin:0 auto;padding:22px}
+    .card{border:1px solid #e7e7e7;border-radius:14px;padding:16px;margin-top:14px}
+    label{display:block;margin:10px 0 6px;font-weight:600}
+    input{width:100%;padding:14px;border-radius:12px;border:1px solid #dcdcdc;font-size:16px}
+    button,a.btn{display:inline-block;padding:12px 14px;border-radius:12px;border:1px solid #ddd;background:#fff;cursor:pointer;text-decoration:none;color:#111}
+    button.primary{border:1px solid #111;background:#111;color:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .muted{color:#666}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;word-break:break-all}
+    .ok{color:#0a7a2f}
+    .bad{color:#b00020}
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🚀 Generador de Enlaces AD507</h1>
-        <p class="subtitle">Haz clic en "Copiar Enlace" y pégalo directamente en WhatsApp.</p>
+
+  <h2>Generador de Enlaces AD507</h2>
+  <p class="muted">Pega el código y genera un enlace limpio para abrir el panel (ideal para WhatsApp).</p>
+
+  <div class="card">
+    <label for="codigo">Código AD507</label>
+    <input id="codigo" placeholder="Ej: AD507-0001" autocomplete="off" />
+
+    <div class="row">
+      <button class="primary" onclick="generar()">Generar enlace</button>
+      <button onclick="copiar()">Copiar enlace</button>
+      <a id="abrir" class="btn" target="_blank" rel="noopener">Abrir panel</a>
     </div>
 
-    <div class="controls">
-        <input type="text" id="searchInput" placeholder="🔍 Buscar cliente por nombre o código..." autofocus>
+    <p id="estado" class="muted" style="margin-top:10px;">Listo.</p>
+
+    <div class="card" style="padding:12px;">
+      <div class="muted">Enlace generado:</div>
+      <div id="salida" class="mono">—</div>
     </div>
+  </div>
 
-    <div id="clientsList">
-        <!-- La lista de clientes se cargará aquí -->
-        <p>Cargando lista de clientes...</p>
-    </div>
+<script>
+/** OPCIONAL: pega aquí tu Web App (/exec) para validar contra Google Sheet.
+ * Si lo dejas vacío, igual genera el link sin validar.
+ */
+const API_URL = ""; // ej: https://script.google.com/macros/s/XXXX/exec
 
-    <script>
-        // URL base de tu sitio
-        const BASE_URL = 'https://direcciones507.github.io/direcciones507/panel.html';
-
-        // Esta función crea el enlace personalizado
-        function generarEnlace(cliente) {
-            const params = new URLSearchParams({
-                codigo: cliente.codigo,
-                nombre: cliente.nombre,
-                telefono: cliente.telefono,
-                referencia: cliente.referencia || '',
-                lat: cliente.coordenadas.split(',')[0].trim(),
-                lng: cliente.coordenadas.split(',')[1].trim()
-            });
-            return `${BASE_URL}?${params.toString()}`;
-        }
-
-        // Función para copiar al portapapeles
-        function copiarAlPortapapeles(texto, boton) {
-            navigator.clipboard.writeText(texto).then(() => {
-                const originalText = boton.textContent;
-                boton.textContent = '✅ ¡Copiado!';
-                boton.classList.add('copied');
-                setTimeout(() => {
-                    boton.textContent = originalText;
-                    boton.classList.remove('copied');
-            // Cargar los datos de clientes.json desde tu repositorio
-async function cargarClientes() {
-    try {
-        console.log('🔄 Cargando datos reales...');
-        
-        // 1. Primero intentar cargar el JSON generado por el sistema
-        const response = await fetch('https://direcciones507.github.io/direcciones507/datos/clientes.json');
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('✅ JSON cargado:', data);
-        
-        // Asegurarnos de usar el array correcto
-        if (data.clientes && Array.isArray(data.clientes)) {
-            console.log(`📊 ${data.clientes.length} clientes encontrados`);
-            mostrarClientes(data.clientes);
-        } else if (Array.isArray(data)) {
-            // Por si el JSON es directamente un array
-            console.log(`📊 ${data.length} clientes encontrados (array directo)`);
-            mostrarClientes(data);
-        } else {
-            throw new Error('Formato de JSON no reconocido');
-        }
-        
-    } catch (error) {
-        console.error('❌ Error cargando datos:', error);
-        
-        // Mostrar mensaje de error en la página
-        const lista = document.getElementById('clientsList');
-        lista.innerHTML = `
-            <div style="background: #ffebee; color: #c62828; padding: 20px; border-radius: 10px; text-align: center;">
-                <h3>⚠️ No se pudieron cargar los datos</h3>
-                <p>Error: ${error.message}</p>
-                <p><strong>Solución:</strong></p>
-                <ol style="text-align: left; max-width: 500px; margin: 20px auto;">
-                    <li>Verifica que el archivo <code>datos/clientes.json</code> existe en tu repositorio</li>
-                    <li>Ejecuta el workflow "Actualizar datos desde Excel" en GitHub Actions</li>
-                    <li>Espera 2 minutos y recarga esta página</li>
-                </ol>
-                <button onclick="location.reload()" style="background: #1a237e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                    🔄 Recargar Página
-                </button>
-            </div>
-        `;
-    }
+function normalizarCodigo(v){
+  return (v || "").trim().toUpperCase().replace(/\s+/g,"");
 }
-        }
 
-        // Mostrar la lista de clientes en la página
-        function mostrarClientes(clientes) {
-            const lista = document.getElementById('clientsList');
-            lista.innerHTML = '';
+function panelLink(codigo){
+  // link limpio: solo codigo
+  const base = new URL("panel.html", window.location.href).toString();
+  return `${base}?codigo=${encodeURIComponent(codigo)}`;
+}
 
-            if (clientes.length === 0) {
-                lista.innerHTML = '<p>No se encontraron clientes.</p>';
-                return;
-            }
+async function validarCodigo(codigo){
+  if (!API_URL) return { ok:true, skip:true };
+  const res = await fetch(`${API_URL}?codigo=${encodeURIComponent(codigo)}`);
+  return await res.json();
+}
 
-            clientes.forEach(cliente => {
-                const enlace = generarEnlace(cliente);
-                const card = document.createElement('div');
-                card.className = 'client-card';
-                card.innerHTML = `
-                    <div class="client-info">
-                        <h3>${cliente.codigo} - ${cliente.nombre}</h3>
-                        <div class="client-details">
-                            📞 ${cliente.telefono} | 📍 ${cliente.referencia || 'Sin referencia'}
-                        </div>
-                        <small style="color: #888; font-size: 0.8em;">${enlace.substring(0, 80)}...</small>
-                    </div>
-                    <button class="btn-copy" onclick="copiarAlPortapapeles('${enlace}', this)">
-                        📋 Copiar Enlace
-                    </button>
-                `;
-                lista.appendChild(card);
-            });
+async function generar(){
+  const codigo = normalizarCodigo(document.getElementById("codigo").value);
+  const estado = document.getElementById("estado");
+  const salida = document.getElementById("salida");
+  const abrir  = document.getElementById("abrir");
 
-            // Agregar funcionalidad de búsqueda
-            const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('keyup', function() {
-                const term = this.value.toLowerCase();
-                const cards = document.querySelectorAll('.client-card');
-                cards.forEach(card => {
-                    const text = card.textContent.toLowerCase();
-                    card.style.display = text.includes(term) ? 'flex' : 'none';
-                });
-            });
-        }
+  if (!codigo){
+    estado.textContent = "❌ Escribe un código.";
+    estado.className = "bad";
+    return;
+  }
 
-        // Iniciar todo al cargar la página
-        document.addEventListener('DOMContentLoaded', cargarClientes);
-    </script>
+  estado.textContent = "🔎 Validando…";
+  estado.className = "muted";
+
+  try{
+    const check = await validarCodigo(codigo);
+
+    if (API_URL && !check.ok){
+      estado.textContent = `❌ ${codigo} no válido: ${check.error || "NO_EXISTE"}`;
+      estado.className = "bad";
+      salida.textContent = "—";
+      abrir.href = "#";
+      abrir.onclick = (e)=>e.preventDefault();
+      return;
+    }
+
+    const link = panelLink(codigo);
+    salida.textContent = link;
+    abrir.href = link;
+    abrir.onclick = null;
+
+    estado.textContent = API_URL
+      ? `✅ Código válido: ${codigo}`
+      : `✅ Enlace listo (sin validación): ${codigo}`;
+    estado.className = "ok";
+
+  }catch(err){
+    // Si falla la API, igual dejamos generar el link (no te frena ventas)
+    const link = panelLink(codigo);
+    salida.textContent = link;
+    abrir.href = link;
+    abrir.onclick = null;
+
+    estado.textContent = "⚠️ No pude validar (API), pero el enlace fue generado.";
+    estado.className = "muted";
+  }
+}
+
+async function copiar(){
+  const txt = document.getElementById("salida").textContent.trim();
+  const estado = document.getElementById("estado");
+
+  if (!txt || txt === "—"){
+    estado.textContent = "❌ Primero genera el enlace.";
+    estado.className = "bad";
+    return;
+  }
+
+  await navigator.clipboard.writeText(txt);
+  estado.textContent = "📋 Enlace copiado. Pégalo en WhatsApp.";
+  estado.className = "ok";
+}
+
+// Si vienen con ?codigo=... lo precarga
+document.addEventListener("DOMContentLoaded", ()=>{
+  const params = new URLSearchParams(window.location.search);
+  const c = params.get("codigo");
+  if (c){
+    document.getElementById("codigo").value = c;
+    generar();
+  }
+});
+</script>
+
 </body>
 </html>
+

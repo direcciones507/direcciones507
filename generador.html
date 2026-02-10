@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Generador de Enlaces - AD507</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f5f5f5; padding: 20px; max-width: 1000px; margin: auto; }
+        .header { background: #1a237e; color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center; }
+        h1 { margin: 0; }
+        .subtitle { opacity: 0.9; }
+        .client-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .client-info h3 { margin: 0 0 8px 0; color: #1a237e; }
+        .client-details { color: #666; font-size: 0.9em; }
+        .btn-copy { background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+        .btn-copy:hover { background: #388E3C; }
+        .btn-copy.copied { background: #1a237e; }
+        .controls { margin-bottom: 25px; text-align: center; }
+        #searchInput { width: 70%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Generador de Enlaces AD507</h1>
+        <p class="subtitle">Haz clic en "Copiar Enlace" y pégalo directamente en WhatsApp.</p>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar cliente por nombre o código..." autofocus>
+    </div>
+
+    <div id="clientsList">
+        <!-- La lista de clientes se cargará aquí -->
+        <p>Cargando lista de clientes...</p>
+    </div>
+
+    <script>
+        // URL base de tu sitio
+        const BASE_URL = 'https://direcciones507.github.io/direcciones507/panel.html';
+
+        // Esta función crea el enlace personalizado
+        function generarEnlace(cliente) {
+            const params = new URLSearchParams({
+                codigo: cliente.codigo,
+                nombre: cliente.nombre,
+                telefono: cliente.telefono,
+                referencia: cliente.referencia || '',
+                lat: cliente.coordenadas.split(',')[0].trim(),
+                lng: cliente.coordenadas.split(',')[1].trim()
+            });
+            return `${BASE_URL}?${params.toString()}`;
+        }
+
+        // Función para copiar al portapapeles
+        function copiarAlPortapapeles(texto, boton) {
+            navigator.clipboard.writeText(texto).then(() => {
+                const originalText = boton.textContent;
+                boton.textContent = '✅ ¡Copiado!';
+                boton.classList.add('copied');
+                setTimeout(() => {
+                    boton.textContent = originalText;
+                    boton.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Cargar los datos de clientes.json
+        async function cargarClientes() {
+            try {
+                const response = await fetch('datos/clientes.json');
+                const data = await response.json();
+                mostrarClientes(data.clientes);
+            } catch (error) {
+                // Si falla, cargar datos de ejemplo
+                console.log('Usando datos de ejemplo:', error);
+                const datosEjemplo = [
+                    {
+                        codigo: 'AD507-0001',
+                        nombre: 'Juan Pérez',
+                        telefono: '63564932',
+                        referencia: 'Frente al supermercado',
+                        coordenadas: '9.006347, -79.504055'
+                    },
+                    {
+                        codigo: 'AD507-0002',
+                        nombre: 'María González',
+                        telefono: '61234567',
+                        referencia: 'Casa verde portón blanco',
+                        coordenadas: '9.006590, -79.504045'
+                    }
+                ];
+                mostrarClientes(datosEjemplo);
+            }
+        }
+
+        // Mostrar la lista de clientes en la página
+        function mostrarClientes(clientes) {
+            const lista = document.getElementById('clientsList');
+            lista.innerHTML = '';
+
+            if (clientes.length === 0) {
+                lista.innerHTML = '<p>No se encontraron clientes.</p>';
+                return;
+            }
+
+            clientes.forEach(cliente => {
+                const enlace = generarEnlace(cliente);
+                const card = document.createElement('div');
+                card.className = 'client-card';
+                card.innerHTML = `
+                    <div class="client-info">
+                        <h3>${cliente.codigo} - ${cliente.nombre}</h3>
+                        <div class="client-details">
+                            📞 ${cliente.telefono} | 📍 ${cliente.referencia || 'Sin referencia'}
+                        </div>
+                        <small style="color: #888; font-size: 0.8em;">${enlace.substring(0, 80)}...</small>
+                    </div>
+                    <button class="btn-copy" onclick="copiarAlPortapapeles('${enlace}', this)">
+                        📋 Copiar Enlace
+                    </button>
+                `;
+                lista.appendChild(card);
+            });
+
+            // Agregar funcionalidad de búsqueda
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('keyup', function() {
+                const term = this.value.toLowerCase();
+                const cards = document.querySelectorAll('.client-card');
+                cards.forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    card.style.display = text.includes(term) ? 'flex' : 'none';
+                });
+            });
+        }
+
+        // Iniciar todo al cargar la página
+        document.addEventListener('DOMContentLoaded', cargarClientes);
+    </script>
+</body>
+</html>

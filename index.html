@@ -1,92 +1,158 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AD507 Panamá</title>
-  <style>
-    body{font-family:Arial,sans-serif;background:#0f172a;color:#fff;text-align:center;padding:40px}
-    .card{background:#fff;color:#000;max-width:560px;margin:auto;padding:22px;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    input{width:92%;padding:14px;border-radius:12px;border:1px solid #cbd5e1;font-size:18px;text-align:center}
-    button{margin-top:12px;padding:14px 20px;border:0;border-radius:12px;background:#111827;color:#fff;font-size:18px;cursor:pointer}
-    .muted{color:#475569;font-size:14px;margin-top:10px}
-    .err{color:#b91c1c;font-weight:700}
-    .ok{color:#065f46;font-weight:700}
-    .links a{display:block;margin:10px 0;padding:12px;background:#111827;color:#fff;border-radius:10px;text-decoration:none}
-    img{width:200px;border-radius:12px;border:1px solid #e2e8f0;background:#fff}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AD507 Panamá</title>
+
+<style>
+body{
+font-family:Arial, sans-serif;
+background:#0f172a;
+color:white;
+text-align:center;
+padding:40px;
+}
+.card{
+background:white;
+color:black;
+max-width:500px;
+margin:auto;
+padding:25px;
+border-radius:18px;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+input{
+width:90%;
+padding:15px;
+border-radius:12px;
+border:1px solid #ccc;
+font-size:18px;
+text-align:center;
+}
+button{
+margin-top:15px;
+padding:15px 25px;
+border:none;
+border-radius:12px;
+background:black;
+color:white;
+font-size:18px;
+cursor:pointer;
+}
+.links a{
+display:block;
+margin:10px;
+padding:14px;
+background:#111827;
+color:white;
+border-radius:12px;
+text-decoration:none;
+font-size:16px;
+}
+</style>
 </head>
+
 <body>
-  <h1>AD507 Panamá</h1>
-  <p>Ingresa tu código para ver tus enlaces</p>
 
-  <div class="card">
-    <input id="codigo" placeholder="Ej: AD507-0001" />
-    <br />
-    <button id="btn">Buscar</button>
+<h1>AD507 Panamá</h1>
+<p>Ingresa tu código para ver tu dirección digital</p>
 
-    <div id="estado" class="muted"></div>
-    <div id="resultado" style="margin-top:14px;"></div>
-  </div>
+<div class="card">
+
+<input id="codigo" placeholder="Ej: AD507-0001">
+<br>
+<button onclick="buscar()">Buscar</button>
+
+<div id="estado" style="margin-top:10px;"></div>
+<div id="resultado" style="margin-top:20px;"></div>
+
+</div>
 
 <script>
+
 const API_URL = "https://script.google.com/macros/s/AKfycbwopyb0Cp5V2QyBUhmmOjkp1j9884W0RTy9068GjJYpPShKw95b4JllidryNfUPuaiAPg/exec";
 
-const btn = document.getElementById("btn");
-const estado = document.getElementById("estado");
-const resultado = document.getElementById("resultado");
-
-btn.addEventListener("click", buscar);
-document.getElementById("codigo").addEventListener("keydown", (e)=>{ if(e.key==="Enter") buscar(); });
-
 async function buscar(){
-  const codigo = document.getElementById("codigo").value.trim();
-  resultado.innerHTML = "";
 
-  if(!codigo){ estado.className="muted err"; estado.textContent="Escribe tu código."; return; }
+const codigo = document.getElementById("codigo").value.trim();
+if(!codigo){alert("Escribe el código");return;}
 
-  estado.className="muted"; estado.textContent="Buscando…";
+document.getElementById("estado").innerHTML="Buscando...";
 
-  try{
-    const res = await fetch(API_URL + "?code=" + encodeURIComponent(codigo));
-    const data = await res.json();
+const res = await fetch(API_URL+"?code="+codigo);
+const data = await res.json();
 
-    if(!data.ok){
-      estado.className="muted err";
-      estado.textContent = data.message || "Código no encontrado";
-      return;
-    }
-
-    estado.className="muted ok";
-    estado.textContent="Listo ✅";
-
-    resultado.innerHTML = `
-      <div style="font-weight:700;margin-bottom:10px;">${data.codigo}</div>
-
-      <div class="links">
-        <a href="${data.google_maps}" target="_blank" rel="noopener">📍 Google Maps</a>
-        <a href="${data.waze}" target="_blank" rel="noopener">🚗 Waze</a>
-        <a href="${data.uber}" target="_blank" rel="noopener">🚕 Uber</a>
-        <a href="${data.link_whatsapp}" target="_blank" rel="noopener">💬 WhatsApp (Avisar llegada)</a>
-      </div>
-
-      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
-        <div>
-          <div class="muted" style="margin-bottom:6px;">QR Maps</div>
-          <img src="${data.qr_maps}" alt="QR Maps">
-        </div>
-        <div>
-          <div class="muted" style="margin-bottom:6px;">QR WhatsApp</div>
-          <img src="${data.qr_whatsapp}" alt="QR WhatsApp">
-        </div>
-      </div>
-    `;
-  }catch(err){
-    estado.className="muted err";
-    estado.textContent="Error: " + err.message;
-  }
+if(!data.ok){
+document.getElementById("estado").innerHTML="Código no encontrado";
+return;
 }
+
+document.getElementById("estado").innerHTML="Listo ✓";
+
+const linkCliente = `${location.origin}${location.pathname}?code=${codigo}`;
+
+document.getElementById("resultado").innerHTML=`
+
+<h3>${codigo}</h3>
+
+<div class="links">
+<a href="${data.google_maps}" target="_blank">📍 Google Maps</a>
+<a href="${data.waze}" target="_blank">🚗 Waze</a>
+<a href="${data.uber}" target="_blank">🚕 Uber</a>
+<a href="${data.link_whatsapp}" target="_blank">💬 Avisar llegada</a>
+</div>
+
+<div style="margin-top:20px;background:#f1f5f9;padding:15px;border-radius:12px;color:black;">
+
+<b>LINK DEL CLIENTE</b>
+
+<input id="linkCliente" value="${linkCliente}" readonly
+style="width:100%;padding:12px;margin-top:8px;border-radius:10px;border:1px solid #ccc;text-align:center;">
+
+<button onclick="copiarLink()" 
+style="width:100%;margin-top:10px;padding:14px;background:black;color:white;border:none;border-radius:10px;">
+📋 COPIAR LINK CLIENTE
+</button>
+
+<a href="https://wa.me/?text=${encodeURIComponent("Hola 👋 Tu Dirección Digital ya está activa:\n"+linkCliente)}" target="_blank"
+style="display:block;margin-top:10px;padding:14px;background:#16a34a;color:white;border-radius:10px;text-decoration:none;">
+📲 ENVIAR POR WHATSAPP
+</a>
+
+</div>
+
+<div style="display:flex;justify-content:center;gap:20px;margin-top:20px;">
+<div>
+<div>QR Maps</div>
+<img src="${data.qr_maps}" width="150">
+</div>
+<div>
+<div>QR WhatsApp</div>
+<img src="${data.qr_whatsapp}" width="150">
+</div>
+</div>
+`;
+}
+
+function copiarLink(){
+var copyText=document.getElementById("linkCliente");
+copyText.select();
+document.execCommand("copy");
+alert("Link copiado para enviar al cliente");
+}
+
+// abrir directo si viene ?code=
+const params=new URLSearchParams(window.location.search);
+const code=params.get("code");
+if(code){
+document.getElementById("codigo").value=code;
+buscar();
+}
+
 </script>
+
 </body>
 </html>
+
 

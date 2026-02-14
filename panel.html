@@ -2,570 +2,342 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Dirección - AD507</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Panel AD507 - Tu Dirección</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #1a237e;
-            --secondary: #283593;
-            --accent: #5c6bc0;
-            --success: #4caf50;
-            --warning: #ff9800;
-            --danger: #f44336;
-            --light: #f5f5f5;
-            --dark: #212121;
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
         }
-        
         body {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: linear-gradient(145deg, #0b1e4a 0%, #1a2f6a 100%);
             min-height: 100vh;
-            color: white;
-            padding: 20px;
-            animation: fadeIn 0.8s ease-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
         }
-        
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.1);
+        .panel {
+            max-width: 440px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 25px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(to right, var(--accent), var(--success));
+        .header {
+            background: linear-gradient(115deg, #1a2f6a, #2a3f8a);
+            padding: 28px 24px 24px;
+            color: white;
+            position: relative;
         }
-        
         .badge {
             position: absolute;
             top: 20px;
-            right: 20px;
-            background: var(--success);
+            right: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
-        
+        .badge i {
+            margin-right: 6px;
+            color: #4caf50;
+        }
         .client-code {
-            font-size: 36px;
+            font-size: 2.4rem;
             font-weight: 800;
-            letter-spacing: 3px;
-            margin: 15px 0;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            word-break: break-word;
         }
-        
         .client-name {
-            font-size: 20px;
-            opacity: 0.9;
-            margin-bottom: 5px;
+            font-size: 1.4rem;
+            font-weight: 500;
+            opacity: 0.95;
+            margin-bottom: 4px;
         }
-        
-        .client-subtitle {
-            font-size: 14px;
-            opacity: 0.7;
-        }
-        
-        .info-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            color: var(--dark);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            animation: slideUp 0.6s ease-out 0.2s both;
-        }
-        
-        .info-title {
-            color: var(--primary);
-            margin-bottom: 20px;
-            font-size: 18px;
+        .header-sub {
+            font-size: 0.95rem;
+            opacity: 0.8;
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #eee;
+            gap: 8px;
         }
-        
-        .info-grid {
-            display: grid;
-            gap: 15px;
+        .info-card {
+            background: #f8faff;
+            margin: 20px 20px 0;
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
-        
         .info-row {
             display: flex;
+            margin-bottom: 14px;
             align-items: flex-start;
         }
-        
-        .info-label {
-            font-weight: 600;
-            width: 100px;
-            color: #555;
-            font-size: 14px;
+        .info-row:last-child {
+            margin-bottom: 0;
         }
-        
-        .info-value {
+        .info-icon {
+            width: 32px;
+            font-size: 1.2rem;
+            color: #1a2f6a;
+        }
+        .info-content {
             flex: 1;
-            color: var(--dark);
-            font-size: 15px;
-            line-height: 1.5;
         }
-        
-        .actions-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            animation: slideUp 0.6s ease-out 0.3s both;
+        .info-label {
+            font-size: 0.8rem;
+            color: #6b7a99;
+            letter-spacing: 0.3px;
+            margin-bottom: 2px;
         }
-        
-        .actions-title {
-            color: var(--primary);
-            margin-bottom: 25px;
-            font-size: 20px;
-            text-align: center;
+        .info-value {
+            font-weight: 600;
+            color: #13294b;
+            font-size: 1.05rem;
+            line-height: 1.4;
         }
-        
-        .action-buttons {
-            display: grid;
-            gap: 15px;
+        .actions {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-        
         .action-btn {
             display: flex;
             align-items: center;
-            padding: 20px;
+            padding: 18px 20px;
             background: white;
-            border: none;
-            border-radius: 12px;
-            text-align: left;
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--dark);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
+            border: 1.5px solid #eef2f7;
+            border-radius: 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
         }
-        
-        .action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.12);
-        }
-        
         .action-btn:active {
-            transform: translateY(-1px);
+            transform: scale(0.99);
+            background: #f5f8ff;
+            border-color: #b0c4de;
         }
-        
-        .action-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            background: currentColor;
-            opacity: 0.2;
-        }
-        
         .btn-icon {
-            font-size: 28px;
-            margin-right: 20px;
-            width: 40px;
-            text-align: center;
-        }
-        
-        .btn-text {
-            flex: 1;
-        }
-        
-        .btn-arrow {
-            font-size: 20px;
-            opacity: 0.5;
-            transition: opacity 0.3s;
-        }
-        
-        .action-btn:hover .btn-arrow {
-            opacity: 1;
-            transform: translateX(5px);
-        }
-        
-        .btn-maps { color: #4285f4; }
-        .btn-waze { color: #33ccff; }
-        .btn-uber { color: #000000; }
-        .btn-whatsapp { color: #25d366; }
-        
-        .qr-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            color: var(--dark);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            animation: slideUp 0.6s ease-out 0.4s both;
-        }
-        
-        .qr-title {
-            color: var(--primary);
-            margin-bottom: 20px;
-            font-size: 18px;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            margin-right: 16px;
+            font-size: 1.8rem;
         }
-        
+        .maps .btn-icon { background: #e8f0fe; color: #1a73e8; }
+        .waze .btn-icon { background: #e1f4fc; color: #33ccff; }
+        .uber .btn-icon { background: #f0f0f0; color: #000000; }
+        .whatsapp .btn-icon { background: #e5f9e7; color: #25d366; }
+        .btn-text {
+            flex: 1;
+        }
+        .btn-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+        .btn-sub {
+            font-size: 0.85rem;
+            color: #6b7a99;
+        }
+        .btn-arrow {
+            font-size: 1.4rem;
+            color: #b0c4de;
+            margin-left: 8px;
+        }
+        .qr-card {
+            background: #f8faff;
+            margin: 0 20px 20px;
+            padding: 20px;
+            border-radius: 24px;
+            text-align: center;
+        }
+        .qr-title {
+            font-weight: 600;
+            color: #1a2f6a;
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+        }
         .qr-container {
-            width: 220px;
-            height: 220px;
-            margin: 0 auto 20px;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 12px;
             background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border: 1px solid #eee;
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 1px solid #eef2f7;
         }
-        
         .qr-container img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 8px;
+            border-radius: 12px;
         }
-        
         .qr-note {
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #4a5b7a;
         }
-        
         .footer {
+            padding: 20px;
             text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 13px;
-            opacity: 0.8;
+            border-top: 1px solid #eef2f7;
+            font-size: 0.8rem;
+            color: #8a9bb8;
+            background: white;
         }
-        
-        .footer-logo {
-            font-weight: 800;
-            font-size: 16px;
-            color: white;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
-        
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s;
+        .footer a {
+            color: #1a2f6a;
             text-decoration: none;
+            font-weight: 600;
+            margin-top: 8px;
+            display: inline-block;
         }
-        
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-            .header, .info-card, .actions-card, .qr-card { padding: 20px; }
-            .client-code { font-size: 28px; }
-            .qr-container { width: 180px; height: 180px; }
+        @media (max-width: 400px) {
+            .client-code { font-size: 2rem; }
+            .client-name { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="panel">
         <div class="header">
-            <div class="badge">
-                <i class="fas fa-check-circle"></i> VÁLIDO
-            </div>
-            <div class="client-code" id="clientCode">AD507-0000</div>
-            <div class="client-name" id="clientName">[Nombre del Cliente]</div>
-            <div class="client-subtitle">Panel de Navegación y Dirección</div>
+            <div class="badge"><i class="fas fa-check-circle"></i> ACTIVO</div>
+            <div class="client-code" id="clientCode">AD507-0001</div>
+            <div class="client-name" id="clientName">Cargando...</div>
+            <div class="header-sub"><i class="fas fa-location-dot"></i> <span id="clientCoords">0.0000, -0.0000</span></div>
         </div>
-        
+
         <div class="info-card">
-            <div class="info-title">
-                <i class="fas fa-info-circle"></i>
-                Información del Cliente
+            <div class="info-row">
+                <div class="info-icon"><i class="fas fa-phone-alt"></i></div>
+                <div class="info-content">
+                    <div class="info-label">TELÉFONO</div>
+                    <div class="info-value" id="clientPhone">-</div>
+                </div>
             </div>
-            <div class="info-grid">
-                <div class="info-row">
-                    <div class="info-label">Teléfono:</div>
-                    <div class="info-value" id="clientPhone">[Teléfono]</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Referencia:</div>
-                    <div class="info-value" id="clientRef">[Referencia]</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Coordenadas:</div>
-                    <div class="info-value" id="clientCoords">[Latitud, Longitud]</div>
+            <div class="info-row">
+                <div class="info-icon"><i class="fas fa-map-pin"></i></div>
+                <div class="info-content">
+                    <div class="info-label">REFERENCIA</div>
+                    <div class="info-value" id="clientRef">-</div>
                 </div>
             </div>
         </div>
-        
-        <div class="actions-card">
-            <div class="actions-title">
-                <i class="fas fa-directions"></i>
-                Navegación y Acciones
-            </div>
-            <div class="action-buttons">
-                <button class="action-btn btn-maps" id="mapsBtn">
-                    <div class="btn-icon">
-                        <i class="fas fa-map-marked-alt"></i>
-                    </div>
-                    <div class="btn-text">
-                        <div style="font-size: 18px;">Google Maps</div>
-                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Abrir en Google Maps</div>
-                    </div>
-                    <div class="btn-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </button>
-                
-                <button class="action-btn btn-waze" id="wazeBtn">
-                    <div class="btn-icon">
-                        <i class="fab fa-waze"></i>
-                    </div>
-                    <div class="btn-text">
-                        <div style="font-size: 18px;">Waze</div>
-                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Rutas en tiempo real</div>
-                    </div>
-                    <div class="btn-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </button>
-                
-                <button class="action-btn btn-uber" id="uberBtn">
-                    <div class="btn-icon">
-                        <i class="fab fa-uber"></i>
-                    </div>
-                    <div class="btn-text">
-                        <div style="font-size: 18px;">Uber</div>
-                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Pedir viaje a esta dirección</div>
-                    </div>
-                    <div class="btn-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </button>
-                
-                <button class="action-btn btn-whatsapp" id="whatsappBtn">
-                    <div class="btn-icon">
-                        <i class="fab fa-whatsapp"></i>
-                    </div>
-                    <div class="btn-text">
-                        <div style="font-size: 18px;">Avisar Llegada</div>
-                        <div style="font-size: 13px; opacity: 0.7; font-weight: normal;">Enviar mensaje por WhatsApp</div>
-                    </div>
-                    <div class="btn-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </button>
-            </div>
-        </div>
-        
-        <div class="qr-card">
-            <div class="qr-title">
-                <i class="fas fa-qrcode"></i>
-                QR de la Ubicación
-            </div>
-            <div class="qr-container" id="qrCode">
-                <!-- QR se generará aquí -->
-            </div>
-            <div class="qr-note">
-                Escanea este código QR para abrir la ubicación en Google Maps
-            </div>
-        </div>
-        
-        <div class="footer">
-            <div class="footer-logo">AD507 PANAMÁ</div>
-            <p>Sistema de gestión de direcciones • Solo para uso en Panamá</p>
-            <a href="index.html" class="back-btn">
-                <i class="fas fa-arrow-left"></i>
-                Volver al buscador
+
+        <div class="actions">
+            <a href="#" id="mapsLink" target="_blank" class="action-btn maps">
+                <div class="btn-icon"><i class="fas fa-map-marked-alt"></i></div>
+                <div class="btn-text">
+                    <div class="btn-title">Google Maps</div>
+                    <div class="btn-sub">Ver ruta e indicaciones</div>
+                </div>
+                <div class="btn-arrow"><i class="fas fa-chevron-right"></i></div>
             </a>
+            <a href="#" id="wazeLink" target="_blank" class="action-btn waze">
+                <div class="btn-icon"><i class="fab fa-waze"></i></div>
+                <div class="btn-text">
+                    <div class="btn-title">Waze</div>
+                    <div class="btn-sub">Navegación en tiempo real</div>
+                </div>
+                <div class="btn-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+            <a href="#" id="uberLink" target="_blank" class="action-btn uber">
+                <div class="btn-icon"><i class="fab fa-uber"></i></div>
+                <div class="btn-text">
+                    <div class="btn-title">Uber</div>
+                    <div class="btn-sub">Solicitar viaje aquí</div>
+                </div>
+                <div class="btn-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+            <a href="#" id="whatsappLink" target="_blank" class="action-btn whatsapp">
+                <div class="btn-icon"><i class="fab fa-whatsapp"></i></div>
+                <div class="btn-text">
+                    <div class="btn-title">Avisar Llegada</div>
+                    <div class="btn-sub">Enviar mensaje al cliente</div>
+                </div>
+                <div class="btn-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
+        </div>
+
+        <div class="qr-card">
+            <div class="qr-title"><i class="fas fa-qrcode" style="margin-right: 8px;"></i> QR de la ubicación</div>
+            <div class="qr-container" id="qrCode">
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #aaa;">Generando QR...</div>
+            </div>
+            <div class="qr-note">Escanea para abrir en Google Maps</div>
+        </div>
+
+        <div class="footer">
+            <div style="margin-bottom: 4px;">AD507 Panamá 🇵🇦</div>
+            <a href="index.html"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
         </div>
     </div>
 
     <script>
-        // Función para obtener parámetros de la URL
-        function getQueryParam(param) {
+        function obtenerParametroURL(nombre) {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param) || '';
+            return urlParams.get(nombre) || '';
         }
-        
-        // Cargar datos del cliente
-        function cargarDatosCliente() {
-            // Obtener datos de la URL
-            const codigo = getQueryParam('codigo') || 'AD507-0001';
-            const nombre = decodeURIComponent(getQueryParam('nombre') || 'Cliente Ejemplo');
-            const telefono = getQueryParam('telefono') || '63564932';
-            const referencia = decodeURIComponent(getQueryParam('referencia') || 'Referencia no especificada');
-            const lat = getQueryParam('lat') || '9.006347';
-            const lng = getQueryParam('lng') || '-79.504055';
-            
-            // Actualizar interfaz
+
+        function formatearTelefono(tel) {
+            const nums = tel.replace(/\D/g, '');
+            if (nums.length === 8) return nums.slice(0,4) + '-' + nums.slice(4);
+            return tel;
+        }
+
+        function cargarDatos() {
+            const codigo = decodeURIComponent(obtenerParametroURL('codigo') || 'AD507-0001');
+            const nombre = decodeURIComponent(obtenerParametroURL('nombre') || 'Cliente Ejemplo');
+            const telefono = obtenerParametroURL('telefono') || '00000000';
+            const referencia = decodeURIComponent(obtenerParametroURL('referencia') || 'Referencia no disponible');
+            const lat = obtenerParametroURL('lat') || '9.006347';
+            const lng = obtenerParametroURL('lng') || '-79.504055';
+
             document.getElementById('clientCode').textContent = codigo;
             document.getElementById('clientName').textContent = nombre;
             document.getElementById('clientPhone').textContent = formatearTelefono(telefono);
             document.getElementById('clientRef').textContent = referencia;
             document.getElementById('clientCoords').textContent = `${lat}, ${lng}`;
-            
-            // Actualizar título de la página
-            document.title = `${codigo} - Panel AD507`;
-            
-            // Configurar coordenadas
+
             const coords = `${lat},${lng}`;
-            
-            // Configurar botones
-            configurarBotones(codigo, coords, telefono);
-            
-            // Generar QR
-            generarQR(coords);
-            
-            // Intentar cargar datos adicionales de JSON
-            cargarDatosAdicionales(codigo);
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${coords}`;
+            const wazeUrl = `https://waze.com/ul?ll=${coords}&navigate=yes`;
+            const uberUrl = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+
+            const mensaje = `Ya llegué. Código: ${codigo}. Ubicación: ${mapsUrl}`;
+            const telefonoLimpio = telefono.replace(/\D/g, '');
+            const whatsappUrl = `https://wa.me/507${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
+
+            document.getElementById('mapsLink').href = mapsUrl;
+            document.getElementById('wazeLink').href = wazeUrl;
+            document.getElementById('uberLink').href = uberUrl;
+            document.getElementById('whatsappLink').href = whatsappUrl;
+
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mapsUrl)}`;
+            document.getElementById('qrCode').innerHTML = `<img src="${qrApiUrl}" alt="QR Código" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\'color:#999;\'>Error al cargar QR</div>';">`;
         }
-        
-        // Formatear número de teléfono
-        function formatearTelefono(tel) {
-            const num = tel.replace(/\D/g, '');
-            if (num.length === 8) {
-                return `${num.substring(0,4)}-${num.substring(4)}`;
-            }
-            return tel;
-        }
-        
-        // Configurar acciones de los botones
-        function configurarBotones(codigo, coords, telefono) {
-            // Google Maps
-            document.getElementById('mapsBtn').onclick = () => {
-                window.open(`https://www.google.com/maps/search/?api=1&query=${coords}`, '_blank');
-            };
-            
-            // Waze
-            document.getElementById('wazeBtn').onclick = () => {
-                window.open(`https://waze.com/ul?ll=${coords}&navigate=yes`, '_blank');
-            };
-            
-            // Uber
-            const [lat, lng] = coords.split(',');
-            document.getElementById('uberBtn').onclick = () => {
-                window.open(`https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`, '_blank');
-            };
-            
-            // WhatsApp
-            document.getElementById('whatsappBtn').onclick = () => {
-                const mensaje = `✅ Ya llegué. Código: ${codigo}. Ubicación: https://www.google.com/maps/search/?api=1&query=${coords}`;
-                const telefonoLimpio = telefono.replace(/\D/g, '');
-                const urlWhatsApp = `https://wa.me/507${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
-                window.open(urlWhatsApp, '_blank');
-            };
-        }
-        
-        // Generar código QR
-        function generarQR(coords) {
-            const qrUrl = `https://www.google.com/maps/search/?api=1&query=${coords}`;
-            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrUrl)}&format=png&margin=10`;
-            
-            document.getElementById('qrCode').innerHTML = `
-                <img src="${qrImageUrl}" alt="QR Code de ubicación">
-            `;
-        }
-        
-        // Cargar datos adicionales de un JSON externo
-        async function cargarDatosAdicionales(codigo) {
-            try {
-                const response = await fetch('data/clientes.json');
-                if (response.ok) {
-                    const data = await response.json();
-                    const cliente = data.clientes?.find(c => c.codigo === codigo);
-                    
-                    if (cliente) {
-                        // Actualizar con datos adicionales del JSON
-                        console.log('Datos adicionales cargados del JSON:', cliente);
-                    }
-                }
-            } catch (error) {
-                console.log('Usando datos de URL');
-            }
-        }
-        
-        // Inicializar cuando la página cargue
-        document.addEventListener('DOMContentLoaded', cargarDatosCliente);
-        
-        // Agregar animación de pulsación al QR al hacer hover
-        document.addEventListener('DOMContentLoaded', () => {
-            const qrContainer = document.getElementById('qrCode');
-            if (qrContainer) {
-                qrContainer.addEventListener('mouseenter', () => {
-                    qrContainer.style.animation = 'pulse 1s infinite';
-                });
-                
-                qrContainer.addEventListener('mouseleave', () => {
-                    qrContainer.style.animation = '';
-                });
-            }
-        });
+
+        window.onload = cargarDatos;
     </script>
 </body>
 </html>

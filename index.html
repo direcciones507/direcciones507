@@ -6,88 +6,24 @@
 <title>Direcciones507</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#0b0b0b;
-color:white;
-text-align:center;
-}
+body{margin:0;font-family:Arial;background:#0b0b0b;color:white;text-align:center;}
 
-.card{
-background:#111;
-max-width:520px;
-margin:20px auto;
-padding:30px;
-border-radius:18px;
-}
+.card{background:#111;max-width:520px;margin:20px auto;padding:30px;border-radius:18px;}
 
-input{
-width:90%;
-padding:16px;
-border-radius:12px;
-border:none;
-font-size:18px;
-text-align:center;
-background:#1c1c1c;
-color:white;
-}
+input{width:90%;padding:16px;border-radius:12px;border:none;font-size:18px;text-align:center;background:#1c1c1c;color:white;}
 
-button{
-margin-top:15px;
-padding:16px 25px;
-border:none;
-border-radius:12px;
-background:white;
-color:black;
-font-size:16px;
-font-weight:bold;
-cursor:pointer;
-}
+button{margin-top:15px;padding:16px 25px;border:none;border-radius:12px;background:white;color:black;font-size:16px;font-weight:bold;cursor:pointer;}
 
-.links a{
-display:block;
-margin:12px 0;
-padding:16px;
-border-radius:14px;
-text-decoration:none;
-font-size:16px;
-color:white;
-font-weight:bold;
-}
+.links a{display:block;margin:12px 0;padding:16px;border-radius:14px;text-decoration:none;font-size:16px;color:white;font-weight:bold;}
 
 .maps{background:#16a34a;}
 .waze{background:#3b82f6;}
-.uber{background:#000000;}
+.uber{background:#000;}
 .whats{background:#22c55e;}
 
-.box{
-background:#0f172a;
-padding:18px;
-border-radius:14px;
-margin-top:20px;
-}
-
-.copybtn{
-background:#2563eb;
-color:white;
-padding:14px;
-border-radius:10px;
-margin-top:10px;
-border:none;
-cursor:pointer;
-width:100%;
-}
-
-.whatsappbtn{
-background:#16a34a;
-display:block;
-padding:15px;
-border-radius:12px;
-margin-top:10px;
-color:white;
-text-decoration:none;
-}
+.box{background:#0f172a;padding:18px;border-radius:14px;margin-top:20px;}
+.copybtn{background:#2563eb;color:white;padding:14px;border-radius:10px;margin-top:10px;border:none;cursor:pointer;width:100%;}
+.whatsappbtn{background:#16a34a;display:block;padding:15px;border-radius:12px;margin-top:10px;color:white;text-decoration:none;}
 </style>
 </head>
 
@@ -98,8 +34,8 @@ text-decoration:none;
 <img src="logo.png" style="width:180px;margin-bottom:10px;">
 </div>
 
-<!-- BOTON CLIENTES -->
-<div style="text-align:center;margin-bottom:25px;">
+<!-- BOTON SOLO PORTADA -->
+<div id="ctaSolicitar" style="text-align:center;margin-bottom:25px;">
 <a href="https://wa.me/50765996532?text=Hola,%20quiero%20mi%20dirección%20digital%20Direcciones507"
 style="background:#16a34a;color:white;padding:18px 28px;border-radius:14px;
 text-decoration:none;font-size:18px;font-weight:bold;display:inline-block;">
@@ -107,42 +43,11 @@ text-decoration:none;font-size:18px;font-weight:bold;display:inline-block;">
 </a>
 </div>
 
-  const params = new URLSearchParams(window.location.search);
-  const codeParam = params.get("code");
-  const pathCode = (window.location.pathname || "").split("/").filter(Boolean).pop();
-
-  const isClient =
-    (codeParam && /^AD507-\d+$/i.test(codeParam)) ||
-    (pathCode && /^AD507-\d+$/i.test(pathCode));
-
-  if (isClient) cta.style.display = "none";
-})();
-
-  // Oculta el botón "Solicitar" cuando es una página de cliente
-(function () {
-  const cta = document.getElementById("ctaSolicitar");
-  if (!cta) return;
-
-  const params = new URLSearchParams(window.location.search);
-  const codeParam = params.get("code");
-  const pathCode = (window.location.pathname || "").split("/").filter(Boolean).pop();
-
-  const isClient =
-    (codeParam && /^AD507-\d+$/i.test(codeParam)) ||
-    (pathCode && /^AD507-\d+$/i.test(pathCode));
-
-  if (isClient) cta.style.display = "none";
-})();
-
-
 <div class="card">
-
 <input id="codigo" placeholder="Ingresa tu código AD507">
 <br>
 <button onclick="buscar()">Buscar dirección</button>
-
 <div id="resultado"></div>
-
 </div>
 
 <script>
@@ -162,7 +67,9 @@ return;
 
 const linkCliente=location.origin+"/"+codigo;
 const qrCliente="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(linkCliente);
-const linkMaps=data.qr_maps;
+
+// LINK DE VERIFICACION (para imprimir)
+const linkVerificacion=data.qr_maps;
 
 document.getElementById("resultado").innerHTML=`
 
@@ -173,9 +80,12 @@ document.getElementById("resultado").innerHTML=`
 <a class="whats" href="${data.link_whatsapp}" target="_blank">💬 Avisar llegada</a>
 </div>
 
-<div style="margin-top:25px;">
-<b>QR VERIFICACIÓN UBICACIÓN (PARA IMPRIMIR)</b><br><br>
-<img src="${data.qr_maps}" width="180">
+<div class="box" style="background:white;color:black;">
+<b>LINK VERIFICACIÓN PARA IMPRIMIR</b><br><br>
+${linkVerificacion}
+<button class="copybtn" onclick="copiar('${linkVerificacion}')" style="background:black;margin-top:10px;">
+📋 Copiar enlace verificación
+</button>
 </div>
 
 <div class="box">
@@ -189,7 +99,7 @@ ${linkCliente}
 </div>
 
 <div style="margin-top:25px;">
-<b>QR PARA COMPARTIR UBICACIÓN</b><br><br>
+<b>QR PARA COMPARTIR</b><br><br>
 <img src="${qrCliente}" width="170">
 </div>
 `;
@@ -200,18 +110,26 @@ navigator.clipboard.writeText(t);
 alert("Copiado");
 }
 
-// AUTO ABRIR POR LINK
+// AUTO ABRIR
 const params=new URLSearchParams(window.location.search);
 const c=params.get("code");
 if(c){
 document.getElementById("codigo").value=c;
 buscar();
 }
+
+// OCULTAR BOTON EN CLIENTE
+(function(){
+const cta=document.getElementById("ctaSolicitar");
+const path=window.location.pathname.split("/").filter(Boolean).pop();
+if((c && c.startsWith("AD507")) || (path && path.startsWith("AD507"))){
+cta.style.display="none";
+}
+})();
 </script>
 
 </body>
 </html>
-
 
 
 

@@ -6,98 +6,16 @@
 <title>Direcciones507</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#0b0b0b;
-color:white;
-text-align:center;
-}
-
-.header{
-padding:30px 20px;
-font-size:28px;
-font-weight:bold;
-letter-spacing:2px;
-}
-
-.sub{
-color:#aaa;
-margin-top:-15px;
-margin-bottom:30px;
-}
-
-.card{
-background:#111;
-max-width:520px;
-margin:auto;
-padding:30px;
-border-radius:18px;
-box-shadow:0 0 40px rgba(0,0,0,0.6);
-}
-
-input{
-width:90%;
-padding:16px;
-border-radius:12px;
-border:none;
-font-size:18px;
-text-align:center;
-background:#1c1c1c;
-color:white;
-}
-
-button{
-margin-top:15px;
-padding:16px 25px;
-border:none;
-border-radius:12px;
-background:white;
-color:black;
-font-size:16px;
-cursor:pointer;
-font-weight:bold;
-}
-
-.links a{
-display:block;
-margin:12px 0;
-padding:16px;
-background:#1c1c1c;
-color:white;
-border-radius:14px;
-text-decoration:none;
-font-size:16px;
-}
-
-.box{
-background:#0f172a;
-padding:18px;
-border-radius:14px;
-margin-top:20px;
-color:white;
-}
-
-.copybtn{
-background:#2563eb;
-color:white;
-padding:14px;
-border-radius:10px;
-margin-top:10px;
-border:none;
-cursor:pointer;
-width:100%;
-}
-
-.whatsapp{
-background:#16a34a;
-display:block;
-padding:15px;
-border-radius:12px;
-margin-top:10px;
-color:white;
-text-decoration:none;
-}
+body{margin:0;font-family:Arial;background:#0b0b0b;color:white;text-align:center;}
+.header{padding:30px;font-size:28px;font-weight:bold;}
+.sub{color:#aaa;margin-top:-20px;margin-bottom:30px;}
+.card{background:#111;max-width:520px;margin:auto;padding:30px;border-radius:18px;}
+input{width:90%;padding:16px;border-radius:12px;border:none;font-size:18px;text-align:center;background:#1c1c1c;color:white;}
+button{margin-top:15px;padding:16px 25px;border:none;border-radius:12px;background:white;color:black;font-size:16px;font-weight:bold;cursor:pointer;}
+.links a{display:block;margin:12px 0;padding:16px;background:#1c1c1c;color:white;border-radius:14px;text-decoration:none;}
+.box{background:#0f172a;padding:18px;border-radius:14px;margin-top:20px;}
+.copybtn{background:#2563eb;color:white;padding:14px;border-radius:10px;margin-top:10px;border:none;cursor:pointer;width:100%;}
+.whatsapp{background:#16a34a;display:block;padding:15px;border-radius:12px;margin-top:10px;color:white;text-decoration:none;}
 </style>
 </head>
 
@@ -117,13 +35,11 @@ text-decoration:none;
 </div>
 
 <script>
-
-const API_URL = "https://script.google.com/macros/s/AKfycbwopyb0Cp5V2QyBUhmmOjkp1j9884W0RTy9068GjJYpPShKw95b4JllidryNfUPuaiAPg/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbwopyb0Cp5V2QyBUhmmOjkp1j9884W0RTy9068GjJYpPShKw95b4JllidryNfUPuaiAPg/exec";
 
 async function buscar(){
-
 let codigo=document.getElementById("codigo").value.trim();
-if(!codigo){alert("Ingresa el código");return;}
+if(!codigo){alert("Ingresa código");return;}
 
 const res=await fetch(API_URL+"?code="+codigo);
 const data=await res.json();
@@ -133,49 +49,51 @@ document.getElementById("resultado").innerHTML="Código no encontrado";
 return;
 }
 
-const linkCliente = location.origin + location.pathname + "?code=" + codigo;
+const linkCliente=location.origin+"/"+codigo;
+
+// QR del link cliente
+const qrCliente="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(linkCliente);
+
+// LINK GOOGLE MAPS (el mismo del QR verificación)
+const linkMaps=data.google_maps;
 
 document.getElementById("resultado").innerHTML=`
 
 <div class="links">
-<a href="${data.google_maps}" target="_blank">📍 Abrir en Google Maps</a>
-<a href="${data.waze}" target="_blank">🚗 Abrir en Waze</a>
+<a href="${linkMaps}" target="_blank">📍 Abrir Google Maps</a>
+<a href="${data.waze}" target="_blank">🚗 Abrir Waze</a>
 <a href="${data.uber}" target="_blank">🚕 Pedir Uber</a>
 <a href="${data.link_whatsapp}" target="_blank">💬 Avisar llegada</a>
 </div>
 
-<div class="box" style="background:#ffffff;color:black;">
-<b>LINK GOOGLE MAPS PARA IMPRIMIR</b>
-<br><br>
-<input value="${data.google_maps}" readonly
-style="width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;text-align:center;font-size:13px;">
-<button class="copybtn" onclick="copiar('${data.google_maps}')" style="background:black;margin-top:10px;">
+<div class="box" style="background:white;color:black;">
+<b>LINK GOOGLE MAPS PARA IMPRIMIR</b><br><br>
+${linkMaps}
+<button class="copybtn" onclick="copiar('${linkMaps}')" style="background:black;margin-top:10px;">
 📋 Copiar link Google Maps
 </button>
 </div>
 
 <div class="box">
-<b>Link del cliente</b>
-<br><br>
+<b>LINK DEL CLIENTE</b><br><br>
 ${linkCliente}
-<button class="copybtn" onclick="copiar('${linkCliente}')">
-📋 Copiar link cliente
-</button>
+<button class="copybtn" onclick="copiar('${linkCliente}')">📋 Copiar link cliente</button>
 
 <a class="whatsapp" href="https://wa.me/?text=Tu dirección digital:%20${linkCliente}" target="_blank">
 📲 Enviar por WhatsApp
 </a>
 </div>
 
-<div style="margin-top:20px;">
-<img src="${data.qr_whatsapp}" width="150">
+<div style="margin-top:25px;">
+<b>QR PARA COMPARTIR UBICACIÓN</b><br><br>
+<img src="${qrCliente}" width="170">
 </div>
 `;
 }
 
 function copiar(t){
 navigator.clipboard.writeText(t);
-alert("Link copiado");
+alert("Copiado");
 }
 
 // abrir directo si viene con código
@@ -185,7 +103,6 @@ if(c){
 document.getElementById("codigo").value=c;
 buscar();
 }
-
 </script>
 
 </body>

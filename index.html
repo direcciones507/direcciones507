@@ -3,47 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<div style="padding-top:25px;">
-</div>
+<title>Direcciones507</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0b0b0b;color:white;text-align:center;}
-.header{padding:30px;font-size:28px;font-weight:bold;letter-spacing:2px;}
-.sub{color:#aaa;margin-top:-15px;margin-bottom:30px;}
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#0b0b0b;
+color:white;
+text-align:center;
+}
 
-.card{background:#111;max-width:520px;margin:auto;padding:30px;border-radius:18px;}
+.card{
+background:#111;
+max-width:520px;
+margin:20px auto;
+padding:30px;
+border-radius:18px;
+}
 
-input{width:90%;padding:16px;border-radius:12px;border:none;font-size:18px;text-align:center;background:#1c1c1c;color:white;}
+input{
+width:90%;
+padding:16px;
+border-radius:12px;
+border:none;
+font-size:18px;
+text-align:center;
+background:#1c1c1c;
+color:white;
+}
 
-button{margin-top:15px;padding:16px 25px;border:none;border-radius:12px;background:white;color:black;font-size:16px;font-weight:bold;cursor:pointer;}
+button{
+margin-top:15px;
+padding:16px 25px;
+border:none;
+border-radius:12px;
+background:white;
+color:black;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
 
-.links a{display:block;margin:12px 0;padding:16px;border-radius:14px;text-decoration:none;font-size:16px;color:white;font-weight:bold;}
+.links a{
+display:block;
+margin:12px 0;
+padding:16px;
+border-radius:14px;
+text-decoration:none;
+font-size:16px;
+color:white;
+font-weight:bold;
+}
 
 .maps{background:#16a34a;}
 .waze{background:#3b82f6;}
 .uber{background:#000000;}
 .whats{background:#22c55e;}
 
-.box{background:#0f172a;padding:18px;border-radius:14px;margin-top:20px;}
-.copybtn{background:#2563eb;color:white;padding:14px;border-radius:10px;margin-top:10px;border:none;cursor:pointer;width:100%;}
-.whatsappbtn{background:#16a34a;display:block;padding:15px;border-radius:12px;margin-top:10px;color:white;text-decoration:none;}
+.box{
+background:#0f172a;
+padding:18px;
+border-radius:14px;
+margin-top:20px;
+}
+
+.copybtn{
+background:#2563eb;
+color:white;
+padding:14px;
+border-radius:10px;
+margin-top:10px;
+border:none;
+cursor:pointer;
+width:100%;
+}
+
+.whatsappbtn{
+background:#16a34a;
+display:block;
+padding:15px;
+border-radius:12px;
+margin-top:10px;
+color:white;
+text-decoration:none;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGO -->
 <div style="padding-top:25px;">
 <img src="logo.png" style="width:180px;margin-bottom:10px;">
 </div>
-  <div style="text-align:center;margin-top:10px;margin-bottom:25px;">
+
+<!-- BOTON CLIENTES -->
+<div style="text-align:center;margin-bottom:25px;">
 <a href="https://wa.me/50765996532?text=Hola,%20quiero%20mi%20dirección%20digital%20Direcciones507"
 style="background:#16a34a;color:white;padding:18px 28px;border-radius:14px;
 text-decoration:none;font-size:18px;font-weight:bold;display:inline-block;">
 📲 SOLICITAR MI DIRECCIÓN
 </a>
 </div>
-
-<div class="sub">Dirección digital inteligente Panamá</div>
 
 <div class="card">
 
@@ -71,24 +133,29 @@ return;
 }
 
 const linkCliente=location.origin+"/"+codigo;
-
-// QR cliente para compartir
 const qrCliente="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(linkCliente);
-
-// LINK GOOGLE MAPS (del QR verificación)
-const linkMaps=data.google_maps;
+const linkMaps=data.qr_maps;
 
 document.getElementById("resultado").innerHTML=`
 
 <div class="links">
-<a class="maps" href="${linkMaps}" target="_blank">📍 Abrir Google Maps</a>
+<a class="maps" href="${data.google_maps}" target="_blank">📍 Abrir Google Maps</a>
 <a class="waze" href="${data.waze}" target="_blank">🚗 Abrir Waze</a>
 <a class="uber" href="${data.uber}" target="_blank">🚕 Pedir Uber</a>
 <a class="whats" href="${data.link_whatsapp}" target="_blank">💬 Avisar llegada</a>
 </div>
-<div style="margin-top:20px;">
-<b>QR VERIFICACIÓN UBICACIÓN</b><br><br>
+
+<div style="margin-top:25px;">
+<b>QR VERIFICACIÓN UBICACIÓN (PARA IMPRIMIR)</b><br><br>
 <img src="${data.qr_maps}" width="180">
+</div>
+
+<div class="box" style="background:white;color:black;">
+<b>LINK GOOGLE MAPS PARA IMPRIMIR</b><br><br>
+${linkMaps}
+<button class="copybtn" onclick="copiar('${linkMaps}')" style="background:black;margin-top:10px;">
+📋 Copiar link Google Maps
+</button>
 </div>
 
 <div class="box">
@@ -113,7 +180,7 @@ navigator.clipboard.writeText(t);
 alert("Copiado");
 }
 
-// abrir directo si entra con código
+// AUTO ABRIR POR LINK
 const params=new URLSearchParams(window.location.search);
 const c=params.get("code");
 if(c){

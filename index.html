@@ -107,6 +107,17 @@ text-decoration:none;font-size:18px;font-weight:bold;display:inline-block;">
 </a>
 </div>
 
+  const params = new URLSearchParams(window.location.search);
+  const codeParam = params.get("code");
+  const pathCode = (window.location.pathname || "").split("/").filter(Boolean).pop();
+
+  const isClient =
+    (codeParam && /^AD507-\d+$/i.test(codeParam)) ||
+    (pathCode && /^AD507-\d+$/i.test(pathCode));
+
+  if (isClient) cta.style.display = "none";
+})();
+
   // Oculta el botón "Solicitar" cuando es una página de cliente
 (function () {
   const cta = document.getElementById("ctaSolicitar");
@@ -122,6 +133,7 @@ text-decoration:none;font-size:18px;font-weight:bold;display:inline-block;">
 
   if (isClient) cta.style.display = "none";
 })();
+
 
 <div class="card">
 

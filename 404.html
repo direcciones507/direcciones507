@@ -3,26 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AD507</title>
+  <title>Direcciones507</title>
   <script>
     (function () {
-      // Ej: /direcciones507/AD507-0001
-      var path = window.location.pathname;
-      var parts = path.split("/").filter(Boolean);
+      // Normaliza path y soporta trailing slash
+      var path = window.location.pathname || "/";
+      var parts = path.split("/").filter(Boolean); // quita vacíos
 
-      // parts: ["direcciones507","AD507-0001"]
-      var code = parts.length >= 2 ? parts[parts.length - 1] : "";
+      // Detecta base:
+      // - Dominio propio: /AD507-0006  -> base "/"
+      // - GitHub pages:   /direcciones507/AD507-0006 -> base "/direcciones507/"
+      var base = "/";
+      if (parts.length >= 2 && parts[0].toLowerCase() === "direcciones507") {
+        base = "/direcciones507/";
+      }
 
-      // Si parece un código, redirige a ?code=
+      // El código es el último segmento
+      var code = parts.length ? parts[parts.length - 1] : "";
+
+      // Si viene con slash al final, filter(Boolean) ya lo arregla.
+      // Validación del formato
       if (code && /^AD507-\d+$/i.test(code)) {
-        var base = "/" + parts[0] + "/"; // "/direcciones507/"
         window.location.replace(base + "?code=" + encodeURIComponent(code));
       } else {
-        // Si no, vuelve al inicio
-        window.location.replace("/" + (parts[0] || "") + "/");
+        window.location.replace(base);
       }
     })();
   </script>
 </head>
 <body></body>
 </html>
+

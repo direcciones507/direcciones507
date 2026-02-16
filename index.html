@@ -7,15 +7,25 @@
 
 <style>
 body{margin:0;font-family:Arial;background:#0b0b0b;color:white;text-align:center;}
-.header{padding:30px;font-size:28px;font-weight:bold;}
-.sub{color:#aaa;margin-top:-20px;margin-bottom:30px;}
+.header{padding:30px;font-size:28px;font-weight:bold;letter-spacing:2px;}
+.sub{color:#aaa;margin-top:-15px;margin-bottom:30px;}
+
 .card{background:#111;max-width:520px;margin:auto;padding:30px;border-radius:18px;}
+
 input{width:90%;padding:16px;border-radius:12px;border:none;font-size:18px;text-align:center;background:#1c1c1c;color:white;}
+
 button{margin-top:15px;padding:16px 25px;border:none;border-radius:12px;background:white;color:black;font-size:16px;font-weight:bold;cursor:pointer;}
-.links a{display:block;margin:12px 0;padding:16px;background:#1c1c1c;color:white;border-radius:14px;text-decoration:none;}
+
+.links a{display:block;margin:12px 0;padding:16px;border-radius:14px;text-decoration:none;font-size:16px;color:white;font-weight:bold;}
+
+.maps{background:#16a34a;}
+.waze{background:#3b82f6;}
+.uber{background:#000000;}
+.whats{background:#22c55e;}
+
 .box{background:#0f172a;padding:18px;border-radius:14px;margin-top:20px;}
 .copybtn{background:#2563eb;color:white;padding:14px;border-radius:10px;margin-top:10px;border:none;cursor:pointer;width:100%;}
-.whatsapp{background:#16a34a;display:block;padding:15px;border-radius:12px;margin-top:10px;color:white;text-decoration:none;}
+.whatsappbtn{background:#16a34a;display:block;padding:15px;border-radius:12px;margin-top:10px;color:white;text-decoration:none;}
 </style>
 </head>
 
@@ -51,19 +61,19 @@ return;
 
 const linkCliente=location.origin+"/"+codigo;
 
-// QR del link cliente
+// QR cliente para compartir
 const qrCliente="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data="+encodeURIComponent(linkCliente);
 
-// LINK GOOGLE MAPS (el mismo del QR verificación)
+// LINK GOOGLE MAPS (del QR verificación)
 const linkMaps=data.google_maps;
 
 document.getElementById("resultado").innerHTML=`
 
 <div class="links">
-<a href="${linkMaps}" target="_blank">📍 Abrir Google Maps</a>
-<a href="${data.waze}" target="_blank">🚗 Abrir Waze</a>
-<a href="${data.uber}" target="_blank">🚕 Pedir Uber</a>
-<a href="${data.link_whatsapp}" target="_blank">💬 Avisar llegada</a>
+<a class="maps" href="${linkMaps}" target="_blank">📍 Abrir Google Maps</a>
+<a class="waze" href="${data.waze}" target="_blank">🚗 Abrir Waze</a>
+<a class="uber" href="${data.uber}" target="_blank">🚕 Pedir Uber</a>
+<a class="whats" href="${data.link_whatsapp}" target="_blank">💬 Avisar llegada</a>
 </div>
 
 <div class="box" style="background:white;color:black;">
@@ -79,7 +89,7 @@ ${linkMaps}
 ${linkCliente}
 <button class="copybtn" onclick="copiar('${linkCliente}')">📋 Copiar link cliente</button>
 
-<a class="whatsapp" href="https://wa.me/?text=Tu dirección digital:%20${linkCliente}" target="_blank">
+<a class="whatsappbtn" href="https://wa.me/?text=Tu dirección digital:%20${linkCliente}" target="_blank">
 📲 Enviar por WhatsApp
 </a>
 </div>
@@ -96,7 +106,7 @@ navigator.clipboard.writeText(t);
 alert("Copiado");
 }
 
-// abrir directo si viene con código
+// abrir directo si entra con código
 const params=new URLSearchParams(window.location.search);
 const c=params.get("code");
 if(c){

@@ -46,7 +46,7 @@
       width:100%;
     }
 
-    /* ===== HEADER CON LOGO MEJORADO ===== */
+    /* ===== HEADER CON LOGO (SIEMPRE VISIBLE) ===== */
     .top-bar{
       background: var(--bg-secondary);
       padding: 20px 0;
@@ -112,7 +112,7 @@
       margin-top: 5px;
     }
 
-    /* ===== BOTON CTA PRINCIPAL (CORREGIDO) ===== */
+    /* ===== BOTON CTA PRINCIPAL (SE OCULTA EN MODO CLIENTE) ===== */
     .cta-section{
       text-align:center;
       margin:30px 0 20px;
@@ -145,7 +145,7 @@
       box-shadow: 0 15px 25px -5px #14532d80;
     }
 
-    /* ===== SECCIONES DE LA LANDING (CÓMO FUNCIONA, PRECIOS) ===== */
+    /* ===== SECCIONES DE LA LANDING (SE OCULTAN EN MODO CLIENTE) ===== */
     .section-title{
       font-size:2.2rem;
       font-weight:700;
@@ -193,7 +193,7 @@
     .step-card h3{ margin-bottom:0.75rem; font-size:1.4rem; font-weight:800; }
     .step-card p{ color: var(--text-secondary); }
 
-    /* ===== SECCIÓN DE PRECIOS (CORREGIDA Y COMPLETA) ===== */
+    /* ===== SECCIÓN DE PRECIOS ===== */
     .pricing-grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -317,7 +317,7 @@
     }
     .input-group button:hover{ background:#e0e7ff; transform: scale(1.02); }
 
-    /* ===== CONTENEDOR DE RESULTADOS (DONDE APARECEN QR Y ENLACES) ===== */
+    /* ===== CONTENEDOR DE RESULTADOS ===== */
     .result-container{ margin-top:18px; animation: fadeIn 0.35s ease; }
     @keyframes fadeIn{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform: translateY(0);} }
 
@@ -350,7 +350,7 @@
     .map-link.uber{ background: rgba(0,0,0,0.4); border-left: 5px solid #555; }
     .map-link.whats{ background: rgba(37,211,102,0.15); border-left: 5px solid #25D366; }
 
-    /* ===== CAJAS DE INFORMACIÓN (VERIFICACIÓN, LINK CLIENTE) ===== */
+    /* ===== CAJAS DE INFORMACIÓN ===== */
     .info-box{
       background: rgba(10, 15, 30, 0.8);
       backdrop-filter: blur(10px);
@@ -412,7 +412,7 @@
     }
     .btn-copy:hover{ background:#1a4fbb; transform: scale(1.01); }
 
-    /* ===== BOTÓN DE COMPARTIR WHATSAPP (CORREGIDO PARA iOS) ===== */
+    /* ===== BOTÓN DE COMPARTIR WHATSAPP ===== */
     .btn-whatsapp-share{
       background:#25D366;
       color:#0a0c12;
@@ -427,7 +427,7 @@
       margin-top: 10px;
       border: 1px solid rgba(255,255,255,0.3);
       transition:0.15s;
-      cursor: pointer; /* Asegura que se vea como clickeable */
+      cursor: pointer;
     }
     .btn-whatsapp-share:hover{ transform: scale(1.01); filter: brightness(1.03); }
 
@@ -456,7 +456,7 @@
       margin-top: 6px;
     }
 
-    /* ===== MODO CLIENTE (CUANDO SE ACCEDE CON UN CÓDIGO) ===== */
+    /* ===== MODO CLIENTE ===== */
     .client-shell{ width:100%; display:none; flex:1; }
     .client-card{
       background: var(--bg-card);
@@ -535,7 +535,7 @@
       width:100%;
     }
 
-    /* ===== MODAL WHATSAPP (PARA PC) ===== */
+    /* ===== MODAL WHATSAPP (PC) ===== */
     .share-modal{
       position: fixed;
       inset: 0;
@@ -641,7 +641,7 @@
       text-align: center;
     }
 
-    /* ===== NOTIFICACIÓN DE COPIADO (COPIADO ✅) ===== */
+    /* ===== NOTIFICACIÓN DE COPIADO ===== */
     .copy-notification {
       position: fixed;
       bottom: 20px;
@@ -666,7 +666,11 @@
       to { opacity: 0; visibility: hidden; }
     }
 
-    /* ===== RESPONSIVE ===== */
+    /* ===== CLASE PARA OCULTAR ELEMENTOS EN MODO CLIENTE ===== */
+    .modo-cliente .landing-only {
+      display: none !important;
+    }
+
     @media (max-width: 500px){
       .input-group{ flex-direction:column; }
       .input-group button{ padding:18px; }
@@ -682,10 +686,9 @@
     }
   </style>
 </head>
-
 <body>
 
-  <!-- HEADER CON LOGO MEJORADO -->
+  <!-- HEADER CON LOGO (SIEMPRE VISIBLE) -->
   <div class="top-bar" id="headerGlobal">
     <div class="container">
       <div class="logo-container">
@@ -700,100 +703,103 @@
     </div>
   </div>
 
-  <!-- BOTON CTA PRINCIPAL -->
-  <div id="ctaSolicitar" class="container">
-    <div class="cta-section">
-      <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507."
-         class="btn-solicitar">
-        <i class="fab fa-whatsapp"></i> SOLICITAR MI DIRECCIÓN DIGITAL
-      </a>
-    </div>
-  </div>
-
-  <!-- SECCIÓN: ¿CÓMO FUNCIONA? -->
-  <div class="container" id="seccionPasos">
-    <h2 class="section-title">¿Cómo funciona?</h2>
-    <div class="section-sub">Tu dirección digital en 4 simples pasos</div>
-    <div class="steps-grid">
-      <div class="step-card">
-        <div class="step-icon"><i class="fas fa-code"></i></div>
-        <h3>Creamos tu código AD507</h3>
-        <p>Te asignamos un código único vinculado a tu ubicación exacta.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-icon"><i class="fas fa-map-marked-alt"></i></div>
-        <h3>Integramos Maps y Waze</h3>
-        <p>Conectamos con las principales apps de navegación.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-icon"><i class="fas fa-qrcode"></i></div>
-        <h3>Recibes QR y enlace</h3>
-        <p>Listo para compartir con clientes o visitas.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-icon"><i class="fas fa-share-alt"></i></div>
-        <h3>Compartes en 1 clic</h3>
-        <p>WhatsApp, email o redes sociales fácilmente.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECCIÓN: PRECIOS -->
-  <div class="container" id="seccionPrecios">
-    <h2 class="section-title">Precios</h2>
-    <div class="section-sub">Precio fundador · Pago único</div>
-
-    <div class="pricing-grid">
-      <!-- TARJETA PERSONAL -->
-      <div class="price-card">
-        <h3>Personal</h3>
-        <div class="price-amount">$6.99 <small>USD</small></div>
-        <ul class="features-list">
-          <li><i class="fas fa-check-circle"></i> Dirección digital con QR</li>
-          <li><i class="fas fa-check-circle"></i> Enlace personalizado</li>
-          <li><i class="fas fa-check-circle"></i> Código AD507 único</li>
-          <li><i class="fas fa-check-circle"></i> Soporte básico</li>
-        </ul>
-        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20PERSONAL%20($6.99)%20en%20Direcciones507."
-           class="btn-card">
-          <i class="fab fa-whatsapp"></i> Solicitar ahora
-        </a>
-      </div>
-
-      <!-- TARJETA NEGOCIOS (POPULAR) -->
-      <div class="price-card popular">
-        <span class="price-badge"><i class="fas fa-star"></i> MÁS ELEGIDO</span>
-        <h3>Negocios</h3>
-        <div class="price-amount">$10.99 <small>USD</small></div>
-        <ul class="features-list">
-          <li><i class="fas fa-check-circle"></i> Todo lo de Personal</li>
-          <li><i class="fas fa-check-circle"></i> Integración Maps + Waze</li>
-          <li><i class="fas fa-check-circle"></i> QR profesional con logo</li>
-          <li><i class="fas fa-check-circle"></i> Página pública personalizada</li>
-        </ul>
-        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20de%20NEGOCIO%20($10.99)%20en%20Direcciones507."
-           class="btn-card">
-          <i class="fab fa-whatsapp"></i> Activar para mi negocio
+  <!-- ===== CONTENIDO EXCLUSIVO DE LA LANDING (SE OCULTA EN MODO CLIENTE) ===== -->
+  <div class="landing-only">
+    <!-- BOTON CTA PRINCIPAL -->
+    <div id="ctaSolicitar" class="container">
+      <div class="cta-section">
+        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507."
+           class="btn-solicitar">
+          <i class="fab fa-whatsapp"></i> SOLICITAR MI DIRECCIÓN DIGITAL
         </a>
       </div>
     </div>
-  </div>
 
-  <!-- SECCIÓN: BUSCADOR (INGRESA TU CÓDIGO) -->
-  <div class="container" id="seccionBuscador">
-    <div class="search-card">
-      <span class="search-label"><i class="fas fa-qrcode"></i> Ingresa tu código AD507</span>
-      <div class="input-group">
-        <input type="text" id="codigo" placeholder="Ej: AD507-12345" autocomplete="off" />
-        <button type="button" onclick="buscarLanding()"><i class="fas fa-search"></i> Buscar dirección</button>
+    <!-- SECCIÓN: ¿CÓMO FUNCIONA? -->
+    <div class="container" id="seccionPasos">
+      <h2 class="section-title">¿Cómo funciona?</h2>
+      <div class="section-sub">Tu dirección digital en 4 simples pasos</div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-icon"><i class="fas fa-code"></i></div>
+          <h3>Creamos tu código AD507</h3>
+          <p>Te asignamos un código único vinculado a tu ubicación exacta.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon"><i class="fas fa-map-marked-alt"></i></div>
+          <h3>Integramos Maps y Waze</h3>
+          <p>Conectamos con las principales apps de navegación.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon"><i class="fas fa-qrcode"></i></div>
+          <h3>Recibes QR y enlace</h3>
+          <p>Listo para compartir con clientes o visitas.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-icon"><i class="fas fa-share-alt"></i></div>
+          <h3>Compartes en 1 clic</h3>
+          <p>WhatsApp, email o redes sociales fácilmente.</p>
+        </div>
       </div>
+    </div>
 
-      <!-- AQUÍ SE MUESTRAN LOS RESULTADOS DE LA BÚSQUEDA -->
-      <div id="resultado" class="result-container"></div>
+    <!-- SECCIÓN: PRECIOS -->
+    <div class="container" id="seccionPrecios">
+      <h2 class="section-title">Precios</h2>
+      <div class="section-sub">Precio fundador · Pago único</div>
+
+      <div class="pricing-grid">
+        <!-- TARJETA PERSONAL -->
+        <div class="price-card">
+          <h3>Personal</h3>
+          <div class="price-amount">$6.99 <small>USD</small></div>
+          <ul class="features-list">
+            <li><i class="fas fa-check-circle"></i> Dirección digital con QR</li>
+            <li><i class="fas fa-check-circle"></i> Enlace personalizado</li>
+            <li><i class="fas fa-check-circle"></i> Código AD507 único</li>
+            <li><i class="fas fa-check-circle"></i> Soporte básico</li>
+          </ul>
+          <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20PERSONAL%20($6.99)%20en%20Direcciones507."
+             class="btn-card">
+            <i class="fab fa-whatsapp"></i> Solicitar ahora
+          </a>
+        </div>
+
+        <!-- TARJETA NEGOCIOS (POPULAR) -->
+        <div class="price-card popular">
+          <span class="price-badge"><i class="fas fa-star"></i> MÁS ELEGIDO</span>
+          <h3>Negocios</h3>
+          <div class="price-amount">$10.99 <small>USD</small></div>
+          <ul class="features-list">
+            <li><i class="fas fa-check-circle"></i> Todo lo de Personal</li>
+            <li><i class="fas fa-check-circle"></i> Integración Maps + Waze</li>
+            <li><i class="fas fa-check-circle"></i> QR profesional con logo</li>
+            <li><i class="fas fa-check-circle"></i> Página pública personalizada</li>
+          </ul>
+          <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20de%20NEGOCIO%20($10.99)%20en%20Direcciones507."
+             class="btn-card">
+            <i class="fab fa-whatsapp"></i> Activar para mi negocio
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: BUSCADOR (INGRESA TU CÓDIGO) -->
+    <div class="container" id="seccionBuscador">
+      <div class="search-card">
+        <span class="search-label"><i class="fas fa-qrcode"></i> Ingresa tu código AD507</span>
+        <div class="input-group">
+          <input type="text" id="codigo" placeholder="Ej: AD507-12345" autocomplete="off" />
+          <button type="button" onclick="buscarLanding()"><i class="fas fa-search"></i> Buscar dirección</button>
+        </div>
+
+        <!-- AQUÍ SE MUESTRAN LOS RESULTADOS DE LA BÚSQUEDA -->
+        <div id="resultado" class="result-container"></div>
+      </div>
     </div>
   </div>
 
-  <!-- MODO CLIENTE (CUANDO SE ACCEDE CON UN CÓDIGO, EJ: direcciones507.com/AD507-XXXXX) -->
+  <!-- MODO CLIENTE (SOLO ESTO SE VE CUANDO SE ACCEDE CON UN CÓDIGO) -->
   <div class="client-shell" id="clientShell">
     <div class="container">
       <div class="client-card">
@@ -804,7 +810,7 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
+  <!-- FOOTER (SIEMPRE VISIBLE) -->
   <footer class="footer" id="footerGlobal">
     <div class="footer-content">
       <div style="font-weight: 900; color: white; font-size: 1.2rem;">Direcciones507</div>
@@ -822,7 +828,7 @@
     </div>
   </footer>
 
-  <!-- MODAL PARA COMPARTIR POR WHATSAPP (PRINCIPALMENTE PARA PC) -->
+  <!-- MODAL PARA COMPARTIR POR WHATSAPP -->
   <div class="share-modal" id="shareModal" aria-hidden="true">
     <div class="share-card" role="dialog" aria-modal="true" aria-label="Compartir por WhatsApp">
       <div class="share-head">
@@ -856,15 +862,13 @@
 
   <script>
     // =========================
-    // CONFIGURACIÓN (TU API DE GOOGLE APPS SCRIPT)
+    // CONFIGURACIÓN
     // =========================
     const API_URL = "https://script.google.com/macros/s/AKfycbwopyb0Cp5V2QyBUhmmOjkp1j9884W0RTy9068GjJYpPShKw95b4JllidryNfUPuaiAPg/exec";
 
     // =========================
     // FUNCIONES UTILITARIAS
     // =========================
-
-    // Función para mostrar notificación de "Copiado ✅"
     function mostrarNotificacion(mensaje = "Copiado ✅") {
       const notif = document.createElement('div');
       notif.className = 'copy-notification';
@@ -873,13 +877,11 @@
       setTimeout(() => notif.remove(), 2000);
     }
 
-    // Función para copiar texto al portapapeles (con notificación)
     async function copiarTexto(texto) {
       try {
         await navigator.clipboard.writeText(texto);
         mostrarNotificacion("✅ Copiado al portapapeles");
       } catch (err) {
-        // Fallback para navegadores antiguos
         const ta = document.createElement("textarea");
         ta.value = texto;
         document.body.appendChild(ta);
@@ -890,19 +892,16 @@
       }
     }
 
-    // Detectar si el dispositivo es iOS
     function esIOS() {
       return /iPhone|iPad|iPod/i.test(navigator.userAgent) || 
              (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     }
 
-    // Detectar si es dispositivo móvil (cualquier tipo)
     function esMovil() {
       return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
              (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     }
 
-    // Detectar si hay un código de cliente en la URL (para modo cliente)
     function detectarCodigoCliente() {
       const params = new URLSearchParams(window.location.search);
       const codeParam = (params.get("code") || "").trim().toUpperCase();
@@ -915,7 +914,6 @@
       return "";
     }
 
-    // Obtener nombre del cliente desde los datos
     function pickNombre(data) {
       return String(
         data?.nombre_cliente ??
@@ -926,7 +924,6 @@
       ).trim() || "Cliente";
     }
 
-    // Obtener referencia desde los datos
     function pickReferencia(data) {
       return String(
         data?.referencia ??
@@ -937,7 +934,6 @@
       ).trim();
     }
 
-    // Escapar texto para usarlo en HTML seguro (evita errores)
     function escapeJs(str) {
       return String(str || "")
         .replace(/\\/g, "\\\\")
@@ -946,55 +942,50 @@
         .replace(/\r/g, "");
     }
 
-    // Ocultar elementos de la landing cuando estamos en modo cliente
-    function ocultarLandingParaCliente() {
-      ["headerGlobal", "ctaSolicitar", "seccionPasos", "seccionPrecios", "seccionBuscador", "footerGlobal"]
-        .forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.style.display = "none";
-        });
+    // =========================
+    // FUNCIÓN PARA OCULTAR LANDING EN MODO CLIENTE (MEJORADA)
+    // =========================
+    function activarModoCliente() {
+      // Ocultar todo el contenido de landing
+      const landingElements = document.querySelectorAll('.landing-only');
+      landingElements.forEach(el => el.style.display = 'none');
+      
+      // Mostrar el shell del cliente
+      const shell = document.getElementById("clientShell");
+      if (shell) shell.style.display = "block";
     }
 
     // =========================
-    // FUNCIONES PARA COMPARTIR POR WHATSAPP (CORREGIDAS PARA iOS)
+    // FUNCIONES PARA COMPARTIR POR WHATSAPP
     // =========================
-
-    // Función principal para compartir por WhatsApp (funciona en iOS, Android y PC)
     async function compartirPorWhatsApp(mensaje) {
-      // Intento 1: Usar Web Share API (funciona bien en iOS con WhatsApp instalado)
       if (navigator.share && esMovil()) {
         try {
           await navigator.share({
             title: "Dirección Digital",
             text: mensaje,
           });
-          return; // Si funciona, terminamos aquí
+          return;
         } catch (error) {
-          // Si el usuario cancela o falla, continuamos con el siguiente método
           console.log("Web Share cancelado o falló, usando fallback");
         }
       }
 
-      // Intento 2: Para iOS (usa el esquema específico que mejor funciona)
       if (esIOS()) {
-        // En iOS, api.whatsapp.com funciona más confiable que wa.me
         const waIOS = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensaje);
         window.location.href = waIOS;
         return;
       }
 
-      // Intento 3: Para Android (wa.me funciona bien)
       if (esMovil()) {
         const wa = "https://wa.me/?text=" + encodeURIComponent(mensaje);
         window.open(wa, "_blank", "noopener");
         return;
       }
 
-      // Intento 4: Para PC (mostramos el modal)
       shareOpen(mensaje);
     }
 
-    // Funciones para el modal de PC
     function shareOpen(mensaje) {
       const modal = document.getElementById("shareModal");
       const ta = document.getElementById("shareText");
@@ -1023,12 +1014,10 @@
       await copiarTexto(ta.value);
     }
 
-    // Cerrar modal con ESC
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") shareClose();
     });
 
-    // Cerrar modal al hacer clic fuera
     document.addEventListener("click", (e) => {
       const modal = document.getElementById("shareModal");
       if (!modal) return;
@@ -1049,7 +1038,7 @@
     }
 
     // =========================
-    // RENDERIZADO DEL PANEL CORPORATIVO (CUANDO SE ENCUENTRA UN CÓDIGO)
+    // RENDERIZADO DEL PANEL CORPORATIVO
     // =========================
     function renderPanelCorporativo(data, codigo) {
       const nombre = pickNombre(data);
@@ -1059,7 +1048,6 @@
       const linkVerificacion = data?.qr_maps || "";
       const qrCliente = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(linkCliente);
 
-      // Mensaje para compartir por WhatsApp
       const mensajeShare =
         `Mi dirección digital (${codigo}) ✅\n` +
         `${linkCliente}`;
@@ -1120,7 +1108,6 @@
             <i class="fas fa-copy"></i> Copiar link del cliente
           </button>
 
-          <!-- BOTÓN DE WHATSAPP CORREGIDO (FUNCIONA EN iOS) -->
           <button class="btn-whatsapp-share" onclick="compartirPorWhatsApp('${escapeJs(mensajeShare)}')">
             <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
           </button>
@@ -1143,7 +1130,7 @@
     }
 
     // =========================
-    // FUNCIÓN PARA BUSCAR DESDE LA LANDING (INPUT)
+    // FUNCIÓN PARA BUSCAR DESDE LA LANDING
     // =========================
     async function buscarLanding() {
       const codigo = (document.getElementById("codigo")?.value || "").trim().toUpperCase();
@@ -1179,13 +1166,44 @@
     }
 
     // =========================
-    // INICIALIZACIÓN: MODO CLIENTE O LANDING
+    // INICIALIZACIÓN (CORREGIDA)
     // =========================
-    (function initModoCorporativo() {
+    (function init() {
       const codigoCliente = detectarCodigoCliente();
 
-      if (!codigoCliente) {
-        // Modo landing normal: si hay ?code= en URL, auto-buscar
+      if (codigoCliente) {
+        // === MODO CLIENTE: Ocultar landing y mostrar solo su información ===
+        activarModoCliente();
+
+        const sub = document.getElementById("clientSub");
+        if (sub) sub.textContent = "Cargando datos del cliente…";
+
+        const target = document.getElementById("clientResultado");
+        if (!target) return;
+
+        (async () => {
+          try {
+            const data = await fetchData(codigoCliente);
+
+            if (!data || !data.ok) {
+              target.innerHTML = renderError("Código no encontrado");
+              if (sub) sub.textContent = "Código: " + codigoCliente;
+              return;
+            }
+
+            const nombre = pickNombre(data);
+            const referencia = pickReferencia(data);
+            if (sub) sub.textContent = `${nombre} · ${codigoCliente}${referencia ? " · " + referencia : ""}`;
+
+            target.innerHTML = renderPanelCorporativo(data, codigoCliente);
+          } catch (e) {
+            target.innerHTML = renderError("Error cargando enlaces. Intenta más tarde.");
+            if (sub) sub.textContent = "Código: " + codigoCliente;
+          }
+        })();
+      } else {
+        // === MODO LANDING NORMAL ===
+        // Si hay ?code= en URL, auto-buscar
         const params = new URLSearchParams(window.location.search);
         const codeParam = (params.get("code") || "").trim();
         if (codeParam) {
@@ -1193,44 +1211,10 @@
           if (input) input.value = codeParam;
           buscarLanding();
         }
-        return;
       }
-
-      // Modo cliente: ocultar landing, mostrar shell corporativo
-      ocultarLandingParaCliente();
-
-      const shell = document.getElementById("clientShell");
-      if (shell) shell.style.display = "block";
-
-      const sub = document.getElementById("clientSub");
-      if (sub) sub.textContent = "Cargando datos del cliente…";
-
-      const target = document.getElementById("clientResultado");
-      if (!target) return;
-
-      (async () => {
-        try {
-          const data = await fetchData(codigoCliente);
-
-          if (!data || !data.ok) {
-            target.innerHTML = renderError("Código no encontrado");
-            if (sub) sub.textContent = "Código: " + codigoCliente;
-            return;
-          }
-
-          const nombre = pickNombre(data);
-          const referencia = pickReferencia(data);
-          if (sub) sub.textContent = `${nombre} · ${codigoCliente}${referencia ? " · " + referencia : ""}`;
-
-          target.innerHTML = renderPanelCorporativo(data, codigoCliente);
-        } catch (e) {
-          target.innerHTML = renderError("Error cargando enlaces. Intenta más tarde.");
-          if (sub) sub.textContent = "Código: " + codigoCliente;
-        }
-      })();
     })();
 
-    // Exponer funciones globalmente para que funcionen los onclick
+    // Exponer funciones globalmente
     window.buscarLanding = buscarLanding;
     window.copiarTexto = copiarTexto;
     window.compartirPorWhatsApp = compartirPorWhatsApp;

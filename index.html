@@ -500,84 +500,117 @@
       width:100%;
     }
 
-    /* ===== POPUP PRO (sin alerts) ===== */
-    .toast{
+    /* ===== MODAL WHATSAPP (PC) ===== */
+    .share-modal{
       position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(10,15,30,0.92);
-      border: 1px solid rgba(255,255,255,0.10);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.45);
-      border-radius: 18px;
-      padding: 14px 16px;
-      max-width: 560px;
-      width: calc(100% - 24px);
+      inset: 0;
+      background: rgba(0,0,0,0.55);
       display: none;
-      z-index: 9999;
-      backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 18px;
+      backdrop-filter: blur(6px);
     }
-    .toast.show{ display: block; animation: toastIn .22s ease; }
-    @keyframes toastIn{ from{ opacity:0; transform: translateX(-50%) translateY(10px);} to{ opacity:1; transform: translateX(-50%) translateY(0);} }
-    .toast-row{
+    .share-modal.show{ display:flex; }
+
+    .share-card{
+      width: 100%;
+      max-width: 680px;
+      background: rgba(10, 15, 30, 0.92);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 24px;
+      box-shadow: 0 22px 60px rgba(0,0,0,0.55);
+      padding: 16px;
+    }
+
+    .share-head{
       display:flex;
       align-items:flex-start;
       gap:12px;
+      margin-bottom: 12px;
     }
-    .toast-ic{
-      width:38px; height:38px;
-      border-radius: 14px;
-      display:flex; align-items:center; justify-content:center;
-      background: rgba(45,122,255,0.15);
-      color: var(--accent-blue);
+    .share-ic{
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(37,211,102,0.16);
+      border: 1px solid rgba(37,211,102,0.30);
+      color: #d8ffe8;
+      font-size: 1.2rem;
       flex: 0 0 auto;
-      font-size: 1.1rem;
-      border: 1px solid rgba(45,122,255,0.25);
     }
-    .toast-title{
+    .share-title{
       font-weight: 950;
-      margin-bottom: 2px;
       letter-spacing: -0.2px;
     }
-    .toast-text{
+    .share-sub{
       color: var(--text-secondary);
       font-size: 0.95rem;
-      line-height: 1.35;
+      margin-top: 2px;
     }
-    .toast-actions{
+    .share-close{
+      margin-left:auto;
+      border:none;
+      background: transparent;
+      color: rgba(255,255,255,0.75);
+      cursor:pointer;
+      font-size: 1.1rem;
+      padding: 6px 8px;
+    }
+
+    .share-text{
+      width: 100%;
+      min-height: 140px;
+      resize: none;
+      background: #0c0f1a;
+      color: #b9c8f0;
+      border: 1px solid #252b40;
+      border-radius: 18px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 0.98rem;
+      outline: none;
+    }
+
+    .share-actions{
       display:flex;
       gap:10px;
-      margin-top:10px;
+      margin-top: 12px;
       flex-wrap: wrap;
     }
-    .toast-btn{
+    .share-btn{
+      flex: 1;
+      min-width: 220px;
       border: 1px solid rgba(255,255,255,0.18);
       background: rgba(255,255,255,0.06);
       color: white;
-      padding: 10px 14px;
-      border-radius: 14px;
-      font-weight: 900;
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-weight: 950;
       cursor: pointer;
       text-decoration:none;
       display:inline-flex;
       align-items:center;
-      gap:8px;
+      justify-content:center;
+      gap:10px;
       transition: .15s;
     }
-    .toast-btn:hover{ transform: scale(1.01); background: rgba(255,255,255,0.10); }
-    .toast-btn.green{
+    .share-btn:hover{ transform: scale(1.01); background: rgba(255,255,255,0.10); }
+    .share-btn.green{
       background: rgba(37,211,102,0.18);
       border-color: rgba(37,211,102,0.35);
       color: #d8ffe8;
     }
-    .toast-close{
-      margin-left:auto;
-      border:none;
-      background: transparent;
-      color: rgba(255,255,255,0.7);
-      cursor:pointer;
-      font-size: 1.1rem;
-      padding: 6px 8px;
+
+    .share-hint{
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      text-align: center;
     }
 
     @media (max-width: 500px){
@@ -618,7 +651,6 @@
   <div class="container" id="seccionPasos">
     <h2 class="section-title">¿Cómo funciona?</h2>
     <div class="section-sub">Tu dirección digital en 4 simples pasos</div>
-
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-icon"><i class="fas fa-code"></i></div>
@@ -724,16 +756,35 @@
     </div>
   </footer>
 
-  <!-- POPUP PRO -->
-  <div class="toast" id="toast">
-    <div class="toast-row">
-      <div class="toast-ic"><i class="fab fa-whatsapp"></i></div>
-      <div style="flex:1;">
-        <div class="toast-title" id="toastTitle">Listo</div>
-        <div class="toast-text" id="toastText">Mensaje copiado.</div>
-        <div class="toast-actions" id="toastActions"></div>
+  <!-- MODAL COMPARTIR WHATSAPP (PC) -->
+  <div class="share-modal" id="shareModal" aria-hidden="true">
+    <div class="share-card" role="dialog" aria-modal="true" aria-label="Compartir por WhatsApp">
+      <div class="share-head">
+        <div class="share-ic"><i class="fab fa-whatsapp"></i></div>
+        <div>
+          <div class="share-title">Enviar por WhatsApp</div>
+          <div class="share-sub">Copia el mensaje y pégalo en WhatsApp Web.</div>
+        </div>
+        <button class="share-close" type="button" onclick="shareClose()" aria-label="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      <button class="toast-close" onclick="toastHide()" aria-label="Cerrar"><i class="fas fa-times"></i></button>
+
+      <textarea id="shareText" class="share-text" readonly></textarea>
+
+      <div class="share-actions">
+        <button class="share-btn" type="button" onclick="shareCopy()">
+          <i class="fas fa-copy"></i> Copiar mensaje
+        </button>
+
+        <a class="share-btn green" id="shareOpenWa" href="https://web.whatsapp.com/" target="_blank" rel="noopener">
+          <i class="fab fa-whatsapp"></i> Abrir WhatsApp Web
+        </a>
+      </div>
+
+      <div class="share-hint">
+        Tip: En WhatsApp Web, elige el contacto y pega con <strong>CTRL+V</strong>, luego envía.
+      </div>
     </div>
   </div>
 
@@ -742,29 +793,6 @@
     // CONFIG (tu Apps Script)
     // =========================
     const API_URL = "https://script.google.com/macros/s/AKfycbwopyb0Cp5V2QyBUhmmOjkp1j9884W0RTy9068GjJYpPShKw95b4JllidryNfUPuaiAPg/exec";
-
-    // =========================
-    // TOAST PRO
-    // =========================
-    let toastTimer = null;
-
-    function toastShow(title, text, actionsHtml) {
-      const t = document.getElementById("toast");
-      document.getElementById("toastTitle").textContent = title || "Listo";
-      document.getElementById("toastText").textContent = text || "";
-      document.getElementById("toastActions").innerHTML = actionsHtml || "";
-      t.classList.add("show");
-
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toastHide(), 9000);
-    }
-
-    function toastHide() {
-      const t = document.getElementById("toast");
-      t.classList.remove("show");
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = null;
-    }
 
     // =========================
     // UTILIDADES
@@ -796,7 +824,6 @@
     async function copiarTexto(texto) {
       try {
         await navigator.clipboard.writeText(texto);
-        toastShow("Copiado ✅", "Ya está en tu portapapeles.", "");
       } catch {
         const ta = document.createElement("textarea");
         ta.value = texto;
@@ -804,12 +831,10 @@
         ta.select();
         document.execCommand("copy");
         ta.remove();
-        toastShow("Copiado ✅", "Ya está en tu portapapeles.", "");
       }
     }
 
     function ocultarLandingParaCliente() {
-      // Ocultar landing completa + header (app mode)
       ["headerGlobal","ctaSolicitar","seccionPasos","seccionPrecios","seccionBuscador","footerGlobal"]
         .forEach(id => {
           const el = document.getElementById(id);
@@ -849,40 +874,70 @@
       return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
 
-    async function compartirPorWhatsApp(mensaje) {
-      const waLink = "https://wa.me/?text=" + encodeURIComponent(mensaje);
-
-      // En móvil: abre WhatsApp con mensaje listo (cliente elige contacto)
-      if (esMovil()) {
-        window.open(waLink, "_blank", "noopener");
-        return;
-      }
-
-      // En PC: copiamos y abrimos WhatsApp Web (no hay selector automático sin número)
-      await copiarTexto(mensaje);
-
-      const actions = `
-        <a class="toast-btn green" href="https://web.whatsapp.com/" target="_blank" rel="noopener">
-          <i class="fab fa-whatsapp"></i> Abrir WhatsApp Web
-        </a>
-        <button class="toast-btn" onclick="toastHide()">
-          <i class="fas fa-check"></i> Entendido
-        </button>
-      `;
-
-      toastShow(
-        "Mensaje listo para enviar ✅",
-        "Abrimos WhatsApp Web. Solo pega el mensaje (CTRL+V) y envíalo a tu contacto.",
-        actions
-      );
-
-      window.open("https://web.whatsapp.com/", "_blank", "noopener");
-    }
-
     async function fetchData(codigo) {
       const res = await fetch(API_URL + "?code=" + encodeURIComponent(codigo));
       return await res.json();
     }
+
+    // =========================
+    // MODAL COMPARTIR (PC)
+    // =========================
+    function shareOpen(message) {
+      const modal = document.getElementById("shareModal");
+      const ta = document.getElementById("shareText");
+      if (!modal || !ta) return;
+
+      ta.value = message;
+
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+
+      // Selecciona el texto para facilitar copiar
+      setTimeout(() => {
+        ta.focus();
+        ta.select();
+      }, 50);
+    }
+
+    function shareClose() {
+      const modal = document.getElementById("shareModal");
+      if (!modal) return;
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    async function shareCopy() {
+      const ta = document.getElementById("shareText");
+      if (!ta) return;
+      await copiarTexto(ta.value);
+      // feedback simple sin alerts
+      const btns = document.querySelectorAll(".share-btn");
+      btns.forEach(b => b.style.transform = "scale(1)");
+    }
+
+    function compartirPorWhatsApp(mensaje) {
+      const waMobile = "https://wa.me/?text=" + encodeURIComponent(mensaje);
+
+      // 📱 Móvil: WhatsApp abre con mensaje listo (cliente elige contacto)
+      if (esMovil()) {
+        window.open(waMobile, "_blank", "noopener");
+        return;
+      }
+
+      // 💻 PC: Abrimos modal con mensaje + copiar + abrir WhatsApp Web
+      // Nota: WhatsApp Web no permite selector automático sin número.
+      shareOpen(mensaje);
+    }
+
+    // cerrar modal con ESC y click fuera
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") shareClose();
+    });
+    document.addEventListener("click", (e) => {
+      const modal = document.getElementById("shareModal");
+      if (!modal) return;
+      if (modal.classList.contains("show") && e.target === modal) shareClose();
+    });
 
     // =========================
     // RENDER CORPORATIVO
@@ -903,7 +958,6 @@
       const mask = "••••••••••••••••••••••••••";
 
       return `
-        <!-- IDENTIFICACIÓN -->
         <div class="info-box" style="margin-top:0;">
           <div class="info-title"><i class="fas fa-id-card"></i> Identificación</div>
 
@@ -920,7 +974,6 @@
           ` : ``}
         </div>
 
-        <!-- BOTONES -->
         <div class="links-grid">
           <a class="map-link maps" href="${data.google_maps}" target="_blank" rel="noopener">
             <i class="fab fa-google"></i> Abrir Google Maps
@@ -936,7 +989,6 @@
           </a>
         </div>
 
-        <!-- VERIFICACIÓN PARA IMPRIMIR (oculto) -->
         <div class="info-box">
           <div class="info-title"><i class="fas fa-print"></i> Link de verificación para imprimir</div>
           <div class="masked-line" aria-label="enlace oculto">
@@ -948,7 +1000,6 @@
           </button>
         </div>
 
-        <!-- LINK DEL CLIENTE (oculto) -->
         <div class="info-box">
           <div class="info-title"><i class="fas fa-user"></i> Link del cliente</div>
           <div class="masked-line" aria-label="enlace oculto">
@@ -965,7 +1016,6 @@
           </a>
         </div>
 
-        <!-- QR PARA COMPARTIR -->
         <div class="qr-box">
           <div class="info-title" style="justify-content:center;"><i class="fas fa-qrcode"></i> QR para compartir</div>
           <img src="${qrCliente}" alt="QR de la dirección" />
@@ -988,7 +1038,7 @@
     async function buscarLanding() {
       const codigo = (document.getElementById("codigo")?.value || "").trim().toUpperCase();
       if (!codigo) {
-        toastShow("Falta el código", "Ingresa un código AD507 válido.", "");
+        alert("Ingresa un código AD507 válido");
         return;
       }
 

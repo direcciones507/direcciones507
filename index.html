@@ -1,22 +1,20 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Direcciones507 · Sistema Digital de Direcciones Panamá</title>
-  <!-- Font Awesome 6 (iconos profesionales) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Google Fonts: Inter y Outfit para aspecto moderno -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
   <style>
-    /* ===== RESET Y VARIABLES ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
       --bg-primary: #0a0c12;
@@ -25,9 +23,6 @@
       --bg-input: #22263b;
       --accent-green: #16c47f;
       --accent-blue: #2d7aff;
-      --accent-waze: #3b82f6;
-      --accent-uber: #000000;
-      --accent-whats: #25D366;
       --text-primary: #ffffff;
       --text-secondary: #a8b3cf;
       --border-dim: rgba(255,255,255,0.08);
@@ -51,7 +46,7 @@
       width: 100%;
     }
 
-    /* ===== HEADER PROFESIONAL ===== */
+    /* Header */
     .top-bar {
       background: var(--bg-secondary);
       padding: 20px 0;
@@ -92,7 +87,7 @@
       margin-top: 5px;
     }
 
-    /* ===== BOTON SOLICITAR - CENTRADO ===== */
+    /* CTA */
     .cta-section {
       text-align: center;
       margin: 30px 0 20px;
@@ -120,17 +115,14 @@
       letter-spacing: -0.2px;
     }
 
-    .btn-solicitar i {
-      font-size: 1.8rem;
-    }
-
+    .btn-solicitar i { font-size: 1.8rem; }
     .btn-solicitar:hover {
       transform: scale(1.02);
       background: linear-gradient(145deg, #22c55e, #15803d);
       box-shadow: 0 15px 25px -5px #14532d80;
     }
 
-    /* ===== SECCION COMO FUNCIONA ===== */
+    /* Sections */
     .section-title {
       font-size: 2.2rem;
       font-weight: 700;
@@ -189,11 +181,9 @@
       font-weight: 700;
     }
 
-    .step-card p {
-      color: var(--text-secondary);
-    }
+    .step-card p { color: var(--text-secondary); }
 
-    /* ===== SECCION PRECIOS ===== */
+    /* Pricing */
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -230,11 +220,7 @@
       margin-bottom: 1rem;
     }
 
-    .price-card h3 {
-      font-size: 1.9rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-    }
+    .price-card h3 { font-size: 1.9rem; font-weight: 700; margin-bottom: 0.25rem; }
 
     .price-amount {
       font-size: 2.8rem;
@@ -244,18 +230,9 @@
       margin: 1rem 0 0.8rem;
     }
 
-    .price-amount small {
-      font-size: 1.2rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
+    .price-amount small { font-size: 1.2rem; font-weight: 500; color: var(--text-secondary); }
 
-    .features-list {
-      list-style: none;
-      margin: 1.5rem 0 2rem;
-      flex: 1;
-    }
-
+    .features-list { list-style: none; margin: 1.5rem 0 2rem; flex: 1; }
     .features-list li {
       padding: 0.45rem 0;
       border-bottom: 1px solid var(--border-dim);
@@ -264,12 +241,7 @@
       gap: 0.6rem;
       color: var(--text-secondary);
     }
-
-    .features-list i {
-      color: var(--accent-blue);
-      width: 1.4rem;
-      font-size: 1.1rem;
-    }
+    .features-list i { color: var(--accent-blue); width: 1.4rem; font-size: 1.1rem; }
 
     .btn-card {
       background: var(--accent-blue);
@@ -286,13 +258,9 @@
       margin-top: 0.5rem;
       border: 1px solid rgba(255,255,255,0.2);
     }
+    .btn-card:hover { background: #1a4fbb; transform: scale(1.02); }
 
-    .btn-card:hover {
-      background: #1a4fbb;
-      transform: scale(1.02);
-    }
-
-    /* ===== TARJETA PRINCIPAL (INPUT) ===== */
+    /* Search */
     .search-card {
       background: var(--bg-card);
       border-radius: 32px;
@@ -313,12 +281,7 @@
       letter-spacing: 0.3px;
     }
 
-    .input-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
+    .input-group { display: flex; gap: 12px; flex-wrap: wrap; }
     .input-group input {
       flex: 1;
       min-width: 200px;
@@ -333,13 +296,11 @@
       transition: 0.15s;
       border: 2px solid rgba(255,255,255,0.05);
     }
-
     .input-group input:focus {
       outline: none;
       border-color: var(--accent-blue);
       background: #1f2542;
     }
-
     .input-group button {
       background: white;
       border: none;
@@ -355,33 +316,14 @@
       transition: 0.15s;
       border: 2px solid transparent;
     }
+    .input-group button i { font-size: 1.2rem; }
+    .input-group button:hover { background: #e0e7ff; transform: scale(1.02); }
 
-    .input-group button i {
-      font-size: 1.2rem;
-    }
+    /* Result / Links */
+    .result-container { margin-top: 30px; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .input-group button:hover {
-      background: #e0e7ff;
-      transform: scale(1.02);
-    }
-
-    /* ===== RESULTADOS ===== */
-    .result-container {
-      margin-top: 30px;
-      animation: fadeIn 0.4s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .links-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin: 25px 0;
-    }
+    .links-grid { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; }
 
     .map-link {
       display: flex;
@@ -392,118 +334,64 @@
       border-radius: 20px;
       text-decoration: none;
       color: white;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 1.1rem;
       border: 1px solid rgba(255,255,255,0.08);
       transition: 0.15s;
       backdrop-filter: blur(5px);
     }
 
-    .map-link i {
-      font-size: 1.8rem;
-      width: 32px;
-      text-align: center;
-    }
-
-    .map-link:hover {
-      background: rgba(255,255,255,0.1);
-      transform: translateX(5px);
-      border-color: rgba(255,255,255,0.2);
-    }
+    .map-link i { font-size: 1.8rem; width: 32px; text-align: center; }
+    .map-link:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); border-color: rgba(255,255,255,0.2); }
 
     .map-link.maps { background: rgba(22, 163, 74, 0.15); border-left: 5px solid #16a34a; }
     .map-link.waze { background: rgba(59, 130, 246, 0.15); border-left: 5px solid #3b82f6; }
     .map-link.uber { background: rgba(0, 0, 0, 0.4); border-left: 5px solid #555; }
     .map-link.whats { background: rgba(37, 211, 102, 0.15); border-left: 5px solid #25D366; }
 
-    /* cajas de informacion */
-    .info-box {
-      background: rgba(10, 15, 30, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 22px;
-      margin: 24px 0;
-    }
-
-    .info-title {
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
-      color: #8b9bb9;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .info-content {
-      background: #0c0f1a;
-      padding: 18px;
-      border-radius: 18px;
-      font-family: monospace;
-      word-break: break-all;
-      color: #b9c8f0;
-      border: 1px solid #252b40;
-      margin: 15px 0;
-      font-size: 0.95rem;
-    }
-
-    .btn-copy {
-      background: var(--accent-blue);
-      color: white;
-      border: none;
-      border-radius: 60px;
-      padding: 14px 22px;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+    /* Ultra client wrapper */
+    .client-shell {
       width: 100%;
-      transition: 0.15s;
-      border: 1px solid rgba(255,255,255,0.2);
+      display: none; /* solo se muestra en modo ultra */
+      flex: 1;
     }
-
-    .btn-copy:hover {
-      background: #1a4fbb;
+    .client-card {
+      background: var(--bg-card);
+      border-radius: 32px;
+      padding: 28px;
+      box-shadow: var(--glow);
+      border: 1px solid rgba(255,255,255,0.06);
+      margin: 28px auto 40px;
+      max-width: 720px;
     }
-
-    .btn-whatsapp-share {
-      background: #25D366;
-      color: #111;
-      font-weight: 700;
+    .client-title {
+      text-align: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+    .client-sub {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 18px;
+    }
+    .client-error {
+      background: rgba(255, 77, 77, 0.12);
+      border: 1px solid rgba(255, 77, 77, 0.35);
+      border-radius: 18px;
       padding: 16px;
-      border-radius: 60px;
-      text-decoration: none;
+      color: #ffb3b3;
+      font-weight: 600;
       display: flex;
+      gap: 10px;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      margin-top: 15px;
-      border: 1px solid rgba(255,255,255,0.3);
+      margin-top: 12px;
     }
 
-    .qr-box {
-      text-align: center;
-      background: #0f1322;
-      border-radius: 28px;
-      padding: 28px;
-      margin: 25px 0;
-    }
-
-    .qr-box img {
-      background: white;
-      padding: 10px;
-      border-radius: 24px;
-      max-width: 180px;
-      margin: 15px auto;
-    }
-
-    /* ===== FOOTER REDISEÑADO ===== */
+    /* Footer */
     .footer {
       margin-top: 60px;
       background: #070a13;
@@ -542,11 +430,7 @@
       border: 1px solid #2d3555;
     }
 
-    .social-links a:hover {
-      background: var(--accent-blue);
-      color: white;
-      transform: translateY(-3px);
-    }
+    .social-links a:hover { background: var(--accent-blue); color: white; transform: translateY(-3px); }
 
     .footer-copy {
       color: #5b6a8c;
@@ -557,10 +441,7 @@
       width: 100%;
     }
 
-    /* ocultar cta en pagina de cliente */
-    .hidden-cta { display: none !important; }
-
-    /* responsive */
+    /* Responsive */
     @media (max-width: 500px) {
       .input-group { flex-direction: column; }
       .input-group button { padding: 18px; }
@@ -568,12 +449,13 @@
       .steps-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
       .price-card.popular { transform: scale(1); }
+      .client-card { margin: 18px 0 26px; padding: 22px; }
     }
   </style>
 </head>
-<body>
 
-  <!-- HEADER PROFESIONAL -->
+<body>
+  <!-- HEADER -->
   <div class="top-bar">
     <div class="container logo-area">
       <div class="logo-main">DIRECCIONES507</div>
@@ -581,20 +463,21 @@
     </div>
   </div>
 
-  <!-- BOTON SOLICITAR - AHORA CENTRADO -->
+  <!-- CTA SOLICITAR (solo landing normal) -->
   <div id="ctaSolicitar" class="container">
     <div class="cta-section">
-      <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507." class="btn-solicitar">
+      <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507."
+         class="btn-solicitar">
         <i class="fab fa-whatsapp"></i> SOLICITAR MI DIRECCIÓN DIGITAL
       </a>
     </div>
   </div>
 
-  <!-- SECCIÓN: CÓMO FUNCIONA (del primer código) -->
-  <div class="container">
+  <!-- COMO FUNCIONA -->
+  <div class="container" id="seccionPasos">
     <h2 class="section-title">¿Cómo funciona?</h2>
     <div class="section-sub">Tu dirección digital en 4 simples pasos</div>
-    
+
     <div class="steps-grid">
       <div class="step-card">
         <div class="step-icon"><i class="fas fa-code"></i></div>
@@ -619,13 +502,12 @@
     </div>
   </div>
 
-  <!-- SECCIÓN: PRECIOS (del primer código) -->
-  <div class="container">
+  <!-- PRECIOS -->
+  <div class="container" id="seccionPrecios">
     <h2 class="section-title">Precios</h2>
     <div class="section-sub">Precio fundador · Pago único</div>
 
     <div class="pricing-grid">
-      <!-- Personal card -->
       <div class="price-card">
         <h3>Personal</h3>
         <div class="price-amount">$6.99 <small>USD</small></div>
@@ -635,12 +517,12 @@
           <li><i class="fas fa-check-circle"></i> Código AD507 único</li>
           <li><i class="fas fa-check-circle"></i> Soporte básico</li>
         </ul>
-        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20PERSONAL%20($6.99)%20en%20Direcciones507." class="btn-card">
+        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20PERSONAL%20($6.99)%20en%20Direcciones507."
+           class="btn-card">
           <i class="fab fa-whatsapp"></i> Solicitar ahora
         </a>
       </div>
 
-      <!-- Negocios card (popular) -->
       <div class="price-card popular">
         <span class="price-badge"><i class="fas fa-star"></i> MÁS ELEGIDO</span>
         <h3>Negocios</h3>
@@ -651,33 +533,46 @@
           <li><i class="fas fa-check-circle"></i> QR profesional con logo</li>
           <li><i class="fas fa-check-circle"></i> Página pública personalizada</li>
         </ul>
-        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20de%20NEGOCIO%20($10.99)%20en%20Direcciones507." class="btn-card">
+        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20de%20NEGOCIO%20($10.99)%20en%20Direcciones507."
+           class="btn-card">
           <i class="fab fa-whatsapp"></i> Activar para mi negocio
         </a>
       </div>
     </div>
   </div>
 
-  <!-- TARJETA DE BUSQUEDA (INPUT) -->
-  <div class="container">
+  <!-- BUSCADOR (solo landing normal) -->
+  <div class="container" id="seccionBuscador">
     <div class="search-card">
       <span class="search-label"><i class="fas fa-qrcode"></i> Ingresa tu código AD507</span>
       <div class="input-group">
-        <input type="text" id="codigo" placeholder="Ej: AD507-12345" autocomplete="off">
-        <button onclick="buscar()"><i class="fas fa-search"></i> Buscar dirección</button>
+        <input type="text" id="codigo" placeholder="Ej: AD507-12345" autocomplete="off" />
+        <button type="button" onclick="buscar()"><i class="fas fa-search"></i> Buscar dirección</button>
       </div>
 
-      <!-- AQUI SE INYECTA EL RESULTADO -->
+      <!-- resultado para landing normal -->
       <div id="resultado" class="result-container"></div>
     </div>
   </div>
 
-  <!-- FOOTER MEJORADO -->
-  <footer class="footer">
+  <!-- MODO ULTRA: SOLO CLIENTE -->
+  <div class="client-shell" id="clientShell">
+    <div class="container">
+      <div class="client-card">
+        <div class="client-title">Accesos de tu Dirección Digital</div>
+        <div class="client-sub" id="clientSub">Cargando enlaces…</div>
+
+        <div id="clientResultado" class="result-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer" id="footerGlobal">
     <div class="footer-content">
       <div style="font-weight: 600; color: white; font-size: 1.2rem;">Direcciones507</div>
       <div style="color: var(--text-secondary);">Sistema Digital de Direcciones de Panamá 🇵🇦</div>
-      
+
       <div class="social-links">
         <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
         <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -686,90 +581,127 @@
       </div>
 
       <div class="footer-copy">
-        © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.<br>
+        © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.<br />
         <span style="opacity: 0.5; font-size: 0.8rem;">Prohibida la copia o reproducción del sistema sin autorización.</span>
       </div>
     </div>
   </footer>
 
-  <!-- SCRIPT (LOGICA ORIGINAL) -->
   <script>
+    // =====================
+    // CONFIG
+    // =====================
     const API_URL = "https://script.google.com/macros/s/AKfycbwopyb0Cp5V2QyBUhmmOjkp1j9884W0RTy9068GjJYpPShKw95b4JllidryNfUPuaiAPg/exec";
 
-    async function buscar() {
-      let codigo = document.getElementById("codigo").value.trim();
-      if (!codigo) { alert("Ingresa un código válido"); return; }
+    function getCodigoFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
 
-      const res = await fetch(API_URL + "?code=" + codigo);
-      const data = await res.json();
+      // Soporta /AD507-xxxx (si tu hosting lo permite)
+      const path = window.location.pathname.split("/").filter(Boolean).pop();
 
-      if (!data.ok) {
-        document.getElementById("resultado").innerHTML = `
-          <div style="background:#2a1a1a; border-radius:20px; padding:20px; color:#ff8a8a; border:1px solid #ff4d4d;">
-            <i class="fas fa-exclamation-triangle"></i> Código no encontrado
-          </div>`;
-        return;
-      }
+      const candidato = (code && code.trim()) || (path && path.trim()) || "";
+      return candidato.toUpperCase();
+    }
 
-      const linkCliente = location.origin + "/" + codigo;
-      const qrCliente = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(linkCliente);
-      const linkVerificacion = data.qr_maps; 
-
-      document.getElementById("resultado").innerHTML = `
-        <!-- LINKS DE NAVEGACION -->
+    function renderLinksHTML(data) {
+      return `
         <div class="links-grid">
-          <a class="map-link maps" href="${data.google_maps}" target="_blank"><i class="fab fa-google"></i> Abrir Google Maps</a>
-          <a class="map-link waze" href="${data.waze}" target="_blank"><i class="fab fa-waze"></i> Abrir Waze</a>
-          <a class="map-link uber" href="${data.uber}" target="_blank"><i class="fab fa-uber"></i> Pedir Uber</a>
-          <a class="map-link whats" href="${data.link_whatsapp}" target="_blank"><i class="fab fa-whatsapp"></i> Avisar llegada</a>
-        </div>
-
-        <!-- LINK VERIFICACION IMPRIMIR -->
-        <div class="info-box">
-          <div class="info-title"><i class="fas fa-print"></i> LINK DE VERIFICACIÓN PARA IMPRIMIR</div>
-          <div class="info-content">${linkVerificacion}</div>
-          <button class="btn-copy" onclick="copiar('${linkVerificacion}')"><i class="fas fa-copy"></i> Copiar enlace verificación</button>
-        </div>
-
-        <!-- LINK CLIENTE -->
-        <div class="info-box">
-          <div class="info-title"><i class="fas fa-user"></i> LINK DEL CLIENTE</div>
-          <div class="info-content">${linkCliente}</div>
-          <button class="btn-copy" onclick="copiar('${linkCliente}')"><i class="fas fa-copy"></i> Copiar link cliente</button>
-          
-          <a class="btn-whatsapp-share" href="https://wa.me/?text=Tu dirección digital:%20${linkCliente}" target="_blank">
-            <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+          <a class="map-link maps" href="${data.google_maps}" target="_blank" rel="noopener">
+            <i class="fab fa-google"></i> Abrir en Google Maps
           </a>
-        </div>
-
-        <!-- QR -->
-        <div class="qr-box">
-          <div class="info-title" style="justify-content: center;"><i class="fas fa-qrcode"></i> CÓDIGO QR</div>
-          <img src="${qrCliente}" alt="QR de dirección">
+          <a class="map-link waze" href="${data.waze}" target="_blank" rel="noopener">
+            <i class="fab fa-waze"></i> Abrir en Waze
+          </a>
+          <a class="map-link uber" href="${data.uber}" target="_blank" rel="noopener">
+            <i class="fab fa-uber"></i> Pedir Uber
+          </a>
+          <a class="map-link whats" href="${data.link_whatsapp}" target="_blank" rel="noopener">
+            <i class="fab fa-whatsapp"></i> Avisar llegada
+          </a>
         </div>
       `;
     }
 
-    function copiar(t) {
-      navigator.clipboard.writeText(t);
-      alert("✅ Copiado al portapapeles");
+    function renderNotFoundHTML() {
+      return `
+        <div class="client-error">
+          <i class="fas fa-exclamation-triangle"></i>
+          Código no encontrado
+        </div>
+      `;
     }
 
-    // AUTO EJECUTAR SI HAY CODE EN URL
-    (function() {
-      const params = new URLSearchParams(window.location.search);
-      const c = params.get("code");
-      if (c) {
-        document.getElementById("codigo").value = c;
-        buscar();
-      }
+    async function buscar() {
+      const codigo = (document.getElementById("codigo")?.value || "").trim().toUpperCase();
+      if (!codigo) { alert("Ingresa un código válido"); return; }
+      await buscarYRender(codigo, "landing");
+    }
 
-      // OCULTAR BOTON SOLICITAR EN PAGINA DE CLIENTE
-      const cta = document.getElementById("ctaSolicitar");
-      const path = window.location.pathname.split("/").filter(Boolean).pop();
-      if ((c && c.startsWith("AD507")) || (path && path.startsWith("AD507"))) {
-        if (cta) cta.classList.add("hidden-cta");
+    async function buscarYRender(codigo, modo) {
+      // modo: "landing" o "cliente"
+      const targetId = (modo === "cliente") ? "clientResultado" : "resultado";
+      const target = document.getElementById(targetId);
+      if (!target) return;
+
+      target.innerHTML = "";
+
+      try {
+        const res = await fetch(API_URL + "?code=" + encodeURIComponent(codigo));
+        const data = await res.json();
+
+        if (!data || !data.ok) {
+          target.innerHTML = (modo === "cliente") ? renderNotFoundHTML() : `
+            <div style="background:#2a1a1a; border-radius:20px; padding:20px; color:#ff8a8a; border:1px solid #ff4d4d;">
+              <i class="fas fa-exclamation-triangle"></i> Código no encontrado
+            </div>
+          `;
+          return;
+        }
+
+        // SOLO LINKS (sin QR, sin info-box, sin copiar, sin verificación)
+        target.innerHTML = renderLinksHTML(data);
+
+      } catch (e) {
+        target.innerHTML = (modo === "cliente") ? `
+          <div class="client-error">
+            <i class="fas fa-wifi"></i>
+            Error cargando enlaces. Intenta más tarde.
+          </div>
+        ` : `
+          <div style="background:#2a1a1a; border-radius:20px; padding:20px; color:#ff8a8a; border:1px solid #ff4d4d;">
+            <i class="fas fa-wifi"></i> Error cargando enlaces. Intenta más tarde.
+          </div>
+        `;
       }
+    }
+
+    // =====================
+    // MODO ULTRA (cliente)
+    // =====================
+    (function initUltraMode() {
+      const codigoUrl = getCodigoFromUrl();
+      const esCliente = codigoUrl && codigoUrl.startsWith("AD507");
+
+      if (!esCliente) return;
+
+      // Ocultar TODO lo comercial y el buscador
+      const idsOcultar = ["ctaSolicitar", "seccionPasos", "seccionPrecios", "seccionBuscador", "footerGlobal"];
+      idsOcultar.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+
+      // Mostrar shell ultra
+      const shell = document.getElementById("clientShell");
+      if (shell) shell.style.display = "block";
+
+      // Cambiar subtítulo con el código (opcional y discreto)
+      const sub = document.getElementById("clientSub");
+      if (sub) sub.textContent = "Código: " + codigoUrl;
+
+      // Auto buscar y pintar links
+      buscarYRender(codigoUrl, "cliente");
     })();
   </script>
 </body>

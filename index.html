@@ -1,170 +1,143 @@
-<!-- ====== HERO / ENCABEZADO ====== -->
-<section style="padding:28px 16px; max-width:980px; margin:0 auto;">
-  <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
-    <div style="flex:1; min-width:260px;">
-      <h1 style="margin:0; font-size:28px; line-height:1.15;">
-        Sistema Digital de Direcciones de Panamá 🇵🇦
-      </h1>
-      <p style="margin:10px 0 16px; font-size:16px; opacity:.85;">
-        Ubica tu hogar o negocio con un código único, QR y mapas en un solo enlace.
-      </p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direcciones507 - Sistema Digital de Direcciones de Panamá</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f8f9ff;
+    color: #0a0f27;
+  }
+  .header {
+    background:#0b2a6f;
+    padding:20px;
+    text-align:center;
+  }
+  .header h1 {
+    margin:0;
+    font-size:26px;
+    color:#fff;
+  }
+  .btn-main {
+    display:inline-block;
+    margin:16px auto;
+    padding:12px 20px;
+    background:#1e51d3;
+    color:#fff;
+    text-decoration:none;
+    border-radius:8px;
+    font-weight:700;
+  }
+  .section {
+    max-width:980px;
+    margin:32px auto;
+    padding:0 16px;
+  }
+  .prices {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:18px;
+    margin-top:20px;
+  }
+  .price-card {
+    border:1px solid rgba(10,15,39,0.15);
+    border-radius:12px;
+    background:#fff;
+    padding:18px;
+  }
+  .price-card h3 {
+    margin:0;
+    font-size:18px;
+    font-weight:700;
+  }
+  .price-card .price {
+    font-size:22px;
+    font-weight:800;
+    margin:8px 0;
+  }
+  .footer {
+    margin-top:60px;
+    padding:50px 20px;
+    background:linear-gradient(180deg,#061735,#0b2a6f);
+    color:#e6ecff;
+    text-align:center;
+    font-size:14px;
+  }
+  .footer a {
+    color:#c7d9ff;
+    text-decoration:none;
+    padding:8px 14px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.2);
+    margin:6px 10px;
+    display:inline-block;
+    font-weight:600;
+  }
+  .footer a:hover {
+    background:rgba(255,255,255,0.15);
+  }
+</style>
+</head>
+<body>
 
-      <a
-        href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507."
-        style="display:inline-block; padding:12px 16px; border-radius:12px; text-decoration:none; font-weight:700;"
-      >
-        Solicitar mi dirección digital
-      </a>
-    </div>
+<!-- HEADER -->
+<div class="header">
+  <h1>Direcciones507</h1>
+  <div>Sistema Digital de Direcciones de Panamá 🇵🇦</div>
+  <a class="btn-main"
+    href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507."
+  >Solicitar mi dirección digital</a>
+</div>
 
-    <!-- Si ya tienes tu logo puesto, puedes borrar este bloque -->
-    <div style="width:120px; height:120px; border-radius:999px; background:#0b2a6f; display:flex; align-items:center; justify-content:center;">
-      <span style="color:white; font-weight:800; font-size:20px;">AD507</span>
-    </div>
-  </div>
-</section>
-
-<!-- ====== CÓMO FUNCIONA ====== -->
-<section style="padding:8px 16px 22px; max-width:980px; margin:0 auto;">
-  <h2 style="margin:0 0 10px;">¿Cómo funciona?</h2>
-  <ol style="margin:0; padding-left:18px; line-height:1.7; opacity:.9;">
+<!-- HOW IT WORKS -->
+<div class="section">
+  <h2>¿Cómo funciona?</h2>
+  <ol style="line-height:1.7;margin-top:10px;">
     <li>Creamos tu código AD507 único</li>
     <li>Integramos Google Maps y Waze</li>
     <li>Recibes tu QR y enlace digital</li>
     <li>Lo compartes fácilmente con clientes o visitas</li>
   </ol>
-</section>
+</div>
 
-<!-- ====== PRECIOS ====== -->
-<section style="padding:10px 16px 26px; max-width:980px; margin:0 auto;">
-  <div style="display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
-    <h2 style="margin:0;">Precios</h2>
-    <span style="font-size:13px; opacity:.8;">Precio fundador por lanzamiento</span>
-  </div>
-
-  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:14px; margin-top:12px;">
-    <!-- Personal -->
-    <div style="border:1px solid rgba(0,0,0,.12); border-radius:16px; padding:16px;">
-      <h3 style="margin:0 0 6px;">🏠 Personal</h3>
-      <p style="margin:0 0 10px; opacity:.85;">
-        Para casas o apartamentos. Incluye QR + enlace + código único.
-      </p>
-      <div style="font-size:22px; font-weight:800; margin:8px 0;">$6.99</div>
-      <div style="font-size:13px; opacity:.75; margin-bottom:12px;">Pago único (fundador)</div>
-      <a
-        href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20PERSONAL%20($6.99)%20en%20Direcciones507."
-        style="display:inline-block; padding:10px 14px; border-radius:12px; text-decoration:none; font-weight:700;"
-      >
-        Solicitar ahora
-      </a>
+<!-- PRICES -->
+<div class="section">
+  <h2>Precios (Precio fundador)</h2>
+  <div class="prices">
+    <div class="price-card">
+      <h3>🏠 Personal</h3>
+      <div class="price">$6.99</div>
+      <div>Dirección digital con QR + enlace + código</div>
+      <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20PERSONAL%20($6.99)%20en%20Direcciones507.">Solicitar ahora</a>
     </div>
-
-    <!-- Negocios -->
-    <div style="border:1px solid rgba(0,0,0,.12); border-radius:16px; padding:16px;">
-      <h3 style="margin:0 0 6px;">🏢 Negocios</h3>
-      <p style="margin:0 0 10px; opacity:.85;">
-        Para empresas, tiendas y servicios. Incluye QR profesional + Maps + Waze.
-      </p>
-      <div style="font-size:22px; font-weight:800; margin:8px 0;">$10.99</div>
-      <div style="font-size:13px; opacity:.75; margin-bottom:12px;">Pago único (fundador)</div>
-      <a
-        href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20de%20NEGOCIO%20($10.99)%20en%20Direcciones507."
-        style="display:inline-block; padding:10px 14px; border-radius:12px; text-decoration:none; font-weight:700;"
-      >
-        Activar para mi negocio
-      </a>
+    <div class="price-card">
+      <h3>🏢 Negocios</h3>
+      <div class="price">$10.99</div>
+      <div>Dirección digital + QR profesional + Maps + Waze</div>
+      <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20de%20NEGOCIO%20($10.99)%20en%20Direcciones507.">Activar para mi negocio</a>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ====== AUTORIDAD / VISIÓN ====== -->
-<section style="padding:4px 16px 26px; max-width:980px; margin:0 auto;">
-  <p style="margin:0; opacity:.85; line-height:1.6;">
-    <strong>Direcciones507</strong> está desarrollando la base de direcciones digitales más precisa de Panamá.
-    Nuestro objetivo es que cada hogar y negocio tenga una ubicación simple, profesional y universal.
-  </p>
-</section>
-
-<!-- ====== CTA FINAL ====== -->
-<section style="padding:0 16px 34px; max-width:980px; margin:0 auto;">
-  <a
-    href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507."
-    style="display:inline-block; padding:12px 16px; border-radius:12px; text-decoration:none; font-weight:800;"
-  >
-    Activar mi dirección digital ahora
-  </a>
-  <div style="margin-top:10px; font-size:13px; opacity:.8;">WhatsApp: 6599-6532 | Pago por Yappy disponible</div>
-</section>
 <!-- FOOTER -->
-<footer style="
-margin-top:60px;
-padding:50px 20px;
-background:linear-gradient(180deg,#061735,#0b2a6f);
-color:#e6ecff;
-text-align:center;
-font-family:Arial, Helvetica, sans-serif;
-">
+<div class="footer">
+  <div style="font-size:16px;font-weight:700;margin-bottom:8px;">Direcciones507</div>
+  <div style="font-size:14px;opacity:0.85;margin-bottom:20px;">Sistema Digital de Direcciones de Panamá 🇵🇦</div>
 
-<div style="font-size:18px;font-weight:700;margin-bottom:8px;">
-Direcciones507
+  <div>
+    <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank">Instagram</a>
+    <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank">Facebook</a>
+    <a href="https://www.tiktok.com/@direcciones507" target="_blank">TikTok</a>
+  </div>
+
+  <div style="opacity:0.75;margin-top:18px;">© 2026 Direcciones Digitales Panamá. Todos los derechos reservados.</div>
+  <div style="opacity:0.5;font-size:12px;">Prohibida la copia o reproducción del sistema sin autorización.</div>
 </div>
-
-<div style="font-size:14px;opacity:0.85;margin-bottom:25px;">
-Sistema Digital de Direcciones de Panamá 🇵🇦
-</div>
-
-<div style="display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin-bottom:25px;">
-
-<a href="https://www.instagram.com/direccionesdigitalespty" target="_blank"
-style="
-padding:10px 18px;
-border-radius:25px;
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.2);
-color:#c7d9ff;
-text-decoration:none;
-font-weight:600;
-transition:0.3s;">
-Instagram
-</a>
-
-<a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank"
-style="
-padding:10px 18px;
-border-radius:25px;
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.2);
-color:#c7d9ff;
-text-decoration:none;
-font-weight:600;
-transition:0.3s;">
-Facebook
-</a>
-
-<a href="https://www.tiktok.com/@direcciones507" target="_blank"
-style="
-padding:10px 18px;
-border-radius:25px;
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.2);
-color:#c7d9ff;
-text-decoration:none;
-font-weight:600;
-transition:0.3s;">
-TikTok
-</a>
-
-</div>
-
-<div style="opacity:0.75;font-size:13px;margin-bottom:8px;">
-© 2026 Direcciones Digitales Panamá. Todos los derechos reservados.
-</div>
-
-<div style="opacity:0.5;font-size:12px;">
-Prohibida la copia o reproducción del sistema sin autorización.
-</div>
-
-</footer>
 
 </body>
 </html>

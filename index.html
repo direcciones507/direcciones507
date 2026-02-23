@@ -27,9 +27,6 @@
       --text-secondary:#a8b3cf;
       --border-dim: rgba(255,255,255,0.08);
       --glow: 0 8px 20px rgba(0,0,0,0.6);
-      --bad:#ef4444;
-      --warn:#f59e0b;
-      --ok:#22c55e;
     }
 
     body{
@@ -148,7 +145,7 @@
       box-shadow: 0 15px 25px -5px #14532d80;
     }
 
-    /* TITLES */
+    /* SECTIONS */
     .section-title{
       font-size:2.2rem;
       font-weight:700;
@@ -165,7 +162,6 @@
       text-align:center;
     }
 
-    /* STEPS */
     .steps-grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -197,7 +193,7 @@
     .step-card h3{ margin-bottom:0.75rem; font-size:1.4rem; font-weight:800; }
     .step-card p{ color: var(--text-secondary); }
 
-    /* PRICES */
+    /* PRICING */
     .pricing-grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -324,7 +320,36 @@
     .result-container{ margin-top:18px; animation: fadeIn 0.35s ease; }
     @keyframes fadeIn{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform: translateY(0);} }
 
-    /* INFO BOXES */
+    /* LINKS GRID (MAPS/WAZE/UBER/WHATS) */
+    .links-grid{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin: 14px 0 18px;
+    }
+    .map-link{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      background: rgba(255,255,255,0.05);
+      padding:18px 22px;
+      border-radius:20px;
+      text-decoration:none;
+      color:white;
+      font-weight:950;
+      font-size:1.1rem;
+      border:1px solid rgba(255,255,255,0.08);
+      transition:0.15s;
+      backdrop-filter: blur(5px);
+    }
+    .map-link i{ font-size:1.8rem; width:32px; text-align:center; }
+    .map-link:hover{ background: rgba(255,255,255,0.1); transform: translateX(5px); border-color: rgba(255,255,255,0.2); }
+    .map-link.maps{ background: rgba(22,163,74,0.15); border-left: 5px solid #16a34a; }
+    .map-link.waze{ background: rgba(59,130,246,0.15); border-left: 5px solid #3b82f6; }
+    .map-link.uber{ background: rgba(0,0,0,0.4); border-left: 5px solid #555; }
+    .map-link.whats{ background: rgba(37,211,102,0.15); border-left: 5px solid #25D366; }
+
+    /* INFO BOX */
     .info-box{
       background: rgba(10, 15, 30, 0.8);
       backdrop-filter: blur(10px);
@@ -429,27 +454,38 @@
       margin-top: 6px;
     }
 
-    /* COUNTER (NEGOCIOS) */
-    .counter-wrap{
-      display:flex;
-      justify-content:center;
-      margin: 12px 0 4px;
-    }
-    .counter-pill{
-      background: rgba(45, 122, 255, 0.10);
-      border: 1px solid rgba(45, 122, 255, 0.28);
-      border-radius: 999px;
-      padding: 10px 14px;
+    /* COUNTER */
+    .counter-box {
+      background: rgba(45, 122, 255, 0.1);
+      border: 1px solid rgba(45, 122, 255, 0.3);
+      border-radius: 60px;
+      padding: 12px 20px;
       display: inline-flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-weight: 900;
+      margin: 14px auto 0;
       backdrop-filter: blur(5px);
+      justify-content:center;
     }
-    .counter-pill i { color: var(--accent-blue); }
-    .counter-time{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .counter-box i { color: var(--accent-blue); font-size: 1.2rem; }
+    .counter-number {
+      font-size: 1.25rem;
+      font-weight: 1000;
+      color: white;
+      line-height: 1;
+      margin-left: 5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .counter-label {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 900;
+    }
 
-    /* CLIENT MODE */
+    /* CLIENT */
     .client-shell{ width:100%; display:none; flex:1; }
     .client-card{
       background: var(--bg-card);
@@ -528,7 +564,6 @@
       width:100%;
     }
 
-    /* NOTIFICATION */
     .copy-notification {
       position: fixed;
       bottom: 20px;
@@ -543,15 +578,9 @@
       z-index: 10001;
       animation: slideUp 0.3s ease, fadeOut 0.3s ease 1.7s forwards;
     }
-    @keyframes slideUp {
-      from { bottom: 0; opacity: 0; }
-      to { bottom: 20px; opacity: 1; }
-    }
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
+    @keyframes slideUp { from { bottom: 0; opacity: 0; } to { bottom: 20px; opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
-    /* Hide landing content in client mode */
     .modo-cliente .landing-only { display: none !important; }
 
     @media (max-width: 500px){
@@ -598,7 +627,6 @@
       </div>
     </div>
 
-    <!-- PASOS -->
     <div class="container" id="seccionPasos">
       <h2 class="section-title">¿Cómo funciona?</h2>
       <div class="section-sub">Tu dirección digital en 4 simples pasos</div>
@@ -626,7 +654,6 @@
       </div>
     </div>
 
-    <!-- PRECIOS -->
     <div class="container" id="seccionPrecios">
       <h2 class="section-title">Precios</h2>
       <div class="section-sub">Precio fundador · Pago único</div>
@@ -665,7 +692,6 @@
       </div>
     </div>
 
-    <!-- BUSCADOR -->
     <div class="container" id="seccionBuscador">
       <div class="search-card">
         <span class="search-label"><i class="fas fa-qrcode"></i> Ingresa tu código AD507</span>
@@ -816,11 +842,11 @@
         if (!el) return;
 
         el.innerHTML = `
-          <div class="counter-wrap">
-            <div class="counter-pill">
+          <div style="display:flex; justify-content:center; margin: 8px 0 2px;">
+            <div class="counter-box">
               <i class="fas fa-clock"></i>
-              <span>Vence en</span>
-              <span class="counter-time">${days}d ${fmt2(hours)}h ${fmt2(mins)}m ${fmt2(secs)}s</span>
+              <span class="counter-label">Vence en:</span>
+              <span class="counter-number">${days}d ${fmt2(hours)}h ${fmt2(mins)}m ${fmt2(secs)}s</span>
             </div>
           </div>
         `;
@@ -880,7 +906,7 @@
     }
 
     // =========================
-    // RENDER PANEL (CON TODO LO QUE PEDISTE)
+    // RENDER PANEL (CON LINKS + ENLACE VERIFICACIÓN)
     // =========================
     function renderPanel(data, codigo) {
       const nombre = pickNombre(data);
@@ -891,19 +917,16 @@
       // QR para compartir: del link del cliente
       const qrCliente = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(linkCliente);
 
-      // QR verificación para imprimir: usa el QR Maps que ya viene del API
-      const qrVerificacion = String(data?.qr_maps || "").trim();
+      // ENLACE de verificación (para imprimir): usamos google_maps (link directo a coords)
+      // Si quieres usar otro campo, me dices cuál y lo cambio en 1 línea.
+      const linkVerificacion = String(data?.google_maps || "").trim();
 
-      // Mensaje para compartir
       const mensajeShare =
         `Mi dirección digital (${codigo}) ✅\n` +
         `${nombre}\n` +
         `${referencia ? "Referencia: " + referencia + "\n" : ""}` +
         linkCliente;
 
-      const badgePlan = data?.plan ? `<span class="logo-badge" style="margin-top:10px;"><i class="fas fa-briefcase"></i> Plan: ${data.plan}</span>` : "";
-
-      // Contador solo negocios
       const mostrarContador = esNegocio(data?.plan);
 
       return `
@@ -922,9 +945,24 @@
             </div>
           ` : ''}
 
-          ${badgePlan}
+          ${data?.plan ? `<div style="display:flex; justify-content:center;"><span class="logo-badge"><i class="fas fa-briefcase"></i> Plan: ${data.plan}</span></div>` : ""}
 
           ${mostrarContador ? `<div id="counterMount"></div>` : ``}
+        </div>
+
+        <div class="links-grid">
+          <a class="map-link maps" href="${data.google_maps || "#"}" target="_blank" rel="noopener">
+            <i class="fab fa-google"></i> Abrir Google Maps
+          </a>
+          <a class="map-link waze" href="${data.waze || "#"}" target="_blank" rel="noopener">
+            <i class="fab fa-waze"></i> Abrir Waze
+          </a>
+          <a class="map-link uber" href="${data.uber || "#"}" target="_blank" rel="noopener">
+            <i class="fab fa-uber"></i> Pedir Uber
+          </a>
+          <a class="map-link whats" href="${data.link_whatsapp || "#"}" target="_blank" rel="noopener">
+            <i class="fab fa-whatsapp"></i> Avisar llegada
+          </a>
         </div>
 
         <div class="info-box">
@@ -944,22 +982,23 @@
           </button>
         </div>
 
+        <div class="info-box">
+          <div class="info-title"><i class="fas fa-print"></i> Enlace de verificación (para imprimir)</div>
+
+          <div class="masked-line">
+            <span class="masked-text">••••••••••••••••••••••••••••••</span>
+            <span class="small-tag">Oculto</span>
+          </div>
+
+          <button class="btn-copy" type="button" onclick="copiarTexto('${(linkVerificacion || "").replace(/'/g,"\\'")}')">
+            <i class="fas fa-copy"></i> Copiar enlace de verificación
+          </button>
+        </div>
+
         <div class="qr-box">
           <div class="info-title" style="justify-content:center;"><i class="fas fa-qrcode"></i> QR para compartir</div>
           <img src="${qrCliente}" alt="QR para compartir" />
           <div class="qr-hint">Escanéalo para abrir la página del cliente.</div>
-        </div>
-
-        <div class="qr-box">
-          <div class="info-title" style="justify-content:center;"><i class="fas fa-qrcode"></i> QR de verificación (para imprimir)</div>
-          ${qrVerificacion ? `
-            <img src="${qrVerificacion}" alt="QR verificación (Maps)" />
-            <div class="qr-hint">Este QR abre la ubicación en Google Maps.</div>
-          ` : `
-            <div class="client-error" style="margin-top:10px;">
-              <i class="fas fa-exclamation-triangle"></i> No hay QR de verificación en la hoja (campo: QR Verificación (Maps)).
-            </div>
-          `}
         </div>
       `;
     }
@@ -1037,7 +1076,6 @@
 
             target.innerHTML = renderPanel(data, codigoCliente);
 
-            // contador mensual solo negocios
             if (esNegocio(data.plan)) {
               const fechaBase = parseFecha(data.fecha);
               if (fechaBase) startMonthlyCounter(fechaBase, "counterMount");
@@ -1050,7 +1088,6 @@
         })();
 
       } else {
-        // Si la URL trae ?code=, autollenar y buscar
         const params = new URLSearchParams(window.location.search);
         const codeParam = (params.get("code") || "").trim();
         if (codeParam) {
@@ -1061,10 +1098,8 @@
       }
     })();
 
-    // Exponer funciones globales
     window.buscarLanding = buscarLanding;
     window.copiarTexto = copiarTexto;
-    window.compartir = compartir;
   </script>
 </body>
 </html>

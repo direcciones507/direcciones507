@@ -1,807 +1,365 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Direcciones507 · Sistema Digital de Direcciones Panamá</title>
-
-  <!-- Font Awesome 6 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Direcciones507 | AD507</title>
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root{
-      --bg-primary:#0a0c12;
-      --bg-secondary:#11131f;
-      --bg-card:#181b28;
-      --bg-input:#22263b;
-      --accent-green:#16c47f;
-      --accent-blue:#2d7aff;
-      --text-primary:#ffffff;
-      --text-secondary:#a8b3cf;
-      --border-dim: rgba(255,255,255,0.08);
-      --glow: 0 8px 20px rgba(0,0,0,0.6);
+      --bg:#0b0f14;
+      --card:#0f1722;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --line:#1f2a37;
+      --btn:#111827;
+      --wa:#25D366;
+      --blue:#2d7aff;
     }
-
+    *{box-sizing:border-box}
     body{
-      background: var(--bg-primary);
-      font-family:'Inter',sans-serif;
-      color: var(--text-primary);
-      line-height:1.5;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, #18345f 0%, transparent 60%),
+                  radial-gradient(900px 700px at 90% 0%, #1a6b5b 0%, transparent 55%),
+                  var(--bg);
+      color:var(--text);
     }
-
-    .container{
-      max-width:980px;
-      margin:0 auto;
-      padding:0 24px;
-      width:100%;
+    .wrap{max-width:980px;margin:0 auto;padding:24px}
+    .top{
+      display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:14px
     }
-
-    /* ===== HEADER CON LOGO ===== */
-    .top-bar{
-      background: var(--bg-secondary);
-      padding: 20px 0;
-      border-bottom: 1px solid var(--border-dim);
-      backdrop-filter: blur(5px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .logo-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .logo-icon {
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
       background: linear-gradient(145deg, #1E51D3, #0B2A6F);
-      width: 60px;
-      height: 60px;
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5);
+      display:grid;place-items:center;
+      box-shadow: 0 12px 26px -14px rgba(0,0,0,.7);
+      font-weight:900
+    }
+    .brand h1{font-size:18px;margin:0;line-height:1.2}
+    .brand p{margin:2px 0 0 0;color:var(--muted);font-size:13px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      background:#0b1320;border:1px solid rgba(31,42,55,.9);
+      color:var(--muted);font-size:12px
+    }
+    .pill b{color:var(--text);font-weight:700}
+    .card{
+      background: rgba(15,23,34,.92);
+      border:1px solid rgba(31,42,55,.9);
+      border-radius:18px;
+      padding:18px;
+      box-shadow: 0 18px 60px -30px rgba(0,0,0,.75);
+    }
+    .grid{display:grid;gap:14px}
+    @media(min-width:900px){
+      .grid.two{grid-template-columns: 1.2fr .8fr}
     }
 
-    .logo-icon i {
-      font-size: 32px;
-      color: white;
-      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
-    }
-
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .logo-main {
-      font-family: 'Outfit', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #ffffff, #bdd3ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      line-height: 1;
-    }
-
-    .logo-badge {
-      background: rgba(45,122,255,0.15);
-      color: var(--accent-blue);
-      font-size: 0.8rem;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 100px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid rgba(45,122,255,0.3);
-      margin-top: 5px;
-    }
-
-    /* ===== SECCIÓN DE BÚSQUEDA ===== */
-    .search-section {
-      margin: 30px 0;
-    }
-
-    .search-card{
-      background: var(--bg-card);
-      border-radius:32px;
-      padding:35px 28px;
-      box-shadow: var(--glow);
-      border:1px solid rgba(255,255,255,0.05);
-      backdrop-filter: blur(10px);
-    }
-    .search-label{
-      display:block;
-      text-align:center;
-      font-weight:700;
-      color: var(--text-secondary);
-      margin-bottom:15px;
-      font-size:1rem;
-      letter-spacing:0.3px;
-    }
-    .input-group{ display:flex; gap:12px; flex-wrap:wrap; }
-    .input-group input{
-      flex:1;
-      min-width:200px;
-      background: var(--bg-input);
-      border:2px solid rgba(255,255,255,0.05);
-      padding:18px 22px;
-      border-radius:60px;
-      font-size:1.1rem;
-      color:white;
-      font-weight:700;
-      text-align:center;
-      transition:0.15s;
-    }
-    .input-group input:focus{
-      outline:none;
-      border-color: var(--accent-blue);
-      background:#1f2542;
-    }
-    .input-group button{
-      background:white;
-      border:none;
-      border-radius:60px;
-      padding:0 32px;
-      font-weight:950;
-      font-size:1rem;
-      color:#0a0c12;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      cursor:pointer;
-      transition:0.15s;
-      border:2px solid transparent;
-    }
-    .input-group button:hover{ background:#e0e7ff; transform: scale(1.02); }
-    .input-group button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* ===== CONTENEDOR DE RESULTADOS ===== */
-    .result-container{ margin-top:18px; animation: fadeIn 0.35s ease; }
-    @keyframes fadeIn{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform: translateY(0);} }
-
-    /* ===== ENLACES CON COLORES ORIGINALES ===== */
-    .links-grid{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin: 14px 0 18px;
-    }
-    .map-link{
-      display:flex;
-      align-items:center;
-      gap:18px;
-      background: rgba(255,255,255,0.05);
-      padding:18px 22px;
-      border-radius:20px;
-      text-decoration:none;
-      color:white;
-      font-weight:950;
-      font-size:1.1rem;
-      border:1px solid rgba(255,255,255,0.08);
-      transition:0.15s;
-      backdrop-filter: blur(5px);
-    }
-    .map-link i{ font-size:1.8rem; width:32px; text-align:center; }
-    .map-link:hover{ background: rgba(255,255,255,0.1); transform: translateX(5px); border-color: rgba(255,255,255,0.2); }
-
-    .map-link.maps{ background: rgba(22,163,74,0.15); border-left: 5px solid #16a34a; }
-    .map-link.waze{ background: rgba(59,130,246,0.15); border-left: 5px solid #3b82f6; }
-    .map-link.uber{ background: rgba(0,0,0,0.4); border-left: 5px solid #555; }
-    .map-link.whats{ background: rgba(37,211,102,0.15); border-left: 5px solid #25D366; }
-
-    /* ===== CAJAS DE INFORMACIÓN ===== */
-    .info-box{
-      background: rgba(10, 15, 30, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 18px;
-      margin: 12px 0;
-    }
-    .info-title{
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 950;
-      color: #8b9bb9;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .data-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: #0c0f1a;
-      border: 1px solid #252b40;
-      border-radius: 18px;
-      margin: 8px 0;
-    }
-    .data-label {
-      color: #8b9bb9;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .data-value {
-      color: white;
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 60px;
-      font-weight: 800;
-      font-size: 0.85rem;
-    }
-    .badge.ok {
-      background: rgba(34,197,94,0.15);
-      color: #4ade80;
-      border: 1px solid rgba(34,197,94,0.3);
-    }
-    .badge.warn {
-      background: rgba(245,158,11,0.15);
-      color: #fbbf24;
-      border: 1px solid rgba(245,158,11,0.3);
-    }
-
-    .btn-copy{
-      background: var(--accent-blue);
-      color: white;
-      border: none;
-      border-radius: 60px;
-      padding: 14px 18px;
-      font-weight: 950;
-      font-size: 1rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      transition: 0.15s;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .btn-copy:hover{ background:#1a4fbb; transform: scale(1.01); }
-
-    .btn-whatsapp-share{
-      background:#25D366;
-      color:#0a0c12;
-      font-weight: 950;
-      padding: 16px;
-      border-radius: 60px;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 10px;
-      border: 1px solid rgba(255,255,255,0.3);
-      transition:0.15s;
-      cursor: pointer;
-    }
-    .btn-whatsapp-share:hover{ transform: scale(1.01); filter: brightness(1.03); }
-
-    .qr-box{
-      text-align:center;
-      background: #0f1322;
-      border-radius: 28px;
-      padding: 22px;
-      margin: 12px 0;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .qr-box img{
-      background:white;
-      padding:10px;
-      border-radius:24px;
-      max-width: 190px;
-      width: 190px;
-      height: 190px;
-      margin: 12px auto 8px;
-      display:block;
-    }
-    .qr-hint{
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      margin-top: 6px;
-    }
-
-    /* ===== CONTADOR PARA NEGOCIOS ===== */
-    .counter-box {
-      background: rgba(45, 122, 255, 0.1);
-      border: 1px solid rgba(45, 122, 255, 0.3);
-      border-radius: 60px;
-      padding: 20px 24px;
-      margin: 20px 0;
-      backdrop-filter: blur(5px);
-      text-align: center;
-    }
-    .counter-box i {
-      color: var(--accent-blue);
-      font-size: 1.5rem;
-      margin-right: 10px;
-    }
-    .counter-number {
-      font-size: 2rem;
-      font-weight: 900;
-      color: white;
-      line-height: 1;
-      margin: 10px 0 5px;
-    }
-    .counter-label {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .counter-note {
-      color: var(--text-secondary);
-      font-size: 0.8rem;
-      margin-top: 10px;
-      font-style: italic;
-    }
-
-    /* ===== QR GRID ===== */
-    .qr-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin: 15px 0;
-    }
-    @media (max-width: 500px) {
-      .qr-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* ===== FOOTER ===== */
-    .footer{
-      margin-top:60px;
-      background:#070a13;
-      border-top:1px solid rgba(255,255,255,0.05);
-      padding:40px 20px 25px;
-    }
-    .footer-content{
-      max-width:980px;
-      margin:0 auto;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
-      gap:25px;
-    }
-    .social-links{ display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
-    .social-links a{
-      color:#a0afcf;
-      background:#181e30;
-      width:48px; height:48px;
-      border-radius:48px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:1.6rem;
-      transition:0.15s;
-      border:1px solid #2d3555;
-      text-decoration:none;
-    }
-    .social-links a:hover{ background: var(--accent-blue); color:white; transform: translateY(-3px); }
-    .footer-copy{
-      color:#5b6a8c;
-      font-size:0.9rem;
-      border-top:1px solid #1e253a;
-      padding-top:25px;
-      margin-top:15px;
+    .input{
       width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(31,42,55,.95);
+      background:#0b1320;
+      color:var(--text);
+      outline:none;
+      font-size:14px;
     }
-
-    /* ===== MODAL WHATSAPP ===== */
-    .share-modal{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      padding: 18px;
-      backdrop-filter: blur(6px);
-    }
-    .share-modal.show{ display:flex; }
-
-    .share-card{
-      width: 100%;
-      max-width: 680px;
-      background: rgba(10, 15, 30, 0.92);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 24px;
-      box-shadow: 0 22px 60px rgba(0,0,0,0.55);
-      padding: 16px;
-    }
-
-    .share-head{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom: 12px;
-    }
-    .share-ic{
-      width: 44px;
-      height: 44px;
-      border-radius: 16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: rgba(37,211,102,0.16);
-      border: 1px solid rgba(37,211,102,0.30);
-      color: #d8ffe8;
-      font-size: 1.2rem;
-      flex: 0 0 auto;
-    }
-    .share-title{ font-weight: 950; letter-spacing: -0.2px; }
-    .share-sub{ color: var(--text-secondary); font-size: 0.95rem; margin-top: 2px; }
-    .share-close{
-      margin-left:auto;
-      border:none;
-      background: transparent;
-      color: rgba(255,255,255,0.75);
+    .btn{
+      padding:12px 14px;border-radius:12px;
+      border:1px solid rgba(31,42,55,.95);
+      background: linear-gradient(180deg, #111827, #0b1320);
+      color:var(--text);
       cursor:pointer;
-      font-size: 1.1rem;
-      padding: 6px 8px;
+      font-weight:800;
     }
+    .btn:hover{filter:brightness(1.05)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
 
-    .share-text{
-      width: 100%;
-      min-height: 140px;
-      resize: none;
-      background: #0c0f1a;
-      color: #b9c8f0;
-      border: 1px solid #252b40;
-      border-radius: 18px;
-      padding: 14px;
-      font-family: monospace;
-      font-size: 0.98rem;
-      outline: none;
+    .muted{color:var(--muted)}
+    .hr{height:1px;background:rgba(31,42,55,.95);margin:14px 0}
+    .hide{display:none !important}
+
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:12px;font-weight:900;font-size:12px
     }
+    .ok{background: rgba(34,197,94,.12); color: var(--ok); border:1px solid rgba(34,197,94,.35)}
+    .warn{background: rgba(245,158,11,.12); color: var(--warn); border:1px solid rgba(245,158,11,.35)}
+    .bad{background: rgba(239,68,68,.12); color: var(--bad); border:1px solid rgba(239,68,68,.35)}
 
-    .share-actions{
-      display:flex;
+    /* RESUMEN (solo nombre, referencia, codigo) */
+    .summary{
+      display:grid;
       gap:10px;
-      margin-top: 12px;
-      flex-wrap: wrap;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid rgba(31,42,55,.95);
+      background:#0b1320;
     }
-    .share-btn{
-      flex: 1;
-      min-width: 220px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
-      color: white;
-      padding: 12px 14px;
-      border-radius: 16px;
-      font-weight: 950;
-      cursor: pointer;
-      text-decoration:none;
-      display:inline-flex;
+    .summary .title{
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.7px;
+      font-weight:900;
+      margin-bottom:-4px;
+    }
+    .summary .big{
+      font-size:18px;
+      font-weight:1000;
+      letter-spacing:.2px;
+      word-break:break-word;
+    }
+    .summary .small{
+      font-size:13px;
+      color:var(--muted);
+      word-break:break-word;
+    }
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    @media(max-width:520px){
+      .actions{grid-template-columns:1fr}
+    }
+    .btn2{
+      display:flex;
       align-items:center;
       justify-content:center;
       gap:10px;
-      transition: .15s;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(31,42,55,.95);
+      background:#0b1320;
+      color:var(--text);
+      font-weight:950;
+      cursor:pointer;
+      text-decoration:none;
+      user-select:none;
     }
-    .share-btn:hover{ transform: scale(1.01); background: rgba(255,255,255,0.10); }
-    .share-btn.green{
-      background: rgba(37,211,102,0.18);
-      border-color: rgba(37,211,102,0.35);
-      color: #d8ffe8;
+    .btn2:hover{filter:brightness(1.05)}
+    .btn2.green{
+      background: rgba(37,211,102,.12);
+      border-color: rgba(37,211,102,.35);
+      color:#d8ffe8;
     }
-
-    .share-hint{
-      margin-top: 10px;
-      color: var(--text-secondary);
-      font-size: 0.92rem;
-      text-align: center;
-    }
-
-    /* ===== NOTIFICACIÓN DE COPIADO ===== */
-    .copy-notification {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1a4fbb;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 60px;
-      font-weight: 700;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-      z-index: 10001;
-      animation: slideUp 0.3s ease, fadeOut 0.3s ease 1.7s forwards;
+    .btn2.blue{
+      background: rgba(45,122,255,.12);
+      border-color: rgba(45,122,255,.35);
+      color:#d8e7ff;
     }
 
-    @keyframes slideUp {
-      from { bottom: 0; opacity: 0; }
-      to { bottom: 20px; opacity: 1; }
+    /* CONTADOR NEGOCIOS */
+    .counter{
+      display:grid;gap:10px;
+      padding:14px;border-radius:16px;
+      border:1px solid rgba(31,42,55,.95);
+      background: linear-gradient(180deg, rgba(34,197,94,.08), rgba(11,19,32,.7));
+    }
+    .counter h3{margin:0;font-size:14px}
+    .bigtime{font-size:22px;font-weight:1000;letter-spacing:.4px}
+    .tiny{font-size:12px;color:var(--muted)}
+
+    /* NOTI COPIADO */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      background: rgba(45,122,255,.92);
+      color:white;
+      padding:10px 14px;
+      border-radius:999px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 10px 28px rgba(0,0,0,.4);
+      z-index:9999;
     }
 
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
-
-    /* Utilidades */
-    .hide { display: none !important; }
-    .text-center { text-align: center; }
-    .mt-2 { margin-top: 10px; }
-    .mt-4 { margin-top: 20px; }
-
-    @media (max-width: 500px){
-      .input-group{ flex-direction:column; }
-      .input-group button{ padding:18px; }
-      .logo-main{ font-size:1.8rem; }
-      .logo-icon { width: 50px; height: 50px; }
-      .logo-icon i { font-size: 26px; }
+    /* PRINT */
+    @media print{
+      body{background:white;color:black}
+      .no-print{display:none !important}
+      .card{box-shadow:none;border:1px solid #ddd;background:white}
+      .summary{border:1px solid #ddd;background:white}
+      .summary .title{color:#333}
+      .summary .small{color:#444}
+      .wrap{padding:0}
     }
   </style>
 </head>
+
 <body>
-
-  <!-- HEADER CON LOGO -->
-  <div class="top-bar" id="headerGlobal">
-    <div class="container">
-      <div class="logo-container">
-        <div class="logo-icon">
-          <i class="fas fa-map-pin"></i>
-        </div>
-        <div class="logo-text">
-          <div class="logo-main">DIRECCIONES507</div>
-          <span class="logo-badge"><i class="fas fa-map-pin"></i> Sistema Digital de Direcciones de Panamá 🇵🇦</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONTENIDO PRINCIPAL -->
-  <div class="container search-section">
-    <div class="search-card">
-      <span class="search-label"><i class="fas fa-qrcode"></i> Ingresa tu código AD507</span>
-      <div class="input-group">
-        <input type="text" id="codigo" placeholder="Ej: AD507-12345" autocomplete="off" />
-        <button type="button" id="btnBuscar"><i class="fas fa-search"></i> Buscar dirección</button>
-      </div>
-
-      <!-- AQUÍ SE MUESTRAN LOS RESULTADOS -->
-      <div id="resultado" class="result-container"></div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="footer" id="footerGlobal">
-    <div class="footer-content">
-      <div style="font-weight: 900; color: white; font-size: 1.2rem;">Direcciones507</div>
-      <div style="color: var(--text-secondary);">Sistema Digital de Direcciones de Panamá 🇵🇦</div>
-      <div class="social-links">
-        <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" aria-label="Instagram" rel="noopener"><i class="fab fa-instagram"></i></a>
-        <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" aria-label="Facebook" rel="noopener"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.tiktok.com/@direcciones507" target="_blank" aria-label="TikTok" rel="noopener"><i class="fab fa-tiktok"></i></a>
-        <a href="https://wa.me/50765996532" target="_blank" aria-label="WhatsApp" rel="noopener"><i class="fab fa-whatsapp"></i></a>
-      </div>
-      <div class="footer-copy">
-        © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.<br />
-        <span style="opacity: 0.5; font-size: 0.8rem;">Prohibida la copia o reproducción del sistema sin autorización.</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- MODAL PARA COMPARTIR POR WHATSAPP -->
-  <div class="share-modal" id="shareModal" aria-hidden="true">
-    <div class="share-card" role="dialog" aria-modal="true" aria-label="Compartir por WhatsApp">
-      <div class="share-head">
-        <div class="share-ic"><i class="fab fa-whatsapp"></i></div>
+  <div class="wrap">
+    <div class="top no-print">
+      <div class="brand">
+        <div class="logo">AD</div>
         <div>
-          <div class="share-title">Enviar por WhatsApp</div>
-          <div class="share-sub">Copia el mensaje y pégalo en WhatsApp Web.</div>
+          <h1>Direcciones507</h1>
+          <p>Verificación y accesos de tu dirección digital</p>
         </div>
-        <button class="share-close" type="button" onclick="shareClose()" aria-label="Cerrar">
-          <i class="fas fa-times"></i>
-        </button>
       </div>
 
-      <textarea id="shareText" class="share-text" readonly></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <span class="pill">Estado: <b id="estadoTxt">Listo</b></span>
+        <span class="pill">Código: <b id="codigoPill">—</b></span>
+      </div>
+    </div>
 
-      <div class="share-actions">
-        <button class="share-btn" type="button" onclick="shareCopy()">
-          <i class="fas fa-copy"></i> Copiar mensaje
-        </button>
+    <div class="grid two">
+      <!-- BUSCADOR -->
+      <div class="card no-print">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+          <div style="flex:1;min-width:220px">
+            <div class="muted" style="font-size:12px;margin-bottom:6px">Ingresa tu código</div>
+            <input id="codigoInput" class="input" placeholder="Ej: AD507-0011" />
+          </div>
+          <button id="btnBuscar" class="btn" style="min-width:150px">Buscar</button>
+        </div>
 
-        <a class="share-btn green" id="shareOpenWa" href="https://web.whatsapp.com/" target="_blank" rel="noopener">
-          <i class="fab fa-whatsapp"></i> Abrir WhatsApp Web
-        </a>
+        <div class="hr"></div>
+
+        <div id="msg" class="muted" style="font-size:13px">Escribe tu código y presiona Buscar.</div>
+
+        <!-- RESULTADO (SIMPLIFICADO) -->
+        <div id="contenido" class="hide" style="margin-top:12px">
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <span id="badgePlan" class="badge warn">PLAN: —</span>
+            <span id="badgeValidacion" class="badge warn">VALIDACIÓN: —</span>
+          </div>
+
+          <div class="summary" style="margin-top:12px">
+            <div class="title">Nombre</div>
+            <div class="big" id="nombreTxt">—</div>
+
+            <div class="title" style="margin-top:6px">Referencia</div>
+            <div class="small" id="refTxt">—</div>
+
+            <div class="title" style="margin-top:6px">Código</div>
+            <div class="big" id="codigoTxt">—</div>
+
+            <div class="actions">
+              <button class="btn2 green" id="btnCompartir" type="button">Compartir</button>
+              <button class="btn2 blue" id="btnImprimir" type="button">Imprimir</button>
+            </div>
+          </div>
+
+          <!-- (Opcional) enlaces de navegación, pero si no los quieres, dímelo y los quito -->
+          <div class="hr"></div>
+          <div class="muted" style="font-size:12px;margin-bottom:8px">Enlaces rápidos</div>
+          <div class="actions">
+            <a class="btn2" id="lnkMaps" href="#" target="_blank" rel="noopener">Google Maps</a>
+            <a class="btn2" id="lnkWaze" href="#" target="_blank" rel="noopener">Waze</a>
+            <a class="btn2" id="lnkUber" href="#" target="_blank" rel="noopener">Uber</a>
+            <a class="btn2 green" id="lnkWA" href="#" target="_blank" rel="noopener">Avisar WhatsApp</a>
+          </div>
+        </div>
       </div>
 
-      <div class="share-hint">
-        Tip: En WhatsApp Web, elige el contacto y pega con <strong>CTRL+V</strong>, luego envía.
+      <!-- CONTADOR SOLO NEGOCIOS -->
+      <div class="card">
+        <div id="contadorNegocios" class="counter hide">
+          <h3>Contador mensual (solo Negocios)</h3>
+          <div class="bigtime" id="tiempoRestante">—</div>
+          <div class="tiny" id="detalleVencimiento">—</div>
+          <div class="tiny">Este contador solo se muestra cuando <b>plan</b> es Negocio/Negocios/Empresa/Business.</div>
+        </div>
+
+        <div id="contadorOcultoInfo" class="muted" style="font-size:13px">
+          El contador mensual se mostrará automáticamente si el <b>plan</b> es Negocio.
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- VISTA IMPRIMIBLE (solo nombre, referencia, codigo) -->
+        <div class="summary">
+          <div class="title">Vista imprimible</div>
+          <div class="small">
+            Cuando presionas <b>Imprimir</b>, solo se imprime: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div class="muted no-print" style="margin-top:16px;text-align:center;font-size:12px">
+      © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.
     </div>
   </div>
 
   <script>
     // =========================
-    // CONFIGURACIÓN
+    // API (TU URL FINAL)
     // =========================
     const API_URL = "https://script.google.com/macros/s/AKfycbweVjHDGS4rnXhCR43BsJhBPDxepPng6dqURtZK83vCjN7s8etXEOBPIkPJk7BqVQ8RmQ/exec";
 
     // =========================
-    // FUNCIONES UTILITARIAS
+    // HELPERS
     // =========================
-    function mostrarNotificacion(mensaje = "Copiado ✅") {
-      const notif = document.createElement('div');
-      notif.className = 'copy-notification';
-      notif.textContent = mensaje;
-      document.body.appendChild(notif);
-      setTimeout(() => notif.remove(), 2000);
+    function $(id){ return document.getElementById(id); }
+
+    function toast(msg){
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(), 1800);
     }
 
-    async function copiarTexto(texto) {
-      try {
-        await navigator.clipboard.writeText(texto);
-        mostrarNotificacion("✅ Copiado al portapapeles");
-      } catch (err) {
-        const ta = document.createElement("textarea");
-        ta.value = texto;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-        mostrarNotificacion("✅ Copiado al portapapeles");
-      }
+    function setEstado(txt){ $("estadoTxt").textContent = txt; }
+
+    function setMsg(txt, tone="muted"){
+      const el = $("msg");
+      el.className = tone === "bad" ? "badge bad"
+                   : tone === "ok" ? "badge ok"
+                   : tone === "warn" ? "badge warn"
+                   : "muted";
+      el.textContent = txt;
     }
 
-    function esIOS() {
-      return /iPhone|iPad|iPod/i.test(navigator.userAgent) || 
-             (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    function normalizePlan(p){ return String(p || "").trim().toLowerCase(); }
+    function esNegocio(plan){
+      return ["negocios","negocio","business","empresa"].includes(normalizePlan(plan));
     }
 
-    function esMovil() {
-      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
-             (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    }
-
-    function detectarCodigoUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return (params.get("code") || "").trim().toUpperCase();
-    }
-
-    function escapeJs(str) {
-      return String(str || "")
-        .replace(/\\/g, "\\\\")
-        .replace(/'/g, "\\'")
-        .replace(/\n/g, "\\n")
-        .replace(/\r/g, "");
-    }
-
-    // =========================
-    // FUNCIONES PARA COMPARTIR POR WHATSAPP
-    // =========================
-    async function compartirPorWhatsApp(mensaje) {
-      if (navigator.share && esMovil()) {
-        try {
-          await navigator.share({
-            title: "Dirección Digital",
-            text: mensaje,
-          });
-          return;
-        } catch (error) {
-          console.log("Web Share cancelado o falló, usando fallback");
-        }
-      }
-
-      if (esIOS()) {
-        const waIOS = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensaje);
-        window.location.href = waIOS;
+    function safeHref(a, url){
+      if (!url){
+        a.href="#";
+        a.style.opacity=".55";
+        a.style.pointerEvents="none";
         return;
       }
-
-      if (esMovil()) {
-        const wa = "https://wa.me/?text=" + encodeURIComponent(mensaje);
-        window.open(wa, "_blank", "noopener");
-        return;
-      }
-
-      shareOpen(mensaje);
+      a.href=url;
+      a.style.opacity="1";
+      a.style.pointerEvents="auto";
     }
 
-    function shareOpen(mensaje) {
-      const modal = document.getElementById("shareModal");
-      const ta = document.getElementById("shareText");
-      if (!modal || !ta) return;
-
-      ta.value = mensaje;
-      modal.classList.add("show");
-      modal.setAttribute("aria-hidden", "false");
-
-      setTimeout(() => {
-        ta.focus();
-        ta.select();
-      }, 50);
-    }
-
-    function shareClose() {
-      const modal = document.getElementById("shareModal");
-      if (!modal) return;
-      modal.classList.remove("show");
-      modal.setAttribute("aria-hidden", "true");
-    }
-
-    async function shareCopy() {
-      const ta = document.getElementById("shareText");
-      if (!ta) return;
-      await copiarTexto(ta.value);
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") shareClose();
-    });
-
-    document.addEventListener("click", (e) => {
-      const modal = document.getElementById("shareModal");
-      if (!modal) return;
-      if (modal.classList.contains("show") && e.target === modal) shareClose();
-    });
-
-    // =========================
-    // FUNCIONES PARA EL CONTADOR
-    // =========================
-    function esNegocio(plan) {
-      if (!plan) return false;
-      const p = String(plan).toLowerCase().trim();
-      return ["negocios", "negocio", "business", "empresa"].includes(p);
-    }
-
-    function parseFecha(fechaStr) {
+    function parseFecha(fechaStr){
       if (!fechaStr) return null;
       const d = new Date(fechaStr);
       return isNaN(d.getTime()) ? null : d;
     }
 
-    function addOneMonth(date) {
+    function addOneMonth(date){
       const d = new Date(date.getTime());
       const day = d.getDate();
       d.setMonth(d.getMonth() + 1);
-      if (d.getDate() < day) {
-        d.setDate(0);
-      }
+      if (d.getDate() < day) d.setDate(0);
       return d;
     }
 
-    function formatTimeUnit(n) {
-      return String(n).padStart(2, "0");
-    }
+    function fmt2(n){ return String(n).padStart(2,"0"); }
 
-    function diffToParts(ms) {
+    function diffToParts(ms){
       const total = Math.max(0, ms);
       const sec = Math.floor(total / 1000);
       const days = Math.floor(sec / 86400);
@@ -812,263 +370,162 @@
     }
 
     let timer = null;
+    function stopTimer(){ if (timer) clearInterval(timer); timer = null; }
 
-    function stopTimer() {
-      if (timer) clearInterval(timer);
-      timer = null;
-    }
-
-    function startMonthlyCounter(fechaBase, counterElement) {
+    function startMonthlyCounter(fechaBase){
       stopTimer();
+      let venc = addOneMonth(fechaBase);
 
-      const base = fechaBase;
-      let venc = addOneMonth(base);
-      const tiempoRestante = counterElement.querySelector('.counter-number');
-      const detalleVencimiento = counterElement.querySelector('.counter-note');
-
-      function tick() {
+      function tick(){
         const now = new Date();
-        while (venc.getTime() <= now.getTime()) {
-          venc = addOneMonth(venc);
-        }
+        while (venc.getTime() <= now.getTime()) venc = addOneMonth(venc);
 
         const ms = venc.getTime() - now.getTime();
-        const { days, hours, mins, secs } = diffToParts(ms);
+        const {days, hours, mins, secs} = diffToParts(ms);
 
-        tiempoRestante.textContent = `${days}d ${formatTimeUnit(hours)}h ${formatTimeUnit(mins)}m ${formatTimeUnit(secs)}s`;
-        detalleVencimiento.textContent = `Próximo vencimiento: ${venc.toLocaleString("es-PA")}`;
+        $("tiempoRestante").textContent = `${days}d ${fmt2(hours)}h ${fmt2(mins)}m ${fmt2(secs)}s`;
+        $("detalleVencimiento").textContent = `Próximo vencimiento: ${venc.toLocaleString("es-PA")}`;
       }
 
       tick();
       timer = setInterval(tick, 1000);
     }
 
-    // =========================
-    // RENDERIZADO DEL PANEL
-    // =========================
-    function renderPanel(data) {
-      const codigo = data.codigo || "—";
-      const nombre = data.nombre || "—";
-      const telefono = data.telefono || "—";
-      const referencia = data.referencia || "—";
-      const coordenada = data.coordenada || "—";
-      const fecha = data.fecha || "—";
-      const plan = data.plan || "—";
-      const validacion = data.validacion || "—";
-      
-      const linkCliente = location.origin + "/?code=" + encodeURIComponent(codigo);
-      const mensajeShare = `Mi dirección digital (${codigo}) ✅\n${linkCliente}`;
+    function detectarCodigoCliente(){
+      const params = new URLSearchParams(window.location.search);
+      const c = (params.get("code") || "").trim();
+      return c ? c.toUpperCase() : "";
+    }
 
-      // Generar contador si es negocio
-      let counterHTML = '';
-      if (esNegocio(plan)) {
-        const fechaBase = parseFecha(fecha);
-        if (fechaBase) {
-          counterHTML = `
-            <div class="counter-box" id="monthlyCounter">
-              <i class="fas fa-clock"></i>
-              <div style="font-weight: 800; margin-bottom: 5px;">Tiempo restante del plan</div>
-              <div class="counter-number">—</div>
-              <div class="counter-label">días · horas · minutos · segundos</div>
-              <div class="counter-note">Calculando...</div>
-            </div>
-          `;
-        } else {
-          counterHTML = `
-            <div class="counter-box">
-              <i class="fas fa-exclamation-triangle"></i>
-              <div class="counter-label">No se pudo leer la fecha</div>
-            </div>
-          `;
-        }
+    async function compartir(mensaje){
+      // Si existe share (móvil), úsalo
+      if (navigator.share){
+        try{
+          await navigator.share({ title:"Dirección Digital", text: mensaje });
+          return;
+        }catch(e){}
       }
-
-      return `
-        <div class="info-box">
-          <div class="info-title"><i class="fas fa-id-card"></i> Información del cliente</div>
-          
-          <div class="data-row">
-            <span class="data-label">Código</span>
-            <span class="data-value">${codigo}</span>
-          </div>
-          
-          <div class="data-row">
-            <span class="data-label">Plan</span>
-            <span class="data-value"><span class="badge ${esNegocio(plan) ? 'ok' : 'warn'}">${plan}</span></span>
-          </div>
-          
-          <div class="data-row">
-            <span class="data-label">Validación</span>
-            <span class="data-value"><span class="badge ${String(validacion).toLowerCase().includes('ok') ? 'ok' : 'warn'}">${validacion}</span></span>
-          </div>
-          
-          <div class="data-row">
-            <span class="data-label">Nombre</span>
-            <span class="data-value">${nombre}</span>
-          </div>
-          
-          <div class="data-row">
-            <span class="data-label">Teléfono</span>
-            <span class="data-value">${telefono}</span>
-          </div>
-          
-          ${referencia !== "—" ? `
-          <div class="data-row">
-            <span class="data-label">Referencia</span>
-            <span class="data-value">${referencia}</span>
-          </div>
-          ` : ''}
-          
-          <div class="data-row">
-            <span class="data-label">Coordenada</span>
-            <span class="data-value">${coordenada}</span>
-          </div>
-          
-          <div class="data-row">
-            <span class="data-label">Fecha registro</span>
-            <span class="data-value">${fecha}</span>
-          </div>
-        </div>
-
-        <!-- CONTADOR PARA NEGOCIOS -->
-        ${counterHTML}
-
-        <div class="links-grid">
-          <a class="map-link maps" href="${data.google_maps || '#'}" ${!data.google_maps ? 'style="opacity:0.5;pointer-events:none;"' : ''} target="_blank" rel="noopener">
-            <i class="fab fa-google"></i> Abrir Google Maps
-          </a>
-          <a class="map-link waze" href="${data.waze || '#'}" ${!data.waze ? 'style="opacity:0.5;pointer-events:none;"' : ''} target="_blank" rel="noopener">
-            <i class="fab fa-waze"></i> Abrir Waze
-          </a>
-          <a class="map-link uber" href="${data.uber || '#'}" ${!data.uber ? 'style="opacity:0.5;pointer-events:none;"' : ''} target="_blank" rel="noopener">
-            <i class="fab fa-uber"></i> Pedir Uber
-          </a>
-          <a class="map-link whats" href="${data.link_whatsapp || '#'}" ${!data.link_whatsapp ? 'style="opacity:0.5;pointer-events:none;"' : ''} target="_blank" rel="noopener">
-            <i class="fab fa-whatsapp"></i> Avisar llegada
-          </a>
-        </div>
-
-        <div class="info-box">
-          <div class="info-title"><i class="fas fa-user"></i> Link para compartir</div>
-          
-          <button class="btn-copy" type="button" onclick="copiarTexto('${escapeJs(linkCliente)}')">
-            <i class="fas fa-copy"></i> Copiar link
-          </button>
-
-          <button class="btn-whatsapp-share" onclick="compartirPorWhatsApp('${escapeJs(mensajeShare)}')">
-            <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
-          </button>
-        </div>
-
-        <div class="qr-grid">
-          <div class="qr-box">
-            <div class="info-title" style="justify-content:center;"><i class="fas fa-map-marked-alt"></i> QR Maps</div>
-            <img src="${data.qr_maps || 'https://via.placeholder.com/200?text=No+disponible'}" alt="QR Maps" onerror="this.src='https://via.placeholder.com/200?text=Error'"/>
-          </div>
-          <div class="qr-box">
-            <div class="info-title" style="justify-content:center;"><i class="fab fa-whatsapp"></i> QR WhatsApp</div>
-            <img src="${data.qr_whatsapp || 'https://via.placeholder.com/200?text=No+disponible'}" alt="QR WhatsApp" onerror="this.src='https://via.placeholder.com/200?text=Error'"/>
-          </div>
-        </div>
-      `;
+      // Fallback: WhatsApp
+      const wa = "https://wa.me/?text=" + encodeURIComponent(mensaje);
+      window.open(wa, "_blank", "noopener");
     }
 
-    function renderError(msg) {
-      return `
-        <div style="background: rgba(239,68,68,0.12); border-radius:24px; padding:30px; text-align:center; border:1px solid rgba(239,68,68,0.3);">
-          <i class="fas fa-exclamation-triangle" style="font-size:3rem; color:#ef4444; margin-bottom:15px;"></i>
-          <h3 style="color:#ef4444;">Error</h3>
-          <p style="color:#ffb3b3;">${msg}</p>
-        </div>
-      `;
-    }
-
-    function renderLoading() {
-      return `
-        <div style="text-align:center; padding:40px;">
-          <i class="fas fa-spinner fa-pulse" style="font-size:2rem; color:var(--accent-blue);"></i>
-          <p style="color:var(--text-secondary); margin-top:15px;">Buscando dirección...</p>
-        </div>
-      `;
+    function imprimir(){
+      window.print();
     }
 
     // =========================
-    // FUNCIÓN PRINCIPAL DE BÚSQUEDA
+    // MAIN
     // =========================
-    async function buscar() {
-      const codigo = document.getElementById("codigo")?.value.trim().toUpperCase();
-      if (!codigo) {
-        alert("Ingresa un código AD507 válido");
+    async function buscar(){
+      const codigo = $("codigoInput").value.trim().toUpperCase();
+      $("codigoPill").textContent = codigo || "—";
+
+      if (!codigo){
+        setMsg("Escribe un código, ejemplo: AD507-0011", "warn");
         return;
       }
 
-      const target = document.getElementById("resultado");
-      if (!target) return;
-
-      target.innerHTML = renderLoading();
-      
-      const btn = document.getElementById("btnBuscar");
-      if (btn) btn.disabled = true;
+      setEstado("Buscando…");
+      setMsg("Consultando API…", "muted");
+      $("btnBuscar").disabled = true;
 
       stopTimer();
+      $("contadorNegocios").classList.add("hide");
+      $("contadorOcultoInfo").classList.remove("hide");
+      $("contenido").classList.add("hide");
 
-      try {
+      try{
         const res = await fetch(API_URL + "?code=" + encodeURIComponent(codigo));
         const data = await res.json();
 
-        if (!data || data.ok !== true) {
-          target.innerHTML = renderError(data?.message || "Código no encontrado o error en la API");
+        if (!data || data.ok !== true){
+          setEstado("Error");
+          setMsg((data && data.message) ? data.message : "No se pudo obtener datos.", "bad");
           return;
         }
 
-        target.innerHTML = renderPanel(data);
+        // Mostrar
+        setEstado("OK");
+        setMsg("Datos cargados.", "ok");
+        $("contenido").classList.remove("hide");
 
-        // Iniciar contador si es negocio
-        if (esNegocio(data.plan)) {
+        // SOLO: nombre, referencia, codigo
+        $("nombreTxt").textContent = data.nombre || "—";
+        $("refTxt").textContent = data.referencia || "—";
+        $("codigoTxt").textContent = data.codigo || codigo;
+        $("codigoPill").textContent = data.codigo || codigo;
+
+        // Badges
+        const planTxt = data.plan || "";
+        const valTxt  = data.validacion || "";
+
+        $("badgePlan").textContent = "PLAN: " + (planTxt || "—");
+        $("badgePlan").className = "badge " + (esNegocio(planTxt) ? "ok" : "warn");
+
+        $("badgeValidacion").textContent = "VALIDACIÓN: " + (valTxt || "—");
+        const v = String(valTxt||"").trim().toLowerCase();
+        $("badgeValidacion").className = "badge " + (v.includes("ok") || v.includes("aprob") ? "ok" : (v.includes("revis") ? "warn" : "warn"));
+
+        // Links rápidos (si no los quieres, dime y los elimino)
+        safeHref($("lnkMaps"), data.google_maps || "");
+        safeHref($("lnkWaze"), data.waze || "");
+        safeHref($("lnkUber"), data.uber || "");
+        safeHref($("lnkWA"), data.link_whatsapp || "");
+
+        // Compartir (solo con codigo + link del perfil)
+        const linkCliente = location.origin + location.pathname + "?code=" + encodeURIComponent(data.codigo || codigo);
+        const mensajeShare =
+          `Mi dirección digital (${data.codigo || codigo}) ✅\n` +
+          `${data.nombre ? data.nombre + "\n" : ""}` +
+          `${data.referencia ? "Referencia: " + data.referencia + "\n" : ""}` +
+          linkCliente;
+
+        $("btnCompartir").onclick = async () => {
+          await compartir(mensajeShare);
+        };
+
+        $("btnImprimir").onclick = () => imprimir();
+
+        // CONTADOR SOLO NEGOCIOS (MENSUAL)
+        if (esNegocio(planTxt)){
+          $("contadorNegocios").classList.remove("hide");
+          $("contadorOcultoInfo").classList.add("hide");
+
           const fechaBase = parseFecha(data.fecha);
-          if (fechaBase) {
-            const counterElement = document.getElementById('monthlyCounter');
-            if (counterElement) {
-              startMonthlyCounter(fechaBase, counterElement);
-            }
+          if (!fechaBase){
+            $("tiempoRestante").textContent = "—";
+            $("detalleVencimiento").textContent = "No se pudo leer la fecha. Revisa el campo 'Fecha' en la hoja.";
+          } else {
+            startMonthlyCounter(fechaBase);
           }
+        } else {
+          $("contadorNegocios").classList.add("hide");
+          $("contadorOcultoInfo").classList.remove("hide");
         }
 
-      } catch (error) {
-        console.error("Error:", error);
-        target.innerHTML = renderError("Error de conexión. Intenta más tarde.");
-      } finally {
-        if (btn) btn.disabled = false;
+      }catch(err){
+        console.error(err);
+        setEstado("Error");
+        setMsg("Error consultando la API. Revisa el enlace / permisos de la implementación.", "bad");
+      }finally{
+        $("btnBuscar").disabled = false;
       }
     }
 
-    // =========================
-    // INICIALIZACIÓN
-    // =========================
-    (function init() {
-      const btn = document.getElementById("btnBuscar");
-      if (btn) btn.addEventListener("click", buscar);
+    $("btnBuscar").addEventListener("click", buscar);
+    $("codigoInput").addEventListener("keydown", (ev)=>{
+      if (ev.key === "Enter") buscar();
+    });
 
-      const input = document.getElementById("codigo");
-      if (input) {
-        input.addEventListener("keydown", (ev) => {
-          if (ev.key === "Enter") buscar();
-        });
-      }
-
-      // Auto-buscar si hay code en URL
-      const codigoUrl = detectarCodigoUrl();
-      if (codigoUrl && input) {
-        input.value = codigoUrl;
-        setTimeout(buscar, 100);
+    // Autocargar con ?code=AD507-0011
+    (function autoLoad(){
+      const c = detectarCodigoCliente();
+      if (c){
+        $("codigoInput").value = c;
+        buscar();
       }
     })();
-
-    // Exponer funciones globales
-    window.copiarTexto = copiarTexto;
-    window.compartirPorWhatsApp = compartirPorWhatsApp;
-    window.shareClose = shareClose;
-    window.shareCopy = shareCopy;
   </script>
 </body>
 </html>

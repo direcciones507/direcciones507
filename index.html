@@ -1061,6 +1061,16 @@
     async function fetchData(codigo) {
       try {
         const res = await fetch(API_URL + "?code=" + encodeURIComponent(codigo));
+        // Detectar si es negocio
+const esNegocio = ["negocios","negocio","business","empresa"]
+  .includes(String(data.plan || "").trim().toLowerCase());
+
+// Si NO es negocio → ocultar contador
+if (!esNegocio) {
+  const box = document.getElementById("contadorNegocios");
+  if (box) box.style.display = "none";
+  return;
+}
         return await res.json();
       } catch (error) {
         console.error("Error fetching data:", error);

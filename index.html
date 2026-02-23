@@ -456,6 +456,37 @@
       margin-top: 6px;
     }
 
+    /* ===== NUEVO: CONTADOR PARA NEGOCIOS ===== */
+    .counter-box {
+      background: rgba(45, 122, 255, 0.1);
+      border: 1px solid rgba(45, 122, 255, 0.3);
+      border-radius: 60px;
+      padding: 12px 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      margin: 15px 0 5px;
+      backdrop-filter: blur(5px);
+    }
+    .counter-box i {
+      color: var(--accent-blue);
+      font-size: 1.2rem;
+    }
+    .counter-number {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: white;
+      line-height: 1;
+      margin-left: 5px;
+    }
+    .counter-label {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     /* ===== MODO CLIENTE ===== */
     .client-shell{ width:100%; display:none; flex:1; }
     .client-card{
@@ -1038,6 +1069,30 @@
     }
 
     // =========================
+    // FUNCIÓN PARA RENDERIZAR EL CONTADOR (NUEVO)
+    // =========================
+    function renderCounter(codigo) {
+      // Obtener el contador actual de localStorage o inicializar en 0
+      const storageKey = `counter_${codigo}`;
+      let visits = parseInt(localStorage.getItem(storageKey) || '0', 10);
+      
+      // Incrementar el contador para esta visita
+      visits++;
+      localStorage.setItem(storageKey, visits.toString());
+
+      // Devolver el HTML del contador
+      return `
+        <div style="display: flex; justify-content: center; margin: 10px 0 5px;">
+          <div class="counter-box">
+            <i class="fas fa-eye"></i>
+            <span class="counter-label">Visitas al perfil:</span>
+            <span class="counter-number">${visits}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================
     // RENDERIZADO DEL PANEL CORPORATIVO
     // =========================
     function renderPanelCorporativo(data, codigo) {
@@ -1053,6 +1108,9 @@
         `${linkCliente}`;
 
       const mask = "••••••••••••••••••••••••••";
+
+      // Generar el contador
+      const counterHTML = renderCounter(codigo);
 
       return `
         <div class="info-box" style="margin-top:0;">
@@ -1118,6 +1176,9 @@
           <img src="${qrCliente}" alt="QR de la dirección" />
           <div class="qr-hint">Escanéalo para abrir la dirección del cliente.</div>
         </div>
+
+        <!-- CONTADOR DE VISITAS (NUEVO) -->
+        ${counterHTML}
       `;
     }
 
@@ -1223,3 +1284,4 @@
   </script>
 </body>
 </html>
+

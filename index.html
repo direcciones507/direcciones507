@@ -1,1297 +1,469 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Direcciones507 · Sistema Digital de Direcciones Panamá</title>
-
-  <!-- Font Awesome 6 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AD507 | Verificación</title>
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root{
-      --bg-primary:#0a0c12;
-      --bg-secondary:#11131f;
-      --bg-card:#181b28;
-      --bg-input:#22263b;
-      --accent-green:#16c47f;
-      --accent-blue:#2d7aff;
-      --text-primary:#ffffff;
-      --text-secondary:#a8b3cf;
-      --border-dim: rgba(255,255,255,0.08);
-      --glow: 0 8px 20px rgba(0,0,0,0.6);
+      --bg:#0b0f14;
+      --card:#0f1722;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --line:#1f2a37;
+      --btn:#111827;
     }
-
+    *{box-sizing:border-box}
     body{
-      background: var(--bg-primary);
-      font-family:'Inter',sans-serif;
-      color: var(--text-primary);
-      line-height:1.5;
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, #18345f 0%, transparent 60%),
+                  radial-gradient(900px 700px at 90% 0%, #1a6b5b 0%, transparent 55%),
+                  var(--bg);
+      color:var(--text);
     }
-
-    .container{
-      max-width:980px;
-      margin:0 auto;
-      padding:0 24px;
-      width:100%;
+    .wrap{max-width:980px;margin:0 auto;padding:24px}
+    .top{
+      display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:14px
     }
-
-    /* ===== HEADER CON LOGO (SIEMPRE VISIBLE) ===== */
-    .top-bar{
-      background: var(--bg-secondary);
-      padding: 20px 0;
-      border-bottom: 1px solid var(--border-dim);
-      backdrop-filter: blur(5px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    .brand{
+      display:flex;gap:12px;align-items:center
     }
-
-    .logo-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-
-    .logo-icon {
+    .logo{
+      width:44px;height:44px;border-radius:14px;
       background: linear-gradient(145deg, #1E51D3, #0B2A6F);
-      width: 60px;
-      height: 60px;
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5);
+      display:grid;place-items:center;
+      box-shadow: 0 12px 26px -14px rgba(0,0,0,.7);
+      font-weight:800
     }
-
-    .logo-icon i {
-      font-size: 32px;
-      color: white;
-      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+    .brand h1{font-size:18px;margin:0;line-height:1.2}
+    .brand p{margin:2px 0 0 0;color:var(--muted);font-size:13px}
+    .card{
+      background: rgba(15,23,34,.92);
+      border:1px solid rgba(31,42,55,.9);
+      border-radius:18px;
+      padding:18px;
+      box-shadow: 0 18px 60px -30px rgba(0,0,0,.75);
     }
-
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .grid{display:grid;gap:14px}
+    @media(min-width:900px){
+      .grid.two{grid-template-columns: 1.2fr .8fr}
     }
-
-    .logo-main {
-      font-family: 'Outfit', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #ffffff, #bdd3ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      line-height: 1;
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      background:#0b1320;border:1px solid rgba(31,42,55,.9);
+      color:var(--muted);font-size:12px
     }
-
-    .logo-badge {
-      background: rgba(45,122,255,0.15);
-      color: var(--accent-blue);
-      font-size: 0.8rem;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 100px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid rgba(45,122,255,0.3);
-      margin-top: 5px;
-    }
-
-    /* ===== BOTON CTA PRINCIPAL (SE OCULTA EN MODO CLIENTE) ===== */
-    .cta-section{
-      text-align:center;
-      margin:30px 0 20px;
+    .pill b{color:var(--text);font-weight:700}
+    .input{
       width:100%;
-      display:flex;
-      justify-content:center;
-    }
-    .btn-solicitar{
-      background: linear-gradient(145deg,#1fbf64,#16a34a);
-      color:white;
-      border:none;
-      padding:18px 34px;
-      border-radius:60px;
-      font-size:1.25rem;
-      font-weight:900;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:12px;
-      box-shadow: 0 10px 20px -5px rgba(22,163,74,0.4);
-      transition:0.2s;
-      border:1px solid rgba(255,255,255,0.2);
-      letter-spacing:-0.2px;
-    }
-    .btn-solicitar i{ font-size:1.8rem; }
-    .btn-solicitar:hover{
-      transform: scale(1.02);
-      background: linear-gradient(145deg,#22c55e,#15803d);
-      box-shadow: 0 15px 25px -5px #14532d80;
-    }
-
-    /* ===== SECCIONES DE LA LANDING (SE OCULTAN EN MODO CLIENTE) ===== */
-    .section-title{
-      font-size:2.2rem;
-      font-weight:700;
-      color:white;
-      margin-bottom:1rem;
-      text-align:center;
-      font-family:'Outfit',sans-serif;
-    }
-    .section-sub{
-      font-size:1.2rem;
-      color: var(--text-secondary);
-      margin-bottom:2.5rem;
-      font-weight:400;
-      text-align:center;
-    }
-
-    .steps-grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap:1.8rem;
-      margin:2.5rem 0 3rem;
-    }
-    .step-card{
-      background: var(--bg-card);
-      padding:2rem 1.5rem;
-      border-radius:28px;
-      box-shadow: var(--glow);
-      border:1px solid var(--border-dim);
-      transition:0.2s;
-      text-align:center;
-    }
-    .step-card:hover{ transform: translateY(-5px); border-color: rgba(45,122,255,0.3); }
-    .step-icon{
-      background: rgba(45,122,255,0.15);
-      width:70px;
-      height:70px;
-      border-radius:30px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin:0 auto 1.5rem auto;
-      font-size:2.2rem;
-      color: var(--accent-blue);
-    }
-    .step-card h3{ margin-bottom:0.75rem; font-size:1.4rem; font-weight:800; }
-    .step-card p{ color: var(--text-secondary); }
-
-    /* ===== SECCIÓN DE PRECIOS ===== */
-    .pricing-grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap:2rem;
-      margin:2rem 0 3rem;
-    }
-    .price-card{
-      background: var(--bg-card);
-      border-radius:32px;
-      padding:2.2rem 1.8rem;
-      box-shadow: var(--glow);
-      border:1px solid var(--border-dim);
-      transition:0.2s;
-      display:flex;
-      flex-direction:column;
-    }
-    .price-card.popular{
-      border:2px solid #FDBB2F;
-      transform: scale(1.02);
-      box-shadow: 0 20px 30px -5px #0b2a6f80;
-    }
-    .price-badge{
-      background:#FDBB2F;
-      color:#0B1E4A;
-      font-weight:900;
-      font-size:0.85rem;
-      padding:0.2rem 1rem;
-      border-radius:40px;
-      display:inline-block;
-      align-self:flex-start;
-      margin-bottom:1rem;
-    }
-    .price-card h3{ font-size:1.9rem; font-weight:800; margin-bottom:0.25rem; }
-    .price-amount{
-      font-size:2.8rem;
-      font-weight:900;
-      color:white;
-      line-height:1;
-      margin:1rem 0 0.8rem;
-    }
-    .price-amount small{ font-size:1.2rem; font-weight:600; color: var(--text-secondary); }
-    .features-list{ list-style:none; margin:1.5rem 0 2rem; flex:1; }
-    .features-list li{
-      padding:0.45rem 0;
-      border-bottom:1px solid var(--border-dim);
-      display:flex;
-      align-items:center;
-      gap:0.6rem;
-      color: var(--text-secondary);
-    }
-    .features-list i{ color: var(--accent-blue); width:1.4rem; font-size:1.1rem; }
-    .btn-card{
-      background: var(--accent-blue);
-      color:white;
-      border:none;
-      border-radius:60px;
-      padding:1rem 1.5rem;
-      font-weight:900;
-      font-size:1rem;
-      text-align:center;
-      text-decoration:none;
-      display:inline-block;
-      transition:0.15s;
-      margin-top:0.5rem;
-      border:1px solid rgba(255,255,255,0.2);
-    }
-    .btn-card:hover{ background:#1a4fbb; transform: scale(1.02); }
-
-    /* ===== BUSCADOR (INGRESA TU CÓDIGO) ===== */
-    .search-card{
-      background: var(--bg-card);
-      border-radius:32px;
-      padding:35px 28px;
-      box-shadow: var(--glow);
-      border:1px solid rgba(255,255,255,0.05);
-      margin:20px 0;
-      backdrop-filter: blur(10px);
-    }
-    .search-label{
-      display:block;
-      text-align:center;
-      font-weight:700;
-      color: var(--text-secondary);
-      margin-bottom:15px;
-      font-size:1rem;
-      letter-spacing:0.3px;
-    }
-    .input-group{ display:flex; gap:12px; flex-wrap:wrap; }
-    .input-group input{
-      flex:1;
-      min-width:200px;
-      background: var(--bg-input);
-      border:2px solid rgba(255,255,255,0.05);
-      padding:18px 22px;
-      border-radius:60px;
-      font-size:1.1rem;
-      color:white;
-      font-weight:700;
-      text-align:center;
-      transition:0.15s;
-    }
-    .input-group input:focus{
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(31,42,55,.95);
+      background:#0b1320;
+      color:var(--text);
       outline:none;
-      border-color: var(--accent-blue);
-      background:#1f2542;
+      font-size:14px;
     }
-    .input-group button{
-      background:white;
-      border:none;
-      border-radius:60px;
-      padding:0 32px;
-      font-weight:950;
-      font-size:1rem;
-      color:#0a0c12;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
+    .btn{
+      padding:12px 14px;border-radius:12px;
+      border:1px solid rgba(31,42,55,.95);
+      background: linear-gradient(180deg, #111827, #0b1320);
+      color:var(--text);
       cursor:pointer;
-      transition:0.15s;
-      border:2px solid transparent;
+      font-weight:700;
     }
-    .input-group button:hover{ background:#e0e7ff; transform: scale(1.02); }
-
-    /* ===== CONTENEDOR DE RESULTADOS ===== */
-    .result-container{ margin-top:18px; animation: fadeIn 0.35s ease; }
-    @keyframes fadeIn{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform: translateY(0);} }
-
-    .links-grid{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin: 14px 0 18px;
+    .btn:hover{filter:brightness(1.05)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .muted{color:var(--muted)}
+    .hr{height:1px;background:rgba(31,42,55,.95);margin:14px 0}
+    .kvs{display:grid;gap:10px}
+    .kv{
+      display:grid;grid-template-columns: 140px 1fr;gap:10px;
+      padding:10px;border:1px solid rgba(31,42,55,.85);
+      background:#0b1320;border-radius:14px;
     }
-    .map-link{
-      display:flex;
-      align-items:center;
-      gap:18px;
-      background: rgba(255,255,255,0.05);
-      padding:18px 22px;
-      border-radius:20px;
+    .kv .k{color:var(--muted);font-size:12px}
+    .kv .v{color:var(--text);font-size:14px;word-break:break-word}
+    .links{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:520px){.links{grid-template-columns:1fr}}
+    a.link{
+      display:flex;gap:10px;align-items:center;justify-content:center;
+      padding:12px;border-radius:14px;
+      border:1px solid rgba(31,42,55,.9);
+      background:#0b1320;
+      color:var(--text);
       text-decoration:none;
-      color:white;
-      font-weight:950;
-      font-size:1.1rem;
-      border:1px solid rgba(255,255,255,0.08);
-      transition:0.15s;
-      backdrop-filter: blur(5px);
+      font-weight:800;
     }
-    .map-link i{ font-size:1.8rem; width:32px; text-align:center; }
-    .map-link:hover{ background: rgba(255,255,255,0.1); transform: translateX(5px); border-color: rgba(255,255,255,0.2); }
-
-    .map-link.maps{ background: rgba(22,163,74,0.15); border-left: 5px solid #16a34a; }
-    .map-link.waze{ background: rgba(59,130,246,0.15); border-left: 5px solid #3b82f6; }
-    .map-link.uber{ background: rgba(0,0,0,0.4); border-left: 5px solid #555; }
-    .map-link.whats{ background: rgba(37,211,102,0.15); border-left: 5px solid #25D366; }
-
-    /* ===== CAJAS DE INFORMACIÓN ===== */
-    .info-box{
-      background: rgba(10, 15, 30, 0.8);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 18px;
-      margin: 12px 0;
+    a.link:hover{filter:brightness(1.05)}
+    .qrgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:520px){.qrgrid{grid-template-columns:1fr}}
+    .qrbox{
+      padding:12px;border-radius:16px;border:1px solid rgba(31,42,55,.9);
+      background:#0b1320;text-align:center
     }
-    .info-title{
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 950;
-      color: #8b9bb9;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .qrbox img{width:200px;height:200px;object-fit:contain;border-radius:12px}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:12px;font-weight:800;font-size:12px
     }
-    .masked-line{
-      background: #0c0f1a;
-      padding: 14px 14px;
-      border-radius: 18px;
-      font-family: monospace;
-      color: #b9c8f0;
-      border: 1px solid #252b40;
-      margin: 10px 0 12px;
-      font-size: 0.95rem;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
+    .ok{background: rgba(34,197,94,.12); color: var(--ok); border:1px solid rgba(34,197,94,.35)}
+    .warn{background: rgba(245,158,11,.12); color: var(--warn); border:1px solid rgba(245,158,11,.35)}
+    .bad{background: rgba(239,68,68,.12); color: var(--bad); border:1px solid rgba(239,68,68,.35)}
+    .counter{
+      display:grid;gap:10px;
+      padding:14px;border-radius:16px;
+      border:1px solid rgba(31,42,55,.95);
+      background: linear-gradient(180deg, rgba(34,197,94,.08), rgba(11,19,32,.7));
     }
-    .masked-text{ opacity:0.95; user-select:none; }
-    .small-tag{
-      font-size:0.78rem;
-      color:#7f8fb3;
+    .counter h3{margin:0;font-size:14px}
+    .bigtime{
+      font-size:22px;
       font-weight:900;
-      white-space:nowrap;
-      opacity:0.95;
+      letter-spacing:.4px;
     }
-
-    .btn-copy{
-      background: var(--accent-blue);
-      color: white;
-      border: none;
-      border-radius: 60px;
-      padding: 14px 18px;
-      font-weight: 950;
-      font-size: 1rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      transition: 0.15s;
-      border: 1px solid rgba(255,255,255,0.2);
+    .tiny{font-size:12px;color:var(--muted)}
+    .foot{
+      margin-top:16px;
+      text-align:center;color:var(--muted);font-size:12px
     }
-    .btn-copy:hover{ background:#1a4fbb; transform: scale(1.01); }
-
-    /* ===== BOTÓN DE COMPARTIR WHATSAPP ===== */
-    .btn-whatsapp-share{
-      background:#25D366;
-      color:#0a0c12;
-      font-weight: 950;
-      padding: 16px;
-      border-radius: 60px;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 10px;
-      border: 1px solid rgba(255,255,255,0.3);
-      transition:0.15s;
-      cursor: pointer;
-    }
-    .btn-whatsapp-share:hover{ transform: scale(1.01); filter: brightness(1.03); }
-
-    /* ===== SECCIÓN DEL CÓDIGO QR ===== */
-    .qr-box{
-      text-align:center;
-      background: #0f1322;
-      border-radius: 28px;
-      padding: 22px;
-      margin: 12px 0;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .qr-box img{
-      background:white;
-      padding:10px;
-      border-radius:24px;
-      max-width: 190px;
-      width: 190px;
-      height: 190px;
-      margin: 12px auto 8px;
-      display:block;
-    }
-    .qr-hint{
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      margin-top: 6px;
-    }
-
-    /* ===== NUEVO: CONTADOR PARA NEGOCIOS ===== */
-    .counter-box {
-      background: rgba(45, 122, 255, 0.1);
-      border: 1px solid rgba(45, 122, 255, 0.3);
-      border-radius: 60px;
-      padding: 12px 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      margin: 15px 0 5px;
-      backdrop-filter: blur(5px);
-    }
-    .counter-box i {
-      color: var(--accent-blue);
-      font-size: 1.2rem;
-    }
-    .counter-number {
-      font-size: 1.6rem;
-      font-weight: 900;
-      color: white;
-      line-height: 1;
-      margin-left: 5px;
-    }
-    .counter-label {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* ===== MODO CLIENTE ===== */
-    .client-shell{ width:100%; display:none; flex:1; }
-    .client-card{
-      background: var(--bg-card);
-      border-radius: 32px;
-      padding: 22px;
-      box-shadow: var(--glow);
-      border: 1px solid rgba(255,255,255,0.06);
-      margin: 18px auto 28px;
-      max-width: 780px;
-    }
-    .client-title{
-      text-align:center;
-      font-family:'Outfit',sans-serif;
-      font-size:1.45rem;
-      letter-spacing:-0.3px;
-      margin-bottom: 6px;
-    }
-    .client-sub{
-      text-align:center;
-      color: var(--text-secondary);
-      font-size:0.95rem;
-      margin-bottom: 10px;
-    }
-    .client-error{
-      background: rgba(255,77,77,0.12);
-      border: 1px solid rgba(255,77,77,0.35);
-      border-radius: 18px;
-      padding: 16px;
-      color: #ffb3b3;
-      font-weight: 950;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-      margin-top:12px;
-      text-align:center;
-    }
-
-    /* ===== FOOTER ===== */
-    .footer{
-      margin-top:60px;
-      background:#070a13;
-      border-top:1px solid rgba(255,255,255,0.05);
-      padding:40px 20px 25px;
-    }
-    .footer-content{
-      max-width:980px;
-      margin:0 auto;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
-      gap:25px;
-    }
-    .social-links{ display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
-    .social-links a{
-      color:#a0afcf;
-      background:#181e30;
-      width:48px; height:48px;
-      border-radius:48px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:1.6rem;
-      transition:0.15s;
-      border:1px solid #2d3555;
-      text-decoration:none;
-    }
-    .social-links a:hover{ background: var(--accent-blue); color:white; transform: translateY(-3px); }
-    .footer-copy{
-      color:#5b6a8c;
-      font-size:0.9rem;
-      border-top:1px solid #1e253a;
-      padding-top:25px;
-      margin-top:15px;
-      width:100%;
-    }
-
-    /* ===== MODAL WHATSAPP (PC) ===== */
-    .share-modal{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      padding: 18px;
-      backdrop-filter: blur(6px);
-    }
-    .share-modal.show{ display:flex; }
-
-    .share-card{
-      width: 100%;
-      max-width: 680px;
-      background: rgba(10, 15, 30, 0.92);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 24px;
-      box-shadow: 0 22px 60px rgba(0,0,0,0.55);
-      padding: 16px;
-    }
-
-    .share-head{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom: 12px;
-    }
-    .share-ic{
-      width: 44px;
-      height: 44px;
-      border-radius: 16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: rgba(37,211,102,0.16);
-      border: 1px solid rgba(37,211,102,0.30);
-      color: #d8ffe8;
-      font-size: 1.2rem;
-      flex: 0 0 auto;
-    }
-    .share-title{ font-weight: 950; letter-spacing: -0.2px; }
-    .share-sub{ color: var(--text-secondary); font-size: 0.95rem; margin-top: 2px; }
-    .share-close{
-      margin-left:auto;
-      border:none;
-      background: transparent;
-      color: rgba(255,255,255,0.75);
-      cursor:pointer;
-      font-size: 1.1rem;
-      padding: 6px 8px;
-    }
-
-    .share-text{
-      width: 100%;
-      min-height: 140px;
-      resize: none;
-      background: #0c0f1a;
-      color: #b9c8f0;
-      border: 1px solid #252b40;
-      border-radius: 18px;
-      padding: 14px;
-      font-family: monospace;
-      font-size: 0.98rem;
-      outline: none;
-    }
-
-    .share-actions{
-      display:flex;
-      gap:10px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .share-btn{
-      flex: 1;
-      min-width: 220px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
-      color: white;
-      padding: 12px 14px;
-      border-radius: 16px;
-      font-weight: 950;
-      cursor: pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      transition: .15s;
-    }
-    .share-btn:hover{ transform: scale(1.01); background: rgba(255,255,255,0.10); }
-    .share-btn.green{
-      background: rgba(37,211,102,0.18);
-      border-color: rgba(37,211,102,0.35);
-      color: #d8ffe8;
-    }
-
-    .share-hint{
-      margin-top: 10px;
-      color: var(--text-secondary);
-      font-size: 0.92rem;
-      text-align: center;
-    }
-
-    /* ===== NOTIFICACIÓN DE COPIADO ===== */
-    .copy-notification {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1a4fbb;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 60px;
-      font-weight: 700;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-      z-index: 10001;
-      animation: slideUp 0.3s ease, fadeOut 0.3s ease 1.7s forwards;
-    }
-
-    @keyframes slideUp {
-      from { bottom: 0; opacity: 0; }
-      to { bottom: 20px; opacity: 1; }
-    }
-
-    @keyframes fadeOut {
-      to { opacity: 0; visibility: hidden; }
-    }
-
-    /* ===== CLASE PARA OCULTAR ELEMENTOS EN MODO CLIENTE ===== */
-    .modo-cliente .landing-only {
-      display: none !important;
-    }
-
-    @media (max-width: 500px){
-      .input-group{ flex-direction:column; }
-      .input-group button{ padding:18px; }
-      .logo-main{ font-size:1.8rem; }
-      .logo-icon { width: 50px; height: 50px; }
-      .logo-icon i { font-size: 26px; }
-      .steps-grid{ grid-template-columns:1fr; }
-      .pricing-grid{ grid-template-columns:1fr; }
-      .price-card.popular{ transform: scale(1); }
-      .client-card{ margin: 14px 0 22px; padding: 18px; }
-      .masked-line{ flex-direction:column; align-items:flex-start; }
-      .small-tag{ align-self:flex-end; }
-    }
+    .hide{display:none !important}
   </style>
 </head>
+
 <body>
-
-  <!-- HEADER CON LOGO (SIEMPRE VISIBLE) -->
-  <div class="top-bar" id="headerGlobal">
-    <div class="container">
-      <div class="logo-container">
-        <div class="logo-icon">
-          <i class="fas fa-map-pin"></i>
-        </div>
-        <div class="logo-text">
-          <div class="logo-main">DIRECCIONES507</div>
-          <span class="logo-badge"><i class="fas fa-map-pin"></i> Sistema Digital de Direcciones de Panamá 🇵🇦</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== CONTENIDO EXCLUSIVO DE LA LANDING (SE OCULTA EN MODO CLIENTE) ===== -->
-  <div class="landing-only">
-    <!-- BOTON CTA PRINCIPAL -->
-    <div id="ctaSolicitar" class="container">
-      <div class="cta-section">
-        <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20en%20Direcciones507."
-           class="btn-solicitar">
-          <i class="fab fa-whatsapp"></i> SOLICITAR MI DIRECCIÓN DIGITAL
-        </a>
-      </div>
-    </div>
-
-    <!-- SECCIÓN: ¿CÓMO FUNCIONA? -->
-    <div class="container" id="seccionPasos">
-      <h2 class="section-title">¿Cómo funciona?</h2>
-      <div class="section-sub">Tu dirección digital en 4 simples pasos</div>
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-icon"><i class="fas fa-code"></i></div>
-          <h3>Creamos tu código AD507</h3>
-          <p>Te asignamos un código único vinculado a tu ubicación exacta.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-icon"><i class="fas fa-map-marked-alt"></i></div>
-          <h3>Integramos Maps y Waze</h3>
-          <p>Conectamos con las principales apps de navegación.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-icon"><i class="fas fa-qrcode"></i></div>
-          <h3>Recibes QR y enlace</h3>
-          <p>Listo para compartir con clientes o visitas.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-icon"><i class="fas fa-share-alt"></i></div>
-          <h3>Compartes en 1 clic</h3>
-          <p>WhatsApp, email o redes sociales fácilmente.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECCIÓN: PRECIOS -->
-    <div class="container" id="seccionPrecios">
-      <h2 class="section-title">Precios</h2>
-      <div class="section-sub">Precio fundador · Pago único</div>
-
-      <div class="pricing-grid">
-        <!-- TARJETA PERSONAL -->
-        <div class="price-card">
-          <h3>Personal</h3>
-          <div class="price-amount">$6.99 <small>USD</small></div>
-          <ul class="features-list">
-            <li><i class="fas fa-check-circle"></i> Dirección digital con QR</li>
-            <li><i class="fas fa-check-circle"></i> Enlace personalizado</li>
-            <li><i class="fas fa-check-circle"></i> Código AD507 único</li>
-            <li><i class="fas fa-check-circle"></i> Soporte básico</li>
-          </ul>
-          <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20PERSONAL%20($6.99)%20en%20Direcciones507."
-             class="btn-card">
-            <i class="fab fa-whatsapp"></i> Solicitar ahora
-          </a>
-        </div>
-
-        <!-- TARJETA NEGOCIOS (POPULAR) -->
-        <div class="price-card popular">
-          <span class="price-badge"><i class="fas fa-star"></i> MÁS ELEGIDO</span>
-          <h3>Negocios</h3>
-          <div class="price-amount">$10.99 <small>USD</small></div>
-          <ul class="features-list">
-            <li><i class="fas fa-check-circle"></i> Todo lo de Personal</li>
-            <li><i class="fas fa-check-circle"></i> Integración Maps + Waze</li>
-            <li><i class="fas fa-check-circle"></i> QR profesional con logo</li>
-            <li><i class="fas fa-check-circle"></i> Página pública personalizada</li>
-          </ul>
-          <a href="https://wa.me/50765996532?text=Hola%20👋%20Quiero%20activar%20mi%20dirección%20digital%20de%20NEGOCIO%20($10.99)%20en%20Direcciones507."
-             class="btn-card">
-            <i class="fab fa-whatsapp"></i> Activar para mi negocio
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECCIÓN: BUSCADOR (INGRESA TU CÓDIGO) -->
-    <div class="container" id="seccionBuscador">
-      <div class="search-card">
-        <span class="search-label"><i class="fas fa-qrcode"></i> Ingresa tu código AD507</span>
-        <div class="input-group">
-          <input type="text" id="codigo" placeholder="Ej: AD507-12345" autocomplete="off" />
-          <button type="button" onclick="buscarLanding()"><i class="fas fa-search"></i> Buscar dirección</button>
-        </div>
-
-        <!-- AQUÍ SE MUESTRAN LOS RESULTADOS DE LA BÚSQUEDA -->
-        <div id="resultado" class="result-container"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODO CLIENTE (SOLO ESTO SE VE CUANDO SE ACCEDE CON UN CÓDIGO) -->
-  <div class="client-shell" id="clientShell">
-    <div class="container">
-      <div class="client-card">
-        <div class="client-title">Accesos de tu Dirección Digital</div>
-        <div class="client-sub" id="clientSub">Cargando…</div>
-        <div id="clientResultado" class="result-container"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOOTER (SIEMPRE VISIBLE) -->
-  <footer class="footer" id="footerGlobal">
-    <div class="footer-content">
-      <div style="font-weight: 900; color: white; font-size: 1.2rem;">Direcciones507</div>
-      <div style="color: var(--text-secondary);">Sistema Digital de Direcciones de Panamá 🇵🇦</div>
-      <div class="social-links">
-        <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" aria-label="Instagram" rel="noopener"><i class="fab fa-instagram"></i></a>
-        <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" aria-label="Facebook" rel="noopener"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://www.tiktok.com/@direcciones507" target="_blank" aria-label="TikTok" rel="noopener"><i class="fab fa-tiktok"></i></a>
-        <a href="https://wa.me/50765996532" target="_blank" aria-label="WhatsApp" rel="noopener"><i class="fab fa-whatsapp"></i></a>
-      </div>
-      <div class="footer-copy">
-        © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.<br />
-        <span style="opacity: 0.5; font-size: 0.8rem;">Prohibida la copia o reproducción del sistema sin autorización.</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- MODAL PARA COMPARTIR POR WHATSAPP -->
-  <div class="share-modal" id="shareModal" aria-hidden="true">
-    <div class="share-card" role="dialog" aria-modal="true" aria-label="Compartir por WhatsApp">
-      <div class="share-head">
-        <div class="share-ic"><i class="fab fa-whatsapp"></i></div>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">AD</div>
         <div>
-          <div class="share-title">Enviar por WhatsApp</div>
-          <div class="share-sub">Copia el mensaje y pégalo en WhatsApp Web.</div>
+          <h1>Direcciones Digitales Panamá</h1>
+          <p>Verificación y enlaces de ubicación</p>
         </div>
-        <button class="share-close" type="button" onclick="shareClose()" aria-label="Cerrar">
-          <i class="fas fa-times"></i>
-        </button>
       </div>
 
-      <textarea id="shareText" class="share-text" readonly></textarea>
+      <div class="row">
+        <span class="pill">Estado: <b id="estadoTxt">Listo</b></span>
+        <span class="pill">Código: <b id="codigoPill">—</b></span>
+      </div>
+    </div>
 
-      <div class="share-actions">
-        <button class="share-btn" type="button" onclick="shareCopy()">
-          <i class="fas fa-copy"></i> Copiar mensaje
-        </button>
+    <div class="grid two">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;gap:10px">
+          <div style="flex:1;min-width:220px">
+            <div class="muted" style="font-size:12px;margin-bottom:6px">Buscar dirección</div>
+            <input id="codigoInput" class="input" placeholder="Ej: AD507-0011" />
+          </div>
+          <button id="btnBuscar" class="btn" style="min-width:150px">Buscar</button>
+        </div>
 
-        <a class="share-btn green" id="shareOpenWa" href="https://web.whatsapp.com/" target="_blank" rel="noopener">
-          <i class="fab fa-whatsapp"></i> Abrir WhatsApp Web
-        </a>
+        <div class="hr"></div>
+
+        <div id="msg" class="muted" style="font-size:13px">Ingresa tu código AD507 y presiona Buscar.</div>
+
+        <div id="contenido" class="hide">
+          <div class="row" style="margin-top:12px;justify-content:space-between;align-items:flex-start">
+            <div class="row" style="gap:10px">
+              <span id="badgePlan" class="badge warn">PLAN: —</span>
+              <span id="badgeValidacion" class="badge warn">VALIDACIÓN: —</span>
+            </div>
+            <div class="row" style="gap:10px">
+              <span class="pill">Tel: <b id="telTxt">—</b></span>
+            </div>
+          </div>
+
+          <div class="kvs" style="margin-top:12px">
+            <div class="kv">
+              <div class="k">Nombre</div>
+              <div class="v" id="nombreTxt">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Referencia</div>
+              <div class="v" id="refTxt">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Coordenada</div>
+              <div class="v" id="coordTxt">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Fecha</div>
+              <div class="v" id="fechaTxt">—</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="links">
+            <a class="link" id="lnkMaps" href="#" target="_blank" rel="noopener">Google Maps</a>
+            <a class="link" id="lnkWaze" href="#" target="_blank" rel="noopener">Waze</a>
+            <a class="link" id="lnkUber" href="#" target="_blank" rel="noopener">Uber</a>
+            <a class="link" id="lnkWA" href="#" target="_blank" rel="noopener">Avisar WhatsApp</a>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="qrgrid">
+            <div class="qrbox">
+              <div style="font-weight:900;margin-bottom:8px">QR Maps</div>
+              <img id="qrMapsImg" alt="QR Maps" />
+              <div class="tiny" style="margin-top:8px">Escanéalo para abrir Maps</div>
+            </div>
+            <div class="qrbox">
+              <div style="font-weight:900;margin-bottom:8px">QR WhatsApp</div>
+              <img id="qrWaImg" alt="QR WhatsApp" />
+              <div class="tiny" style="margin-top:8px">Escanéalo para avisar “Ya llegué”</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="share-hint">
-        Tip: En WhatsApp Web, elige el contacto y pega con <strong>CTRL+V</strong>, luego envía.
+      <!-- CONTADOR SOLO PARA NEGOCIOS -->
+      <div class="card">
+        <div id="contadorNegocios" class="counter hide">
+          <h3>Contador mensual (solo Negocios)</h3>
+          <div class="bigtime" id="tiempoRestante">—</div>
+          <div class="tiny" id="detalleVencimiento">—</div>
+          <div class="tiny">Si tu plan es Persona, este contador no aparece.</div>
+        </div>
+
+        <div id="contadorOcultoInfo" class="muted" style="font-size:13px">
+          El contador mensual se mostrará automáticamente si el <b>plan</b> es Negocio/Negocios/Empresa/Business.
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="muted" style="font-size:13px;line-height:1.5">
+          Reglas:
+          <ul style="margin:8px 0 0 16px;color:var(--muted)">
+            <li>El contador se activa solo si el API devuelve <b>"plan"</b> como Negocio.</li>
+            <li>Vence cada 1 mes desde la fecha del registro (<b>campo fecha</b>).</li>
+          </ul>
+        </div>
       </div>
+    </div>
+
+    <div class="foot">
+      © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.
     </div>
   </div>
 
   <script>
     // =========================
-    // CONFIGURACIÓN
+    // CONFIG
     // =========================
-    const API_URL = "https://script.google.com/macros/s/AKfycbwopyb0Cp5V2QyBUhmmOjkp1j9884W0RTy9068GjJYpPShKw95b4JllidryNfUPuaiAPg/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbweVjHDGS4rnXhCR43BsJhBPDxepPng6dqURtZK83vCjN7s8etXEOBPIkPJk7BqVQ8RmQ/exec";
 
     // =========================
-    // FUNCIONES UTILITARIAS
+    // HELPERS
     // =========================
-    function mostrarNotificacion(mensaje = "Copiado ✅") {
-      const notif = document.createElement('div');
-      notif.className = 'copy-notification';
-      notif.textContent = mensaje;
-      document.body.appendChild(notif);
-      setTimeout(() => notif.remove(), 2000);
+    function $(id){ return document.getElementById(id); }
+
+    function setEstado(txt){
+      $("estadoTxt").textContent = txt;
     }
 
-    async function copiarTexto(texto) {
-      try {
-        await navigator.clipboard.writeText(texto);
-        mostrarNotificacion("✅ Copiado al portapapeles");
-      } catch (err) {
-        const ta = document.createElement("textarea");
-        ta.value = texto;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-        mostrarNotificacion("✅ Copiado al portapapeles");
+    function setMsg(txt, tone="muted"){
+      $("msg").className = tone === "bad" ? "badge bad" : (tone === "ok" ? "badge ok" : (tone === "warn" ? "badge warn" : "muted"));
+      $("msg").textContent = txt;
+    }
+
+    function safeHref(a, url){
+      if (!url) {
+        a.href = "#";
+        a.style.opacity = ".55";
+        a.style.pointerEvents = "none";
+        return;
       }
+      a.href = url;
+      a.style.opacity = "1";
+      a.style.pointerEvents = "auto";
     }
 
-    function esIOS() {
-      return /iPhone|iPad|iPod/i.test(navigator.userAgent) || 
-             (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    function normalizePlan(p){
+      return String(p || "").trim().toLowerCase();
     }
 
-    function esMovil() {
-      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
-             (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    function esNegocio(plan){
+      return ["negocios","negocio","business","empresa"].includes(normalizePlan(plan));
     }
 
-    function detectarCodigoCliente() {
-      const params = new URLSearchParams(window.location.search);
-      const codeParam = (params.get("code") || "").trim().toUpperCase();
-      if (codeParam.startsWith("AD507")) return codeParam;
-
-      const path = (window.location.pathname || "").toUpperCase();
-      const match = path.match(/AD507-[A-Z0-9]+/i);
-      if (match && match[0]) return match[0].toUpperCase();
-
-      return "";
+    // Fecha: tu API manda algo como:
+    // "Mon Feb 23 2026 03:00:00 GMT-0500 (hora estándar oriental)"
+    function parseFecha(fechaStr){
+      if (!fechaStr) return null;
+      const d = new Date(fechaStr);
+      return isNaN(d.getTime()) ? null : d;
     }
 
-    function pickNombre(data) {
-      return String(
-        data?.nombre_cliente ??
-        data?.nombre ??
-        data?.cliente ??
-        data?.business_name ??
-        ""
-      ).trim() || "Cliente";
+    // Suma 1 mes manteniendo lógica de calendario (ej: 31 -> 30/29/28)
+    function addOneMonth(date){
+      const d = new Date(date.getTime());
+      const day = d.getDate();
+      d.setMonth(d.getMonth() + 1);
+      if (d.getDate() < day){
+        d.setDate(0);
+      }
+      return d;
     }
 
-    function pickReferencia(data) {
-      return String(
-        data?.referencia ??
-        data?.ref ??
-        data?.direccion ??
-        data?.detalle ??
-        ""
-      ).trim();
+    function fmt2(n){ return String(n).padStart(2,"0"); }
+
+    function diffToParts(ms){
+      const total = Math.max(0, ms);
+      const sec = Math.floor(total / 1000);
+      const days = Math.floor(sec / 86400);
+      const hours = Math.floor((sec % 86400) / 3600);
+      const mins = Math.floor((sec % 3600) / 60);
+      const secs = sec % 60;
+      return { days, hours, mins, secs };
     }
 
-    function escapeJs(str) {
-      return String(str || "")
-        .replace(/\\/g, "\\\\")
-        .replace(/'/g, "\\'")
-        .replace(/\n/g, "\\n")
-        .replace(/\r/g, "");
+    let timer = null;
+
+    function stopTimer(){
+      if (timer) clearInterval(timer);
+      timer = null;
     }
 
-    // =========================
-    // FUNCIÓN PARA OCULTAR LANDING EN MODO CLIENTE (MEJORADA)
-    // =========================
-    function activarModoCliente() {
-      // Ocultar todo el contenido de landing
-      const landingElements = document.querySelectorAll('.landing-only');
-      landingElements.forEach(el => el.style.display = 'none');
-      
-      // Mostrar el shell del cliente
-      const shell = document.getElementById("clientShell");
-      if (shell) shell.style.display = "block";
-    }
+    function startMonthlyCounter(fechaBase){
+      stopTimer();
 
-    // =========================
-    // FUNCIONES PARA COMPARTIR POR WHATSAPP
-    // =========================
-    async function compartirPorWhatsApp(mensaje) {
-      if (navigator.share && esMovil()) {
-        try {
-          await navigator.share({
-            title: "Dirección Digital",
-            text: mensaje,
-          });
-          return;
-        } catch (error) {
-          console.log("Web Share cancelado o falló, usando fallback");
+      const base = fechaBase;
+      let venc = addOneMonth(base);
+
+      function tick(){
+        const now = new Date();
+        while (venc.getTime() <= now.getTime()){
+          venc = addOneMonth(venc);
         }
+
+        const ms = venc.getTime() - now.getTime();
+        const {days, hours, mins, secs} = diffToParts(ms);
+
+        $("tiempoRestante").textContent = `${days}d ${fmt2(hours)}h ${fmt2(mins)}m ${fmt2(secs)}s`;
+        $("detalleVencimiento").textContent = `Próximo vencimiento: ${venc.toLocaleString("es-PA")}`;
       }
 
-      if (esIOS()) {
-        const waIOS = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensaje);
-        window.location.href = waIOS;
+      tick();
+      timer = setInterval(tick, 1000);
+    }
+
+    // =========================
+    // MAIN
+    // =========================
+    async function buscar(){
+      const codigo = $("codigoInput").value.trim();
+      $("codigoPill").textContent = codigo || "—";
+
+      if (!codigo){
+        setMsg("Escribe un código, ejemplo: AD507-0011", "warn");
         return;
       }
 
-      if (esMovil()) {
-        const wa = "https://wa.me/?text=" + encodeURIComponent(mensaje);
-        window.open(wa, "_blank", "noopener");
-        return;
-      }
+      setEstado("Buscando…");
+      setMsg("Consultando API…", "muted");
+      $("btnBuscar").disabled = true;
 
-      shareOpen(mensaje);
-    }
+      stopTimer();
+      $("contadorNegocios").classList.add("hide");
+      $("contadorOcultoInfo").classList.remove("hide");
+      $("contenido").classList.add("hide");
 
-    function shareOpen(mensaje) {
-      const modal = document.getElementById("shareModal");
-      const ta = document.getElementById("shareText");
-      if (!modal || !ta) return;
-
-      ta.value = mensaje;
-      modal.classList.add("show");
-      modal.setAttribute("aria-hidden", "false");
-
-      setTimeout(() => {
-        ta.focus();
-        ta.select();
-      }, 50);
-    }
-
-    function shareClose() {
-      const modal = document.getElementById("shareModal");
-      if (!modal) return;
-      modal.classList.remove("show");
-      modal.setAttribute("aria-hidden", "true");
-    }
-
-    async function shareCopy() {
-      const ta = document.getElementById("shareText");
-      if (!ta) return;
-      await copiarTexto(ta.value);
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") shareClose();
-    });
-
-    document.addEventListener("click", (e) => {
-      const modal = document.getElementById("shareModal");
-      if (!modal) return;
-      if (modal.classList.contains("show") && e.target === modal) shareClose();
-    });
-
-    // =========================
-    // FUNCIÓN PARA OBTENER DATOS DE LA API
-    // =========================
-    async function fetchData(codigo) {
-      try {
+      try{
         const res = await fetch(API_URL + "?code=" + encodeURIComponent(codigo));
-        // Detectar si es negocio
-const esNegocio = ["negocios","negocio","business","empresa"]
-  .includes(String(data.plan || "").trim().toLowerCase());
+        const data = await res.json();
 
-// Si NO es negocio → ocultar contador
-if (!esNegocio) {
-  const box = document.getElementById("contadorNegocios");
-  if (box) box.style.display = "none";
-  return;
-}
-        return await res.json();
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        return { ok: false, error: "Network error" };
-      }
-    }
-
-    // =========================
-    // FUNCIÓN PARA RENDERIZAR EL CONTADOR (NUEVO)
-    // =========================
-    function renderCounter(codigo) {
-      // Obtener el contador actual de localStorage o inicializar en 0
-      const storageKey = `counter_${codigo}`;
-      let visits = parseInt(localStorage.getItem(storageKey) || '0', 10);
-      
-      // Incrementar el contador para esta visita
-      visits++;
-      localStorage.setItem(storageKey, visits.toString());
-
-      // Devolver el HTML del contador
-      return `
-        <div style="display: flex; justify-content: center; margin: 10px 0 5px;">
-          <div class="counter-box">
-            <i class="fas fa-eye"></i>
-            <span class="counter-label">Visitas al perfil:</span>
-            <span class="counter-number">${visits}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    // =========================
-    // RENDERIZADO DEL PANEL CORPORATIVO
-    // =========================
-    function renderPanelCorporativo(data, codigo) {
-      const nombre = pickNombre(data);
-      const referencia = pickReferencia(data);
-
-      const linkCliente = location.origin + "/?code=" + encodeURIComponent(codigo);
-      const linkVerificacion = data?.qr_maps || "";
-      const qrCliente = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(linkCliente);
-
-      const mensajeShare =
-        `Mi dirección digital (${codigo}) ✅\n` +
-        `${linkCliente}`;
-
-      const mask = "••••••••••••••••••••••••••";
-
-      // Generar el contador
-      const counterHTML = renderCounter(codigo);
-
-      return `
-        <div class="info-box" style="margin-top:0;">
-          <div class="info-title"><i class="fas fa-id-card"></i> Identificación</div>
-
-          <div class="masked-line">
-            <span class="masked-text"><strong>${nombre}</strong></span>
-            <span class="small-tag">${codigo}</span>
-          </div>
-
-          ${referencia ? `
-            <div class="masked-line" style="margin-top:10px;">
-              <span class="masked-text">${referencia}</span>
-              <span class="small-tag">Referencia</span>
-            </div>
-          ` : ''}
-        </div>
-
-        <div class="links-grid">
-          <a class="map-link maps" href="${data.google_maps}" target="_blank" rel="noopener">
-            <i class="fab fa-google"></i> Abrir Google Maps
-          </a>
-          <a class="map-link waze" href="${data.waze}" target="_blank" rel="noopener">
-            <i class="fab fa-waze"></i> Abrir Waze
-          </a>
-          <a class="map-link uber" href="${data.uber}" target="_blank" rel="noopener">
-            <i class="fab fa-uber"></i> Pedir Uber
-          </a>
-          <a class="map-link whats" href="${data.link_whatsapp}" target="_blank" rel="noopener">
-            <i class="fab fa-whatsapp"></i> Avisar llegada
-          </a>
-        </div>
-
-        <div class="info-box">
-          <div class="info-title"><i class="fas fa-print"></i> Link de verificación para imprimir</div>
-          <div class="masked-line" aria-label="enlace oculto">
-            <span class="masked-text">${mask}</span>
-            <span class="small-tag">Oculto</span>
-          </div>
-          <button class="btn-copy" type="button" onclick="copiarTexto('${escapeJs(linkVerificacion)}')">
-            <i class="fas fa-copy"></i> Copiar enlace
-          </button>
-        </div>
-
-        <div class="info-box">
-          <div class="info-title"><i class="fas fa-user"></i> Link del cliente</div>
-          <div class="masked-line" aria-label="enlace oculto">
-            <span class="masked-text">${mask}</span>
-            <span class="small-tag">Oculto</span>
-          </div>
-
-          <button class="btn-copy" type="button" onclick="copiarTexto('${escapeJs(linkCliente)}')">
-            <i class="fas fa-copy"></i> Copiar link del cliente
-          </button>
-
-          <button class="btn-whatsapp-share" onclick="compartirPorWhatsApp('${escapeJs(mensajeShare)}')">
-            <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
-          </button>
-        </div>
-
-        <div class="qr-box">
-          <div class="info-title" style="justify-content:center;"><i class="fas fa-qrcode"></i> QR para compartir</div>
-          <img src="${qrCliente}" alt="QR de la dirección" />
-          <div class="qr-hint">Escanéalo para abrir la dirección del cliente.</div>
-        </div>
-
-        <!-- CONTADOR DE VISITAS (NUEVO) -->
-        ${counterHTML}
-      `;
-    }
-
-    function renderError(msg) {
-      return `
-        <div class="client-error">
-          <i class="fas fa-exclamation-triangle"></i> ${msg}
-        </div>
-      `;
-    }
-
-    // =========================
-    // FUNCIÓN PARA BUSCAR DESDE LA LANDING
-    // =========================
-    async function buscarLanding() {
-      const codigo = (document.getElementById("codigo")?.value || "").trim().toUpperCase();
-      if (!codigo) {
-        alert("Ingresa un código AD507 válido");
-        return;
-      }
-
-      const target = document.getElementById("resultado");
-      if (!target) return;
-
-      target.innerHTML = '<div style="text-align:center; padding:20px;">Buscando...</div>';
-
-      try {
-        const data = await fetchData(codigo);
-
-        if (!data || !data.ok) {
-          target.innerHTML = `
-            <div style="background:#2a1a1a; border-radius:20px; padding:20px; color:#ff8a8a; border:1px solid #ff4d4d;">
-              <i class="fas fa-exclamation-triangle"></i> Código no encontrado
-            </div>`;
+        if (!data || data.ok !== true){
+          setEstado("Error");
+          setMsg((data && data.message) ? data.message : "No se pudo obtener datos.", "bad");
           return;
         }
 
-        target.innerHTML = renderPanelCorporativo(data, codigo);
+        // Pintar datos
+        setEstado("OK");
+        setMsg("Datos cargados.", "ok");
+        $("contenido").classList.remove("hide");
 
-      } catch (e) {
-        target.innerHTML = `
-          <div style="background:#2a1a1a; border-radius:20px; padding:20px; color:#ff8a8a; border:1px solid #ff4d4d;">
-            <i class="fas fa-wifi"></i> Error cargando enlaces. Intenta más tarde.
-          </div>`;
+        $("codigoPill").textContent = data.codigo || codigo;
+
+        $("nombreTxt").textContent = data.nombre || "—";
+        $("telTxt").textContent = data.telefono || "—";
+        $("refTxt").textContent = data.referencia || "—";
+        $("coordTxt").textContent = data.coordenada || "—";
+        $("fechaTxt").textContent = data.fecha || "—";
+
+        // Badges
+        const planTxt = data.plan || "";
+        const valTxt = data.validacion || "";
+
+        $("badgePlan").textContent = "PLAN: " + (planTxt || "—");
+        $("badgePlan").className = "badge " + (esNegocio(planTxt) ? "ok" : "warn");
+
+        $("badgeValidacion").textContent = "VALIDACIÓN: " + (valTxt || "—");
+        const v = String(valTxt||"").trim().toLowerCase();
+        $("badgeValidacion").className = "badge " + (v.includes("ok") || v.includes("aprob") ? "ok" : (v.includes("revis") ? "warn" : "warn"));
+
+        // Links
+        safeHref($("lnkMaps"), data.google_maps || "");
+        safeHref($("lnkWaze"), data.waze || "");
+        safeHref($("lnkUber"), data.uber || "");
+        safeHref($("lnkWA"), data.link_whatsapp || "");
+
+        // QRs
+        $("qrMapsImg").src = data.qr_maps || "";
+        $("qrWaImg").src = data.qr_whatsapp || "";
+
+        // =========================
+        // CONTADOR SOLO NEGOCIOS (MENSUAL)
+        // =========================
+        if (esNegocio(planTxt)){
+          $("contadorNegocios").classList.remove("hide");
+          $("contadorOcultoInfo").classList.add("hide");
+
+          const fechaBase = parseFecha(data.fecha);
+          if (!fechaBase){
+            $("tiempoRestante").textContent = "—";
+            $("detalleVencimiento").textContent = "No se pudo leer la fecha. Revisa el campo 'Fecha' en la hoja.";
+          } else {
+            startMonthlyCounter(fechaBase);
+          }
+        } else {
+          $("contadorNegocios").classList.add("hide");
+          $("contadorOcultoInfo").classList.remove("hide");
+        }
+
+      }catch(err){
+        console.error(err);
+        setEstado("Error");
+        setMsg("Error consultando la API. Revisa el enlace / permisos de la implementación.", "bad");
+      }finally{
+        $("btnBuscar").disabled = false;
       }
     }
 
-    // =========================
-    // INICIALIZACIÓN (CORREGIDA)
-    // =========================
-    (function init() {
-      const codigoCliente = detectarCodigoCliente();
+    $("btnBuscar").addEventListener("click", buscar);
+    $("codigoInput").addEventListener("keydown", (ev)=>{
+      if (ev.key === "Enter") buscar();
+    });
 
-      if (codigoCliente) {
-        // === MODO CLIENTE: Ocultar landing y mostrar solo su información ===
-        activarModoCliente();
-
-        const sub = document.getElementById("clientSub");
-        if (sub) sub.textContent = "Cargando datos del cliente…";
-
-        const target = document.getElementById("clientResultado");
-        if (!target) return;
-
-        (async () => {
-          try {
-            const data = await fetchData(codigoCliente);
-
-            if (!data || !data.ok) {
-              target.innerHTML = renderError("Código no encontrado");
-              if (sub) sub.textContent = "Código: " + codigoCliente;
-              return;
-            }
-
-            const nombre = pickNombre(data);
-            const referencia = pickReferencia(data);
-            if (sub) sub.textContent = `${nombre} · ${codigoCliente}${referencia ? " · " + referencia : ""}`;
-
-            target.innerHTML = renderPanelCorporativo(data, codigoCliente);
-          } catch (e) {
-            target.innerHTML = renderError("Error cargando enlaces. Intenta más tarde.");
-            if (sub) sub.textContent = "Código: " + codigoCliente;
-          }
-        })();
-      } else {
-        // === MODO LANDING NORMAL ===
-        // Si hay ?code= en URL, auto-buscar
-        const params = new URLSearchParams(window.location.search);
-        const codeParam = (params.get("code") || "").trim();
-        if (codeParam) {
-          const input = document.getElementById("codigo");
-          if (input) input.value = codeParam;
-          buscarLanding();
-        }
+    // Autoload por URL: ?code=AD507-0011
+    (function autoLoad(){
+      const params = new URLSearchParams(window.location.search);
+      const c = params.get("code");
+      if (c){
+        $("codigoInput").value = c;
+        buscar();
       }
     })();
-
-    // Exponer funciones globalmente
-    window.buscarLanding = buscarLanding;
-    window.copiarTexto = copiarTexto;
-    window.compartirPorWhatsApp = compartirPorWhatsApp;
-    window.shareClose = shareClose;
-    window.shareCopy = shareCopy;
   </script>
 </body>
 </html>
-

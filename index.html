@@ -661,14 +661,9 @@
       const linkVer = document.getElementById("linkVerificacion");
 
 if (linkVer){
-  const linkQRverificacion = data.qr_maps || "";
-
-  if(linkQRverificacion){
-    linkVer.href = linkQRverificacion;
-    linkVer.target = "_blank";
-  }else{
-    linkVer.href = "#";
-  }
+  const linkVerificacion = `${location.origin}/verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
+  linkVer.href = linkVerificacion;
+  linkVer.target = "_blank";
 }
 
         const qrVer = document.getElementById("qrVerificacion");

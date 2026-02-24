@@ -278,12 +278,6 @@
     .rowStat{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.10)}
     .rowStat:last-child{border-bottom:none}
     .updated{margin-top:10px;opacity:.75;font-size:12px}
-
-    /* Ocultar elementos cuando no hay cliente */
-    .cliente-visible { display: none; }
-    body.modo-cliente .cliente-visible { display: block; }
-    body.modo-cliente .cliente-visible-inline { display: inline-block; }
-    body.modo-cliente .landing-only { display: none; }
   </style>
 </head>
 
@@ -352,10 +346,6 @@
           <div class="pillRow">
             <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
             <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
-            <!-- Badge de plan (solo visible cuando hay cliente) -->
-            <div class="pill cliente-visible" id="planBadgeContainer" style="display:none;">
-              <i class="fa-solid fa-crown"></i> Plan: <b id="uiPlan">-</b>
-            </div>
           </div>
         </div>
 
@@ -374,16 +364,16 @@
 
           <h3 class="sectionTitle">Abrir ubicación</h3>
           <div class="btnGrid">
-            <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener" onclick="registrarClick('google')">
+            <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-google"></i> Google Maps
             </a>
-            <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener" onclick="registrarClick('waze')">
+            <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-waze"></i> Waze
             </a>
-            <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener" onclick="registrarClick('uber')">
+            <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-uber"></i> Uber
             </a>
-            <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener" onclick="registrarClick('whatsapp')">
+            <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
             </a>
           </div>
@@ -407,10 +397,10 @@
             </a>
           </div>
 
-          <div class="divider landing-only"></div>
+          <div class="divider"></div>
 
-          <!-- SOLO EN PÁGINA PRINCIPAL (se oculta cuando hay cliente) -->
-          <div id="seccionPasos" class="landing-only">
+          <!-- ✅ SOLO EN PANEL PRINCIPAL (se oculta en modo cliente) -->
+          <div id="seccionPasos">
             <h3 class="sectionTitle">Pasos</h3>
             <div class="steps">
               <div class="step">
@@ -437,10 +427,10 @@
             </div>
           </div>
 
-          <div class="divider landing-only"></div>
+          <div class="divider"></div>
 
-          <!-- SOLO EN PÁGINA PRINCIPAL (se oculta cuando hay cliente) -->
-          <div id="seccionPrecios" class="landing-only">
+          <!-- ✅ SOLO EN PANEL PRINCIPAL (se oculta en modo cliente) -->
+          <div id="seccionPrecios">
             <h3 class="sectionTitle">Precios</h3>
             <div class="priceRow">
               <div class="priceCard">
@@ -479,8 +469,8 @@
             </div>
           </div>
 
-          <!-- PANEL DE ESTADÍSTICAS - SOLO PARA NEGOCIOS -->
-          <div id="statsContainer" class="cliente-visible" style="margin-top:14px; display:none;">
+          <!-- ✅ Panel de actividad SOLO para Negocios y SOLO cuando hay cliente cargado -->
+          <div id="statsSection" style="margin-top:14px; display:none;">
             <button id="btnStats" class="statsBtn" type="button">
               <span>📊 Ver actividad del cliente</span>
               <span id="statsChevron" style="opacity:.85;">▾</span>
@@ -497,7 +487,6 @@
 
             <div class="smallNote">
               Este panel cuenta acciones reales: clic en botones, compartir y copiar link.
-              <span id="planNote" style="display:block; margin-top:5px; color:#fbbf24;"></span>
             </div>
           </div>
 
@@ -511,8 +500,7 @@
             <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">
               <i class="fa-brands fa-facebook"></i> Facebook
             </a>
-            <!-- TikTok AGREGADO -->
-            <a href="https://www.tiktok.com/@direcciones507" target="_blank" rel="noopener">
+            <a href="https://www.tiktok.com/@direccionesdigitalespty" target="_blank" rel="noopener">
               <i class="fa-brands fa-tiktok"></i> TikTok
             </a>
             <a href="https://wa.me/50765996532" target="_blank" rel="noopener">
@@ -535,17 +523,9 @@
     // ✅ Tu WebApp actual
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz3R8RZe6-g9_oeLc7c6gjSguElG1jVdwxu8mnqVWffO9nU9c1ZwacUXlxVCXwCsLNhWQ/exec";
 
-    // Variables globales
-    let CODIGO_CLIENTE = "";
-    let PLAN_CLIENTE = "";
-    let estadisticas = {
-      google: 0,
-      waze: 0,
-      uber: 0,
-      whatsapp: 0,
-      share: 0,
-      copy: 0
-    };
+    // ✅ Estado de plan/contador
+    window.CODIGO_CLIENTE = "";
+    window.IS_NEGOCIOS = false;
 
     function setMsg(t) {
       const el = document.getElementById("msgBusqueda");
@@ -554,7 +534,7 @@
 
     function safeText(id, value){
       const el = document.getElementById(id);
-      if (el) el.textContent = value ?? "-";
+      if (el) el.textContent = value ?? "";
     }
 
     function safeHref(id, value){
@@ -562,126 +542,84 @@
       if (el) el.href = value || "#";
     }
 
-    // Función para determinar si es negocio
-    function esNegocio(plan) {
-      if (!plan) return false;
-      const p = String(plan).toLowerCase().trim();
-      return ["negocios", "negocio", "business", "empresa"].includes(p);
+    // ✅ Oculta Pasos/Precios SOLO cuando ya hay cliente
+    function toggleModoCliente(isCliente){
+      const pasos = document.getElementById("seccionPasos");
+      const precios = document.getElementById("seccionPrecios");
+      if (pasos) pasos.style.display = isCliente ? "none" : "block";
+      if (precios) precios.style.display = isCliente ? "none" : "block";
     }
 
-    // Registrar clics (solo para negocios)
-    function registrarClick(tipo) {
-      if (!CODIGO_CLIENTE || !esNegocio(PLAN_CLIENTE)) return;
-      
-      estadisticas[tipo] = (estadisticas[tipo] || 0) + 1;
-      actualizarVistaEstadisticas();
-      
-      // Aquí puedes agregar el código para guardar en localStorage o enviar a API
-      console.log(`Click registrado: ${tipo}`, estadisticas);
-    }
+    // ✅ Panel actividad: solo se muestra si IS_NEGOCIOS y hay cliente cargado
+    function toggleStatsSection(show){
+      const sec = document.getElementById("statsSection");
+      if (sec) sec.style.display = show ? "block" : "none";
 
-    function actualizarVistaEstadisticas() {
-      safeText("stGoogle", estadisticas.google || 0);
-      safeText("stWaze", estadisticas.waze || 0);
-      safeText("stUber", estadisticas.uber || 0);
-      safeText("stWhatsapp", estadisticas.whatsapp || 0);
-      safeText("stShare", estadisticas.share || 0);
-      safeText("stCopy", estadisticas.copy || 0);
-      
-      const fecha = new Date().toLocaleString("es-PA");
-      safeText("stUpdated", `Actualizado: ${fecha}`);
-    }
-
-    // Override para compartir y copiar
-    function shareLink(){
-      registrarClick('share');
-      const url = location.href;
-      if (navigator.share){
-        navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
-      } else {
-        copyLink(true);
+      // si se oculta, también colapsa el panel
+      const panel = document.getElementById("statsPanel");
+      const chev = document.getElementById("statsChevron");
+      if (!show && panel){
+        panel.style.display = "none";
+        if (chev) chev.textContent = "▾";
       }
     }
 
-    async function copyLink(silent=false){
-      registrarClick('copy');
+    // ✅ TRACK: deja listo el contador (solo Negocios)
+    function track(eventName){
       try{
-        await navigator.clipboard.writeText(location.href);
-        if (!silent) alert("Link copiado ✅");
-      }catch(e){
-        if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
-      }
+        if (!window.IS_NEGOCIOS) return;
+        if (!window.CODIGO_CLIENTE) return;
+
+        const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=${encodeURIComponent(eventName)}&t=${Date.now()}`;
+        fetch(url, { cache:"no-store", mode:"no-cors" }).catch(()=>{});
+      }catch(e){}
     }
 
-    // Función para resetear a modo landing
-    function resetToLandingMode() {
-      document.body.classList.remove('modo-cliente');
-      
-      // Mostrar elementos de landing
-      document.querySelectorAll('.landing-only').forEach(el => el.style.display = 'block');
-      
-      // Ocultar elementos de cliente
-      document.querySelectorAll('.cliente-visible').forEach(el => el.style.display = 'none');
-      
-      // Resetear código
-      CODIGO_CLIENTE = "";
-      PLAN_CLIENTE = "";
-      
-      // Mostrar mensaje por defecto en el QR
-      const linkMostrado = `${location.origin}${location.pathname}`;
-      safeText("uiLink", linkMostrado);
-      
-      const qrImg = document.getElementById("qrImg");
-      if (qrImg) {
-        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkMostrado)}`;
-        qrImg.src = qr;
-      }
-      
-      const linkVer = document.getElementById("linkVerificacion");
-      if (linkVer) linkVer.href = linkMostrado;
-      
-      // Limpiar datos del cliente
-      safeText("uiCodigo", "-");
-      safeText("uiNombre", "-");
-      safeText("uiRef", "-");
-      safeText("uiPlan", "-");
-      
-      // Deshabilitar botones
-      ["btnGoogle", "btnWaze", "btnUber", "btnAviso"].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.href = "#";
-      });
-    }
+    // ✅ Cargar stats del cliente (si tu WebApp lo soporta)
+    async function loadStats(){
+      if (!window.IS_NEGOCIOS) return;
+      if (!window.CODIGO_CLIENTE) return;
 
-    // Activar modo cliente
-    function activarModoCliente(data) {
-      document.body.classList.add('modo-cliente');
-      
-      // Ocultar elementos de landing
-      document.querySelectorAll('.landing-only').forEach(el => el.style.display = 'none');
-      
-      // Mostrar contenedores de cliente
-      document.querySelectorAll('.cliente-visible').forEach(el => el.style.display = 'block');
-      
-      // Si es negocio, mostrar panel de estadísticas
-      const statsContainer = document.getElementById("statsContainer");
-      const planNote = document.getElementById("planNote");
-      
-      if (esNegocio(data.plan)) {
-        statsContainer.style.display = "block";
-        if (planNote) planNote.textContent = "Plan Negocio: estadísticas activadas";
-        
-        // Cargar estadísticas guardadas (opcional)
-        const saved = localStorage.getItem(`stats_${CODIGO_CLIENTE}`);
-        if (saved) {
-          try {
-            estadisticas = JSON.parse(saved);
-            actualizarVistaEstadisticas();
-          } catch(e) {}
+      try{
+        const res = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&t=${Date.now()}`, { cache:"no-store" });
+        const data = await res.json();
+
+        // Esperado: { ok:true, stats:{ google,waze,uber,share,copy, updated } }
+        if (data && data.ok && data.stats){
+          safeText("stGoogle", data.stats.google ?? 0);
+          safeText("stWaze", data.stats.waze ?? 0);
+          safeText("stUber", data.stats.uber ?? 0);
+          safeText("stShare", data.stats.share ?? 0);
+          safeText("stCopy", data.stats.copy ?? 0);
+          safeText("stUpdated", "Actualizado: " + (data.stats.updated ?? "-"));
         }
-      } else {
-        statsContainer.style.display = "none";
-        if (planNote) planNote.textContent = "Plan Personal: actualiza a Negocios para ver estadísticas";
+      }catch(e){}
+    }
+
+    // ✅ Enlaza eventos de click para contar (solo Negocios)
+    function initClickTracking(){
+      // Botones de navegación
+      const g = document.getElementById("btnGoogle");
+      const w = document.getElementById("btnWaze");
+      const u = document.getElementById("btnUber");
+      const a = document.getElementById("btnAviso");
+
+      if (g) g.addEventListener("click", () => track("google"));
+      if (w) w.addEventListener("click", () => track("waze"));
+      if (u) u.addEventListener("click", () => track("uber"));
+      if (a) a.addEventListener("click", () => track("aviso"));
+
+      // Panel stats: al abrir, refresca
+      const btn = document.getElementById("btnStats");
+      const panel = document.getElementById("statsPanel");
+      const chev = document.getElementById("statsChevron");
+      if (btn && panel){
+        btn.addEventListener("click", async () => {
+          const opening = (panel.style.display === "none" || !panel.style.display);
+          panel.style.display = opening ? "block" : "none";
+          if (chev) chev.textContent = opening ? "▴" : "▾";
+          if (opening) await loadStats();
+        });
       }
     }
 
@@ -691,7 +629,10 @@
 
       if(!code){
         setMsg("Ingresa tu código para buscar.");
-        resetToLandingMode();
+        window.CODIGO_CLIENTE = "";
+        window.IS_NEGOCIOS = false;
+        toggleModoCliente(false);
+        toggleStatsSection(false); // ✅ no mostrar panel en principal
         return;
       }
 
@@ -703,68 +644,94 @@
 
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");
-          resetToLandingMode();
+          window.CODIGO_CLIENTE = "";
+          window.IS_NEGOCIOS = false;
+          toggleModoCliente(false);
+          toggleStatsSection(false);
           return;
         }
 
-        // Guardar datos del cliente
-        CODIGO_CLIENTE = data.codigo || code;
-        PLAN_CLIENTE = data.plan || "Personal";
+        // Guardar el código activo
+        window.CODIGO_CLIENTE = data.codigo || code;
+
+        // Detectar plan (varias llaves por si tu backend usa otro nombre)
+        const planTxt = String(
+          data.plan ?? data.tipo ?? data.paquete ?? data.membresia ?? data.producto ?? ""
+        ).toLowerCase();
+        window.IS_NEGOCIOS = (data.negocios === true) || planTxt.includes("negocio") || planTxt.includes("business");
 
         // Pintar datos
         safeText("uiCodigo", data.codigo || code);
         safeText("uiNombre", data.nombre || "Cliente");
         safeText("uiRef", data.referencia || "Referencia no indicada");
-        safeText("uiPlan", data.plan || "Personal");
 
-        // Mostrar badge del plan
-        const planBadge = document.getElementById("planBadgeContainer");
-        if (planBadge) planBadge.style.display = "flex";
-
-        // Botones de navegación
+        // Botones
         safeHref("btnGoogle", data.google);
         safeHref("btnWaze", data.waze);
         safeHref("btnUber", data.uber);
         safeHref("btnAviso", data.whatsapp);
 
-        // QR y link
+        // QR + link visible
         const qrImg = document.getElementById("qrImg");
         if (qrImg && data.qr) qrImg.src = data.qr;
 
-        const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(CODIGO_CLIENTE)}`;
+        const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
         safeText("uiLink", linkMostrado);
 
         const linkVer = document.getElementById("linkVerificacion");
         if (linkVer) linkVer.href = linkMostrado;
 
-        // Activar modo cliente
-        activarModoCliente(data);
+        // ✅ Ya hay cliente: ocultar Pasos/Precios
+        toggleModoCliente(true);
+
+        // ✅ Panel actividad: SOLO negocios + SOLO cuando hay cliente cargado
+        toggleStatsSection(window.IS_NEGOCIOS);
+
+        // ✅ (opcional) primer refresh de stats si aplica
+        if (window.IS_NEGOCIOS){
+          loadStats();
+        }
 
         setMsg("Listo ✅");
       }catch(err){
-        console.error(err);
         setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
-        resetToLandingMode();
+        window.CODIGO_CLIENTE = "";
+        window.IS_NEGOCIOS = false;
+        toggleModoCliente(false);
+        toggleStatsSection(false);
       }
     }
 
-    // Panel desplegable
-    function initStatsPanel(){
-      const btn = document.getElementById("btnStats");
-      const panel = document.getElementById("statsPanel");
-      const chev = document.getElementById("statsChevron");
-      if (!btn || !panel) return;
+    // Compartir / Copiar
+    function shareLink(){
+      const url = location.href;
+      if (navigator.share){
+        navigator.share({ title:"Dirección Digital", url }).then(()=>{
+          track("share");
+          loadStats();
+        }).catch(()=>{});
+      } else {
+        copyLink(true);
+        track("share");
+        loadStats();
+      }
+    }
 
-      btn.addEventListener("click", () => {
-        const opening = (panel.style.display === "none" || !panel.style.display);
-        panel.style.display = opening ? "block" : "none";
-        if (chev) chev.textContent = opening ? "▴" : "▾";
-      });
+    async function copyLink(silent=false){
+      try{
+        await navigator.clipboard.writeText(location.href);
+        track("copy");
+        loadStats();
+        if (!silent) alert("Link copiado ✅");
+      }catch(e){
+        if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
+      }
     }
 
     // Auto-cargar si viene ?code=
     (function autoLoadFromURL(){
-      initStatsPanel();
+      // ✅ Inicializa listeners una sola vez
+      initClickTracking();
 
       const qs = new URLSearchParams(location.search);
       const code = (qs.get("code") || "").trim();
@@ -772,17 +739,27 @@
       if (code) {
         const input = document.getElementById("inputCodigo");
         if (input) input.value = code;
-        buscarCodigo();
+        buscarCodigo(); // esto activará toggleModoCliente(true) cuando cargue
       } else {
-        resetToLandingMode();
+        // modo principal: mostrar pasos/precios
+        toggleModoCliente(false);
+
+        // ✅ ocultar panel de actividad en la pagina principal
+        toggleStatsSection(false);
+
+        // QR del link actual
+        const linkMostrado = `${location.origin}${location.pathname}`;
+        safeText("uiLink", linkMostrado);
+
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg) {
+          const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkMostrado)}`;
+          qrImg.src = qr;
+        }
+        const linkVer = document.getElementById("linkVerificacion");
+        if (linkVer) linkVer.href = linkMostrado;
       }
     })();
-
-    // Exponer funciones globales
-    window.buscarCodigo = buscarCodigo;
-    window.shareLink = shareLink;
-    window.copyLink = copyLink;
-    window.registrarClick = registrarClick;
   </script>
 </body>
 </html>

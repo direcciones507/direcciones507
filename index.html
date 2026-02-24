@@ -658,13 +658,14 @@
         // ✅ Verificación para imprimir:
         // - El enlace abre Google Maps (imprimible)
         // - El QR verificación muestra el QR de Maps si viene (qr_maps); si no viene, genera QR desde google_maps
-       const linkVer = document.getElementById("linkVerificacion");
+      const linkVer = document.getElementById("linkVerificacion");
 
 if (linkVer){
-  const qrVerificacion = normalizeUrl(data.qr_maps || "");
+  const linkQRverificacion = data.qr_maps || "";
 
-  if(qrVerificacion){
-    linkVer.href = qrVerificacion;
+  if(linkQRverificacion){
+    linkVer.href = linkQRverificacion;
+    linkVer.target = "_blank";
   }else{
     linkVer.href = "#";
   }

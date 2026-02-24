@@ -658,8 +658,17 @@
         // ✅ Verificación para imprimir:
         // - El enlace abre Google Maps (imprimible)
         // - El QR verificación muestra el QR de Maps si viene (qr_maps); si no viene, genera QR desde google_maps
-        const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer) linkVer.href = google || "#";
+       const linkVer = document.getElementById("linkVerificacion");
+
+if (linkVer){
+  const qrVerificacion = normalizeUrl(data.qr_maps || "");
+
+  if(qrVerificacion){
+    linkVer.href = qrVerificacion;
+  }else{
+    linkVer.href = "#";
+  }
+}
 
         const qrVer = document.getElementById("qrVerificacion");
         const qrMaps = normalizeUrl(data.qr_maps || "");

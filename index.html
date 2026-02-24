@@ -550,6 +550,16 @@
     function makeQRFromLink(link){
       return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
     }
+    // ✅ TRACK: manda el clic al Apps Script (no bloquea, no CORS)
+function track(ev){
+  try{
+    const code = window.CODIGO_CLIENTE || "";
+    if(!code) return;
+    const u = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
+    const img = new Image();
+    img.src = u;
+  }catch(e){}
+}
 
     function toggleStatsNegocios(esNegocios){
       const btn = document.getElementById("btnStats");

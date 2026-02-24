@@ -314,6 +314,7 @@
             font-weight:700;
             outline:none;
           "
+          onkeydown="if(event.key==='Enter'){ buscarCodigo(); }"
         />
         <button
           type="button"
@@ -398,54 +399,61 @@
 
           <div class="divider"></div>
 
-          <h3 class="sectionTitle">Pasos</h3>
-          <div class="steps">
-            <div class="step">
-              <div class="n">1</div>
-              <div>
-                <b>Comparte tu enlace</b>
-                Envía este link por WhatsApp. El cliente abre y elige Waze, Google o Uber.
+          <!-- ✅ SOLO EN PANEL PRINCIPAL (se oculta en modo cliente) -->
+          <div id="seccionPasos">
+            <h3 class="sectionTitle">Pasos</h3>
+            <div class="steps">
+              <div class="step">
+                <div class="n">1</div>
+                <div>
+                  <b>Comparte tu enlace</b>
+                  Envía este link por WhatsApp. El cliente abre y elige Waze, Google o Uber.
+                </div>
               </div>
-            </div>
-            <div class="step">
-              <div class="n">2</div>
-              <div>
-                <b>Abre la app de navegación</b>
-                Con un toque. Sin enredos. Sin “explica dónde queda”.
+              <div class="step">
+                <div class="n">2</div>
+                <div>
+                  <b>Abre la app de navegación</b>
+                  Con un toque. Sin enredos. Sin “explica dónde queda”.
+                </div>
               </div>
-            </div>
-            <div class="step">
-              <div class="n">3</div>
-              <div>
-                <b>Listo para llegar</b>
-                Usa “Aviso de llegada” para notificar cuando vayas en camino.
+              <div class="step">
+                <div class="n">3</div>
+                <div>
+                  <b>Listo para llegar</b>
+                  Usa “Aviso de llegada” para notificar cuando vayas en camino.
+                </div>
               </div>
             </div>
           </div>
 
           <div class="divider"></div>
 
-          <h3 class="sectionTitle">Precios</h3>
-          <div class="priceRow">
-            <div class="priceCard">
-              <span class="tag"><i class="fa-solid fa-user"></i> Personal</span>
-              <div class="amt">$6.99</div>
-              <ul>
-                <li>Enlace de ubicación</li>
-                <li>Google + Waze + Uber</li>
-                <li>Compartir y copiar link</li>
-              </ul>
-            </div>
-            <div class="priceCard">
-              <span class="tag"><i class="fa-solid fa-briefcase"></i> Negocios</span>
-              <div class="amt">$10.99</div>
-              <ul>
-                <li>Todo lo de Personal</li>
-                <li>Contador de actividad (clics)</li>
-                <li>Ideal para entregas/ventas</li>
-              </ul>
+          <!-- ✅ SOLO EN PANEL PRINCIPAL (se oculta en modo cliente) -->
+          <div id="seccionPrecios">
+            <h3 class="sectionTitle">Precios</h3>
+            <div class="priceRow">
+              <div class="priceCard">
+                <span class="tag"><i class="fa-solid fa-user"></i> Personal</span>
+                <div class="amt">$6.99</div>
+                <ul>
+                  <li>Enlace de ubicación</li>
+                  <li>Google + Waze + Uber</li>
+                  <li>Compartir y copiar link</li>
+                </ul>
+              </div>
+              <div class="priceCard">
+                <span class="tag"><i class="fa-solid fa-briefcase"></i> Negocios</span>
+                <div class="amt">$10.99</div>
+                <ul>
+                  <li>Todo lo de Personal</li>
+                  <li>Contador de actividad (clics)</li>
+                  <li>Ideal para entregas/ventas</li>
+                </ul>
+              </div>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -526,12 +534,21 @@
       if (el) el.href = value || "#";
     }
 
+    // ✅ Oculta Pasos/Precios SOLO cuando ya hay cliente
+    function toggleModoCliente(isCliente){
+      const pasos = document.getElementById("seccionPasos");
+      const precios = document.getElementById("seccionPrecios");
+      if (pasos) pasos.style.display = isCliente ? "none" : "block";
+      if (precios) precios.style.display = isCliente ? "none" : "block";
+    }
+
     async function buscarCodigo(){
       const input = document.getElementById("inputCodigo");
       const code = (input ? input.value : "").trim();
 
       if(!code){
         setMsg("Ingresa tu código para buscar.");
+        toggleModoCliente(false);
         return;
       }
 
@@ -543,6 +560,7 @@
 
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");
+          toggleModoCliente(false);
           return;
         }
 
@@ -570,13 +588,17 @@
         const linkVer = document.getElementById("linkVerificacion");
         if (linkVer) linkVer.href = linkMostrado;
 
+        // ✅ Ya hay cliente: ocultar Pasos/Precios
+        toggleModoCliente(true);
+
         setMsg("Listo ✅");
       }catch(err){
         setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
+        toggleModoCliente(false);
       }
     }
 
-    // Compartir / Copiar (sin contadores)
+    // Compartir / Copiar
     function shareLink(){
       const url = location.href;
       if (navigator.share){
@@ -611,18 +633,23 @@
 
     // Auto-cargar si viene ?code=
     (function autoLoadFromURL(){
+      initStatsPanel();
+
       const qs = new URLSearchParams(location.search);
       const code = (qs.get("code") || "").trim();
-      initStatsPanel();
 
       if (code) {
         const input = document.getElementById("inputCodigo");
         if (input) input.value = code;
-        buscarCodigo();
+        buscarCodigo(); // esto activará toggleModoCliente(true) cuando cargue
       } else {
-        // Si no hay code, al menos muestra el link y el QR del link actual
+        // modo principal: mostrar pasos/precios
+        toggleModoCliente(false);
+
+        // QR del link actual
         const linkMostrado = `${location.origin}${location.pathname}`;
         safeText("uiLink", linkMostrado);
+
         const qrImg = document.getElementById("qrImg");
         if (qrImg) {
           const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkMostrado)}`;

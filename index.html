@@ -349,21 +349,21 @@
           </div>
         </div>
 
-        <div class="cardBody">
-          <div class="field">
+        <div class="cardBody" id="panelClienteBody">
+          <div class="field" id="fieldNombre">
             <span>Nombre</span>
             <b id="uiNombre">-</b>
           </div>
 
-          <div class="field">
+          <div class="field" id="fieldRef">
             <span>Referencia</span>
             <b id="uiRef">-</b>
           </div>
 
           <div class="divider"></div>
 
-          <h3 class="sectionTitle">Abrir ubicación</h3>
-          <div class="btnGrid">
+          <h3 class="sectionTitle" id="tituloUbicacion">Abrir ubicación</h3>
+          <div class="btnGrid" id="gridUbicacion">
             <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-google"></i> Google Maps
             </a>
@@ -378,10 +378,10 @@
             </a>
           </div>
 
-          <div class="divider"></div>
+          <div class="divider" id="divAfterUbic"></div>
 
-          <h3 class="sectionTitle">Compartir</h3>
-          <div class="btnGrid">
+          <h3 class="sectionTitle" id="tituloCompartir">Compartir</h3>
+          <div class="btnGrid" id="gridCompartir">
             <button class="btn" type="button" onclick="shareLink()">
               <i class="fa-solid fa-share-nodes"></i> Compartir
             </button>
@@ -390,14 +390,17 @@
             </button>
           </div>
 
-          <div class="smallNote">
+          <div class="smallNote" id="notaVerificacion">
             <b>Verificación para imprimir:</b>
             <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
               Ver enlace de verificación
             </a>
+            <div style="margin-top:10px;">
+              <img id="qrVerificacion" class="qrImg" alt="QR Verificación (Maps)" src="" style="width:160px;padding:6px;background:#fff;border-radius:14px;border:1px solid rgba(255,255,255,.10);" />
+            </div>
           </div>
 
-          <div class="divider"></div>
+          <div class="divider" id="divAfterVerif"></div>
 
           <!-- ✅ SOLO EN PANEL PRINCIPAL (se oculta en modo cliente) -->
           <div id="seccionPasos">
@@ -544,11 +547,8 @@
       return url;
     }
 
-    function hideFieldByValueId(valueId, hide){
-      const v = document.getElementById(valueId);
-      if(!v) return;
-      const box = v.closest(".field");
-      if(box) box.style.display = hide ? "none" : "grid";
+    function makeQRFromLink(link){
+      return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
     }
 
     function toggleStatsNegocios(esNegocios){
@@ -568,6 +568,20 @@
       if (precios) precios.style.display = isCliente ? "none" : "block";
     }
 
+    // ✅ Oculta el panel cliente en la página principal (sin búsqueda)
+    function togglePanelCliente(hasClient){
+      const ids = [
+        "fieldNombre","fieldRef",
+        "tituloUbicacion","gridUbicacion","divAfterUbic",
+        "tituloCompartir","gridCompartir",
+        "notaVerificacion","divAfterVerif"
+      ];
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.style.display = hasClient ? "" : "none";
+      });
+    }
+
     function getShareUrl(){
       return window.CODIGO_CLIENTE
         ? `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`
@@ -581,7 +595,15 @@
       if(!code){
         setMsg("Ingresa tu código para buscar.");
         toggleModoCliente(false);
+        togglePanelCliente(false);
         toggleStatsNegocios(false);
+
+        // QR del home
+        const homeLink = `${location.origin}${location.pathname}`;
+        safeText("uiLink", homeLink);
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg) qrImg.src = makeQRFromLink(homeLink);
+
         return;
       }
 
@@ -594,6 +616,7 @@
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");
           toggleModoCliente(false);
+          togglePanelCliente(false);
           toggleStatsNegocios(false);
           return;
         }
@@ -601,21 +624,19 @@
         // Guardar el código activo
         window.CODIGO_CLIENTE = data.codigo || code;
 
-        // 👇 SI ENCONTRÓ CLIENTE
+        // Ya hay cliente: ocultar Pasos/Precios y mostrar panel cliente
         toggleModoCliente(true);
-
-        // ✅ Ocultar Nombre y Referencia en vista cliente (solo admin puede verlos)
-        const qs = new URLSearchParams(location.search);
-        const isAdmin = qs.get("admin") === "1";
-        hideFieldByValueId("uiNombre", !isAdmin);
-        hideFieldByValueId("uiRef", !isAdmin);
+        togglePanelCliente(true);
 
         // Pintar datos
         safeText("uiCodigo", data.codigo || code);
         safeText("uiNombre", data.nombre || "Cliente");
         safeText("uiRef", data.referencia || "Referencia no indicada");
 
-        // ✅ Tus llaves reales del JSON (y compatibilidad con llaves viejas)
+        // Estado (si tu JSON trae validacion, se muestra; si no, queda "Activo")
+        safeText("uiEstado", data.validacion || "Activo");
+
+        // ✅ Llaves reales del JSON (y compatibilidad con llaves viejas)
         const google = normalizeUrl(data.google_maps || data.google || "");
         const waze   = normalizeUrl(data.waze || "");
         const uber   = normalizeUrl(data.uber || "");
@@ -627,18 +648,22 @@
         safeHref("btnUber", uber || "#");
         safeHref("btnAviso", aviso || "#");
 
-        // QR + link visible (tu JSON trae qr_maps)
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) qrImg.src = normalizeUrl(data.qr_maps || data.qr || "");
-
+        // ✅ Link del panel (compartir) y QR de compartir
         const linkMostrado = getShareUrl();
         safeText("uiLink", linkMostrado);
 
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg) qrImg.src = makeQRFromLink(linkMostrado);
+
         // ✅ Verificación para imprimir:
-        // Si no hay link de verificación real, usamos Google Maps como verificación (funciona siempre)
-        const verifLink = normalizeUrl(data.link_verificacion || data.verificacion || google || "");
+        // - El enlace abre Google Maps (imprimible)
+        // - El QR verificación muestra el QR de Maps si viene (qr_maps); si no viene, genera QR desde google_maps
         const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer) linkVer.href = verifLink || "#";
+        if (linkVer) linkVer.href = google || "#";
+
+        const qrVer = document.getElementById("qrVerificacion");
+        const qrMaps = normalizeUrl(data.qr_maps || "");
+        if (qrVer) qrVer.src = qrMaps || (google ? makeQRFromLink(google) : "");
 
         // ✅ Contador SOLO negocios (si tu JSON trae plan:"NEGOCIOS"; si no, se oculta)
         const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
@@ -648,6 +673,7 @@
       }catch(err){
         setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
         toggleModoCliente(false);
+        togglePanelCliente(false);
         toggleStatsNegocios(false);
       }
     }
@@ -698,21 +724,24 @@
         if (input) input.value = code;
         buscarCodigo();
       } else {
-        // modo principal: mostrar pasos/precios
+        // modo principal: mostrar pasos/precios y ocultar panel cliente
         toggleModoCliente(false);
+        togglePanelCliente(false);
         toggleStatsNegocios(false);
 
-        // QR del link actual
-        const linkMostrado = `${location.origin}${location.pathname}`;
-        safeText("uiLink", linkMostrado);
+        // QR del link actual (home)
+        const homeLink = `${location.origin}${location.pathname}`;
+        safeText("uiLink", homeLink);
 
         const qrImg = document.getElementById("qrImg");
-        if (qrImg) {
-          const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkMostrado)}`;
-          qrImg.src = qr;
-        }
+        if (qrImg) qrImg.src = makeQRFromLink(homeLink);
+
+        // En home, verificación apunta a home (no se usa)
         const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer) linkVer.href = linkMostrado;
+        if (linkVer) linkVer.href = homeLink;
+
+        const qrVer = document.getElementById("qrVerificacion");
+        if (qrVer) qrVer.src = "";
       }
     })();
   </script>

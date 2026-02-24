@@ -17,13 +17,10 @@
     :root{
       --bg:#0b1020;
       --card:rgba(255,255,255,.06);
-      --card2:rgba(255,255,255,.08);
       --border:rgba(255,255,255,.12);
       --text:#e5e7eb;
       --muted:#9ca3af;
       --brand:#22c55e;
-      --brand2:#16a34a;
-      --danger:#ef4444;
       --shadow: 0 18px 40px rgba(0,0,0,.45);
       --radius:18px;
     }
@@ -46,9 +43,7 @@
       background:rgba(0,0,0,.25);backdrop-filter: blur(8px);
       box-shadow: var(--shadow);
     }
-    .brand{
-      display:flex;align-items:center;gap:12px;
-    }
+    .brand{display:flex;align-items:center;gap:12px;}
     .logo{
       width:48px;height:48px;border-radius:16px;
       background: linear-gradient(145deg, #1E51D3, #0B2A6F);
@@ -85,9 +80,8 @@
       gap:18px;
       margin-top:18px;
     }
-    @media(max-width:860px){
-      .grid{grid-template-columns:1fr}
-    }
+    @media(max-width:860px){ .grid{grid-template-columns:1fr} }
+
     .card{
       background:var(--card);
       border:1px solid var(--border);
@@ -113,9 +107,8 @@
       line-height:1.4;
     }
     .cardBody{padding:16px}
-    .pillRow{
-      display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;
-    }
+
+    .pillRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
     .pill{
       padding:8px 10px;border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
@@ -124,6 +117,7 @@
       display:flex;align-items:center;gap:8px;
     }
     .pill b{color:var(--text)}
+
     .field{
       display:grid;
       grid-template-columns: 140px 1fr;
@@ -136,15 +130,15 @@
     }
     .field span{color:var(--muted);font-size:12px}
     .field b{font-size:14px}
+
     .btnGrid{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
       margin-top:14px;
     }
-    @media(max-width:520px){
-      .btnGrid{grid-template-columns:1fr}
-    }
+    @media(max-width:520px){ .btnGrid{grid-template-columns:1fr} }
+
     .btn{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.06);
@@ -159,7 +153,6 @@
       user-select:none;
     }
     .btn:hover{transform:translateY(-1px);border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.10)}
-    .btn i{opacity:.95}
     .btn.primary{
       background: linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.08));
       border-color: rgba(34,197,94,.32);
@@ -172,19 +165,13 @@
       background: rgba(34,197,94,.12);
       border-color: rgba(34,197,94,.25);
     }
-    .btn.copy{
-      background: rgba(255,255,255,.06);
-    }
-    .smallNote{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
-    }
+    .btn.copy{background: rgba(255,255,255,.06);}
 
-    .qrWrap{
-      padding:16px;
-    }
+    .smallNote{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5;}
+    .divider{height:1px;background:rgba(255,255,255,.10);margin:16px 0;}
+    .sectionTitle{font-family:Outfit,Inter;font-size:14px;margin:0 0 10px 0;letter-spacing:.2px;}
+
+    .qrWrap{padding:16px;}
     .qrBox{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(0,0,0,.22);
@@ -192,16 +179,8 @@
       padding:14px;
       text-align:center;
     }
-    .qrTitle{
-      font-family:Outfit,Inter;
-      font-size:14px;
-      margin:0;
-    }
-    .qrSub{
-      margin:6px 0 0 0;
-      color:var(--muted);
-      font-size:12px;
-    }
+    .qrTitle{font-family:Outfit,Inter;font-size:14px;margin:0;}
+    .qrSub{margin:6px 0 0 0;color:var(--muted);font-size:12px;}
     .qrImg{
       margin-top:12px;
       width:220px;max-width:100%;
@@ -211,24 +190,7 @@
       padding:8px;
     }
 
-    .divider{
-      height:1px;background:rgba(255,255,255,.10);
-      margin:16px 0;
-    }
-
-    .sectionTitle{
-      font-family:Outfit,Inter;
-      font-size:14px;
-      margin:0 0 10px 0;
-      letter-spacing:.2px;
-    }
-
-    .steps{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:10px;
-      margin-top:8px;
-    }
+    .steps{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px;}
     .step{
       border:1px solid rgba(255,255,255,.10);
       background:rgba(0,0,0,.18);
@@ -245,10 +207,8 @@
       flex:0 0 auto;
     }
     .step b{display:block;margin-bottom:4px}
-    .priceRow{
-      display:grid;grid-template-columns:1fr 1fr;gap:10px;
-      margin-top:10px;
-    }
+
+    .priceRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
     @media(max-width:520px){.priceRow{grid-template-columns:1fr}}
     .priceCard{
       border:1px solid rgba(255,255,255,.10);
@@ -276,6 +236,17 @@
       line-height:1.55;
     }
 
+    .social{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:12px;}
+    .social a{
+      text-decoration:none;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:800;
+    }
+
     .footer{
       margin-top:22px;
       padding:18px 14px;
@@ -286,28 +257,8 @@
       font-size:12px;
       text-align:center;
     }
-    .social{
-      display:flex;flex-wrap:wrap;gap:10px;
-      justify-content:center;
-      margin-top:12px;
-    }
-    .social a{
-      text-decoration:none;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      font-weight:800;
-    }
-    .legal{
-      margin-top:12px;
-      opacity:.9;
-      color:#aeb4bf;
-      line-height:1.55;
-    }
+    .legal{margin-top:12px;opacity:.9;color:#aeb4bf;line-height:1.55;}
 
-    /* Stats panel button */
     .statsBtn{
       width:100%;
       display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -345,133 +296,44 @@
       <div class="badge"><i class="fa-solid fa-shield-halved"></i> Enlace seguro</div>
     </div>
 
-   <!-- BUSCADOR POR CODIGO -->
-<div style="margin-top:18px;margin-bottom:10px;">
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <input
-      type="text"
-      id="inputCodigo"
-      placeholder="Ingresa tu código AD507 (Ej: AD507-0001)"
-      style="
-        flex:1;
-        padding:14px;
-        border-radius:14px;
-        border:1px solid rgba(255,255,255,.15);
-        background:rgba(0,0,0,.35);
-        color:white;
-        font-size:16px;
-        font-weight:700;
-        outline:none;
-      "
-      onkeydown="if(event.key==='Enter'){ buscarCodigo(); }"
-    />
-
-    <button
-      type="button"
-      onclick="buscarCodigo()"
-      style="
-        padding:14px 18px;
-        border:none;
-        border-radius:14px;
-        background:linear-gradient(135deg,#22c55e,#16a34a);
-        color:white;
-        font-weight:900;
-        font-size:15px;
-        cursor:pointer;
-      "
-    >
-      Buscar
-    </button>
-  </div>
-
-  <div id="msgBusqueda" style="margin-top:8px;color:#9ca3af;font-size:12px;"></div>
-</div>
-
-<script>
- <script>
-  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz3R8RZe6-g9_oeLc7c6gjSguElG1jVdwxu8mnqVWffO9nU9c1ZwacUXlxVCXwCsLNhWQ/exec";
-</script>
-
-  function setMsg(t) {
-    const el = document.getElementById("msgBusqueda");
-    if (el) el.textContent = t || "";
-  }
-
-  function safeText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value ?? "";
-  }
-
-  function safeHref(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.href = value || "#";
-  }
-
-  async function buscarCodigo() {
-    const input = document.getElementById("inputCodigo");
-    const code = (input ? input.value : "").trim();
-
-    if (!code) {
-      setMsg("Ingresa tu código para buscar.");
-      return;
-    }
-
-    setMsg("Buscando...");
-
-    try {
-      const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
-      const data = await res.json();
-
-      if (!data.ok) {
-        setMsg(data.message || "Código no encontrado.");
-        return;
-      }
-
-      // Guardar el código activo (para contadores/actividad)
-      window.CODIGO_CLIENTE = data.codigo || code;
-
-      // Pintar datos (solo lo esencial)
-      safeText("uiCodigo", data.codigo || code);
-      safeText("uiNombre", data.nombre || "Cliente");
-      safeText("uiRef", data.referencia || "Referencia no indicada");
-
-      // Botones de navegación
-      safeHref("btnGoogle", data.google);
-      safeHref("btnWaze", data.waze);
-      safeHref("btnUber", data.uber);
-      safeHref("btnAviso", data.whatsapp);
-
-      // QR + link visible
-      const qrImg = document.getElementById("qrImg");
-      if (qrImg && data.qr) qrImg.src = data.qr;
-
-      // link que muestra la página
-      const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
-      safeText("uiLink", linkMostrado);
-
-      // Enlace de verificación (si existe en tu index)
-      const linkVer = document.getElementById("linkVerificacion");
-      if (linkVer) linkVer.href = linkMostrado;
-
-      setMsg("Listo ✅");
-
-    } catch (err) {
-      setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
-    }
-  }
-
-  // Si la página ya viene con ?code=, que lo cargue automático
-  (function autoLoadFromURL(){
-    const qs = new URLSearchParams(location.search);
-    const code = (qs.get("code") || "").trim();
-    if (code) {
-      const input = document.getElementById("inputCodigo");
-      if (input) input.value = code;
-      buscarCodigo();
-    }
-  })();
-</script>
-</div>
+    <!-- BUSCADOR POR CODIGO -->
+    <div style="margin-top:18px;margin-bottom:10px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input
+          type="text"
+          id="inputCodigo"
+          placeholder="Ingresa tu código AD507"
+          style="
+            flex:1;
+            padding:14px;
+            border-radius:14px;
+            border:1px solid rgba(255,255,255,.15);
+            background:rgba(0,0,0,.35);
+            color:white;
+            font-size:16px;
+            font-weight:700;
+            outline:none;
+          "
+        />
+        <button
+          type="button"
+          onclick="buscarCodigo()"
+          style="
+            padding:14px 18px;
+            border:none;
+            border-radius:14px;
+            background:linear-gradient(135deg,#22c55e,#16a34a);
+            color:white;
+            font-weight:900;
+            font-size:15px;
+            cursor:pointer;
+          "
+        >
+          Buscar
+        </button>
+      </div>
+      <div id="msgBusqueda" style="margin-top:8px;color:#9ca3af;font-size:12px;"></div>
+    </div>
 
     <div class="grid">
       <!-- LEFT: INFO + BOTONES -->
@@ -501,13 +363,13 @@
 
           <h3 class="sectionTitle">Abrir ubicación</h3>
           <div class="btnGrid">
-            <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener" onclick="track('google')">
+            <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-google"></i> Google Maps
             </a>
-            <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener" onclick="track('waze')">
+            <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-waze"></i> Waze
             </a>
-            <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener" onclick="track('uber')">
+            <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-uber"></i> Uber
             </a>
             <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener">
@@ -587,7 +449,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: QR + PANEL STATS (después del QR) -->
+      <!-- RIGHT: QR + PANEL STATS -->
       <div class="card">
         <div class="qrWrap">
           <div class="qrBox">
@@ -599,7 +461,6 @@
             </div>
           </div>
 
-          <!-- PANEL DE CONTADORES (DESPUÉS DEL QR) -->
           <div style="margin-top:14px;">
             <button id="btnStats" class="statsBtn" type="button">
               <span>📊 Ver actividad del cliente</span>
@@ -638,7 +499,6 @@
       </div>
     </div>
 
-    <!-- FOOTER -->
     <div class="footer">
       © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.
       <div class="legal">
@@ -648,107 +508,80 @@
   </div>
 
   <script>
-    /***********************
-     * CONFIGURACIÓN
-     ***********************/
-    // 1) Pega aquí tu URL del Apps Script (termina en /exec)
-    const WEBAPP_URL = "TU_URL_WEBAPP";
+    // ✅ Tu WebApp actual
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz3R8RZe6-g9_oeLc7c6gjSguElG1jVdwxu8mnqVWffO9nU9c1ZwacUXlxVCXwCsLNhWQ/exec";
 
-    // 2) Datos desde la URL (recomendado para evitar errores)
-    const qs = new URLSearchParams(location.search);
+    function setMsg(t) {
+      const el = document.getElementById("msgBusqueda");
+      if (el) el.textContent = t || "";
+    }
 
-    const CODIGO_CLIENTE = (qs.get("codigo") || "").trim();
-    const NOMBRE_CLIENTE = (qs.get("nombre") || "Cliente").trim();
-    const REF_CLIENTE = (qs.get("ref") || "Referencia no indicada").trim();
-
-    // Puedes enviar un texto más específico para la búsqueda en mapas
-    // si no lo envías, usa la referencia
-    const MAP_QUERY = (qs.get("mapq") || REF_CLIENTE || NOMBRE_CLIENTE || CODIGO_CLIENTE).trim();
-
-    // Teléfono negocio para Aviso de llegada (Panamá)
-    const TEL_NEGOCIO = "50765996532";
-
-    /***********************
-     * UTILIDADES
-     ***********************/
     function safeText(id, value){
       const el = document.getElementById(id);
-      if (el) el.textContent = value;
-    }
-    function encode(s){ return encodeURIComponent(String(s || "")); }
-
-    function makeLinks(){
-      const q = encode(MAP_QUERY);
-      return {
-        google: `https://www.google.com/maps/search/?api=1&query=${q}`,
-        waze: `https://waze.com/ul?q=${q}`,
-        uber: `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${q}`,
-      };
+      if (el) el.textContent = value ?? "";
     }
 
-    function makeArrivalLink(){
-      const msg = `Hola, vengo en camino. Mi código es ${CODIGO_CLIENTE || "AD507"}. Referencia: ${REF_CLIENTE}`;
-      return `https://wa.me/${TEL_NEGOCIO}?text=${encode(msg)}`;
-    }
-
-    function setHref(id, href){
+    function safeHref(id, value){
       const el = document.getElementById(id);
-      if (el) el.href = href;
+      if (el) el.href = value || "#";
     }
 
-    function fmtFecha(v) {
-      try {
-        if (!v) return "-";
-        const d = new Date(v);
-        if (isNaN(d.getTime())) return "-";
-        return d.toLocaleString("es-PA");
-      } catch { return "-"; }
-    }
+    async function buscarCodigo(){
+      const input = document.getElementById("inputCodigo");
+      const code = (input ? input.value : "").trim();
 
-    /***********************
-     * TRACKING (CLICS)
-     ***********************/
-    function track(eventName){
-      if (!WEBAPP_URL || WEBAPP_URL === "TU_URL_WEBAPP") return;
-      if (!CODIGO_CLIENTE) return;
+      if(!code){
+        setMsg("Ingresa tu código para buscar.");
+        return;
+      }
 
-      const url = `${WEBAPP_URL}?action=track&codigo=${encode(CODIGO_CLIENTE)}&event=${encode(eventName)}`;
-      try{
-        if (navigator.sendBeacon) navigator.sendBeacon(url);
-        else fetch(url, { cache:"no-store", keepalive:true }).catch(()=>{});
-      }catch(e){}
-    }
-
-    async function cargarStats(){
-      if (!WEBAPP_URL || WEBAPP_URL === "TU_URL_WEBAPP") return;
-      if (!CODIGO_CLIENTE) return;
+      setMsg("Buscando...");
 
       try{
-        const res = await fetch(`${WEBAPP_URL}?action=stats&codigo=${encode(CODIGO_CLIENTE)}`, { cache:"no-store" });
-        const json = await res.json();
-        if (!json.ok) return;
+        const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
+        const data = await res.json();
 
-        const d = json.data || {};
-        safeText("stGoogle", Number(d.google || 0));
-        safeText("stWaze", Number(d.waze || 0));
-        safeText("stUber", Number(d.uber || 0));
-        safeText("stShare", Number(d.share || 0));
-        safeText("stCopy", Number(d.copy || 0));
-        safeText("stUpdated", "Actualizado: " + fmtFecha(d.ultimo));
-      }catch(e){}
+        if(!data.ok){
+          setMsg(data.message || "Código no encontrado.");
+          return;
+        }
+
+        // Guardar el código activo
+        window.CODIGO_CLIENTE = data.codigo || code;
+
+        // Pintar datos
+        safeText("uiCodigo", data.codigo || code);
+        safeText("uiNombre", data.nombre || "Cliente");
+        safeText("uiRef", data.referencia || "Referencia no indicada");
+
+        // Botones
+        safeHref("btnGoogle", data.google);
+        safeHref("btnWaze", data.waze);
+        safeHref("btnUber", data.uber);
+        safeHref("btnAviso", data.whatsapp);
+
+        // QR + link visible
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg && data.qr) qrImg.src = data.qr;
+
+        const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
+        safeText("uiLink", linkMostrado);
+
+        const linkVer = document.getElementById("linkVerificacion");
+        if (linkVer) linkVer.href = linkMostrado;
+
+        setMsg("Listo ✅");
+      }catch(err){
+        setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
+      }
     }
 
-    /***********************
-     * COMPARTIR / COPIAR
-     ***********************/
+    // Compartir / Copiar (sin contadores)
     function shareLink(){
-      track("share");
       const url = location.href;
       if (navigator.share){
-        navigator.share({ title:"Dirección Digital", text:`Código: ${CODIGO_CLIENTE}`, url })
-          .catch(()=>{});
+        navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
       } else {
-        // fallback: copiar
         copyLink(true);
       }
     }
@@ -756,70 +589,48 @@
     async function copyLink(silent=false){
       try{
         await navigator.clipboard.writeText(location.href);
-        track("copy");
         if (!silent) alert("Link copiado ✅");
       }catch(e){
         if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
       }
     }
 
-    /***********************
-     * QR
-     ***********************/
-    function setQR(){
-      const img = document.getElementById("qrImg");
-      const link = location.href;
-      safeText("uiLink", link);
-
-      // QR por servicio simple (sin librerías)
-      // Nota: Si algún navegador bloquea, igual queda el link visible
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encode(link)}`;
-      if (img) img.src = qrUrl;
-    }
-
-    /***********************
-     * PANEL DESPLEGABLE
-     ***********************/
+    // Panel desplegable (solo UI)
     function initStatsPanel(){
       const btn = document.getElementById("btnStats");
       const panel = document.getElementById("statsPanel");
       const chev = document.getElementById("statsChevron");
       if (!btn || !panel) return;
 
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", () => {
         const opening = (panel.style.display === "none" || !panel.style.display);
         panel.style.display = opening ? "block" : "none";
         if (chev) chev.textContent = opening ? "▴" : "▾";
-        if (opening) await cargarStats();
       });
     }
 
-    /***********************
-     * INIT
-     ***********************/
-    (function init(){
-      // UI esencial
-      safeText("uiCodigo", CODIGO_CLIENTE || "-");
-      safeText("uiNombre", NOMBRE_CLIENTE || "-");
-      safeText("uiRef", REF_CLIENTE || "-");
-
-      // Links
-      const links = makeLinks();
-      setHref("btnGoogle", links.google);
-      setHref("btnWaze", links.waze);
-      setHref("btnUber", links.uber);
-      setHref("btnAviso", makeArrivalLink());
-
-      // Link verificación (texto, NO QR)
-      // Puedes apuntar a una página tuya de verificación si tienes una
-      // Si no, se queda al mismo link del cliente
-      setHref("linkVerificacion", location.href);
-
-      // QR
-      setQR();
-
-      // panel
+    // Auto-cargar si viene ?code=
+    (function autoLoadFromURL(){
+      const qs = new URLSearchParams(location.search);
+      const code = (qs.get("code") || "").trim();
       initStatsPanel();
+
+      if (code) {
+        const input = document.getElementById("inputCodigo");
+        if (input) input.value = code;
+        buscarCodigo();
+      } else {
+        // Si no hay code, al menos muestra el link y el QR del link actual
+        const linkMostrado = `${location.origin}${location.pathname}`;
+        safeText("uiLink", linkMostrado);
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg) {
+          const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkMostrado)}`;
+          qrImg.src = qr;
+        }
+        const linkVer = document.getElementById("linkVerificacion");
+        if (linkVer) linkVer.href = linkMostrado;
+      }
     })();
   </script>
 </body>

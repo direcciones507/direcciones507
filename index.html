@@ -657,6 +657,15 @@ function track(ev){
         safeHref("btnWaze", waze || "#");
         safeHref("btnUber", uber || "#");
         safeHref("btnAviso", aviso || "#");
+        const aG = document.getElementById("btnGoogle");
+const aW = document.getElementById("btnWaze");
+const aU = document.getElementById("btnUber");
+const aA = document.getElementById("btnAviso");
+
+if(aG) aG.addEventListener("click", ()=>track("google"), {passive:true});
+if(aW) aW.addEventListener("click", ()=>track("waze"),   {passive:true});
+if(aU) aU.addEventListener("click", ()=>track("uber"),   {passive:true});
+if(aA) aA.addEventListener("click", ()=>track("aviso"),  {passive:true});
 
         // ✅ Link del panel (compartir) y QR de compartir
         const linkMostrado = getShareUrl();

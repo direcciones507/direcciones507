@@ -340,71 +340,85 @@
       <!-- LEFT: INFO + BOTONES -->
       <div class="card">
         <div class="cardHeader">
-          <h2>Datos del cliente</h2>
-          <div class="sub">Aquí solo aparece lo esencial: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.</div>
+          <!-- ✅ Este header se oculta en página principal y se muestra solo en cliente -->
+          <div id="bloqueHeaderCliente">
+            <h2>Datos del cliente</h2>
+            <div class="sub">Aquí solo aparece lo esencial: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.</div>
 
-          <div class="pillRow">
-            <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
-            <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
+            <div class="pillRow">
+              <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
+              <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
+            </div>
+          </div>
+
+          <!-- ✅ En página principal no mostramos ese bloque (queda limpio) -->
+          <div id="headerPrincipal" style="display:none;">
+            <h2>Panel principal</h2>
+            <div class="sub">Ingresa un código para ver la dirección del cliente.</div>
           </div>
         </div>
 
         <div class="cardBody">
-          <div class="field">
-            <span>Nombre</span>
-            <b id="uiNombre">-</b>
-          </div>
 
-          <div class="field">
-            <span>Referencia</span>
-            <b id="uiRef">-</b>
-          </div>
+          <!-- ✅ TODO este bloque se oculta en página principal -->
+          <div id="bloqueDatosCliente">
+            <div class="field">
+              <span>Nombre</span>
+              <b id="uiNombre">-</b>
+            </div>
 
-          <div class="divider"></div>
+            <div class="field">
+              <span>Referencia</span>
+              <b id="uiRef">-</b>
+            </div>
 
-          <!-- ✅ SECCIÓN UBICACIÓN (se oculta en página principal) -->
-          <div id="seccionUbicacion">
-            <h3 class="sectionTitle">Abrir ubicación</h3>
+            <div class="divider"></div>
+
+            <!-- ✅ SECCIÓN UBICACIÓN (solo cliente) -->
+            <div id="seccionUbicacion">
+              <h3 class="sectionTitle">Abrir ubicación</h3>
+              <div class="btnGrid">
+                <!-- ✅ YA NO bloqueamos navegación: se redirige por href -->
+                <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener"
+                   onclick="trackEvent('google');">
+                  <i class="fa-brands fa-google"></i> Google Maps
+                </a>
+                <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener"
+                   onclick="trackEvent('waze');">
+                  <i class="fa-brands fa-waze"></i> Waze
+                </a>
+                <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener"
+                   onclick="trackEvent('uber');">
+                  <i class="fa-brands fa-uber"></i> Uber
+                </a>
+                <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener"
+                   onclick="trackEvent('aviso');">
+                  <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
+                </a>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 class="sectionTitle">Compartir</h3>
             <div class="btnGrid">
-              <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener"
-                 onclick="trackAndGo('google', this.href); return false;">
-                <i class="fa-brands fa-google"></i> Google Maps
-              </a>
-              <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener"
-                 onclick="trackAndGo('waze', this.href); return false;">
-                <i class="fa-brands fa-waze"></i> Waze
-              </a>
-              <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener"
-                 onclick="trackAndGo('uber', this.href); return false;">
-                <i class="fa-brands fa-uber"></i> Uber
-              </a>
-              <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener"
-                 onclick="trackAndGo('aviso', this.href); return false;">
-                <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
+              <button class="btn" type="button" onclick="shareLink()">
+                <i class="fa-solid fa-share-nodes"></i> Compartir
+              </button>
+              <button class="btn copy" type="button" onclick="copyLink()">
+                <i class="fa-solid fa-copy"></i> Copiar link
+              </button>
+            </div>
+
+            <div class="smallNote">
+              <b>Verificación para imprimir:</b>
+              <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
+                Ver enlace de verificación
               </a>
             </div>
+
+            <div class="divider"></div>
           </div>
-
-          <div class="divider"></div>
-
-          <h3 class="sectionTitle">Compartir</h3>
-          <div class="btnGrid">
-            <button class="btn" type="button" onclick="shareLink()">
-              <i class="fa-solid fa-share-nodes"></i> Compartir
-            </button>
-            <button class="btn copy" type="button" onclick="copyLink()">
-              <i class="fa-solid fa-copy"></i> Copiar link
-            </button>
-          </div>
-
-          <div class="smallNote">
-            <b>Verificación para imprimir:</b>
-            <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
-              Ver enlace de verificación
-            </a>
-          </div>
-
-          <div class="divider"></div>
 
           <!-- ✅ SOLO EN PANEL PRINCIPAL (se oculta en modo cliente) -->
           <div id="seccionPasos">
@@ -476,7 +490,7 @@
             </div>
           </div>
 
-          <!-- ✅ Panel stats (se oculta en página principal) -->
+          <!-- ✅ Panel stats (solo cliente) -->
           <div id="seccionStats" style="margin-top:14px;">
             <button id="btnStats" class="statsBtn" type="button">
               <span>📊 Ver actividad del cliente</span>
@@ -569,12 +583,21 @@
       if (precios) precios.style.display = isCliente ? "none" : "block";
     }
 
-    // ✅ Oculta Ubicación y Stats SOLO en página principal (cuando no hay cliente)
-    function toggleSeccionesClienteVisible(isCliente){
-      const ubic = document.getElementById("seccionUbicacion");
+    // ✅ Muestra/Oculta bloques del cliente (header + datos + compartir)
+    function toggleBloquesCliente(isCliente){
+      const headerCliente = document.getElementById("bloqueHeaderCliente");
+      const headerPrincipal = document.getElementById("headerPrincipal");
+      const bloqueDatos = document.getElementById("bloqueDatosCliente");
       const stats = document.getElementById("seccionStats");
-      if (ubic) ubic.style.display = isCliente ? "block" : "none";
+      const ubic = document.getElementById("seccionUbicacion");
+
+      if (headerCliente) headerCliente.style.display = isCliente ? "block" : "none";
+      if (headerPrincipal) headerPrincipal.style.display = isCliente ? "none" : "block";
+      if (bloqueDatos) bloqueDatos.style.display = isCliente ? "block" : "none";
+
+      // stats y ubicación solo cliente
       if (stats) stats.style.display = isCliente ? "block" : "none";
+      if (ubic) ubic.style.display = isCliente ? "block" : "none";
     }
 
     async function buscarCodigo(){
@@ -584,7 +607,7 @@
       if(!code){
         setMsg("Ingresa tu código para buscar.");
         toggleModoCliente(false);
-        toggleSeccionesClienteVisible(false);
+        toggleBloquesCliente(false);
         return;
       }
 
@@ -597,7 +620,7 @@
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");
           toggleModoCliente(false);
-          toggleSeccionesClienteVisible(false);
+          toggleBloquesCliente(false);
           return;
         }
 
@@ -625,9 +648,9 @@
         const linkVer = document.getElementById("linkVerificacion");
         if (linkVer) linkVer.href = linkMostrado;
 
-        // ✅ Ya hay cliente: mostrar ubicación + stats, ocultar pasos/precios
+        // ✅ Ya hay cliente: mostrar ubicación + stats, ocultar pasos/precios y ocultar bloque principal
         toggleModoCliente(true);
-        toggleSeccionesClienteVisible(true);
+        toggleBloquesCliente(true);
 
         // cargar stats si aplica (no bloquea UI)
         loadStats();
@@ -636,29 +659,25 @@
       }catch(err){
         setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
         toggleModoCliente(false);
-        toggleSeccionesClienteVisible(false);
+        toggleBloquesCliente(false);
       }
     }
 
-    // Contador (no bloquea navegación)
+    // ✅ Contador: usa sendBeacon si existe (más confiable al navegar)
     function trackEvent(ev){
       const code = window.CODIGO_CLIENTE;
       if (!code) return;
-      fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}`, {
-        cache: "no-store"
-      }).catch(()=>{});
-    }
 
-    function trackAndGo(ev, url){
-      url = normalizeUrl(url);
+      const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}`;
 
-      if (!url || url === "#") {
-        alert("Este enlace no está configurado todavía para este cliente.");
-        return;
-      }
+      try{
+        if (navigator.sendBeacon){
+          navigator.sendBeacon(url);
+          return;
+        }
+      }catch(e){}
 
-      trackEvent(ev);
-      window.open(url, "_blank", "noopener");
+      fetch(url, { cache:"no-store" }).catch(()=>{});
     }
 
     // Compartir / Copiar
@@ -725,12 +744,11 @@
         const input = document.getElementById("inputCodigo");
         if (input) input.value = code;
 
-        // En modo cliente ya: se mostrarán al cargar
         buscarCodigo();
       } else {
-        // ✅ Página principal: ocultar botones de ubicación y panel stats
+        // ✅ Página principal: mostrar pasos/precios y ocultar todo lo de cliente
         toggleModoCliente(false);
-        toggleSeccionesClienteVisible(false);
+        toggleBloquesCliente(false);
 
         // QR del link actual (página principal)
         const linkMostrado = `${location.origin}${location.pathname}`;
@@ -749,3 +767,4 @@
   </script>
 </body>
 </html>
+

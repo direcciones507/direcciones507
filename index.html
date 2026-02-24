@@ -531,7 +531,28 @@
       const el = document.getElementById(id);
       if (el) el.textContent = value ?? "";
     }
+    function normalizeUrl(url){
+  url = String(url ?? "").trim();
+  if(!url || url === "-" || url === "#") return "";
+  if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+  return url;
+}
 
+function hideFieldByValueId(valueId, hide){
+  const v = document.getElementById(valueId);
+  if(!v) return;
+  const box = v.closest(".field");
+  if(box) box.style.display = hide ? "none" : "grid";
+}
+
+function toggleStatsNegocios(esNegocios){
+  const btn = document.getElementById("btnStats");
+  const panel = document.getElementById("statsPanel");
+  if(btn) btn.style.display = esNegocios ? "flex" : "none";
+  if(panel) panel.style.display = "none"; // siempre cerrado al cargar
+  const chev = document.getElementById("statsChevron");
+  if(chev) chev.textContent = "▾";
+}
     function safeHref(id, value){
       const el = document.getElementById(id);
       if (el) el.href = value || "#";
@@ -566,6 +587,15 @@
           toggleModoCliente(false);
           return;
         }
+        
+        // 👇 SI ENCONTRÓ CLIENTE
+toggleModoCliente(true);
+        // ✅ Ocultar Nombre y Referencia en vista cliente (solo admin puede verlos)
+const qs = new URLSearchParams(location.search);
+const isAdmin = qs.get("admin") === "1";
+
+hideFieldByValueId("uiNombre", !isAdmin);
+hideFieldByValueId("uiRef", !isAdmin);
 
         // Guardar el código activo
         window.CODIGO_CLIENTE = data.codigo || code;
@@ -575,18 +605,31 @@
         safeText("uiNombre", data.nombre || "Cliente");
         safeText("uiRef", data.referencia || "Referencia no indicada");
 
-        // Botones
-        safeHref("btnGoogle", data.google);
-        safeHref("btnWaze", data.waze);
-        safeHref("btnUber", data.uber);
-        safeHref("btnAviso", data.whatsapp);
+        // ✅ Tus llaves reales del JSON
+const google = normalizeUrl(data.google_maps || data.google || "");
+const waze   = normalizeUrl(data.waze || "");
+const uber   = normalizeUrl(data.uber || "");
+const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
 
-        // QR + link visible
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg && data.qr) qrImg.src = data.qr;
+// Botones
+safeHref("btnGoogle", google || "#");
+safeHref("btnWaze", waze || "#");
+safeHref("btnUber", uber || "#");
+safeHref("btnAviso", aviso || "#");
 
-        const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
-        safeText("uiLink", linkMostrado);
+// QR + link visible (tu JSON trae qr_maps)
+const qrImg = document.getElementById("qrImg");
+if (qrImg) qrImg.src = normalizeUrl(data.qr_maps || data.qr || "");
+
+// Link que se comparte (este sí está bien)
+const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
+safeText("uiLink", linkMostrado);
+
+// ✅ Verificación para imprimir:
+// Si tu Apps Script no devuelve link de verificación, usamos Google Maps como verificación (siempre funciona)
+const verifLink = normalizeUrl(data.link_verificacion || data.verificacion || google || "");
+const linkVer = document.getElementById("linkVerificacion");
+if (linkVer) linkVer.href = verifLink || "#";
 
         const linkVer = document.getElementById("linkVerificacion");
         if (linkVer) linkVer.href = linkMostrado;

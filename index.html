@@ -531,31 +531,33 @@
       const el = document.getElementById(id);
       if (el) el.textContent = value ?? "";
     }
-    function normalizeUrl(url){
-  url = String(url ?? "").trim();
-  if(!url || url === "-" || url === "#") return "";
-  if(!/^https?:\/\//i.test(url)) url = "https://" + url;
-  return url;
-}
 
-function hideFieldByValueId(valueId, hide){
-  const v = document.getElementById(valueId);
-  if(!v) return;
-  const box = v.closest(".field");
-  if(box) box.style.display = hide ? "none" : "grid";
-}
-
-function toggleStatsNegocios(esNegocios){
-  const btn = document.getElementById("btnStats");
-  const panel = document.getElementById("statsPanel");
-  if(btn) btn.style.display = esNegocios ? "flex" : "none";
-  if(panel) panel.style.display = "none"; // siempre cerrado al cargar
-  const chev = document.getElementById("statsChevron");
-  if(chev) chev.textContent = "▾";
-}
     function safeHref(id, value){
       const el = document.getElementById(id);
       if (el) el.href = value || "#";
+    }
+
+    function normalizeUrl(url){
+      url = String(url ?? "").trim();
+      if(!url || url === "-" || url === "#") return "";
+      if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+      return url;
+    }
+
+    function hideFieldByValueId(valueId, hide){
+      const v = document.getElementById(valueId);
+      if(!v) return;
+      const box = v.closest(".field");
+      if(box) box.style.display = hide ? "none" : "grid";
+    }
+
+    function toggleStatsNegocios(esNegocios){
+      const btn = document.getElementById("btnStats");
+      const panel = document.getElementById("statsPanel");
+      if(btn) btn.style.display = esNegocios ? "flex" : "none";
+      if(panel) panel.style.display = "none";
+      const chev = document.getElementById("statsChevron");
+      if(chev) chev.textContent = "▾";
     }
 
     // ✅ Oculta Pasos/Precios SOLO cuando ya hay cliente
@@ -566,6 +568,12 @@ function toggleStatsNegocios(esNegocios){
       if (precios) precios.style.display = isCliente ? "none" : "block";
     }
 
+    function getShareUrl(){
+      return window.CODIGO_CLIENTE
+        ? `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`
+        : `${location.origin}${location.pathname}`;
+    }
+
     async function buscarCodigo(){
       const input = document.getElementById("inputCodigo");
       const code = (input ? input.value : "").trim();
@@ -573,6 +581,7 @@ function toggleStatsNegocios(esNegocios){
       if(!code){
         setMsg("Ingresa tu código para buscar.");
         toggleModoCliente(false);
+        toggleStatsNegocios(false);
         return;
       }
 
@@ -585,68 +594,67 @@ function toggleStatsNegocios(esNegocios){
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");
           toggleModoCliente(false);
+          toggleStatsNegocios(false);
           return;
         }
-        
-        // 👇 SI ENCONTRÓ CLIENTE
-toggleModoCliente(true);
-        // ✅ Ocultar Nombre y Referencia en vista cliente (solo admin puede verlos)
-const qs = new URLSearchParams(location.search);
-const isAdmin = qs.get("admin") === "1";
-
-hideFieldByValueId("uiNombre", !isAdmin);
-hideFieldByValueId("uiRef", !isAdmin);
 
         // Guardar el código activo
         window.CODIGO_CLIENTE = data.codigo || code;
+
+        // 👇 SI ENCONTRÓ CLIENTE
+        toggleModoCliente(true);
+
+        // ✅ Ocultar Nombre y Referencia en vista cliente (solo admin puede verlos)
+        const qs = new URLSearchParams(location.search);
+        const isAdmin = qs.get("admin") === "1";
+        hideFieldByValueId("uiNombre", !isAdmin);
+        hideFieldByValueId("uiRef", !isAdmin);
 
         // Pintar datos
         safeText("uiCodigo", data.codigo || code);
         safeText("uiNombre", data.nombre || "Cliente");
         safeText("uiRef", data.referencia || "Referencia no indicada");
 
-        // ✅ Tus llaves reales del JSON
-const google = normalizeUrl(data.google_maps || data.google || "");
-const waze   = normalizeUrl(data.waze || "");
-const uber   = normalizeUrl(data.uber || "");
-const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+        // ✅ Tus llaves reales del JSON (y compatibilidad con llaves viejas)
+        const google = normalizeUrl(data.google_maps || data.google || "");
+        const waze   = normalizeUrl(data.waze || "");
+        const uber   = normalizeUrl(data.uber || "");
+        const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
 
-// Botones
-safeHref("btnGoogle", google || "#");
-safeHref("btnWaze", waze || "#");
-safeHref("btnUber", uber || "#");
-safeHref("btnAviso", aviso || "#");
+        // Botones
+        safeHref("btnGoogle", google || "#");
+        safeHref("btnWaze", waze || "#");
+        safeHref("btnUber", uber || "#");
+        safeHref("btnAviso", aviso || "#");
 
-// QR + link visible (tu JSON trae qr_maps)
-const qrImg = document.getElementById("qrImg");
-if (qrImg) qrImg.src = normalizeUrl(data.qr_maps || data.qr || "");
+        // QR + link visible (tu JSON trae qr_maps)
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg) qrImg.src = normalizeUrl(data.qr_maps || data.qr || "");
 
-// Link que se comparte (este sí está bien)
-const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
-safeText("uiLink", linkMostrado);
+        const linkMostrado = getShareUrl();
+        safeText("uiLink", linkMostrado);
 
-// ✅ Verificación para imprimir:
-// Si tu Apps Script no devuelve link de verificación, usamos Google Maps como verificación (siempre funciona)
-const verifLink = normalizeUrl(data.link_verificacion || data.verificacion || google || "");
-const linkVer = document.getElementById("linkVerificacion");
-if (linkVer) linkVer.href = verifLink || "#";
-
+        // ✅ Verificación para imprimir:
+        // Si no hay link de verificación real, usamos Google Maps como verificación (funciona siempre)
+        const verifLink = normalizeUrl(data.link_verificacion || data.verificacion || google || "");
         const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer) linkVer.href = linkMostrado;
+        if (linkVer) linkVer.href = verifLink || "#";
 
-        // ✅ Ya hay cliente: ocultar Pasos/Precios
-        toggleModoCliente(true);
+        // ✅ Contador SOLO negocios (si tu JSON trae plan:"NEGOCIOS"; si no, se oculta)
+        const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
+        toggleStatsNegocios(esNegocios);
 
         setMsg("Listo ✅");
       }catch(err){
         setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
         toggleModoCliente(false);
+        toggleStatsNegocios(false);
       }
     }
 
     // Compartir / Copiar
     function shareLink(){
-      const url = location.href;
+      const url = getShareUrl();
       if (navigator.share){
         navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
       } else {
@@ -655,8 +663,9 @@ if (linkVer) linkVer.href = verifLink || "#";
     }
 
     async function copyLink(silent=false){
+      const url = getShareUrl();
       try{
-        await navigator.clipboard.writeText(location.href);
+        await navigator.clipboard.writeText(url);
         if (!silent) alert("Link copiado ✅");
       }catch(e){
         if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
@@ -687,10 +696,11 @@ if (linkVer) linkVer.href = verifLink || "#";
       if (code) {
         const input = document.getElementById("inputCodigo");
         if (input) input.value = code;
-        buscarCodigo(); // esto activará toggleModoCliente(true) cuando cargue
+        buscarCodigo();
       } else {
         // modo principal: mostrar pasos/precios
         toggleModoCliente(false);
+        toggleStatsNegocios(false);
 
         // QR del link actual
         const linkMostrado = `${location.origin}${location.pathname}`;
@@ -708,4 +718,3 @@ if (linkVer) linkVer.href = verifLink || "#";
   </script>
 </body>
 </html>
-

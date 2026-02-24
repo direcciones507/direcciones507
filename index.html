@@ -345,40 +345,130 @@
       <div class="badge"><i class="fa-solid fa-shield-halved"></i> Enlace seguro</div>
     </div>
 
-    <!-- BUSCADOR POR CODIGO -->
+   <!-- BUSCADOR POR CODIGO -->
 <div style="margin-top:18px;margin-bottom:10px;">
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    
-    <input 
-      type="text" 
+    <input
+      type="text"
       id="inputCodigo"
-      placeholder="Ingresa tu código AD507"
+      placeholder="Ingresa tu código AD507 (Ej: AD507-0001)"
       style="
-      flex:1;
-      padding:14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.15);
-      background:rgba(0,0,0,.35);
-      color:white;
-      font-size:16px;
-      font-weight:700;
-      outline:none;
-      ">
+        flex:1;
+        padding:14px;
+        border-radius:14px;
+        border:1px solid rgba(255,255,255,.15);
+        background:rgba(0,0,0,.35);
+        color:white;
+        font-size:16px;
+        font-weight:700;
+        outline:none;
+      "
+      onkeydown="if(event.key==='Enter'){ buscarCodigo(); }"
+    />
 
-    <button onclick="buscarCodigo()" 
+    <button
+      type="button"
+      onclick="buscarCodigo()"
       style="
-      padding:14px 18px;
-      border:none;
-      border-radius:14px;
-      background:linear-gradient(135deg,#22c55e,#16a34a);
-      color:white;
-      font-weight:900;
-      font-size:15px;
-      cursor:pointer;">
+        padding:14px 18px;
+        border:none;
+        border-radius:14px;
+        background:linear-gradient(135deg,#22c55e,#16a34a);
+        color:white;
+        font-weight:900;
+        font-size:15px;
+        cursor:pointer;
+      "
+    >
       Buscar
     </button>
-
   </div>
+
+  <div id="msgBusqueda" style="margin-top:8px;color:#9ca3af;font-size:12px;"></div>
+</div>
+
+<script>
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwgwrtbAMItLb_SJFMf5GffBFYdSQfkuKbZuE2MDFu0tsyQnMRqEuWPZS-ct8eysufWsA/exec";
+
+  function setMsg(t) {
+    const el = document.getElementById("msgBusqueda");
+    if (el) el.textContent = t || "";
+  }
+
+  function safeText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value ?? "";
+  }
+
+  function safeHref(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.href = value || "#";
+  }
+
+  async function buscarCodigo() {
+    const input = document.getElementById("inputCodigo");
+    const code = (input ? input.value : "").trim();
+
+    if (!code) {
+      setMsg("Ingresa tu código para buscar.");
+      return;
+    }
+
+    setMsg("Buscando...");
+
+    try {
+      const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
+      const data = await res.json();
+
+      if (!data.ok) {
+        setMsg(data.message || "Código no encontrado.");
+        return;
+      }
+
+      // Guardar el código activo (para contadores/actividad)
+      window.CODIGO_CLIENTE = data.codigo || code;
+
+      // Pintar datos (solo lo esencial)
+      safeText("uiCodigo", data.codigo || code);
+      safeText("uiNombre", data.nombre || "Cliente");
+      safeText("uiRef", data.referencia || "Referencia no indicada");
+
+      // Botones de navegación
+      safeHref("btnGoogle", data.google);
+      safeHref("btnWaze", data.waze);
+      safeHref("btnUber", data.uber);
+      safeHref("btnAviso", data.whatsapp);
+
+      // QR + link visible
+      const qrImg = document.getElementById("qrImg");
+      if (qrImg && data.qr) qrImg.src = data.qr;
+
+      // link que muestra la página
+      const linkMostrado = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
+      safeText("uiLink", linkMostrado);
+
+      // Enlace de verificación (si existe en tu index)
+      const linkVer = document.getElementById("linkVerificacion");
+      if (linkVer) linkVer.href = linkMostrado;
+
+      setMsg("Listo ✅");
+
+    } catch (err) {
+      setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
+    }
+  }
+
+  // Si la página ya viene con ?code=, que lo cargue automático
+  (function autoLoadFromURL(){
+    const qs = new URLSearchParams(location.search);
+    const code = (qs.get("code") || "").trim();
+    if (code) {
+      const input = document.getElementById("inputCodigo");
+      if (input) input.value = code;
+      buscarCodigo();
+    }
+  })();
+</script>
 </div>
 
     <div class="grid">

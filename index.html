@@ -19,762 +19,697 @@
       --card:rgba(255,255,255,.06);
       --border:rgba(255,255,255,.12);
       --text:#e5e7eb;
-      --muted:#9ca3af;
-      --brand:#22c55e;
-      --shadow: 0 18px 40px rgba(0,0,0,.45);
-      --radius:18px;
+      --muted:rgba(229,231,235,.72);
+      --brand1:#22c55e;
+      --brand2:#60a5fa;
+      --danger:#ef4444;
+      --shadow:0 18px 50px rgba(0,0,0,.45);
+      --radius:22px;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;
       background:
-        radial-gradient(1200px 600px at 20% -10%, rgba(34,197,94,.18), transparent 60%),
-        radial-gradient(900px 520px at 85% 0%, rgba(59,130,246,.12), transparent 55%),
-        linear-gradient(180deg, #070a14, var(--bg));
+        radial-gradient(900px 600px at 15% 12%, rgba(96,165,250,.22), transparent 55%),
+        radial-gradient(900px 600px at 85% 22%, rgba(34,197,94,.18), transparent 55%),
+        var(--bg);
       color:var(--text);
       min-height:100vh;
     }
     a{color:inherit}
-    .container{max-width:980px;margin:0 auto;padding:24px 16px 40px}
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;gap:14px;
-      padding:14px 16px;border:1px solid var(--border);border-radius:22px;
-      background:rgba(0,0,0,.25);backdrop-filter: blur(8px);
-      box-shadow: var(--shadow);
-    }
-    .brand{display:flex;align-items:center;gap:12px;}
-    .logo{
-      width:48px;height:48px;border-radius:16px;
-      background: linear-gradient(145deg, #1E51D3, #0B2A6F);
-      display:grid;place-items:center;
-      box-shadow: 0 10px 22px rgba(0,0,0,.45);
-    }
-    .logo i{font-size:24px;color:#fff}
-    .brand h1{
-      margin:0;
-      font-family:Outfit,Inter;
-      font-size:18px;
-      letter-spacing:.2px;
-      line-height:1.1;
-    }
-    .brand p{
-      margin:4px 0 0 0;
-      color:var(--muted);
-      font-size:12px;
-    }
-    .badge{
-      display:flex;align-items:center;gap:8px;
-      padding:10px 12px;border-radius:999px;
-      background:rgba(34,197,94,.12);
-      border:1px solid rgba(34,197,94,.25);
-      color:#d1fae5;
-      font-weight:700;
-      font-size:12px;
-      white-space:nowrap;
-    }
+    .container{max-width:1080px;margin:0 auto;padding:0 18px}
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:18px;
-      margin-top:18px;
-    }
-    @media(max-width:860px){ .grid{grid-template-columns:1fr} }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .cardHeader{
-      padding:16px 16px 12px 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+    /* Top bar */
+    .top-bar{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter: blur(10px);
+      background: rgba(11,16,32,.65);
       border-bottom:1px solid rgba(255,255,255,.08);
     }
-    .cardHeader h2{
-      margin:0;
-      font-size:16px;
-      font-family:Outfit,Inter;
-      letter-spacing:.2px;
+    .top-inner{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:16px;padding:14px 0;
     }
-    .cardHeader .sub{
-      margin:6px 0 0 0;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.4;
-    }
-    .cardBody{padding:16px}
-
-    .pillRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
-    .pill{
-      padding:8px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      font-size:12px;color:var(--muted);
-      display:flex;align-items:center;gap:8px;
-    }
-    .pill b{color:var(--text)}
-
-    .field{
-      display:grid;
-      grid-template-columns: 140px 1fr;
-      gap:10px;
-      padding:10px 12px;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:14px;
-      background:rgba(0,0,0,.18);
-      margin-top:10px;
-    }
-    .field span{color:var(--muted);font-size:12px}
-    .field b{font-size:14px}
-
-    .btnGrid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-top:14px;
-    }
-    @media(max-width:520px){ .btnGrid{grid-template-columns:1fr} }
-
-    .btn{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      border-radius:16px;
-      padding:12px 12px;
-      font-weight:800;
-      cursor:pointer;
-      display:flex;align-items:center;justify-content:center;gap:10px;
+    .logo{
+      display:flex;align-items:center;gap:12px;
       text-decoration:none;
-      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+    }
+    .logo-icon{
+      width:48px;height:48px;border-radius:16px;
+      display:flex;align-items:center;justify-content:center;
+      background: linear-gradient(145deg, #1E51D3, #0B2A6F);
+      box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .logo-icon i{font-size:24px;color:#fff}
+    .logo-text{display:flex;flex-direction:column;line-height:1.05}
+    .logo-text .t1{font-family:Outfit,Inter;font-weight:800;letter-spacing:.3px}
+    .logo-text .t2{font-size:12px;color:var(--muted);font-weight:600}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 14px;border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(229,231,235,.9);
+      font-size:13px;
       user-select:none;
     }
-    .btn:hover{transform:translateY(-1px);border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.10)}
-    .btn.primary{
-      background: linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.08));
-      border-color: rgba(34,197,94,.32);
-    }
-    .btn.secondary{
-      background: rgba(59,130,246,.10);
-      border-color: rgba(59,130,246,.20);
-    }
-    .btn.whats{
-      background: rgba(34,197,94,.12);
-      border-color: rgba(34,197,94,.25);
-    }
-    .btn.copy{background: rgba(255,255,255,.06);}
+    .pill i{color:var(--brand1)}
 
-    .smallNote{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5;}
-    .divider{height:1px;background:rgba(255,255,255,.10);margin:16px 0;}
-    .sectionTitle{font-family:Outfit,Inter;font-size:14px;margin:0 0 10px 0;letter-spacing:.2px;}
-
-    .qrWrap{padding:16px;}
-    .qrBox{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.22);
-      border-radius:18px;
-      padding:14px;
-      text-align:center;
-    }
-    .qrTitle{font-family:Outfit,Inter;font-size:14px;margin:0;}
-    .qrSub{margin:6px 0 0 0;color:var(--muted);font-size:12px;}
-    .qrImg{
-      margin-top:12px;
-      width:220px;max-width:100%;
-      border-radius:14px;
+    /* Hero */
+    .hero{padding:34px 0 16px}
+    .hero-card{
+      background: rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.10);
-      background:#fff;
-      padding:8px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:26px;
+      overflow:hidden;
+      position:relative;
     }
-
-    .steps{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px;}
-    .step{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      border-radius:16px;
-      padding:12px;
-      display:flex;gap:12px;align-items:flex-start;
+    .hero-card:before{
+      content:"";
+      position:absolute;inset:-2px;
+      background: radial-gradient(700px 220px at 20% 0%, rgba(96,165,250,.22), transparent 60%),
+                  radial-gradient(700px 220px at 80% 0%, rgba(34,197,94,.18), transparent 60%);
+      pointer-events:none;
     }
-    .step .n{
-      width:28px;height:28px;border-radius:10px;
-      background:rgba(34,197,94,.14);
-      border:1px solid rgba(34,197,94,.20);
-      display:grid;place-items:center;
-      font-weight:900;color:#d1fae5;
-      flex:0 0 auto;
-    }
-    .step b{display:block;margin-bottom:4px}
-
-    .priceRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
-    @media(max-width:520px){.priceRow{grid-template-columns:1fr}}
-    .priceCard{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      border-radius:16px;
-      padding:12px;
-    }
-    .priceCard .tag{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:7px 10px;border-radius:999px;
-      background:rgba(34,197,94,.10);
-      border:1px solid rgba(34,197,94,.18);
-      color:#d1fae5;font-weight:800;font-size:12px;
-    }
-    .priceCard .amt{
-      margin-top:10px;
+    .hero-inner{position:relative;display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:center}
+    @media(max-width:900px){.hero-inner{grid-template-columns:1fr}}
+    h1{
+      margin:0 0 8px 0;
       font-family:Outfit,Inter;
-      font-size:22px;
-      font-weight:900;
+      font-size:34px;
+      letter-spacing:.2px;
     }
-    .priceCard ul{
-      margin:10px 0 0 18px;
+    .sub{
+      margin:0 0 18px 0;
       color:var(--muted);
-      font-size:12px;
-      line-height:1.55;
+      font-size:14.5px;
+      line-height:1.5;
+      max-width:60ch;
     }
 
-    .social{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:12px;}
-    .social a{
-      text-decoration:none;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.06);
+    /* Search */
+    .search{
+      display:flex;gap:10px;flex-wrap:wrap;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding:12px;
+    }
+    .search input{
+      flex:1;
+      min-width:220px;
+      border:none;
+      outline:none;
+      border-radius:14px;
+      padding:14px 14px;
+      font-size:14px;
+      background: rgba(0,0,0,.25);
       color:var(--text);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .btn{
+      border:none;cursor:pointer;
+      border-radius:14px;
+      padding:14px 16px;
+      font-weight:800;
+      letter-spacing:.2px;
+      color:#07120a;
+      background: linear-gradient(180deg, #34d399, #22c55e);
+      box-shadow: 0 12px 26px rgba(34,197,94,.22);
+      display:inline-flex;align-items:center;gap:10px;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{
+      background: rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      box-shadow:none;
+      font-weight:700;
+    }
+    .hint{
+      display:flex;gap:12px;align-items:flex-start;
+      padding:14px 16px;border-radius:18px;
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .hint i{color:var(--brand2);margin-top:2px}
+    .hint p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.45}
+
+    /* Panels */
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin:18px 0 28px}
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .card-title{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;
+    }
+    .card-title h2{
+      margin:0;font-size:16px;font-family:Outfit,Inter;letter-spacing:.2px;
+    }
+    .badge{
+      font-size:12px;
+      padding:7px 10px;border-radius:999px;
+      background: rgba(34,197,94,.14);
+      border:1px solid rgba(34,197,94,.22);
+      color:#a7f3d0;
       font-weight:800;
     }
 
-    .footer{
-      margin-top:22px;
-      padding:18px 14px;
+    .rows{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:760px){.rows{grid-template-columns:1fr}}
+    .field{
+      background: rgba(0,0,0,.22);
       border:1px solid rgba(255,255,255,.10);
-      border-radius:22px;
-      background:rgba(0,0,0,.25);
-      color:var(--muted);
-      font-size:12px;
+      border-radius:18px;
+      padding:12px 14px;
+    }
+    .field .k{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}
+    .field .v{font-size:14px;font-weight:800;word-break:break-word}
+
+    .actions{
+      margin-top:14px;
+      display:flex;flex-wrap:wrap;gap:10px;
+    }
+    .action{
+      flex:1;
+      min-width:220px;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      padding:13px 14px;border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:800;
+      text-decoration:none;
+      cursor:pointer;
+      user-select:none;
+    }
+    .action i{opacity:.95}
+    .action.primary{
+      background: linear-gradient(180deg, #60a5fa, #3b82f6);
+      color:#07101f;
+      border:none;
+    }
+    .action.whats{
+      background: linear-gradient(180deg, #34d399, #22c55e);
+      color:#07120a;
+      border:none;
+    }
+    .action.warn{
+      background: rgba(239,68,68,.14);
+      border:1px solid rgba(239,68,68,.22);
+      color:#fecaca;
+    }
+
+    .mini{
+      margin-top:14px;
+      display:grid;grid-template-columns:1fr 1fr;gap:12px;
+    }
+    @media(max-width:760px){.mini{grid-template-columns:1fr}}
+    .qrbox{
+      display:flex;gap:12px;align-items:center;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;padding:12px 14px;
+    }
+    .qrbox img{
+      width:92px;height:92px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+    }
+    .qrmeta{min-width:0}
+    .qrmeta .k{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px}
+    .qrmeta .v{font-size:13px;font-weight:800;word-break:break-word}
+
+    .steps{
+      margin-top:14px;
+      background: rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:14px;
+    }
+    .steps h3{margin:0 0 10px 0;font-size:14px;font-family:Outfit,Inter}
+    .steps ol{margin:0;padding-left:18px;color:var(--muted);font-weight:600;line-height:1.55;font-size:13.5px}
+    .prices{
+      margin-top:12px;
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    }
+    @media(max-width:760px){.prices{grid-template-columns:1fr}}
+    .price{
+      padding:12px 14px;border-radius:18px;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .price .t{font-weight:900}
+    .price .p{color:var(--muted);margin-top:6px;font-weight:700;font-size:13px}
+    .price .money{font-family:Outfit,Inter;font-weight:900;font-size:22px;margin-top:8px}
+
+    /* Footer */
+    .footer{
+      margin-top:40px;
+      padding:26px 0 34px;
+      border-top:1px solid rgba(255,255,255,.08);
+      color:rgba(229,231,235,.68);
+      font-size:13px;
       text-align:center;
     }
-    .legal{margin-top:12px;opacity:.9;color:#aeb4bf;line-height:1.55;}
-
-    .statsBtn{
-      width:100%;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;
-      padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);color:#e5e7eb;cursor:pointer;font-weight:900;
-    }
-    .statsPanel{
-      display:none;
+    .footer a{color:#86efac;text-decoration:none;font-weight:800}
+    .legal{
       margin-top:10px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.25);
-      color:#e5e7eb;
-      font-size:14px;
+      font-size:12px;
+      color:rgba(229,231,235,.55);
+      font-weight:700;
     }
-    .rowStat{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.10)}
-    .rowStat:last-child{border-bottom:none}
-    .updated{margin-top:10px;opacity:.75;font-size:12px}
 
-    /* Ocultar completamente la sección de datos del cliente en la página principal */
-    #datosClienteSection { display: none; }
-    /* Mostrar datos del cliente solo cuando hay un código activo */
-    body.modo-cliente #datosClienteSection { display: block; }
+    /* Helpers */
+    .hidden{display:none !important;}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .sep{height:1px;background:rgba(255,255,255,.10);margin:14px 0}
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background: rgba(0,0,0,.7);
+      border:1px solid rgba(255,255,255,.14);
+      color:var(--text);
+      padding:12px 14px;border-radius:14px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      font-weight:700;
+      opacity:0;pointer-events:none;
+      transition:opacity .2s ease;
+      max-width:min(520px, calc(100vw - 24px));
+      text-align:center;
+    }
+    .toast.show{opacity:1}
   </style>
 </head>
 
 <body>
-  <div class="container">
-
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo"><i class="fas fa-map-location-dot"></i></div>
-        <div>
-          <h1>Direcciones507</h1>
-          <p>Sistema Digital de Direcciones Panamá</p>
-        </div>
-      </div>
-      <div class="badge"><i class="fa-solid fa-shield-halved"></i> Enlace seguro</div>
-    </div>
-
-    <div style="margin-top:18px;margin-bottom:10px;">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <input
-          type="text"
-          id="inputCodigo"
-          placeholder="Ingresa tu código AD507"
-          style="
-            flex:1;
-            padding:14px;
-            border-radius:14px;
-            border:1px solid rgba(255,255,255,.15);
-            background:rgba(0,0,0,.35);
-            color:white;
-            font-size:16px;
-            font-weight:700;
-            outline:none;
-          "
-          onkeydown="if(event.key==='Enter'){ buscarCodigo(); }"
-        />
-        <button
-          type="button"
-          onclick="buscarCodigo()"
-          style="
-            padding:14px 18px;
-            border:none;
-            border-radius:14px;
-            background:linear-gradient(135deg,#22c55e,#16a34a);
-            color:white;
-            font-weight:900;
-            font-size:15px;
-            cursor:pointer;
-          "
-        >
-          Buscar
-        </button>
-      </div>
-      <div id="msgBusqueda" style="margin-top:8px;color:#9ca3af;font-size:12px;"></div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div id="datosClienteSection">
-          <div class="cardHeader">
-            <h2>Datos del cliente</h2>
-            <div class="sub">Aquí solo aparece lo esencial: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.</div>
-
-            <div class="pillRow">
-              <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
-              <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
-            </div>
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="container">
+      <div class="top-inner">
+        <a class="logo" href="./">
+          <div class="logo-icon"><i class="fas fa-map-location-dot"></i></div>
+          <div class="logo-text">
+            <span class="t1">Direcciones507</span>
+            <span class="t2">Sistema Digital de Direcciones Panamá</span>
           </div>
-
-          <div class="cardBody">
-            <div class="field">
-              <span>Nombre</span>
-              <b id="uiNombre">-</b>
-            </div>
-
-            <div class="field">
-              <span>Referencia</span>
-              <b id="uiRef">-</b>
-            </div>
-
-            <div class="divider"></div>
-
-            <div id="seccionUbicacion">
-              <h3 class="sectionTitle">Abrir ubicación</h3>
-              <div class="btnGrid">
-                <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener"
-                   onclick="trackAndGo('google', this.href); return false;">
-                  <i class="fa-brands fa-google"></i> Google Maps
-                </a>
-                <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener"
-                   onclick="trackAndGo('waze', this.href); return false;">
-                  <i class="fa-brands fa-waze"></i> Waze
-                </a>
-                <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener"
-                   onclick="trackAndGo('uber', this.href); return false;">
-                  <i class="fa-brands fa-uber"></i> Uber
-                </a>
-                <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener"
-                   onclick="trackAndGo('aviso', this.href); return false;">
-                  <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
-                </a>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <h3 class="sectionTitle">Compartir</h3>
-            <div class="btnGrid">
-              <button class="btn" type="button" onclick="shareLink()">
-                <i class="fa-solid fa-share-nodes"></i> Compartir
-              </button>
-              <button class="btn copy" type="button" onclick="copyLink()">
-                <i class="fa-solid fa-copy"></i> Copiar link
-              </button>
-            </div>
-
-            <div class="smallNote">
-              <b>Verificación para imprimir:</b>
-              <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
-                Ver enlace de verificación
-              </a>
-            </div>
-
-            <div class="divider"></div>
-
-            <div id="seccionPasos">
-              <h3 class="sectionTitle">Pasos</h3>
-              <div class="steps">
-                <div class="step">
-                  <div class="n">1</div>
-                  <div>
-                    <b>Comparte tu enlace</b>
-                    Envía este link por WhatsApp. El cliente abre y elige Waze, Google o Uber.
-                  </div>
-                </div>
-                <div class="step">
-                  <div class="n">2</div>
-                  <div>
-                    <b>Abre la app de navegación</b>
-                    Con un toque. Sin enredos. Sin “explica dónde queda”.
-                  </div>
-                </div>
-                <div class="step">
-                  <div class="n">3</div>
-                  <div>
-                    <b>Listo para llegar</b>
-                    Usa “Aviso de llegada” para notificar cuando vayas en camino.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div id="seccionPrecios">
-              <h3 class="sectionTitle">Precios</h3>
-              <div class="priceRow">
-                <div class="priceCard">
-                  <span class="tag"><i class="fa-solid fa-user"></i> Personal</span>
-                  <div class="amt">$6.99</div>
-                  <ul>
-                    <li>Enlace de ubicación</li>
-                    <li>Google + Waze + Uber</li>
-                    <li>Compartir y copiar link</li>
-                  </ul>
-                </div>
-                <div class="priceCard">
-                  <span class="tag"><i class="fa-solid fa-briefcase"></i> Negocios</span>
-                  <div class="amt">$10.99</div>
-                  <ul>
-                    <li>Todo lo de Personal</li>
-                    <li>Contador de actividad (clics)</li>
-                    <li>Ideal para entregas/ventas</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div id="mainPageMessage" style="padding: 40px 20px; text-align: center;">
-          <i class="fa-solid fa-map-location-dot" style="font-size: 48px; color: var(--brand); margin-bottom: 16px;"></i>
-          <h3 style="margin: 0 0 10px 0; font-size: 20px;">Bienvenido a Direcciones507</h3>
-          <p style="color: var(--muted); margin: 0 0 20px 0; line-height: 1.6;">
-            Ingresa tu código en el buscador para ver los datos de tu cliente y acceder a todas las funcionalidades.
-          </p>
-          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <span class="pill"><i class="fa-brands fa-google"></i> Google Maps</span>
-            <span class="pill"><i class="fa-brands fa-waze"></i> Waze</span>
-            <span class="pill"><i class="fa-brands fa-uber"></i> Uber</span>
-            <span class="pill"><i class="fa-brands fa-whatsapp"></i> Aviso</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="qrWrap">
-          <div class="qrBox">
-            <p class="qrTitle">QR para compartir</p>
-            <p class="qrSub">Escanéalo para abrir este enlace.</p>
-            <img id="qrImg" class="qrImg" alt="QR" src="" />
-            <div class="smallNote" style="margin-top:10px;">
-              Link: <span id="uiLink" style="word-break:break-all;color:#d1fae5;font-weight:900;"></span>
-            </div>
-          </div>
-
-          <div id="seccionStats" style="margin-top:14px;">
-            <button id="btnStats" class="statsBtn" type="button">
-              <span>📊 Ver actividad del cliente</span>
-              <span id="statsChevron" style="opacity:.85;">▾</span>
-            </button>
-
-            <div id="statsPanel" class="statsPanel">
-              <div class="rowStat"><span>Google Maps</span><b id="stGoogle">0</b></div>
-              <div class="rowStat"><span>Waze</span><b id="stWaze">0</b></div>
-              <div class="rowStat"><span>Uber</span><b id="stUber">0</b></div>
-              <div class="rowStat"><span>Compartido</span><b id="stShare">0</b></div>
-              <div class="rowStat"><span>Copió el link</span><b id="stCopy">0</b></div>
-              <div class="updated" id="stUpdated">Actualizado: -</div>
-            </div>
-
-            <div class="smallNote">
-              Este panel cuenta acciones reales: clic en botones, compartir y copiar link.
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <h3 class="sectionTitle">Redes</h3>
-          <div class="social">
-            <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener">
-              <i class="fa-brands fa-instagram"></i> Instagram
-            </a>
-            <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">
-              <i class="fa-brands fa-facebook"></i> Facebook
-            </a>
-            <a href="https://www.tiktok.com/@direcciones507" target="_blank" rel="noopener">
-              <i class="fa-brands fa-tiktok"></i> TikTok
-            </a>
-            <a href="https://wa.me/50765996532" target="_blank" rel="noopener">
-              <i class="fa-brands fa-whatsapp"></i> WhatsApp
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer">
-      © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.
-      <div class="legal">
-        <b>Prohibida su copia o reproducción</b> total o parcial, sin autorización.
+        </a>
+        <div class="pill"><i class="fas fa-shield-halved"></i> Datos protegidos · Acceso por código</div>
       </div>
     </div>
   </div>
 
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-card">
+        <div class="hero-inner">
+          <div>
+            <h1>Bienvenido a Direcciones507</h1>
+            <p class="sub">
+              Ingresa tu código en el buscador para ver los datos de tu cliente y acceder a todas las funcionalidades.
+              <span class="muted">Google Maps, Waze, Uber, Aviso de llegada, Compartir y Verificación para imprimir.</span>
+            </p>
+
+            <div class="search" role="search" aria-label="Buscador de código">
+              <input id="codigoInput" type="text" placeholder="Ej: AD507-0001" autocomplete="off" />
+              <button id="buscarBtn" class="btn" type="button"><i class="fas fa-magnifying-glass"></i> Buscar</button>
+              <button id="limpiarBtn" class="btn secondary" type="button"><i class="fas fa-rotate-left"></i> Limpiar</button>
+            </div>
+          </div>
+
+          <div class="hint">
+            <i class="fas fa-circle-info"></i>
+            <p>
+              Tip: también puedes abrir el panel directo con <b>?codigo=AD507-0001</b><br/>
+              Si no abre algún botón, revisa que el enlace del cliente esté guardado correctamente en tu Google Sheet.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL PRINCIPAL (TODO FUNCIONA, SOLO MOSTRAMOS EL PANEL DEL CLIENTE ABAJO) -->
+      <div class="grid">
+        <!-- PANEL CLIENTE -->
+        <div id="panelCliente" class="card hidden">
+          <div class="card-title">
+            <h2>Datos del cliente</h2>
+            <span id="estadoBadge" class="badge">Activo</span>
+          </div>
+
+          <div class="rows">
+            <div class="field">
+              <div class="k">Código</div>
+              <div id="vCodigo" class="v">-</div>
+            </div>
+            <div class="field">
+              <div class="k">Nombre</div>
+              <div id="vNombre" class="v">-</div>
+            </div>
+            <div class="field">
+              <div class="k">Referencia</div>
+              <div id="vReferencia" class="v">-</div>
+            </div>
+            <div class="field">
+              <div class="k">Teléfono</div>
+              <div id="vTelefono" class="v">-</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- ACCIONES (ARREGLADAS: GOOGLE/WAZE/UBER/AVISO LLEGADA) -->
+          <div class="actions">
+            <button id="btnGoogle" class="action primary" type="button">
+              <i class="fas fa-location-dot"></i> Abrir en Google Maps
+            </button>
+            <button id="btnWaze" class="action" type="button">
+              <i class="fab fa-waze"></i> Abrir en Waze
+            </button>
+            <button id="btnUber" class="action" type="button">
+              <i class="fab fa-uber"></i> Abrir en Uber
+            </button>
+            <button id="btnWhats" class="action whats" type="button">
+              <i class="fab fa-whatsapp"></i> Aviso de llegada (WhatsApp)
+            </button>
+          </div>
+
+          <!-- COMPARTIR + QR (ARREGLADO) + VERIFICACIÓN PARA IMPRIMIR (ABRE ENLACE) -->
+          <div class="mini">
+            <div class="qrbox">
+              <img id="qrCompartir" alt="QR para compartir" />
+              <div class="qrmeta">
+                <div class="k">Compartir</div>
+                <div id="linkCompartir" class="v small">-</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                  <button id="btnCopiarLink" class="btn secondary" type="button" style="padding:10px 12px;border-radius:12px;">
+                    <i class="fas fa-copy"></i> Copiar link
+                  </button>
+                  <button id="btnAbrirLink" class="btn secondary" type="button" style="padding:10px 12px;border-radius:12px;">
+                    <i class="fas fa-up-right-from-square"></i> Abrir
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="qrbox">
+              <div class="qrmeta" style="width:100%">
+                <div class="k">Verificación para imprimir</div>
+                <div id="linkVerificacion" class="v small">-</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                  <button id="btnVerificacion" class="btn secondary" type="button" style="padding:10px 12px;border-radius:12px;">
+                    <i class="fas fa-shield-check"></i> Ver enlace de verificación
+                  </button>
+                  <button id="btnCompartirVerif" class="btn secondary" type="button" style="padding:10px 12px;border-radius:12px;">
+                    <i class="fas fa-share-nodes"></i> Copiar enlace
+                  </button>
+                </div>
+                <div class="muted small" style="margin-top:10px;">
+                  Se muestra el enlace (no el QR) como pediste.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASOS + PRECIOS (RESTABLECIDOS EN PANEL DEL CLIENTE) -->
+          <div class="steps">
+            <h3>Pasos para solicitar el servicio</h3>
+            <ol>
+              <li>Envíanos por WhatsApp el nombre del cliente, referencia y la ubicación (coordenadas o enlace).</li>
+              <li>Generamos tu código AD507 y los enlaces (Google Maps, Waze, Uber y aviso de llegada).</li>
+              <li>Te entregamos el link para compartir + verificación para imprimir.</li>
+              <li>Listo: el cliente abre su panel con su código y usa los botones.</li>
+            </ol>
+
+            <div class="prices">
+              <div class="price">
+                <div class="t">Plan Personal</div>
+                <div class="p">Ideal para hogares y uso individual.</div>
+                <div class="money">$6.99</div>
+              </div>
+              <div class="price">
+                <div class="t">Plan Negocios</div>
+                <div class="p">Ideal para comercios y atención a clientes.</div>
+                <div class="money">$10.99</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="muted small">
+            Nota: Si algún enlace del cliente está vacío en la hoja, el botón no podrá abrirlo.
+          </div>
+        </div>
+
+        <!-- MENSAJE CUANDO NO HAY BÚSQUEDA -->
+        <div id="panelVacio" class="card">
+          <div class="card-title">
+            <h2>Panel del cliente</h2>
+            <span class="badge" style="background:rgba(96,165,250,.14);border-color:rgba(96,165,250,.22);color:#bfdbfe;">Listo para buscar</span>
+          </div>
+          <div class="muted">
+            Ingresa un código arriba y presiona <b>Buscar</b>.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        © 2026 Direcciones Digitales Panamá. Todos los derechos reservados.<br><br>
+        Síguenos:<br><br>
+        <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener">Instagram: @direccionesdigitalespty</a><br><br>
+        <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">Facebook: Direcciones Digitales Panamá</a>
+        <div class="legal">Prohibida su copia o reproducción total o parcial sin autorización.</div>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+
   <script>
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwbqdHm2SUOmJPNWNI2e555hQqupzRIpxml3ZPZhadNDfZeFrJrkD4UEXzqXtstYcUXWA/exec";
+    /***************
+     * CONFIGURACIÓN
+     ***************/
+    // Tu Apps Script (el que compartiste)
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzNgEmcENmATAASncG02PwzzTouc7gzOxI0Htib457gvWat0D7mnDW2iNUkTPa1VNe55A/exec";
 
-    function setMsg(t) {
-      const el = document.getElementById("msgBusqueda");
-      if (el) el.textContent = t || "";
+    /****************
+     * UTILIDADES UI
+     ****************/
+    const $ = (id) => document.getElementById(id);
+
+    function toast(msg){
+      const t = $("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 2200);
     }
 
-    function safeText(id, value){
-      const el = document.getElementById(id);
-      if (el) el.textContent = value ?? "";
-    }
-
-    function safeHref(id, value){
-      const el = document.getElementById(id);
-      if (el) el.href = value || "#";
-    }
-
-    function normalizeUrl(u){
-      u = (u || "").toString().trim();
-      if (!u) return "#";
-      if (u === "#") return "#";
-      if (/^https?:\/\//i.test(u)) return u;
-
-      if (u.startsWith("www.")) return "https://" + u;
-      if (u.startsWith("maps.app.goo.gl")) return "https://" + u;
-      if (u.startsWith("goo.gl")) return "https://" + u;
-      if (u.startsWith("waze.com")) return "https://" + u;
-      if (u.startsWith("uber.com")) return "https://" + u;
-      if (u.startsWith("wa.me")) return "https://" + u;
-
-      return "https://" + u;
-    }
-
-    function toggleModoCliente(isCliente){
-      const pasos = document.getElementById("seccionPasos");
-      const precios = document.getElementById("seccionPrecios");
-      const datosCliente = document.getElementById("datosClienteSection");
-      const mainMessage = document.getElementById("mainPageMessage");
-      const body = document.body;
-
-      if (isCliente) {
-        body.classList.add('modo-cliente');
-        if (pasos) pasos.style.display = "none";
-        if (precios) precios.style.display = "none";
-        if (datosCliente) datosCliente.style.display = "block";
-        if (mainMessage) mainMessage.style.display = "none";
-      } else {
-        body.classList.remove('modo-cliente');
-        if (pasos) pasos.style.display = "block";
-        if (precios) precios.style.display = "block";
-        if (datosCliente) datosCliente.style.display = "none";
-        if (mainMessage) mainMessage.style.display = "block";
-      }
-    }
-
-    function toggleSeccionesClienteVisible(isCliente){
-      const ubic = document.getElementById("seccionUbicacion");
-      const stats = document.getElementById("seccionStats");
-      if (ubic) ubic.style.display = isCliente ? "block" : "none";
-      if (stats) stats.style.display = isCliente ? "block" : "none";
-    }
-
-    async function buscarCodigo(){
-      const input = document.getElementById("inputCodigo");
-      const code = (input ? input.value : "").trim();
-
-      if(!code){
-        setMsg("Ingresa tu código para buscar.");
-        toggleModoCliente(false);
-        toggleSeccionesClienteVisible(false);
+    function safeOpen(url){
+      if(!url || url === "#" || String(url).trim() === "" || String(url).trim() === "-"){
+        toast("Este enlace no está disponible para este cliente.");
         return;
       }
+      window.open(url, "_blank", "noopener");
+    }
 
-      setMsg("Buscando...");
-
+    async function copyText(text){
       try{
-        const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
-        const data = await res.json();
+        await navigator.clipboard.writeText(text);
+        toast("Copiado ✅");
+      }catch(e){
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        toast("Copiado ✅");
+      }
+    }
 
-        if(!data.ok){
-          setMsg(data.message || "Código no encontrado.");
-          toggleModoCliente(false);
-          toggleSeccionesClienteVisible(false);
+    function buildQR(url){
+      // QR por imagen (sin librerías) - fiable
+      const data = encodeURIComponent(url);
+      return "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + data;
+    }
+
+    function normalizeCode(code){
+      return String(code || "").trim().toUpperCase();
+    }
+
+    /********************
+     * CARGA DE CLIENTE
+     ********************/
+    async function fetchCliente(codigo){
+      // Intento 1: ?codigo=
+      const u1 = `${APPS_SCRIPT_URL}?codigo=${encodeURIComponent(codigo)}`;
+
+      // Intento 2 (fallback común): ?action=buscar&codigo=
+      const u2 = `${APPS_SCRIPT_URL}?action=buscar&codigo=${encodeURIComponent(codigo)}`;
+
+      let lastErr = null;
+
+      for (const url of [u1, u2]){
+        try{
+          const res = await fetch(url, { method:"GET" });
+          const data = await res.json();
+          if(data && (data.ok === true || data.success === true)){
+            return data;
+          }
+          lastErr = new Error(data?.message || "No encontrado");
+        }catch(e){
+          lastErr = e;
+        }
+      }
+      throw lastErr || new Error("No se pudo cargar");
+    }
+
+    function mapFields(data){
+      // Soporta llaves posibles (según tus JSON anteriores)
+      const codigo = data.codigo || data.code || data.Codigo || data.CÓDIGO || "-";
+      const nombre = data.nombre || data.Nombre || "-";
+      const referencia = data.referencia || data.Referencia || "-";
+      const telefono = data.telefono || data.phone || data["Teléfono"] || "-";
+
+      const google = data.google || data.googleMaps || data["Google Maps"] || data.google_maps || "#";
+      const waze = data.waze || data["Waze"] || "#";
+      const uber = data.uber || data["Uber"] || "#";
+      const whatsapp = data.whatsapp || data["Link Avisar WhatsApp"] || data.aviso || data.linkAvisar || "#";
+
+      // Verificación: en tus mensajes antes aparecía "QR Verificación (Maps)" pero pediste MOSTRAR ENLACE (no QR).
+      // Aquí tomamos cualquier campo que sea "qr" o "verificacion" como enlace directo si existe.
+      const verif = data.verificacion || data.qr || data.qrVerificacion || data["QR Verificación (Maps)"] || data.verif || "#";
+
+      // Link principal para compartir (si no viene, lo construimos con URL actual + ?codigo=)
+      const share = data.share || data.link || data.enlace || data.url || "";
+
+      return { codigo, nombre, referencia, telefono, google, waze, uber, whatsapp, verif, share };
+    }
+
+    function buildShareLink(fields){
+      // Si el script no devuelve link listo, lo armamos:
+      // Base: este mismo dominio/ruta + ?codigo=...
+      const base = location.origin + location.pathname;
+      return `${base}?codigo=${encodeURIComponent(fields.codigo)}`;
+    }
+
+    function renderCliente(raw){
+      const fields = mapFields(raw);
+
+      $("vCodigo").textContent = fields.codigo || "-";
+      $("vNombre").textContent = fields.nombre || "-";
+      $("vReferencia").textContent = fields.referencia || "-";
+      $("vTelefono").textContent = fields.telefono || "-";
+
+      $("estadoBadge").textContent = (raw.estado || raw.status || "Activo");
+      $("panelCliente").classList.remove("hidden");
+      $("panelVacio").classList.add("hidden");
+
+      // Enlace para compartir (ARREGLADO)
+      const shareLink = (fields.share && fields.share !== "#") ? fields.share : buildShareLink(fields);
+      $("linkCompartir").textContent = shareLink;
+
+      const qrUrl = buildQR(shareLink);
+      $("qrCompartir").src = qrUrl;
+
+      // Verificación para imprimir (ARREGLADO: abre enlace)
+      const verifLink = (fields.verif && fields.verif !== "#") ? fields.verif : "#";
+      $("linkVerificacion").textContent = verifLink;
+
+      // Handlers botones (ARREGLADOS)
+      $("btnGoogle").onclick = () => safeOpen(fields.google);
+      $("btnWaze").onclick = () => safeOpen(fields.waze);
+      $("btnUber").onclick = () => safeOpen(fields.uber);
+      $("btnWhats").onclick = () => safeOpen(fields.whatsapp);
+
+      $("btnCopiarLink").onclick = () => copyText(shareLink);
+      $("btnAbrirLink").onclick = () => safeOpen(shareLink);
+
+      $("btnVerificacion").onclick = () => safeOpen(verifLink);
+      $("btnCompartirVerif").onclick = () => {
+        if(!verifLink || verifLink === "#"){
+          toast("No hay enlace de verificación para este cliente.");
           return;
         }
-
-        window.CODIGO_CLIENTE = data.codigo || code;
-        window.CLIENT_PLAN = data.plan || "";
-
-        safeText("uiCodigo", data.codigo || code);
-        safeText("uiNombre", data.nombre || "Cliente");
-        safeText("uiRef", data.referencia || "Referencia no indicada");
-
-        safeHref("btnGoogle", normalizeUrl(data.google));
-        safeHref("btnWaze", normalizeUrl(data.waze));
-        safeHref("btnUber", normalizeUrl(data.uber));
-        safeHref("btnAviso", normalizeUrl(data.whatsapp));
-
-        // ✅ QR de compartir: SIEMPRE link del cliente (no Google Maps)
-        const linkCliente = `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
-        safeText("uiLink", linkCliente);
-
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) {
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkCliente)}`;
-        }
-
-        // ✅ Verificación para imprimir: link REAL a Google Maps del cliente (A)
-        const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer) linkVer.href = normalizeUrl(data.google);
-
-        toggleModoCliente(true);
-        toggleSeccionesClienteVisible(true);
-
-        loadStats();
-        setMsg("Listo ✅");
-      }catch(err){
-        setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
-        toggleModoCliente(false);
-        toggleSeccionesClienteVisible(false);
-      }
+        copyText(verifLink);
+      };
     }
 
-    // ✅ Contador SOLO Negocio
-    function isNegocio_(){
-      const p = (window.CLIENT_PLAN || "").toString().toLowerCase();
-      return p.includes("negocio") || p.includes("business");
+    function clearUI(){
+      $("codigoInput").value = "";
+      $("panelCliente").classList.add("hidden");
+      $("panelVacio").classList.remove("hidden");
+      $("vCodigo").textContent = "-";
+      $("vNombre").textContent = "-";
+      $("vReferencia").textContent = "-";
+      $("vTelefono").textContent = "-";
+      $("linkCompartir").textContent = "-";
+      $("linkVerificacion").textContent = "-";
+      $("qrCompartir").removeAttribute("src");
     }
 
-    function trackEvent(ev){
-      const code = window.CODIGO_CLIENTE;
-      if (!code) return;
-      if (!isNegocio_()) return;
-
-      fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}`, {
-        cache: "no-store"
-      }).catch(()=>{});
-    }
-
-    // ✅ Botones: abrir con <a target="_blank"> REAL (sin popup bloqueado)
-    // Usamos click programático sobre un <a> temporal
-    function openInNewTab_(url){
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-
-    function trackAndGo(ev, url){
-      url = normalizeUrl(url);
-
-      if (!url || url === "#") {
-        alert("Este enlace no está configurado todavía para este cliente.");
+    async function buscar(){
+      const codigo = normalizeCode($("codigoInput").value);
+      if(!codigo){
+        toast("Ingresa un código.");
         return;
       }
+      $("buscarBtn").disabled = true;
+      $("buscarBtn").innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
 
-      trackEvent(ev);
-      openInNewTab_(url);
-    }
-
-    function shareLink(){
-      trackEvent("share");
-      const url = location.href;
-      if (navigator.share){
-        navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
-      } else {
-        copyLink(true);
-      }
-    }
-
-    async function copyLink(silent=false){
-      trackEvent("copy");
       try{
-        await navigator.clipboard.writeText(location.href);
-        if (!silent) alert("Link copiado ✅");
+        const data = await fetchCliente(codigo);
+        renderCliente(data);
+        // Actualiza URL con parámetro (sin recargar)
+        const url = new URL(location.href);
+        url.searchParams.set("codigo", codigo);
+        history.replaceState({}, "", url.toString());
       }catch(e){
-        if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
+        toast("No se encontró el código o no hay acceso.");
+        // Deja el panel vacío
+        $("panelCliente").classList.add("hidden");
+        $("panelVacio").classList.remove("hidden");
+      }finally{
+        $("buscarBtn").disabled = false;
+        $("buscarBtn").innerHTML = '<i class="fas fa-magnifying-glass"></i> Buscar';
       }
     }
 
-    function initStatsPanel(){
-      const btn = document.getElementById("btnStats");
-      const panel = document.getElementById("statsPanel");
-      const chev = document.getElementById("statsChevron");
-      if (!btn || !panel) return;
+    /********************
+     * INIT
+     ********************/
+    $("buscarBtn").addEventListener("click", buscar);
+    $("limpiarBtn").addEventListener("click", () => {
+      clearUI();
+      const url = new URL(location.href);
+      url.searchParams.delete("codigo");
+      history.replaceState({}, "", url.toString());
+    });
 
-      btn.addEventListener("click", () => {
-        const opening = (panel.style.display === "none" || !panel.style.display);
-        panel.style.display = opening ? "block" : "none";
-        if (chev) chev.textContent = opening ? "▴" : "▾";
-      });
-    }
+    $("codigoInput").addEventListener("keydown", (e) => {
+      if(e.key === "Enter") buscar();
+    });
 
-    async function loadStats(){
-      const code = window.CODIGO_CLIENTE;
-      if (!code) return;
-
-      try{
-        const res = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(code)}`, { cache: "no-store" });
-        const data = await res.json();
-        if (!data.ok || !data.stats) return;
-
-        safeText("stGoogle", data.stats.google ?? 0);
-        safeText("stWaze", data.stats.waze ?? 0);
-        safeText("stUber", data.stats.uber ?? 0);
-        safeText("stShare", data.stats.share ?? 0);
-        safeText("stCopy", data.stats.copy ?? 0);
-        safeText("stUpdated", `Actualizado: ${data.stats.updated || "-"}`);
-      }catch(e){}
-    }
-
-    (function autoLoadFromURL(){
-      initStatsPanel();
-
-      const qs = new URLSearchParams(location.search);
-      const code = (qs.get("code") || "").trim();
-
-      if (code) {
-        const input = document.getElementById("inputCodigo");
-        if (input) input.value = code;
-        buscarCodigo();
-      } else {
-        toggleModoCliente(false);
-        toggleSeccionesClienteVisible(false);
-
-        const linkMostrado = `${location.origin}${location.pathname}`;
-        safeText("uiLink", linkMostrado);
-
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) {
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkMostrado)}`;
-        }
+    // Auto-load por ?codigo=
+    (function initFromQuery(){
+      const q = new URLSearchParams(location.search);
+      const codigo = normalizeCode(q.get("codigo"));
+      if(codigo){
+        $("codigoInput").value = codigo;
+        buscar();
       }
     })();
   </script>

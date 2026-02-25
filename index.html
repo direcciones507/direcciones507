@@ -719,7 +719,7 @@
   </div>
 
 <script>
-  // ✅ WebApp (VERSIÓN FINAL CORREGIDA)
+  // ✅ WebApp (VERSIÓN FUNCIONAL)
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
@@ -778,6 +778,13 @@
       // URL para compartir
       const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
       
+      console.log("URLs recibidas:", {
+        google: data.google,
+        waze: data.waze,
+        uber: data.uber,
+        whatsapp: data.whatsapp
+      });
+      
       // ===== CONFIGURAR BOTONES DE NAVEGACIÓN =====
       
       // Google Maps
@@ -785,6 +792,8 @@
       if(btnGoogle) {
         btnGoogle.onclick = function(e) {
           e.preventDefault();
+          e.stopPropagation();
+          console.log("Click en Google");
           if(data.google && data.google !== "#" && data.google !== "-") {
             if(esNegocio) {
               fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
@@ -801,6 +810,8 @@
       if(btnWaze) {
         btnWaze.onclick = function(e) {
           e.preventDefault();
+          e.stopPropagation();
+          console.log("Click en Waze");
           if(data.waze && data.waze !== "#" && data.waze !== "-") {
             if(esNegocio) {
               fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
@@ -817,6 +828,8 @@
       if(btnUber) {
         btnUber.onclick = function(e) {
           e.preventDefault();
+          e.stopPropagation();
+          console.log("Click en Uber");
           if(data.uber && data.uber !== "#" && data.uber !== "-") {
             if(esNegocio) {
               fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
@@ -833,6 +846,8 @@
       if(btnAviso) {
         btnAviso.onclick = function(e) {
           e.preventDefault();
+          e.stopPropagation();
+          console.log("Click en Aviso");
           if(data.whatsapp && data.whatsapp !== "#" && data.whatsapp !== "-") {
             if(esNegocio) {
               fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
@@ -851,6 +866,8 @@
       if(btnCompartir) {
         btnCompartir.onclick = function(e) {
           e.preventDefault();
+          e.stopPropagation();
+          console.log("Click en Compartir");
           if(esNegocio) {
             fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" }).catch(()=>{});
           }
@@ -861,10 +878,10 @@
               text: `Mi dirección digital ${CODIGO_ACTUAL}`,
               url: shareUrl
             }).catch(() => {
-              navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado al portapapeles"));
+              navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
             });
           } else {
-            navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado al portapapeles"));
+            navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
           }
         };
       }
@@ -874,10 +891,12 @@
       if(btnCopiar) {
         btnCopiar.onclick = function(e) {
           e.preventDefault();
+          e.stopPropagation();
+          console.log("Click en Copiar");
           if(esNegocio) {
             fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
           }
-          navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado al portapapeles"));
+          navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
         };
       }
       
@@ -886,8 +905,10 @@
       if(linkVer) {
         linkVer.onclick = function(e) {
           e.preventDefault();
+          e.stopPropagation();
           window.open(shareUrl, "_blank");
         };
+        linkVer.href = "#"; // Para que no recargue la página
       }
       
       // QR
@@ -915,6 +936,7 @@
           statsBtn.style.display = "flex";
           statsBtn.onclick = async function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const visible = statsPanel.style.display === "block";
             statsPanel.style.display = visible ? "none" : "block";
             
@@ -984,6 +1006,7 @@
 
   // Inicialización al cargar la página
   document.addEventListener("DOMContentLoaded", function() {
+    console.log("Página cargada, iniciando...");
     
     // Botones de compra
     const comprarBase = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
@@ -992,6 +1015,7 @@
     if(btnTop) {
       btnTop.onclick = function(e) {
         e.preventDefault();
+        e.stopPropagation();
         window.open(comprarBase, "_blank");
       };
     }
@@ -1000,6 +1024,7 @@
     if(btnPersonal) {
       btnPersonal.onclick = function(e) {
         e.preventDefault();
+        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
       };
     }
@@ -1008,6 +1033,7 @@
     if(btnNegocios) {
       btnNegocios.onclick = function(e) {
         e.preventDefault();
+        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
       };
     }
@@ -1016,6 +1042,7 @@
     if(btnHeroPersonal) {
       btnHeroPersonal.onclick = function(e) {
         e.preventDefault();
+        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
       };
     }
@@ -1024,6 +1051,7 @@
     if(btnHeroNegocios) {
       btnHeroNegocios.onclick = function(e) {
         e.preventDefault();
+        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
       };
     }
@@ -1044,46 +1072,7 @@
       input.value = urlCode;
       setTimeout(buscarCodigo, 100);
     } else {
-      // Modo home - mostrar secciones
-      const homeHero = document.getElementById("homeHero");
-      if(homeHero) homeHero.style.display = "block";
-      
-      const buyWrap = document.getElementById("buyWrap");
-      if(buyWrap) buyWrap.style.display = "flex";
-      
-      const heroComprar = document.getElementById("heroComprarBox");
-      if(heroComprar) heroComprar.style.display = "block";
-      
-      const heroEjemplo = document.getElementById("heroEjemploBox");
-      if(heroEjemplo) heroEjemplo.style.display = "block";
-      
-      const seccionPasos = document.getElementById("seccionPasos");
-      if(seccionPasos) seccionPasos.style.display = "block";
-      
-      const seccionPrecios = document.getElementById("seccionPrecios");
-      if(seccionPrecios) seccionPrecios.style.display = "block";
-      
-      // Ocultar panel cliente
-      const elementosOcultar = [
-        "fieldNombre", "fieldRef", "tituloUbicacion", "gridUbicacion", 
-        "divAfterUbic", "tituloCompartir", "gridCompartir", 
-        "notaVerificacion", "divAfterVerif"
-      ];
-      
-      elementosOcultar.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.style.display = "none";
-      });
-      
-      // QR del home
-      const homeUrl = window.location.href.split('?')[0];
-      const uiLink = document.getElementById("uiLink");
-      if(uiLink) uiLink.textContent = homeUrl;
-      
-      const qrImg = document.getElementById("qrImg");
-      if(qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
-      }
+      console.log("Modo home");
     }
   });
 </script>

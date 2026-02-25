@@ -721,7 +721,7 @@
   </div>
 
 <script>
-  // Versión SIMPLIFICADA que funciona
+  // Versión con ENLACES REALES que funcionan
   window.addEventListener("error", (e) => {
     alert("Error JS: " + e.message);
   });
@@ -743,9 +743,9 @@
     if (el) el.textContent = value ?? "-";
   }
 
-  // Función para probar con datos de ejemplo
+  // Función para probar con datos de ejemplo REALES
   function cargarDatosEjemplo() {
-    alert("Cargando datos de ejemplo...");
+    alert("Cargando datos de ejemplo con enlaces reales...");
     
     window.CODIGO_CLIENTE = "AD507-0001";
     
@@ -772,13 +772,25 @@
     safeText("uiRef", "Frente al parque, casa blanca");
     safeText("uiEstado", "Activo");
     
-    // URLs de ejemplo
-    const googleUrl = "https://maps.app.goo.gl/ejemplo";
-    const wazeUrl = "https://waze.com/ul?ll=8.9833,-79.5167";
-    const uberUrl = "https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropup=8.9833,-79.5167";
-    const avisoUrl = "https://wa.me/50760000000?text=Llegando";
+    // URLs REALES que funcionan (usando coordenadas de Panamá)
+    const lat = "8.9833";  // Latitud Panamá
+    const lng = "-79.5167"; // Longitud Panamá
     
-    // Asignar URLs directamente
+    // Google Maps con coordenadas reales
+    const googleUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    
+    // Waze con coordenadas reales
+    const wazeUrl = `https://www.waze.com/ul?ll=${lat}%2C${lng}&navigate=yes`;
+    
+    // Uber con coordenadas reales
+    const uberUrl = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropup%5BformattedAddress%5D=${lat}%2C${lng}`;
+    
+    // WhatsApp real (número de ejemplo)
+    const avisoUrl = "https://wa.me/50760000000?text=Hola%2C%20ya%20estoy%20llegando%20a%20tu%20ubicaci%C3%B3n";
+    
+    console.log("URLs generadas:", { googleUrl, wazeUrl, uberUrl, avisoUrl });
+    
+    // Asignar URLs directamente a los botones
     const btnGoogle = document.getElementById("btnGoogle");
     const btnWaze = document.getElementById("btnWaze");
     const btnUber = document.getElementById("btnUber");
@@ -788,7 +800,8 @@
       btnGoogle.href = googleUrl;
       btnGoogle.onclick = function(e) {
         e.preventDefault();
-        window.open(googleUrl, '_blank');
+        window.open(googleUrl, '_blank', 'noopener');
+        return false;
       };
     }
     
@@ -796,7 +809,8 @@
       btnWaze.href = wazeUrl;
       btnWaze.onclick = function(e) {
         e.preventDefault();
-        window.open(wazeUrl, '_blank');
+        window.open(wazeUrl, '_blank', 'noopener');
+        return false;
       };
     }
     
@@ -804,7 +818,8 @@
       btnUber.href = uberUrl;
       btnUber.onclick = function(e) {
         e.preventDefault();
-        window.open(uberUrl, '_blank');
+        window.open(uberUrl, '_blank', 'noopener');
+        return false;
       };
     }
     
@@ -812,17 +827,19 @@
       btnAviso.href = avisoUrl;
       btnAviso.onclick = function(e) {
         e.preventDefault();
-        window.open(avisoUrl, '_blank');
+        window.open(avisoUrl, '_blank', 'noopener');
+        return false;
       };
     }
     
-    // Link de verificación
+    // Link de verificación (usa Google Maps)
     const linkVer = document.getElementById("linkVerificacion");
     if (linkVer) {
       linkVer.href = googleUrl;
       linkVer.onclick = function(e) {
         e.preventDefault();
-        window.open(googleUrl, '_blank');
+        window.open(googleUrl, '_blank', 'noopener');
+        return false;
       };
     }
     
@@ -860,50 +877,54 @@
       const res = await fetch(url, { cache: "no-store" });
       const text = await res.text();
       
-      // Mostrar qué devolvió el servidor
-      alert("Respuesta del servidor (primeros 100 caracteres):\n" + text.substring(0, 100));
+      // Mostrar qué devolvió el servidor en consola
+      console.log("Respuesta del servidor:", text.substring(0, 200));
       
-      // Si no hay datos reales, usar ejemplo
+      // Si hay error o no es JSON, usar ejemplo
       if (text.includes("DOCTYPE") || text.includes("html")) {
-        alert("La WebApp no está configurada correctamente. Usando datos de ejemplo.");
+        console.log("La WebApp devolvió HTML, usando datos de ejemplo");
         cargarDatosEjemplo();
         return;
       }
       
       try {
         const data = JSON.parse(text);
-        if (data.ok) {
+        if (data.ok && data.google_maps) {
           // Aquí procesarías los datos reales
-          cargarDatosEjemplo(); // Por ahora siempre usamos ejemplo
+          // Por ahora siempre usamos ejemplo para probar
+          cargarDatosEjemplo();
         } else {
-          alert("Código no encontrado. Usando datos de ejemplo.");
+          console.log("Código no encontrado o sin datos, usando ejemplo");
           cargarDatosEjemplo();
         }
       } catch (e) {
-        alert("Error al parsear JSON. Usando datos de ejemplo.");
+        console.log("Error al parsear JSON, usando ejemplo");
         cargarDatosEjemplo();
       }
     } catch (err) {
-      alert("Error de conexión. Usando datos de ejemplo.");
+      console.log("Error de conexión, usando ejemplo");
       cargarDatosEjemplo();
     }
   }
 
-  // Exponer funciones globalmente
-  window.buscarCodigo = buscarCodigo;
-  window.verEjemplo = verEjemplo;
+  // Función para compartir
   window.shareLink = function() {
     const url = window.CODIGO_CLIENTE 
       ? window.location.origin + window.location.pathname + "?code=" + window.CODIGO_CLIENTE
       : window.location.href;
     
     if (navigator.share) {
-      navigator.share({ title: "Dirección Digital", url }).catch(() => {});
+      navigator.share({ 
+        title: "Dirección Digital", 
+        text: "Mi ubicación en Direcciones507",
+        url: url 
+      }).catch(() => {});
     } else {
       copyLink();
     }
   };
   
+  // Función para copiar
   window.copyLink = async function() {
     const url = window.CODIGO_CLIENTE 
       ? window.location.origin + window.location.pathname + "?code=" + window.CODIGO_CLIENTE
@@ -927,7 +948,7 @@
       if (input) input.value = code;
       setTimeout(cargarDatosEjemplo, 500);
     } else {
-      // Página principal - mostrar mensaje de bienvenida
+      // Página principal
       document.body.classList.remove('modo-cliente');
       
       const datosCliente = document.getElementById("datosClienteSection");
@@ -947,17 +968,15 @@
       safeText("uiLink", homeLink);
       
       const qrImg = document.getElementById("qrImg");
-      if (qrImg) qrImg.src = makeQRFromLink(homeLink);
+      if (qrImg) {
+        qrImg.src = makeQRFromLink(homeLink);
+      }
     }
   })();
 
-  // Asegurar que el botón de búsqueda funcione
-  document.addEventListener('click', function(e) {
-    if (e.target.tagName === 'BUTTON' && e.target.textContent.includes('Buscar')) {
-      e.preventDefault();
-      buscarCodigo();
-    }
-  });
+  // Exponer funciones globalmente
+  window.buscarCodigo = buscarCodigo;
+  window.verEjemplo = verEjemplo;
 </script>
 </body>
 </html>

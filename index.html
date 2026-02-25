@@ -557,13 +557,51 @@ function track(ev){
     if(!code) return;
 
     const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
+    fetch(url, { method:"GET", mode:"no-cors", cache:"no-store", keepalive:true }).catch(()=>{});
+  }catch(e){}
+}
+    function attachTrack(id, ev){
+  const a = document.getElementById(id);
+  if(!a) return;
 
-    // 1) fetch keepalive (lo más confiable)
-    if (window.fetch) {
-      fetch(url, { method:"GET", cache:"no-store", mode:"no-cors", keepalive:true })
-        .catch(()=>{});
+  a.onclick = null;
+
+  a.addEventListener("click", function(e){
+
+    const href = (a.getAttribute("href") || "").trim();
+    const target = a.getAttribute("target") || "_blank";
+
+    if(!href || href === "#"){
+      e.preventDefault();
       return;
     }
+
+    // enviar conteo
+    track(ev);
+
+    // abrir link manualmente
+    e.preventDefault();
+    if(target === "_blank"){
+      window.open(href, "_blank");
+    }else{
+      window.location.href = href;
+    }
+
+  });
+}
+
+    // manda track
+    track(ev);
+
+    // abrimos manualmente para que NO se pierda el click
+    e.preventDefault();
+    if (target === "_blank") {
+      window.open(href, "_blank", "noopener");
+    } else {
+      window.location.href = href;
+    }
+  }, { passive: false });
+}
 
     // 2) fallback por imagen
     const img = new Image();

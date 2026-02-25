@@ -719,7 +719,7 @@
   </div>
 
 <script>
-  // ✅ WebApp (VERSIÓN DEFINITIVA - CORREGIDA)
+  // ✅ WebApp (VERSIÓN CORREGIDA)
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
@@ -731,6 +731,7 @@
     const input = document.getElementById("inputCodigo");
     if(input) input.value = EJEMPLO_CODE;
     buscarCodigo();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function setMsg(texto) {
@@ -764,14 +765,9 @@
       DATOS_CLIENTE = data;
       
       // Mostrar información básica
-      const uiCodigo = document.getElementById("uiCodigo");
-      if(uiCodigo) uiCodigo.textContent = data.codigo;
-      
-      const uiNombre = document.getElementById("uiNombre");
-      if(uiNombre) uiNombre.textContent = data.nombre || "-";
-      
-      const uiRef = document.getElementById("uiRef");
-      if(uiRef) uiRef.textContent = data.referencia || "-";
+      document.getElementById("uiCodigo").textContent = data.codigo;
+      document.getElementById("uiNombre").textContent = data.nombre || "-";
+      document.getElementById("uiRef").textContent = data.referencia || "-";
       
       const esNegocio = (data.plan || "").toLowerCase().includes("negocio") || (data.plan || "").toLowerCase().includes("business");
       
@@ -785,102 +781,92 @@
         whatsapp: data.whatsapp
       });
       
-      // ===== CONFIGURACIÓN DE BOTONES =====
+      // ===== ASIGNAR ENLACES DIRECTAMENTE =====
       
-      // Función para configurar botones de navegación
-      function configurarBoton(id, url, evento) {
-        const btn = document.getElementById(id);
-        if(!btn) return;
-        
-        if(url && url !== "#" && url !== "-") {
-          console.log(`Configurando ${id} con URL:`, url);
-          
-          // Eliminar cualquier onclick anterior
-          btn.onclick = null;
-          
-          // Establecer atributos
-          btn.href = url;
-          btn.target = "_blank";
-          btn.rel = "noopener noreferrer";
-          
-          // Agregar evento para trackear
-          btn.addEventListener("click", function(e) {
-            console.log(`Click en ${id} (${evento})`);
-            if(esNegocio && CODIGO_ACTUAL) {
-              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=${evento}`, { mode: "no-cors" })
-                .catch(() => {});
-            }
-            // No prevenir default, dejar que el link funcione
-          });
-          
-          btn.style.opacity = "1";
-          btn.style.pointerEvents = "auto";
-        } else {
-          btn.href = "#";
-          btn.style.opacity = "0.5";
-          btn.style.pointerEvents = "none";
-        }
+      // Google Maps
+      const btnGoogle = document.getElementById("btnGoogle");
+      if(btnGoogle && data.google && data.google !== "#") {
+        btnGoogle.href = data.google;
+        btnGoogle.target = "_blank";
+        btnGoogle.rel = "noopener noreferrer";
+        btnGoogle.onclick = function(e) {
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
+          }
+        };
       }
       
-      // Configurar cada botón de navegación
-      configurarBoton("btnGoogle", data.google, "google");
-      configurarBoton("btnWaze", data.waze, "waze");
-      configurarBoton("btnUber", data.uber, "uber");
-      configurarBoton("btnAviso", data.whatsapp, "aviso");
+      // Waze
+      const btnWaze = document.getElementById("btnWaze");
+      if(btnWaze && data.waze && data.waze !== "#") {
+        btnWaze.href = data.waze;
+        btnWaze.target = "_blank";
+        btnWaze.rel = "noopener noreferrer";
+        btnWaze.onclick = function(e) {
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
+          }
+        };
+      }
       
-      // Configurar link de verificación
+      // Uber
+      const btnUber = document.getElementById("btnUber");
+      if(btnUber && data.uber && data.uber !== "#") {
+        btnUber.href = data.uber;
+        btnUber.target = "_blank";
+        btnUber.rel = "noopener noreferrer";
+        btnUber.onclick = function(e) {
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
+          }
+        };
+      }
+      
+      // Aviso WhatsApp
+      const btnAviso = document.getElementById("btnAviso");
+      if(btnAviso && data.whatsapp && data.whatsapp !== "#") {
+        btnAviso.href = data.whatsapp;
+        btnAviso.target = "_blank";
+        btnAviso.rel = "noopener noreferrer";
+        btnAviso.onclick = function(e) {
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
+          }
+        };
+      }
+      
+      // Link de verificación
       const linkVer = document.getElementById("linkVerificacion");
       if(linkVer) {
         linkVer.href = shareUrl;
         linkVer.target = "_blank";
         linkVer.rel = "noopener noreferrer";
-        linkVer.addEventListener("click", function(e) {
-          console.log("Click en link de verificación");
-          // No prevenir default
-        });
       }
       
       // ===== BOTONES DE COMPARTIR =====
       
-      const btnCompartir = document.getElementById("btnCompartir");
-      if(btnCompartir) {
-        // Eliminar cualquier onclick anterior
-        btnCompartir.onclick = null;
+      document.getElementById("btnCompartir").onclick = function(e) {
+        e.preventDefault();
+        if(esNegocio) {
+          fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" }).catch(()=>{});
+        }
         
-        btnCompartir.addEventListener("click", function(e) {
-          e.preventDefault();
-          console.log("Click en Compartir");
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" }).catch(()=>{});
-          }
-          
-          if(navigator.share) {
-            navigator.share({
-              title: "Dirección Digital",
-              text: `Mi dirección digital ${CODIGO_ACTUAL}`,
-              url: shareUrl
-            }).catch(() => {
-              navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
-            });
-          } else {
+        if(navigator.share) {
+          navigator.share({ title: "Dirección Digital", url: shareUrl }).catch(() => {
             navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
-          }
-        });
-      }
-      
-      const btnCopiar = document.getElementById("btnCopiar");
-      if(btnCopiar) {
-        btnCopiar.onclick = null;
-        
-        btnCopiar.addEventListener("click", function(e) {
-          e.preventDefault();
-          console.log("Click en Copiar");
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
-          }
+          });
+        } else {
           navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
-        });
-      }
+        }
+      };
+      
+      document.getElementById("btnCopiar").onclick = function(e) {
+        e.preventDefault();
+        if(esNegocio) {
+          fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
+        }
+        navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
+      };
       
       // QR
       const qrImg = document.getElementById("qrImg");
@@ -892,10 +878,7 @@
         }
       }
       
-      const uiLink = document.getElementById("uiLink");
-      if(uiLink) {
-        uiLink.textContent = shareUrl;
-      }
+      document.getElementById("uiLink").textContent = shareUrl;
       
       // ===== ESTADÍSTICAS =====
       const statsBtn = document.getElementById("btnStats");
@@ -904,18 +887,14 @@
       if(statsBtn && statsPanel) {
         if(esNegocio) {
           statsBtn.style.display = "flex";
-          statsBtn.onclick = null;
-          
-          statsBtn.addEventListener("click", async function(e) {
+          statsBtn.onclick = async function(e) {
             e.preventDefault();
-            const visible = statsPanel.style.display === "block";
-            statsPanel.style.display = visible ? "none" : "block";
+            statsPanel.style.display = statsPanel.style.display === "block" ? "none" : "block";
             
-            if(!visible) {
+            if(statsPanel.style.display === "block") {
               try {
                 const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${CODIGO_ACTUAL}`);
                 const statsData = await statsRes.json();
-                console.log("Stats:", statsData);
                 
                 if(statsData.ok) {
                   document.getElementById("stGoogle").textContent = statsData.stats?.google || 0;
@@ -925,16 +904,35 @@
                   document.getElementById("stCopy").textContent = statsData.stats?.copy || 0;
                   document.getElementById("stUpdated").textContent = "Actualizado: " + (statsData.stats?.updated || "-");
                 }
-              } catch(e) {
-                console.log("Error stats:", e);
-              }
+              } catch(e) {}
             }
-          });
+          };
         } else {
           statsBtn.style.display = "none";
           statsPanel.style.display = "none";
         }
       }
+      
+      // ===== MOSTRAR PANEL CLIENTE / OCULTAR HOME =====
+      
+      // Ocultar secciones de home
+      document.getElementById("homeHero").style.display = "none";
+      document.getElementById("buyWrap").style.display = "none";
+      document.getElementById("heroComprarBox").style.display = "none";
+      document.getElementById("heroEjemploBox").style.display = "none";
+      document.getElementById("seccionPasos").style.display = "none";
+      document.getElementById("seccionPrecios").style.display = "none";
+      
+      // Mostrar panel cliente
+      document.getElementById("fieldNombre").style.display = "grid";
+      document.getElementById("fieldRef").style.display = "grid";
+      document.getElementById("tituloUbicacion").style.display = "block";
+      document.getElementById("gridUbicacion").style.display = "grid";
+      document.getElementById("divAfterUbic").style.display = "block";
+      document.getElementById("tituloCompartir").style.display = "block";
+      document.getElementById("gridCompartir").style.display = "grid";
+      document.getElementById("notaVerificacion").style.display = "block";
+      document.getElementById("divAfterVerif").style.display = "block";
       
       setMsg("✅ Listo");
       
@@ -951,56 +949,58 @@
     // Botones de compra
     const comprarBase = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
     
-    const btnTop = document.getElementById("btnComprarTop");
-    if(btnTop) {
-      btnTop.href = comprarBase;
-      btnTop.target = "_blank";
-      btnTop.rel = "noopener noreferrer";
-    }
+    document.getElementById("btnComprarTop").href = comprarBase;
+    document.getElementById("btnComprarPersonal").href = comprarBase + "%20Plan:%20Personal%20($6.99)";
+    document.getElementById("btnComprarNegocios").href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
+    document.getElementById("btnHeroPersonal").href = comprarBase + "%20Plan:%20Personal%20($6.99)";
+    document.getElementById("btnHeroNegocios").href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
     
-    const btnPersonal = document.getElementById("btnComprarPersonal");
-    if(btnPersonal) {
-      btnPersonal.href = comprarBase + "%20Plan:%20Personal%20($6.99)";
-      btnPersonal.target = "_blank";
-      btnPersonal.rel = "noopener noreferrer";
-    }
-    
-    const btnNegocios = document.getElementById("btnComprarNegocios");
-    if(btnNegocios) {
-      btnNegocios.href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
-      btnNegocios.target = "_blank";
-      btnNegocios.rel = "noopener noreferrer";
-    }
-    
-    const btnHeroPersonal = document.getElementById("btnHeroPersonal");
-    if(btnHeroPersonal) {
-      btnHeroPersonal.href = comprarBase + "%20Plan:%20Personal%20($6.99)";
-      btnHeroPersonal.target = "_blank";
-      btnHeroPersonal.rel = "noopener noreferrer";
-    }
-    
-    const btnHeroNegocios = document.getElementById("btnHeroNegocios");
-    if(btnHeroNegocios) {
-      btnHeroNegocios.href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
-      btnHeroNegocios.target = "_blank";
-      btnHeroNegocios.rel = "noopener noreferrer";
-    }
+    // Abrir en nueva pestaña
+    document.querySelectorAll("[id^='btnComprar'], [id^='btnHero']").forEach(btn => {
+      btn.target = "_blank";
+      btn.rel = "noopener noreferrer";
+    });
     
     // Enter en input
     const input = document.getElementById("inputCodigo");
-    if(input) {
-      input.addEventListener("keypress", function(e) {
-        if(e.key === "Enter") buscarCodigo();
-      });
-    }
+    input.addEventListener("keypress", function(e) {
+      if(e.key === "Enter") buscarCodigo();
+    });
     
     // Verificar código en URL
     const urlParams = new URLSearchParams(window.location.search);
     const urlCode = urlParams.get("code");
     
-    if(urlCode && input) {
+    if(urlCode) {
       input.value = urlCode;
       setTimeout(buscarCodigo, 100);
+    } else {
+      // Modo home - mostrar secciones de home, ocultar panel cliente
+      document.getElementById("homeHero").style.display = "block";
+      document.getElementById("buyWrap").style.display = "flex";
+      document.getElementById("heroComprarBox").style.display = "block";
+      document.getElementById("heroEjemploBox").style.display = "block";
+      document.getElementById("seccionPasos").style.display = "block";
+      document.getElementById("seccionPrecios").style.display = "block";
+      
+      // Ocultar panel cliente
+      document.getElementById("fieldNombre").style.display = "none";
+      document.getElementById("fieldRef").style.display = "none";
+      document.getElementById("tituloUbicacion").style.display = "none";
+      document.getElementById("gridUbicacion").style.display = "none";
+      document.getElementById("divAfterUbic").style.display = "none";
+      document.getElementById("tituloCompartir").style.display = "none";
+      document.getElementById("gridCompartir").style.display = "none";
+      document.getElementById("notaVerificacion").style.display = "none";
+      document.getElementById("divAfterVerif").style.display = "none";
+      document.getElementById("btnStats").style.display = "none";
+      document.getElementById("statsPanel").style.display = "none";
+      
+      // QR del home
+      const homeUrl = window.location.href.split('?')[0];
+      document.getElementById("uiLink").textContent = homeUrl;
+      document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
+      document.getElementById("linkVerificacion").href = homeUrl;
     }
   });
 </script>

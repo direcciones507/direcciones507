@@ -765,30 +765,40 @@ function safeHref(id, value){
   if (!el) return;
   el.href = value && value.trim() ? value : "javascript:void(0)";
 }
-    function extractUrl(raw){
-  const s = String(raw ?? "").trim();
+   function extractUrl(raw){
+  const s = String(raw ?? "").replace(/\u00A0/g," ").replace(/\u200B/g," ").trim();
+  if(!s) return "";
 
-  // agarra la primera URL http/https dentro del texto
+  // 1) URL completa http/https
   const m1 = s.match(/https?:\/\/[^\s"'<>()]+/i);
   if(m1) return m1[0];
 
-  // soporta deep links (por si usas apps)
-  const m2 = s.match(/(waze|uber|whatsapp):\/\/[^\s"'<>()]+/i);
-  if(m2) return m2[0];
+  // 2) www.algo.com/...
+  const m2 = s.match(/www\.[^\s"'<>()]+/i);
+  if(m2) return "https://" + m2[0];
 
-  // si viene como www.algo.com...
-  const m3 = s.match(/www\.[^\s"'<>()]+/i);
+  // 3) dominios SIN esquema (waze.com/..., maps.app.goo.gl/..., wa.me/..., uber.com/...)
+  //    captura algo.tipo/... (con o sin ruta/query)
+  const m3 = s.match(/\b([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s"'<>()]*)?/i);
   if(m3) return "https://" + m3[0];
+
+  // 4) wa.me sin punto (por si viene como wa.me/507...)
+  const m4 = s.match(/\bwa\.me\/[0-9]+[^\s"'<>()]*/i);
+  if(m4) return "https://" + m4[0];
 
   return "";
 }
 
-function normalizeUrl(url){
-  url = extractUrl(url); // ✅ aquí está la magia
+function normalizeUrl(raw){
+  let url = extractUrl(raw);
   if(!url) return "";
 
-  // limpia cosas invisibles/espacios
-  url = url.replace(/\u00A0/g, " ").replace(/\u200B/g, "").trim();
+  // limpia espacios internos raros
+  url = url.replace(/\s+/g, "");
+
+  // por seguridad: si quedó como "https://waze" (sin punto), lo invalidamos
+  if (!/https?:\/\/.+\..+/i.test(url) && !/^(waze|uber|whatsapp):\/\//i.test(url)) return "";
+
   return url;
 }
 

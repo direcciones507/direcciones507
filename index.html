@@ -882,21 +882,23 @@ async function buscarCodigo() {
       navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
     };
     
-    // ===== LINK DE VERIFICACIÓN =====
+// ===== VERIFICACIÓN PARA IMPRIMIR (NO ABRE PESTAÑA) =====
 const linkVer = document.getElementById("linkVerificacion");
+if(linkVer){
+  linkVer.href = "#"; // para que no navegue
+  linkVer.target = "";
+  linkVer.rel = "";
+  linkVer.textContent = "Ver enlace de verificación";
 
-// ✅ VERIFICACIÓN = tu página con ?code= (NO Google Maps)
-const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+  linkVer.onclick = function(e){
+    e.preventDefault();
 
-linkVer.href = verificacionUrl;
-linkVer.target = "_blank";
-linkVer.rel = "noopener noreferrer";
-linkVer.textContent = "Ver enlace de verificación";
-
-    // ✅ QR VERIFICACIÓN (para imprimir)
-const qrVerif = document.getElementById("qrVerificacion");
-if(qrVerif){
-  qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(verificacionUrl)}`;
+    const qrVerif = document.getElementById("qrVerificacion");
+    if(qrVerif){
+      qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(verificacionUrl)}`;
+      qrVerif.style.display = "block";
+    }
+  };
 }
     
     // ===== QR =====

@@ -1125,6 +1125,19 @@ const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
         if (linkVer) linkVer.href = homeLink;
       }
     })();
+    // ✅ Exporta funciones al global para que funcionen los onclick del HTML
+window.buscarCodigo = buscarCodigo;
+window.verEjemplo = verEjemplo;
+window.shareLink = shareLink;
+window.copyLink = copyLink;
+
+// ✅ Por si el botón inline fallara, amarramos el click por JS también
+(function bindBuscarBtn(){
+  const btn = document.querySelector('button[onclick*="buscarCodigo"]');
+  if(btn){
+    btn.onclick = (e) => { e.preventDefault(); buscarCodigo(); };
+  }
+})();
   </script>
 </body>
 </html>

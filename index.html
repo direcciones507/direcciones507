@@ -1000,9 +1000,19 @@ function attachTrack(id, ev){
     setMsg("Buscando...");
 
     try{
-      const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
-      const data = await res.json();
+     const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
+const res = await fetch(url, { cache:"no-store" });
 
+const txt = await res.text();
+console.log("WEBAPP status:", res.status);
+console.log("WEBAPP respuesta (inicio):", txt.slice(0, 300));
+
+let data;
+try{
+  data = JSON.parse(txt);
+}catch(e){
+  throw new Error("La WebApp NO devolvió JSON. Devuelve HTML/permisos. Revisa publicación. Inicio: " + txt.slice(0, 120));
+}
       console.log("LINKS RAW:", {
         google_maps: data.google_maps,
         google: data.google,
@@ -1013,7 +1023,7 @@ function attachTrack(id, ev){
       });
 
       if(!data.ok){
-        setMsg(data.message || "Código no encontrado.");
+        setMsg("Error: " + (err && err.message ? err.message : "No se pudo conectar"));
         toggleModoCliente(false);
         togglePanelCliente(false);
         toggleStatsNegocios(false);

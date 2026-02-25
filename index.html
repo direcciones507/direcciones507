@@ -762,8 +762,8 @@
 
 function safeHref(id, value){
   const el = document.getElementById(id);
-  if (!el) return;
-  el.href = value && value.trim() ? value : "javascript:void(0)";
+  if(!el) return;
+  el.href = value ? value : "javascript:void(0)";
 }
    function extractUrl(raw){
   const s = String(raw ?? "").replace(/\u00A0/g," ").replace(/\u200B/g," ").trim();

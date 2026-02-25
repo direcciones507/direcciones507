@@ -883,16 +883,21 @@ async function buscarCodigo() {
     };
     
     // ===== LINK DE VERIFICACIÓN =====
-    const linkVer = document.getElementById("linkVerificacion");
-    // ✅ FIX: esto debe ser el enlace real del QR (no shareUrl)
-    linkVer.href = verifLink ? verifLink : "#";
-    linkVer.target = "_blank";
-    linkVer.rel = "noopener noreferrer";
-    linkVer.textContent = "Ver enlace de verificación";
-    linkVer.onclick = function(e) {
-      if(!verifLink){ e.preventDefault(); return; }
-      // (no trackeo aquí, lo de verificación no lo estabas contando antes)
-    };
+const linkVer = document.getElementById("linkVerificacion");
+
+// ✅ VERIFICACIÓN = tu página con ?code= (NO Google Maps)
+const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+
+linkVer.href = verificacionUrl;
+linkVer.target = "_blank";
+linkVer.rel = "noopener noreferrer";
+linkVer.textContent = "Ver enlace de verificación";
+
+    // ✅ QR VERIFICACIÓN (para imprimir)
+const qrVerif = document.getElementById("qrVerificacion");
+if(qrVerif){
+  qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(verificacionUrl)}`;
+}
     
     // ===== QR =====
     const qrImg = document.getElementById("qrImg");

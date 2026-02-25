@@ -13,6 +13,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
+  <!-- Favicon (opcional, elimina el error 404) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+
   <style>
     :root{
       --bg:#0b1020;
@@ -376,7 +379,6 @@
     .testCard p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
   </style>
 </head>
-
 <body>
   <div class="container">
 
@@ -390,7 +392,6 @@
         </div>
       </div>
 
-      <!-- ✅ Se oculta en modo cliente -->
       <div class="buyWrap" id="buyWrap">
         <div class="badge"><i class="fa-solid fa-shield-halved"></i> Enlace seguro</div>
         <a id="btnComprarTop" class="btn whats buy" href="#" target="_blank" rel="noopener">
@@ -399,7 +400,7 @@
       </div>
     </div>
 
-    <!-- ✅ HOME ONLY (se oculta en panel del cliente) -->
+    <!-- HOME ONLY (se oculta cuando se busca un código) -->
     <div id="homeHero">
       <div class="hero">
         <div class="heroGrid">
@@ -421,7 +422,6 @@
           </div>
 
           <div class="heroCtas">
-            <!-- ✅ Se ocultan en modo cliente -->
             <div class="heroBox" id="heroComprarBox">
               <p class="miniTitle">Comprar ahora</p>
               <p class="miniSub">Te atendemos por WhatsApp y te activamos tu enlace.</p>
@@ -435,13 +435,11 @@
               </div>
             </div>
 
-            <!-- ✅ Se oculta en modo cliente -->
             <div class="heroBox" id="heroEjemploBox">
               <p class="miniTitle">Ver ejemplo real</p>
               <button class="btn primary" type="button" onclick="verEjemplo()">
                 <i class="fa-solid fa-play"></i> Ver ejemplo real
               </button>
-              <p class="miniSub" style="margin-top:10px;opacity:.85"></p>
             </div>
           </div>
         </div>
@@ -457,7 +455,6 @@
               allowfullscreen
             ></iframe>
           </div>
-          <div class="smallNote" style="margin-top:10px;"></div>
         </div>
 
         <div style="margin-top:18px;">
@@ -476,7 +473,6 @@
               <p>“Compartí el QR con mi familia. Llegan sin perderse.”</p>
             </div>
           </div>
-          <div class="smallNote"></div>
         </div>
       </div>
     </div>
@@ -499,7 +495,6 @@
             font-weight:700;
             outline:none;
           "
-          onkeydown="if(event.key==='Enter'){ buscarCodigo(); }"
         />
         <button
           type="button"
@@ -535,20 +530,21 @@
         </div>
 
         <div class="cardBody" id="panelClienteBody">
-          <div class="field" id="fieldNombre">
+          <!-- Estos elementos se muestran/ocultan con JavaScript -->
+          <div class="field" id="fieldNombre" style="display: none;">
             <span>Nombre</span>
             <b id="uiNombre">-</b>
           </div>
 
-          <div class="field" id="fieldRef">
+          <div class="field" id="fieldRef" style="display: none;">
             <span>Referencia</span>
             <b id="uiRef">-</b>
           </div>
 
-          <div class="divider"></div>
+          <div class="divider" id="divAfterUbic" style="display: none;"></div>
 
-          <h3 class="sectionTitle" id="tituloUbicacion">Abrir ubicación</h3>
-          <div class="btnGrid" id="gridUbicacion">
+          <h3 class="sectionTitle" id="tituloUbicacion" style="display: none;">Abrir ubicación</h3>
+          <div class="btnGrid" id="gridUbicacion" style="display: none;">
             <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
               <i class="fa-brands fa-google"></i> Google Maps
             </a>
@@ -563,31 +559,26 @@
             </a>
           </div>
 
-          <div class="divider" id="divAfterUbic"></div>
+          <div class="divider" id="divAfterVerif" style="display: none;"></div>
 
-          <h3 class="sectionTitle" id="tituloCompartir">Compartir</h3>
-          <div class="btnGrid" id="gridCompartir">
-  <button class="btn" type="button" id="btnCompartir">  <!-- SOLO EL ID -->
-  <i class="fa-solid fa-share-nodes"></i> Compartir
-</button>
-<button class="btn copy" type="button" id="btnCopiar">  <!-- SOLO EL ID -->
-  <i class="fa-solid fa-copy"></i> Copiar link
-</button>
+          <h3 class="sectionTitle" id="tituloCompartir" style="display: none;">Compartir</h3>
+          <div class="btnGrid" id="gridCompartir" style="display: none;">
+            <button class="btn" type="button" id="btnCompartir">
+              <i class="fa-solid fa-share-nodes"></i> Compartir
+            </button>
+            <button class="btn copy" type="button" id="btnCopiar">
+              <i class="fa-solid fa-copy"></i> Copiar link
+            </button>
           </div>
 
-          <div class="smallNote" id="notaVerificacion">
+          <div class="smallNote" id="notaVerificacion" style="display: none;">
             <b>Verificación para imprimir:</b>
             <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
               Ver enlace de verificación
             </a>
-            <div style="margin-top:10px;">
-              <img id="qrVerificacion" class="qrImg" style="display:none" alt="QR verificación" />
-            </div>
           </div>
 
-          <div class="divider" id="divAfterVerif"></div>
-
-          <!-- HOME parts inside left card -->
+          <!-- SECCIONES QUE SIEMPRE SE VEN EN HOME -->
           <div id="seccionPasos">
             <h3 class="sectionTitle">Pasos</h3>
             <div class="steps">
@@ -650,10 +641,7 @@
                 </div>
               </div>
             </div>
-
-            <div class="smallNote" style="margin-top:12px;"></div>
           </div>
-
         </div>
       </div>
 
@@ -718,292 +706,293 @@
     </div>
   </div>
 
-<script>
-  // ✅ WebApp (VERSIÓN CORREGIDA)
-  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
-  const WA_NUMBER = "50765996532";
-  const EJEMPLO_CODE = "AD507-0001";
+  <!-- ========== JAVASCRIPT FINAL CORREGIDO ========== -->
+  <script>
+    // WebApp URL
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
+    const WA_NUMBER = "50765996532";
+    const EJEMPLO_CODE = "AD507-0001";
 
-  let CODIGO_ACTUAL = "";
-  let DATOS_CLIENTE = null;
+    let CODIGO_ACTUAL = "";
+    let DATOS_CLIENTE = null;
 
-  function verEjemplo() {
-    const input = document.getElementById("inputCodigo");
-    if(input) input.value = EJEMPLO_CODE;
-    buscarCodigo();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function setMsg(texto) {
-    const msg = document.getElementById("msgBusqueda");
-    if(msg) msg.textContent = texto || "";
-  }
-
-  async function buscarCodigo() {
-    const input = document.getElementById("inputCodigo");
-    if(!input) return;
-    
-    const codigo = input.value.trim();
-    if(!codigo) {
-      setMsg("Ingresa un código");
-      return;
+    function verEjemplo() {
+      const input = document.getElementById("inputCodigo");
+      if(input) input.value = EJEMPLO_CODE;
+      buscarCodigo();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-    
-    setMsg("Buscando...");
-    
-    try {
-      const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
-      const data = await response.json();
+
+    function setMsg(texto) {
+      const msg = document.getElementById("msgBusqueda");
+      if(msg) msg.textContent = texto || "";
+    }
+
+    async function buscarCodigo() {
+      const input = document.getElementById("inputCodigo");
+      if(!input) return;
       
-      console.log("DATOS RECIBIDOS:", data);
-      
-      if(!data.ok) {
-        throw new Error(data.message || "No encontrado");
+      const codigo = input.value.trim();
+      if(!codigo) {
+        setMsg("Ingresa un código");
+        return;
       }
       
-      CODIGO_ACTUAL = data.codigo;
-      DATOS_CLIENTE = data;
+      setMsg("Buscando...");
       
-      // Mostrar información básica
-      document.getElementById("uiCodigo").textContent = data.codigo;
-      document.getElementById("uiNombre").textContent = data.nombre || "-";
-      document.getElementById("uiRef").textContent = data.referencia || "-";
-      
-      const esNegocio = (data.plan || "").toLowerCase().includes("negocio") || (data.plan || "").toLowerCase().includes("business");
-      
-      // URL para compartir
-      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
-      
-      console.log("URLs recibidas:", {
-        google: data.google,
-        waze: data.waze,
-        uber: data.uber,
-        whatsapp: data.whatsapp
-      });
-      
-      // ===== ASIGNAR ENLACES DIRECTAMENTE =====
-      
-      // Google Maps
-      const btnGoogle = document.getElementById("btnGoogle");
-      if(btnGoogle && data.google && data.google !== "#") {
-        btnGoogle.href = data.google;
-        btnGoogle.target = "_blank";
-        btnGoogle.rel = "noopener noreferrer";
-        btnGoogle.onclick = function(e) {
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-      }
-      
-      // Waze
-      const btnWaze = document.getElementById("btnWaze");
-      if(btnWaze && data.waze && data.waze !== "#") {
-        btnWaze.href = data.waze;
-        btnWaze.target = "_blank";
-        btnWaze.rel = "noopener noreferrer";
-        btnWaze.onclick = function(e) {
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-      }
-      
-      // Uber
-      const btnUber = document.getElementById("btnUber");
-      if(btnUber && data.uber && data.uber !== "#") {
-        btnUber.href = data.uber;
-        btnUber.target = "_blank";
-        btnUber.rel = "noopener noreferrer";
-        btnUber.onclick = function(e) {
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-      }
-      
-      // Aviso WhatsApp
-      const btnAviso = document.getElementById("btnAviso");
-      if(btnAviso && data.whatsapp && data.whatsapp !== "#") {
-        btnAviso.href = data.whatsapp;
-        btnAviso.target = "_blank";
-        btnAviso.rel = "noopener noreferrer";
-        btnAviso.onclick = function(e) {
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-      }
-      
-      // Link de verificación
-      const linkVer = document.getElementById("linkVerificacion");
-      if(linkVer) {
-        linkVer.href = shareUrl;
-        linkVer.target = "_blank";
-        linkVer.rel = "noopener noreferrer";
-      }
-      
-      // ===== BOTONES DE COMPARTIR =====
-      
-      document.getElementById("btnCompartir").onclick = function(e) {
-        e.preventDefault();
-        if(esNegocio) {
-          fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" }).catch(()=>{});
+      try {
+        const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+        const data = await response.json();
+        
+        console.log("DATOS RECIBIDOS:", data);
+        
+        if(!data.ok) {
+          throw new Error(data.message || "No encontrado");
         }
         
-        if(navigator.share) {
-          navigator.share({ title: "Dirección Digital", url: shareUrl }).catch(() => {
-            navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
-          });
-        } else {
-          navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
-        }
-      };
-      
-      document.getElementById("btnCopiar").onclick = function(e) {
-        e.preventDefault();
-        if(esNegocio) {
-          fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
-        }
-        navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
-      };
-      
-      // QR
-      const qrImg = document.getElementById("qrImg");
-      if(qrImg) {
-        if(data.qr && data.qr !== "#") {
-          qrImg.src = data.qr;
-        } else {
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
-        }
-      }
-      
-      document.getElementById("uiLink").textContent = shareUrl;
-      
-      // ===== ESTADÍSTICAS =====
-      const statsBtn = document.getElementById("btnStats");
-      const statsPanel = document.getElementById("statsPanel");
-      
-      if(statsBtn && statsPanel) {
-        if(esNegocio) {
-          statsBtn.style.display = "flex";
-          statsBtn.onclick = async function(e) {
-            e.preventDefault();
-            statsPanel.style.display = statsPanel.style.display === "block" ? "none" : "block";
-            
-            if(statsPanel.style.display === "block") {
-              try {
-                const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${CODIGO_ACTUAL}`);
-                const statsData = await statsRes.json();
-                
-                if(statsData.ok) {
-                  document.getElementById("stGoogle").textContent = statsData.stats?.google || 0;
-                  document.getElementById("stWaze").textContent = statsData.stats?.waze || 0;
-                  document.getElementById("stUber").textContent = statsData.stats?.uber || 0;
-                  document.getElementById("stShare").textContent = statsData.stats?.share || 0;
-                  document.getElementById("stCopy").textContent = statsData.stats?.copy || 0;
-                  document.getElementById("stUpdated").textContent = "Actualizado: " + (statsData.stats?.updated || "-");
-                }
-              } catch(e) {}
+        CODIGO_ACTUAL = data.codigo;
+        DATOS_CLIENTE = data;
+        
+        // Mostrar información básica
+        document.getElementById("uiCodigo").textContent = data.codigo;
+        document.getElementById("uiNombre").textContent = data.nombre || "-";
+        document.getElementById("uiRef").textContent = data.referencia || "-";
+        
+        const esNegocio = (data.plan || "").toLowerCase().includes("negocio") || (data.plan || "").toLowerCase().includes("business");
+        
+        // URL para compartir
+        const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+        
+        console.log("URLs recibidas:", {
+          google: data.google,
+          waze: data.waze,
+          uber: data.uber,
+          whatsapp: data.whatsapp
+        });
+        
+        // ===== ASIGNAR ENLACES DIRECTAMENTE =====
+        
+        // Google Maps
+        const btnGoogle = document.getElementById("btnGoogle");
+        if(btnGoogle && data.google && data.google !== "#") {
+          btnGoogle.href = data.google;
+          btnGoogle.target = "_blank";
+          btnGoogle.rel = "noopener noreferrer";
+          btnGoogle.onclick = function(e) {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
             }
           };
-        } else {
-          statsBtn.style.display = "none";
-          statsPanel.style.display = "none";
         }
+        
+        // Waze
+        const btnWaze = document.getElementById("btnWaze");
+        if(btnWaze && data.waze && data.waze !== "#") {
+          btnWaze.href = data.waze;
+          btnWaze.target = "_blank";
+          btnWaze.rel = "noopener noreferrer";
+          btnWaze.onclick = function(e) {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
+            }
+          };
+        }
+        
+        // Uber
+        const btnUber = document.getElementById("btnUber");
+        if(btnUber && data.uber && data.uber !== "#") {
+          btnUber.href = data.uber;
+          btnUber.target = "_blank";
+          btnUber.rel = "noopener noreferrer";
+          btnUber.onclick = function(e) {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
+            }
+          };
+        }
+        
+        // Aviso WhatsApp
+        const btnAviso = document.getElementById("btnAviso");
+        if(btnAviso && data.whatsapp && data.whatsapp !== "#") {
+          btnAviso.href = data.whatsapp;
+          btnAviso.target = "_blank";
+          btnAviso.rel = "noopener noreferrer";
+          btnAviso.onclick = function(e) {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
+            }
+          };
+        }
+        
+        // Link de verificación
+        const linkVer = document.getElementById("linkVerificacion");
+        if(linkVer) {
+          linkVer.href = shareUrl;
+          linkVer.target = "_blank";
+          linkVer.rel = "noopener noreferrer";
+        }
+        
+        // ===== BOTONES DE COMPARTIR =====
+        
+        document.getElementById("btnCompartir").onclick = function(e) {
+          e.preventDefault();
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" }).catch(()=>{});
+          }
+          
+          if(navigator.share) {
+            navigator.share({ title: "Dirección Digital", url: shareUrl }).catch(() => {
+              navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
+            });
+          } else {
+            navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
+          }
+        };
+        
+        document.getElementById("btnCopiar").onclick = function(e) {
+          e.preventDefault();
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
+          }
+          navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
+        };
+        
+        // QR
+        const qrImg = document.getElementById("qrImg");
+        if(qrImg) {
+          if(data.qr && data.qr !== "#") {
+            qrImg.src = data.qr;
+          } else {
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
+          }
+        }
+        
+        document.getElementById("uiLink").textContent = shareUrl;
+        
+        // ===== ESTADÍSTICAS =====
+        const statsBtn = document.getElementById("btnStats");
+        const statsPanel = document.getElementById("statsPanel");
+        
+        if(statsBtn && statsPanel) {
+          if(esNegocio) {
+            statsBtn.style.display = "flex";
+            statsBtn.onclick = async function(e) {
+              e.preventDefault();
+              statsPanel.style.display = statsPanel.style.display === "block" ? "none" : "block";
+              
+              if(statsPanel.style.display === "block") {
+                try {
+                  const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${CODIGO_ACTUAL}`);
+                  const statsData = await statsRes.json();
+                  
+                  if(statsData.ok) {
+                    document.getElementById("stGoogle").textContent = statsData.stats?.google || 0;
+                    document.getElementById("stWaze").textContent = statsData.stats?.waze || 0;
+                    document.getElementById("stUber").textContent = statsData.stats?.uber || 0;
+                    document.getElementById("stShare").textContent = statsData.stats?.share || 0;
+                    document.getElementById("stCopy").textContent = statsData.stats?.copy || 0;
+                    document.getElementById("stUpdated").textContent = "Actualizado: " + (statsData.stats?.updated || "-");
+                  }
+                } catch(e) {}
+              }
+            };
+          } else {
+            statsBtn.style.display = "none";
+            statsPanel.style.display = "none";
+          }
+        }
+        
+        // ===== MOSTRAR PANEL CLIENTE / OCULTAR HOME =====
+        
+        // Ocultar secciones de home
+        document.getElementById("homeHero").style.display = "none";
+        document.getElementById("buyWrap").style.display = "none";
+        document.getElementById("heroComprarBox").style.display = "none";
+        document.getElementById("heroEjemploBox").style.display = "none";
+        document.getElementById("seccionPasos").style.display = "none";
+        document.getElementById("seccionPrecios").style.display = "none";
+        
+        // Mostrar panel cliente
+        document.getElementById("fieldNombre").style.display = "grid";
+        document.getElementById("fieldRef").style.display = "grid";
+        document.getElementById("tituloUbicacion").style.display = "block";
+        document.getElementById("gridUbicacion").style.display = "grid";
+        document.getElementById("divAfterUbic").style.display = "block";
+        document.getElementById("tituloCompartir").style.display = "block";
+        document.getElementById("gridCompartir").style.display = "grid";
+        document.getElementById("notaVerificacion").style.display = "block";
+        document.getElementById("divAfterVerif").style.display = "block";
+        
+        setMsg("✅ Listo");
+        
+      } catch(error) {
+        console.error("ERROR:", error);
+        setMsg("Error: " + error.message);
       }
-      
-      // ===== MOSTRAR PANEL CLIENTE / OCULTAR HOME =====
-      
-      // Ocultar secciones de home
-      document.getElementById("homeHero").style.display = "none";
-      document.getElementById("buyWrap").style.display = "none";
-      document.getElementById("heroComprarBox").style.display = "none";
-      document.getElementById("heroEjemploBox").style.display = "none";
-      document.getElementById("seccionPasos").style.display = "none";
-      document.getElementById("seccionPrecios").style.display = "none";
-      
-      // Mostrar panel cliente
-      document.getElementById("fieldNombre").style.display = "grid";
-      document.getElementById("fieldRef").style.display = "grid";
-      document.getElementById("tituloUbicacion").style.display = "block";
-      document.getElementById("gridUbicacion").style.display = "grid";
-      document.getElementById("divAfterUbic").style.display = "block";
-      document.getElementById("tituloCompartir").style.display = "block";
-      document.getElementById("gridCompartir").style.display = "grid";
-      document.getElementById("notaVerificacion").style.display = "block";
-      document.getElementById("divAfterVerif").style.display = "block";
-      
-      setMsg("✅ Listo");
-      
-    } catch(error) {
-      console.error("ERROR:", error);
-      setMsg("Error: " + error.message);
     }
-  }
 
-  // Inicialización
-  document.addEventListener("DOMContentLoaded", function() {
-    console.log("Página cargada");
-    
-    // Botones de compra
-    const comprarBase = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
-    
-    document.getElementById("btnComprarTop").href = comprarBase;
-    document.getElementById("btnComprarPersonal").href = comprarBase + "%20Plan:%20Personal%20($6.99)";
-    document.getElementById("btnComprarNegocios").href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
-    document.getElementById("btnHeroPersonal").href = comprarBase + "%20Plan:%20Personal%20($6.99)";
-    document.getElementById("btnHeroNegocios").href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
-    
-    // Abrir en nueva pestaña
-    document.querySelectorAll("[id^='btnComprar'], [id^='btnHero']").forEach(btn => {
-      btn.target = "_blank";
-      btn.rel = "noopener noreferrer";
-    });
-    
-    // Enter en input
-    const input = document.getElementById("inputCodigo");
-    input.addEventListener("keypress", function(e) {
-      if(e.key === "Enter") buscarCodigo();
-    });
-    
-    // Verificar código en URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlCode = urlParams.get("code");
-    
-    if(urlCode) {
-      input.value = urlCode;
-      setTimeout(buscarCodigo, 100);
-    } else {
-      // Modo home - mostrar secciones de home, ocultar panel cliente
-      document.getElementById("homeHero").style.display = "block";
-      document.getElementById("buyWrap").style.display = "flex";
-      document.getElementById("heroComprarBox").style.display = "block";
-      document.getElementById("heroEjemploBox").style.display = "block";
-      document.getElementById("seccionPasos").style.display = "block";
-      document.getElementById("seccionPrecios").style.display = "block";
+    // Inicialización
+    document.addEventListener("DOMContentLoaded", function() {
+      console.log("Página cargada");
       
-      // Ocultar panel cliente
-      document.getElementById("fieldNombre").style.display = "none";
-      document.getElementById("fieldRef").style.display = "none";
-      document.getElementById("tituloUbicacion").style.display = "none";
-      document.getElementById("gridUbicacion").style.display = "none";
-      document.getElementById("divAfterUbic").style.display = "none";
-      document.getElementById("tituloCompartir").style.display = "none";
-      document.getElementById("gridCompartir").style.display = "none";
-      document.getElementById("notaVerificacion").style.display = "none";
-      document.getElementById("divAfterVerif").style.display = "none";
-      document.getElementById("btnStats").style.display = "none";
-      document.getElementById("statsPanel").style.display = "none";
+      // Botones de compra
+      const comprarBase = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
       
-      // QR del home
-      const homeUrl = window.location.href.split('?')[0];
-      document.getElementById("uiLink").textContent = homeUrl;
-      document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
-      document.getElementById("linkVerificacion").href = homeUrl;
-    }
-  });
-</script>
+      document.getElementById("btnComprarTop").href = comprarBase;
+      document.getElementById("btnComprarPersonal").href = comprarBase + "%20Plan:%20Personal%20($6.99)";
+      document.getElementById("btnComprarNegocios").href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
+      document.getElementById("btnHeroPersonal").href = comprarBase + "%20Plan:%20Personal%20($6.99)";
+      document.getElementById("btnHeroNegocios").href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
+      
+      // Abrir en nueva pestaña
+      document.querySelectorAll("[id^='btnComprar'], [id^='btnHero']").forEach(btn => {
+        btn.target = "_blank";
+        btn.rel = "noopener noreferrer";
+      });
+      
+      // Enter en input
+      const input = document.getElementById("inputCodigo");
+      input.addEventListener("keypress", function(e) {
+        if(e.key === "Enter") buscarCodigo();
+      });
+      
+      // Verificar código en URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCode = urlParams.get("code");
+      
+      if(urlCode) {
+        input.value = urlCode;
+        setTimeout(buscarCodigo, 100);
+      } else {
+        // Modo home - mostrar secciones de home, ocultar panel cliente
+        document.getElementById("homeHero").style.display = "block";
+        document.getElementById("buyWrap").style.display = "flex";
+        document.getElementById("heroComprarBox").style.display = "block";
+        document.getElementById("heroEjemploBox").style.display = "block";
+        document.getElementById("seccionPasos").style.display = "block";
+        document.getElementById("seccionPrecios").style.display = "block";
+        
+        // Ocultar panel cliente
+        document.getElementById("fieldNombre").style.display = "none";
+        document.getElementById("fieldRef").style.display = "none";
+        document.getElementById("tituloUbicacion").style.display = "none";
+        document.getElementById("gridUbicacion").style.display = "none";
+        document.getElementById("divAfterUbic").style.display = "none";
+        document.getElementById("tituloCompartir").style.display = "none";
+        document.getElementById("gridCompartir").style.display = "none";
+        document.getElementById("notaVerificacion").style.display = "none";
+        document.getElementById("divAfterVerif").style.display = "none";
+        document.getElementById("btnStats").style.display = "none";
+        document.getElementById("statsPanel").style.display = "none";
+        
+        // QR del home
+        const homeUrl = window.location.href.split('?')[0];
+        document.getElementById("uiLink").textContent = homeUrl;
+        document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
+        document.getElementById("linkVerificacion").href = homeUrl;
+      }
+    });
+  </script>
 </body>
 </html>
 

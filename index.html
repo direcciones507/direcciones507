@@ -1019,6 +1019,7 @@ function normalizeUrl(url){
       try{
         const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
         const data = await res.json();
+        console.log("DATA:", data);
 
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");

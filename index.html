@@ -728,6 +728,35 @@
       if(msg) msg.textContent = texto || "";
     }
 
+    function extractLinkFromQr(qrUrl){
+  // qrUrl viene como: https://api.qrserver.com/...&data=<URL_ENCODED>
+  try{
+    const u = new URL(qrUrl);
+    const data = u.searchParams.get("data");
+    if(!data) return "";
+    return decodeURIComponent(data); // devuelve el link real (Google Maps)
+  }catch(e){
+    return "";
+  }
+}
+
+function setLinkEl(id, href, label){
+  const el = document.getElementById(id);
+  if(!el) return;
+
+  const ok = href && href !== "#";
+  if(el.tagName === "A"){
+    el.href = ok ? href : "#";
+    el.setAttribute("href", ok ? href : "#");
+    el.target = "_blank";
+    el.rel = "noopener";
+    el.textContent = label || (ok ? href : "No disponible");
+  }else{
+    // si no es <a>, al menos muestra texto
+    el.textContent = ok ? (label || href) : "No disponible";
+  }
+}
+    
 async function buscarCodigo() {
   const input = document.getElementById("inputCodigo");
   if(!input) return;

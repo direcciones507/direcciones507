@@ -577,6 +577,7 @@
               Ver enlace de verificación
             </a>
           </div>
+          <img id="qrVerificacion" style="display:none;margin-top:15px;width:220px;">
 
           <!-- SECCIONES QUE SIEMPRE SE VEN EN HOME -->
           <div id="seccionPasos">
@@ -885,24 +886,19 @@ const verificacionUrl = `${window.location.origin}${window.location.pathname}?co
       navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
     };
     
-// ===== VERIFICACIÓN PARA IMPRIMIR (NO ABRE PESTAÑA) =====
+// ===== VERIFICACIÓN PARA IMPRIMIR =====
 const linkVer = document.getElementById("linkVerificacion");
-if(linkVer){
-  linkVer.href = "#"; // para que no navegue
-  linkVer.target = "";
-  linkVer.rel = "";
-  linkVer.textContent = "Ver enlace de verificación";
 
-  linkVer.onclick = function(e){
-    e.preventDefault();
+linkVer.onclick = function(e){
+  e.preventDefault();
 
-    const qrVerif = document.getElementById("qrVerificacion");
-    if(qrVerif){
-      qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(verificacionUrl)}`;
-      qrVerif.style.display = "block";
-    }
-  };
-}
+  const qrVerif = document.getElementById("qrVerificacion");
+
+  if(qrVerif){
+    qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(verificacionUrl)}`;
+    qrVerif.style.display = "block";
+  }
+};
     
     // ===== QR =====
     const qrImg = document.getElementById("qrImg");

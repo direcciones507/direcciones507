@@ -759,26 +759,29 @@
       if (el) el.href = value || "#";
     }
 
- function normalizeUrl(url){
+function normalizeUrl(url){
   url = String(url ?? "")
-    .replace(/\u00A0/g, " ")
-    .replace(/\u200B/g, "")
+    .replace(/\u00A0/g, " ")  // NBSP
+    .replace(/\u200B/g, "")  // zero-width
     .trim();
 
   if(!url || url === "-" || url === "#") return "";
 
-  // quita espacios internos
+  // quita espacios internos (ej: "https:// wa.me/...")
   url = url.replace(/\s+/g, "");
 
-  // si ya trae esquema, lo dejamos
+  // si ya es un esquema válido (http/https o apps), lo dejamos
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url) || /^tel:|^mailto:/i.test(url)) {
     return url;
   }
 
-  // si no trae esquema, lo convertimos a https
-  if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+  // ✅ si es solo texto (ej: "Waze", "Google"), NO lo conviertas en URL
+  // (evita xn--%20waze... y NXDOMAIN)
+  const looksLikeWeb = url.includes(".") || url.startsWith("www.");
+  if(!looksLikeWeb) return "";
 
-  return url;
+  // si parece web pero sin esquema, agrega https://
+  return "https://" + url.replace(/^www\./i, "www.");
 }
 
     function makeQRFromLink(link){
@@ -1016,19 +1019,10 @@
         safeText("uiRef", data.referencia || "Referencia no indicada");
         safeText("uiEstado", data.validacion || "Activo");
 
-       const google = normalizeUrl((data.google_maps || data.google || "").trim());
-
-// ✅ Waze puede venir con espacios o texto “Waze”, lo limpiamos fuerte
-let wazeRaw = String(data.waze || "");
-wazeRaw = wazeRaw.replace(/\u00A0/g, " ").replace(/\u200B/g, "").trim();
-
-// si la celda trae "Waze" o solo letras, lo dejamos vacío para que no intente abrir
-if (/^[a-zA-Z\s]+$/.test(wazeRaw)) wazeRaw = "";
-
-const waze = normalizeUrl(wazeRaw);
-
-const uber  = normalizeUrl((data.uber || "").trim());
-const aviso = normalizeUrl((data.link_whatsapp || data.whatsapp || "").trim());
+const google = normalizeUrl(data.google_maps || data.google || "");
+const waze   = normalizeUrl(data.waze || "");
+const uber   = normalizeUrl(data.uber || "");
+const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
 
         safeHref("btnGoogle", google || "#");
         safeHref("btnWaze", waze || "#");

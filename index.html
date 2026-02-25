@@ -790,21 +790,19 @@
     }
 
     // ✅ Rebind: no duplica listeners
-    function attachTrack(id, ev){
-      const old = document.getElementById(id);
-      if(!old) return;
+   function attachTrack(id, ev){
+  const old = document.getElementById(id);
+  if(!old) return;
 
-      const a = old.cloneNode(true);
-      old.parentNode.replaceChild(a, old);
+  // evita listeners duplicados
+  const a = old.cloneNode(true);
+  old.parentNode.replaceChild(a, old);
 
-      a.addEventListener("click", function(e){
-        const href = (a.getAttribute("href") || "").trim();
-        const target = a.getAttribute("target") || "_blank";
-
-        if(!href || href === "#"){
-          e.preventDefault();
-          return;
-        }
+  // NO bloquea el click (no preventDefault)
+  a.addEventListener("click", function(){
+    track(ev);
+  }, { passive:true });
+}
 
         track(ev);
         e.preventDefault();
@@ -1003,10 +1001,19 @@
         safeText("uiRef", data.referencia || "Referencia no indicada");
         safeText("uiEstado", data.validacion || "Activo");
 
-        const google = normalizeUrl(data.google_maps || data.google || "");
-        const waze   = normalizeUrl(data.waze || "");
-        const uber   = normalizeUrl(data.uber || "");
-        const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+       const google = normalizeUrl((data.google_maps || data.google || "").trim());
+
+// ✅ Waze puede venir con espacios o texto “Waze”, lo limpiamos fuerte
+let wazeRaw = String(data.waze || "");
+wazeRaw = wazeRaw.replace(/\u00A0/g, " ").replace(/\u200B/g, "").trim();
+
+// si la celda trae "Waze" o solo letras, lo dejamos vacío para que no intente abrir
+if (/^[a-zA-Z\s]+$/.test(wazeRaw)) wazeRaw = "";
+
+const waze = normalizeUrl(wazeRaw);
+
+const uber  = normalizeUrl((data.uber || "").trim());
+const aviso = normalizeUrl((data.link_whatsapp || data.whatsapp || "").trim());
 
         safeHref("btnGoogle", google || "#");
         safeHref("btnWaze", waze || "#");

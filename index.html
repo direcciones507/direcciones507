@@ -567,12 +567,12 @@
 
           <h3 class="sectionTitle" id="tituloCompartir">Compartir</h3>
           <div class="btnGrid" id="gridCompartir">
-            <button class="btn" type="button" onclick="shareLink()">
-              <i class="fa-solid fa-share-nodes"></i> Compartir
-            </button>
-            <button class="btn copy" type="button" onclick="copyLink()">
-              <i class="fa-solid fa-copy"></i> Copiar link
-            </button>
+  <button class="btn" type="button" id="btnCompartir">  <!-- SOLO EL ID -->
+  <i class="fa-solid fa-share-nodes"></i> Compartir
+</button>
+<button class="btn copy" type="button" id="btnCopiar">  <!-- SOLO EL ID -->
+  <i class="fa-solid fa-copy"></i> Copiar link
+</button>
           </div>
 
           <div class="smallNote" id="notaVerificacion">
@@ -719,7 +719,7 @@
   </div>
 
 <script>
-  // ✅ WebApp (VERSIÓN FUNCIONAL)
+  // ✅ WebApp (VERSIÓN FINAL)
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
@@ -785,14 +785,12 @@
         whatsapp: data.whatsapp
       });
       
-      // ===== CONFIGURAR BOTONES DE NAVEGACIÓN =====
+      // ===== BOTONES DE NAVEGACIÓN =====
       
-      // Google Maps
       const btnGoogle = document.getElementById("btnGoogle");
       if(btnGoogle) {
         btnGoogle.onclick = function(e) {
           e.preventDefault();
-          e.stopPropagation();
           console.log("Click en Google");
           if(data.google && data.google !== "#" && data.google !== "-") {
             if(esNegocio) {
@@ -805,12 +803,10 @@
         };
       }
       
-      // Waze
       const btnWaze = document.getElementById("btnWaze");
       if(btnWaze) {
         btnWaze.onclick = function(e) {
           e.preventDefault();
-          e.stopPropagation();
           console.log("Click en Waze");
           if(data.waze && data.waze !== "#" && data.waze !== "-") {
             if(esNegocio) {
@@ -823,12 +819,10 @@
         };
       }
       
-      // Uber
       const btnUber = document.getElementById("btnUber");
       if(btnUber) {
         btnUber.onclick = function(e) {
           e.preventDefault();
-          e.stopPropagation();
           console.log("Click en Uber");
           if(data.uber && data.uber !== "#" && data.uber !== "-") {
             if(esNegocio) {
@@ -841,12 +835,10 @@
         };
       }
       
-      // Aviso WhatsApp
       const btnAviso = document.getElementById("btnAviso");
       if(btnAviso) {
         btnAviso.onclick = function(e) {
           e.preventDefault();
-          e.stopPropagation();
           console.log("Click en Aviso");
           if(data.whatsapp && data.whatsapp !== "#" && data.whatsapp !== "-") {
             if(esNegocio) {
@@ -859,14 +851,12 @@
         };
       }
       
-      // ===== BOTONES DE COMPARTIR =====
+      // ===== BOTONES DE COMPARTIR (SIN ONCLICK EN HTML) =====
       
-      // Compartir
       const btnCompartir = document.getElementById("btnCompartir");
       if(btnCompartir) {
         btnCompartir.onclick = function(e) {
           e.preventDefault();
-          e.stopPropagation();
           console.log("Click en Compartir");
           if(esNegocio) {
             fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" }).catch(()=>{});
@@ -886,12 +876,10 @@
         };
       }
       
-      // Copiar
       const btnCopiar = document.getElementById("btnCopiar");
       if(btnCopiar) {
         btnCopiar.onclick = function(e) {
           e.preventDefault();
-          e.stopPropagation();
           console.log("Click en Copiar");
           if(esNegocio) {
             fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
@@ -905,10 +893,8 @@
       if(linkVer) {
         linkVer.onclick = function(e) {
           e.preventDefault();
-          e.stopPropagation();
           window.open(shareUrl, "_blank");
         };
-        linkVer.href = "#"; // Para que no recargue la página
       }
       
       // QR
@@ -921,7 +907,6 @@
         }
       }
       
-      // Link en UI
       const uiLink = document.getElementById("uiLink");
       if(uiLink) {
         uiLink.textContent = shareUrl;
@@ -936,7 +921,6 @@
           statsBtn.style.display = "flex";
           statsBtn.onclick = async function(e) {
             e.preventDefault();
-            e.stopPropagation();
             const visible = statsPanel.style.display === "block";
             statsPanel.style.display = visible ? "none" : "block";
             
@@ -965,37 +949,6 @@
         }
       }
       
-      // ===== MOSTRAR/OCULTAR SECCIONES =====
-      const homeHero = document.getElementById("homeHero");
-      if(homeHero) homeHero.style.display = "none";
-      
-      const buyWrap = document.getElementById("buyWrap");
-      if(buyWrap) buyWrap.style.display = "none";
-      
-      const heroComprar = document.getElementById("heroComprarBox");
-      if(heroComprar) heroComprar.style.display = "none";
-      
-      const heroEjemplo = document.getElementById("heroEjemploBox");
-      if(heroEjemplo) heroEjemplo.style.display = "none";
-      
-      const seccionPasos = document.getElementById("seccionPasos");
-      if(seccionPasos) seccionPasos.style.display = "none";
-      
-      const seccionPrecios = document.getElementById("seccionPrecios");
-      if(seccionPrecios) seccionPrecios.style.display = "none";
-      
-      // Mostrar panel cliente
-      const elementosMostrar = [
-        "fieldNombre", "fieldRef", "tituloUbicacion", "gridUbicacion", 
-        "divAfterUbic", "tituloCompartir", "gridCompartir", 
-        "notaVerificacion", "divAfterVerif"
-      ];
-      
-      elementosMostrar.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.style.display = "";
-      });
-      
       setMsg("✅ Listo");
       
     } catch(error) {
@@ -1004,9 +957,9 @@
     }
   }
 
-  // Inicialización al cargar la página
+  // Inicialización
   document.addEventListener("DOMContentLoaded", function() {
-    console.log("Página cargada, iniciando...");
+    console.log("Página cargada");
     
     // Botones de compra
     const comprarBase = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
@@ -1015,7 +968,6 @@
     if(btnTop) {
       btnTop.onclick = function(e) {
         e.preventDefault();
-        e.stopPropagation();
         window.open(comprarBase, "_blank");
       };
     }
@@ -1024,7 +976,6 @@
     if(btnPersonal) {
       btnPersonal.onclick = function(e) {
         e.preventDefault();
-        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
       };
     }
@@ -1033,7 +984,6 @@
     if(btnNegocios) {
       btnNegocios.onclick = function(e) {
         e.preventDefault();
-        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
       };
     }
@@ -1042,7 +992,6 @@
     if(btnHeroPersonal) {
       btnHeroPersonal.onclick = function(e) {
         e.preventDefault();
-        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
       };
     }
@@ -1051,7 +1000,6 @@
     if(btnHeroNegocios) {
       btnHeroNegocios.onclick = function(e) {
         e.preventDefault();
-        e.stopPropagation();
         window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
       };
     }
@@ -1071,8 +1019,6 @@
     if(urlCode && input) {
       input.value = urlCode;
       setTimeout(buscarCodigo, 100);
-    } else {
-      console.log("Modo home");
     }
   });
 </script>

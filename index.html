@@ -721,13 +721,17 @@
   </div>
 
 <script>
-  // Versión con ENLACES REALES que funcionan
+  // ✅ VERSIÓN FINAL - Con enlaces reales y conexión a WebApp
   window.addEventListener("error", (e) => {
-    alert("Error JS: " + e.message);
+    console.log("Error JS:", e.message);
   });
 
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
   const EJEMPLO_CODE = "AD507-0001";
+
+  // Coordenadas de ejemplo (Panamá)
+  const LAT_EJEMPLO = "8.9833";
+  const LNG_EJEMPLO = "-79.5167";
 
   function makeQRFromLink(link) {
     return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
@@ -743,124 +747,198 @@
     if (el) el.textContent = value ?? "-";
   }
 
-  // Función para probar con datos de ejemplo REALES
-  function cargarDatosEjemplo() {
-    alert("Cargando datos de ejemplo con enlaces reales...");
-    
-    window.CODIGO_CLIENTE = "AD507-0001";
-    
-    // Mostrar sección de cliente
-    document.body.classList.add('modo-cliente');
-    
-    // Ocultar mensaje principal
-    const mainMsg = document.getElementById("mainPageMessage");
-    if (mainMsg) mainMsg.style.display = "none";
-    
-    // Mostrar datos del cliente
-    const datosCliente = document.getElementById("datosClienteSection");
-    if (datosCliente) datosCliente.style.display = "block";
-    
-    // Mostrar ubicación y stats
-    const ubic = document.getElementById("seccionUbicacion");
-    if (ubic) ubic.style.display = "block";
-    const stats = document.getElementById("seccionStats");
-    if (stats) stats.style.display = "block";
-    
-    // Llenar datos de ejemplo
-    safeText("uiCodigo", "AD507-0001");
-    safeText("uiNombre", "Cliente Ejemplo");
-    safeText("uiRef", "Frente al parque, casa blanca");
-    safeText("uiEstado", "Activo");
-    
-    // URLs REALES que funcionan (usando coordenadas de Panamá)
-    const lat = "8.9833";  // Latitud Panamá
-    const lng = "-79.5167"; // Longitud Panamá
-    
-    // Google Maps con coordenadas reales
-    const googleUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-    
-    // Waze con coordenadas reales
-    const wazeUrl = `https://www.waze.com/ul?ll=${lat}%2C${lng}&navigate=yes`;
-    
-    // Uber con coordenadas reales
-    const uberUrl = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropup%5BformattedAddress%5D=${lat}%2C${lng}`;
-    
-    // WhatsApp real (número de ejemplo)
-    const avisoUrl = "https://wa.me/50760000000?text=Hola%2C%20ya%20estoy%20llegando%20a%20tu%20ubicaci%C3%B3n";
-    
-    console.log("URLs generadas:", { googleUrl, wazeUrl, uberUrl, avisoUrl });
-    
-    // Asignar URLs directamente a los botones
-    const btnGoogle = document.getElementById("btnGoogle");
-    const btnWaze = document.getElementById("btnWaze");
-    const btnUber = document.getElementById("btnUber");
-    const btnAviso = document.getElementById("btnAviso");
-    
-    if (btnGoogle) {
-      btnGoogle.href = googleUrl;
-      btnGoogle.onclick = function(e) {
-        e.preventDefault();
-        window.open(googleUrl, '_blank', 'noopener');
-        return false;
-      };
+  function safeHref(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.href = value || "#";
+  }
+
+  // Función para cargar datos REALES desde la WebApp
+  async function cargarDatosReales(code) {
+    try {
+      const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
+      const res = await fetch(url, { cache: "no-store" });
+      const text = await res.text();
+      
+      console.log("Respuesta de WebApp:", text.substring(0, 200));
+      
+      // Intentar parsear JSON
+      try {
+        const data = JSON.parse(text);
+        
+        if (data.ok && data.google_maps) {
+          // Tiene datos reales, usarlos
+          window.CODIGO_CLIENTE = data.codigo || code;
+          window.CLIENTE_DATA = data;
+          
+          // Actualizar UI con datos reales
+          actualizarUIDatosReales(data);
+          setMsg("✅ Datos cargados");
+          return true;
+        }
+      } catch (e) {
+        console.log("No es JSON válido");
+      }
+      
+      // No hay datos reales, usar ejemplo
+      return false;
+    } catch (err) {
+      console.log("Error de conexión:", err);
+      return false;
     }
+  }
+
+  // Actualizar UI con datos reales
+  function actualizarUIDatosReales(data) {
+    // Textos básicos
+    safeText("uiCodigo", data.codigo || window.CODIGO_CLIENTE);
+    safeText("uiNombre", data.nombre || "Cliente");
+    safeText("uiRef", data.referencia || "Sin referencia");
+    safeText("uiEstado", data.validacion || "Activo");
     
-    if (btnWaze) {
-      btnWaze.href = wazeUrl;
-      btnWaze.onclick = function(e) {
-        e.preventDefault();
-        window.open(wazeUrl, '_blank', 'noopener');
-        return false;
-      };
-    }
+    // Extraer URLs de los datos reales
+    const googleUrl = extraerUrlValida(data.google_maps || data.google);
+    const wazeUrl = extraerUrlValida(data.waze);
+    const uberUrl = extraerUrlValida(data.uber);
+    const avisoUrl = extraerUrlValida(data.link_whatsapp || data.whatsapp);
     
-    if (btnUber) {
-      btnUber.href = uberUrl;
-      btnUber.onclick = function(e) {
-        e.preventDefault();
-        window.open(uberUrl, '_blank', 'noopener');
-        return false;
-      };
-    }
+    // Asignar URLs a los botones
+    asignarUrlBoton("btnGoogle", googleUrl);
+    asignarUrlBoton("btnWaze", wazeUrl);
+    asignarUrlBoton("btnUber", uberUrl);
+    asignarUrlBoton("btnAviso", avisoUrl);
     
-    if (btnAviso) {
-      btnAviso.href = avisoUrl;
-      btnAviso.onclick = function(e) {
-        e.preventDefault();
-        window.open(avisoUrl, '_blank', 'noopener');
-        return false;
-      };
-    }
-    
-    // Link de verificación (usa Google Maps)
+    // Link de verificación
     const linkVer = document.getElementById("linkVerificacion");
-    if (linkVer) {
+    if (linkVer && googleUrl) {
       linkVer.href = googleUrl;
-      linkVer.onclick = function(e) {
-        e.preventDefault();
-        window.open(googleUrl, '_blank', 'noopener');
-        return false;
-      };
     }
     
-    // QR y link
-    const linkMostrado = window.location.origin + window.location.pathname + "?code=AD507-0001";
-    safeText("uiLink", linkMostrado);
+    // QR y link para compartir
+    const linkCompartir = window.location.origin + window.location.pathname + "?code=" + window.CODIGO_CLIENTE;
+    safeText("uiLink", linkCompartir);
     
     const qrImg = document.getElementById("qrImg");
     if (qrImg) {
-      qrImg.src = makeQRFromLink(linkMostrado);
+      qrImg.src = makeQRFromLink(linkCompartir);
+    }
+  }
+
+  // Extraer URL válida de cualquier formato
+  function extraerUrlValida(input) {
+    if (!input) return "";
+    
+    const str = String(input).trim();
+    
+    // Si ya es URL completa
+    if (str.startsWith("http://") || str.startsWith("https://")) {
+      return str;
     }
     
-    setMsg("✅ Datos de ejemplo cargados");
+    // Si es www.algo.com
+    if (str.startsWith("www.")) {
+      return "https://" + str;
+    }
+    
+    // Si es maps.app.goo.gl
+    if (str.includes("goo.gl") || str.includes("maps.app")) {
+      return "https://" + str;
+    }
+    
+    // Si es waze.com/ul
+    if (str.includes("waze.com")) {
+      return "https://" + str;
+    }
+    
+    // Si es wa.me
+    if (str.includes("wa.me")) {
+      return "https://" + str;
+    }
+    
+    return "";
   }
 
-  function verEjemplo() {
-    const input = document.getElementById("inputCodigo");
-    if (input) input.value = EJEMPLO_CODE;
-    cargarDatosEjemplo();
+  // Asignar URL a botón con evento click
+  function asignarUrlBoton(id, url) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    
+    if (url) {
+      btn.href = url;
+      btn.onclick = function(e) {
+        e.preventDefault();
+        window.open(url, '_blank', 'noopener');
+        return false;
+      };
+    } else {
+      // Si no hay URL, usar ejemplo
+      btn.href = "#";
+      btn.onclick = function(e) {
+        e.preventDefault();
+        alert("Este cliente no tiene configurado este enlace");
+      };
+    }
   }
 
+  // Cargar datos de ejemplo (respaldo)
+  function cargarDatosEjemplo() {
+    console.log("Usando datos de ejemplo");
+    
+    window.CODIGO_CLIENTE = EJEMPLO_CODE;
+    
+    // URLs de ejemplo que ya funcionan
+    const googleUrl = `https://www.google.com/maps/search/?api=1&query=${LAT_EJEMPLO},${LNG_EJEMPLO}`;
+    const wazeUrl = `https://www.waze.com/ul?ll=${LAT_EJEMPLO}%2C${LNG_EJEMPLO}&navigate=yes`;
+    const uberUrl = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropup%5BformattedAddress%5D=${LAT_EJEMPLO}%2C${LNG_EJEMPLO}`;
+    const avisoUrl = "https://wa.me/50760000000?text=Hola%2C%20ya%20estoy%20llegando";
+    
+    // Textos
+    safeText("uiCodigo", EJEMPLO_CODE);
+    safeText("uiNombre", "Cliente Ejemplo");
+    safeText("uiRef", "Frente al parque, casa blanca");
+    safeText("uiEstado", "Activo (Ejemplo)");
+    
+    // Asignar URLs
+    asignarUrlBoton("btnGoogle", googleUrl);
+    asignarUrlBoton("btnWaze", wazeUrl);
+    asignarUrlBoton("btnUber", uberUrl);
+    asignarUrlBoton("btnAviso", avisoUrl);
+    
+    // Link de verificación
+    const linkVer = document.getElementById("linkVerificacion");
+    if (linkVer) {
+      linkVer.href = googleUrl;
+    }
+    
+    // QR y link
+    const linkCompartir = window.location.origin + window.location.pathname + "?code=" + EJEMPLO_CODE;
+    safeText("uiLink", linkCompartir);
+    
+    const qrImg = document.getElementById("qrImg");
+    if (qrImg) {
+      qrImg.src = makeQRFromLink(linkCompartir);
+    }
+    
+    setMsg("✅ Datos de ejemplo");
+  }
+
+  // Mostrar interfaz de cliente
+  function mostrarInterfazCliente() {
+    document.body.classList.add('modo-cliente');
+    
+    const mainMsg = document.getElementById("mainPageMessage");
+    if (mainMsg) mainMsg.style.display = "none";
+    
+    const datosCliente = document.getElementById("datosClienteSection");
+    if (datosCliente) datosCliente.style.display = "block";
+    
+    const ubic = document.getElementById("seccionUbicacion");
+    if (ubic) ubic.style.display = "block";
+    
+    const stats = document.getElementById("seccionStats");
+    if (stats) stats.style.display = "block";
+  }
+
+  // Función principal de búsqueda
   async function buscarCodigo() {
     const input = document.getElementById("inputCodigo");
     const code = (input ? input.value : "").trim();
@@ -871,43 +949,26 @@
     }
 
     setMsg("Buscando...");
+    mostrarInterfazCliente();
 
-    try {
-      const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
-      const res = await fetch(url, { cache: "no-store" });
-      const text = await res.text();
-      
-      // Mostrar qué devolvió el servidor en consola
-      console.log("Respuesta del servidor:", text.substring(0, 200));
-      
-      // Si hay error o no es JSON, usar ejemplo
-      if (text.includes("DOCTYPE") || text.includes("html")) {
-        console.log("La WebApp devolvió HTML, usando datos de ejemplo");
-        cargarDatosEjemplo();
-        return;
-      }
-      
-      try {
-        const data = JSON.parse(text);
-        if (data.ok && data.google_maps) {
-          // Aquí procesarías los datos reales
-          // Por ahora siempre usamos ejemplo para probar
-          cargarDatosEjemplo();
-        } else {
-          console.log("Código no encontrado o sin datos, usando ejemplo");
-          cargarDatosEjemplo();
-        }
-      } catch (e) {
-        console.log("Error al parsear JSON, usando ejemplo");
-        cargarDatosEjemplo();
-      }
-    } catch (err) {
-      console.log("Error de conexión, usando ejemplo");
+    // Intentar cargar datos reales
+    const tieneDatosReales = await cargarDatosReales(code);
+    
+    // Si no hay datos reales, usar ejemplo
+    if (!tieneDatosReales) {
       cargarDatosEjemplo();
     }
   }
 
-  // Función para compartir
+  // Función para botón de ejemplo
+  function verEjemplo() {
+    const input = document.getElementById("inputCodigo");
+    if (input) input.value = EJEMPLO_CODE;
+    mostrarInterfazCliente();
+    cargarDatosEjemplo();
+  }
+
+  // Funciones de compartir
   window.shareLink = function() {
     const url = window.CODIGO_CLIENTE 
       ? window.location.origin + window.location.pathname + "?code=" + window.CODIGO_CLIENTE
@@ -924,7 +985,6 @@
     }
   };
   
-  // Función para copiar
   window.copyLink = async function() {
     const url = window.CODIGO_CLIENTE 
       ? window.location.origin + window.location.pathname + "?code=" + window.CODIGO_CLIENTE
@@ -939,14 +999,17 @@
   };
 
   // Inicialización
-  (function() {
+  (function init() {
     const qs = new URLSearchParams(location.search);
     const code = qs.get("code");
     
     if (code) {
       const input = document.getElementById("inputCodigo");
       if (input) input.value = code;
-      setTimeout(cargarDatosEjemplo, 500);
+      mostrarInterfazCliente();
+      setTimeout(() => cargarDatosReales(code).then(exito => {
+        if (!exito) cargarDatosEjemplo();
+      }), 500);
     } else {
       // Página principal
       document.body.classList.remove('modo-cliente');
@@ -974,7 +1037,7 @@
     }
   })();
 
-  // Exponer funciones globalmente
+  // Exponer funciones globales
   window.buscarCodigo = buscarCodigo;
   window.verEjemplo = verEjemplo;
 </script>

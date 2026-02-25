@@ -74,7 +74,6 @@
       font-size:12px;
       white-space:nowrap;
     }
-
     .buyWrap{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
     .btn.buy{padding:10px 14px;border-radius:999px;font-weight:900;}
 
@@ -286,7 +285,7 @@
     .rowStat:last-child{border-bottom:none}
     .updated{margin-top:10px;opacity:.75;font-size:12px}
 
-    /* ---------- HERO + VIDEO + TESTIMONIOS ---------- */
+    /* HERO + VIDEO + TESTIMONIOS */
     .hero{
       margin-top:18px;
       padding:18px;
@@ -391,7 +390,8 @@
         </div>
       </div>
 
-      <div class="buyWrap">
+      <!-- ✅ Se oculta en modo cliente -->
+      <div class="buyWrap" id="buyWrap">
         <div class="badge"><i class="fa-solid fa-shield-halved"></i> Enlace seguro</div>
         <a id="btnComprarTop" class="btn whats buy" href="#" target="_blank" rel="noopener">
           <i class="fa-brands fa-whatsapp"></i> Comprar inmediato
@@ -399,81 +399,85 @@
       </div>
     </div>
 
-    <!-- HERO -->
-    <div class="hero">
-      <div class="heroGrid">
-        <div>
-          <h2>Tu dirección exacta en 1 link. Listo para WhatsApp, Waze, Google y Uber.</h2>
-          <p>
-            Olvídate de “¿cómo llego?” y de explicar en audio. Con Direcciones507 compartes un enlace y el cliente
-            abre su app favorita en un toque. Ideal para hogares, delivery, negocios, Airbnb y ventas.
-          </p>
+    <!-- ✅ HOME ONLY (se oculta en panel del cliente) -->
+    <div id="homeHero">
+      <div class="hero">
+        <div class="heroGrid">
+          <div>
+            <h2>Tu dirección exacta en 1 link. Listo para WhatsApp, Waze, Google y Uber.</h2>
+            <p>
+              Olvídate de “¿cómo llego?” y de explicar en audio. Con Direcciones507 compartes un enlace y el cliente
+              abre su app favorita en un toque. Ideal para hogares, delivery, negocios, Airbnb y ventas.
+            </p>
 
-          <div class="benefits">
-            <div class="benefit"><i class="fa-solid fa-bolt"></i> 1 toque</div>
-            <div class="benefit"><i class="fa-brands fa-waze"></i> Waze</div>
-            <div class="benefit"><i class="fa-brands fa-google"></i> Google Maps</div>
-            <div class="benefit"><i class="fa-brands fa-uber"></i> Uber</div>
-            <div class="benefit"><i class="fa-solid fa-qrcode"></i> QR</div>
-            <div class="benefit"><i class="fa-solid fa-chart-line"></i> Contador (Negocios)</div>
-          </div>
-        </div>
-
-        <div class="heroCtas">
-          <div class="heroBox">
-            <p class="miniTitle">Comprar ahora</p>
-            <p class="miniSub">Te atendemos por WhatsApp y te activamos tu enlace.</p>
-            <div style="display:grid;gap:10px;margin-top:10px;">
-              <a id="btnHeroPersonal" class="btn whats" href="#" target="_blank" rel="noopener">
-                <i class="fa-brands fa-whatsapp"></i> Comprar Personal $6.99
-              </a>
-              <a id="btnHeroNegocios" class="btn whats" href="#" target="_blank" rel="noopener">
-                <i class="fa-brands fa-whatsapp"></i> Comprar Negocios $10.99
-              </a>
+            <div class="benefits">
+              <div class="benefit"><i class="fa-solid fa-bolt"></i> 1 toque</div>
+              <div class="benefit"><i class="fa-brands fa-waze"></i> Waze</div>
+              <div class="benefit"><i class="fa-brands fa-google"></i> Google Maps</div>
+              <div class="benefit"><i class="fa-brands fa-uber"></i> Uber</div>
+              <div class="benefit"><i class="fa-solid fa-qrcode"></i> QR</div>
+              <div class="benefit"><i class="fa-solid fa-chart-line"></i> Contador (Negocios)</div>
             </div>
           </div>
 
-          <div class="heroBox">
-            <p class="miniTitle">Ver ejemplo real</p>
-            <button class="btn primary" type="button" onclick="verEjemplo()">
-              <i class="fa-solid fa-play"></i> Ver ejemplo real
-            </button>
-            <p class="miniSub" style="margin-top:10px;opacity:.85"></p>
-          </div>
-        </div>
-      </div>
+          <div class="heroCtas">
+            <!-- ✅ Se ocultan en modo cliente -->
+            <div class="heroBox" id="heroComprarBox">
+              <p class="miniTitle">Comprar ahora</p>
+              <p class="miniSub">Te atendemos por WhatsApp y te activamos tu enlace.</p>
+              <div style="display:grid;gap:10px;margin-top:10px;">
+                <a id="btnHeroPersonal" class="btn whats" href="#" target="_blank" rel="noopener">
+                  <i class="fa-brands fa-whatsapp"></i> Comprar Personal $6.99
+                </a>
+                <a id="btnHeroNegocios" class="btn whats" href="#" target="_blank" rel="noopener">
+                  <i class="fa-brands fa-whatsapp"></i> Comprar Negocios $10.99
+                </a>
+              </div>
+            </div>
 
-      <div class="videoWrap">
-        <p class="sectionTitle" style="margin:0 0 10px 0;">Mira cómo funciona (30s)</p>
-        <div class="videoFrame">
-          <iframe
-            id="demoVideo"
-            src="https://www.youtube.com/embed/VIDEO_ID_AQUI"
-            title="Demo Direcciones507"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-          ></iframe>
+            <!-- ✅ Se oculta en modo cliente -->
+            <div class="heroBox" id="heroEjemploBox">
+              <p class="miniTitle">Ver ejemplo real</p>
+              <button class="btn primary" type="button" onclick="verEjemplo()">
+                <i class="fa-solid fa-play"></i> Ver ejemplo real
+              </button>
+              <p class="miniSub" style="margin-top:10px;opacity:.85"></p>
+            </div>
+          </div>
         </div>
-        <div class="smallNote" style="margin-top:10px;"></div>
-      </div>
 
-      <div style="margin-top:18px;">
-        <p class="sectionTitle" style="margin:0 0 10px 0;">Lo que dicen los clientes</p>
-        <div class="testGrid">
-          <div class="testCard">
-            <b>Delivery (Panamá)</b>
-            <p>“Ahora mando 1 link y llegan sin llamar. Me ahorra tiempo y gasolina.”</p>
+        <div class="videoWrap">
+          <p class="sectionTitle" style="margin:0 0 10px 0;">Mira cómo funciona (30s)</p>
+          <div class="videoFrame">
+            <iframe
+              id="demoVideo"
+              src="https://www.youtube.com/embed/VIDEO_ID_AQUI"
+              title="Demo Direcciones507"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
           </div>
-          <div class="testCard">
-            <b>Negocio (Chiriquí)</b>
-            <p>“Los clientes abren Waze directo. Se acabó el ‘no lo encuentro’.”</p>
-          </div>
-          <div class="testCard">
-            <b>Hogar</b>
-            <p>“Compartí el QR con mi familia. Llegan sin perderse.”</p>
-          </div>
+          <div class="smallNote" style="margin-top:10px;"></div>
         </div>
-        <div class="smallNote"></div>
+
+        <div style="margin-top:18px;">
+          <p class="sectionTitle" style="margin:0 0 10px 0;">Lo que dicen los clientes</p>
+          <div class="testGrid">
+            <div class="testCard">
+              <b>Delivery (Panamá)</b>
+              <p>“Ahora mando 1 link y llegan sin llamar. Me ahorra tiempo y gasolina.”</p>
+            </div>
+            <div class="testCard">
+              <b>Negocio (Chiriquí)</b>
+              <p>“Los clientes abren Waze directo. Se acabó el ‘no lo encuentro’.”</p>
+            </div>
+            <div class="testCard">
+              <b>Hogar</b>
+              <p>“Compartí el QR con mi familia. Llegan sin perderse.”</p>
+            </div>
+          </div>
+          <div class="smallNote"></div>
+        </div>
       </div>
     </div>
 
@@ -583,6 +587,7 @@
 
           <div class="divider" id="divAfterVerif"></div>
 
+          <!-- HOME parts inside left card -->
           <div id="seccionPasos">
             <h3 class="sectionTitle">Pasos</h3>
             <div class="steps">
@@ -714,7 +719,7 @@
   </div>
 
   <script>
-    // ✅ Tu WebApp (Apps Script)
+    // ✅ WebApp
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
     const WA_NUMBER = "50765996532";
     const EJEMPLO_CODE = "AD507-0001";
@@ -765,7 +770,6 @@
       return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
     }
 
-    // ✅ TRACK robusto (cuenta antes de abrir)
     function track(ev){
       try{
         const code = window.CODIGO_CLIENTE || "";
@@ -773,7 +777,6 @@
 
         const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
 
-        // ⚠️ Mantengo sendBeacon (requiere doPost en Apps Script). Si no tienes doPost, igual cae al GET.
         if (navigator.sendBeacon) {
           const blob = new Blob([], { type: "text/plain" });
           const ok = navigator.sendBeacon(url, blob);
@@ -786,12 +789,12 @@
       }catch(e){}
     }
 
-    // ✅ attachTrack corregido: NO duplica listeners (rebind con cloneNode)
+    // ✅ Rebind: no duplica listeners
     function attachTrack(id, ev){
       const old = document.getElementById(id);
       if(!old) return;
 
-      const a = old.cloneNode(true); // ✅ borra listeners viejos
+      const a = old.cloneNode(true);
       old.parentNode.replaceChild(a, old);
 
       a.addEventListener("click", function(e){
@@ -823,11 +826,27 @@
       if(chev) chev.textContent = "▾";
     }
 
+    // ✅ Oculta TODO lo que me mandaste cuando hay cliente
+    function toggleHomeBloques(showHome){
+      const homeHero = document.getElementById("homeHero");
+      const buyWrap = document.getElementById("buyWrap");        // top comprar
+      const heroComprar = document.getElementById("heroComprarBox"); // 2 comprar
+      const heroEjemplo = document.getElementById("heroEjemploBox"); // ver ejemplo
+
+      if(homeHero) homeHero.style.display = showHome ? "" : "none";
+      if(buyWrap) buyWrap.style.display = showHome ? "flex" : "none";
+      if(heroComprar) heroComprar.style.display = showHome ? "" : "none";
+      if(heroEjemplo) heroEjemplo.style.display = showHome ? "" : "none";
+    }
+
     function toggleModoCliente(isCliente){
       const pasos = document.getElementById("seccionPasos");
       const precios = document.getElementById("seccionPrecios");
       if (pasos) pasos.style.display = isCliente ? "none" : "block";
       if (precios) precios.style.display = isCliente ? "none" : "block";
+
+      // ✅ Esto es lo que pediste:
+      toggleHomeBloques(!isCliente);
     }
 
     function togglePanelCliente(hasClient){
@@ -849,7 +868,6 @@
         : `${location.origin}${location.pathname}`;
     }
 
-    // ---------- STATS ----------
     function safeNum(v){
       const n = Number(v);
       return Number.isFinite(n) ? n : 0;
@@ -995,13 +1013,10 @@
         safeHref("btnUber", uber || "#");
         safeHref("btnAviso", aviso || "#");
 
-        // ✅ rebind sin duplicar listeners
         attachTrack("btnGoogle","google");
         attachTrack("btnWaze","waze");
         attachTrack("btnUber","uber");
-
-        // ✅ "aviso" no existe en tu mapping del Apps Script, lo contamos como share
-        attachTrack("btnAviso","share");
+        attachTrack("btnAviso","share"); // aviso contado como share
 
         const linkMostrado = getShareUrl();
         safeText("uiLink", linkMostrado);
@@ -1009,7 +1024,7 @@
         const qrImg = document.getElementById("qrImg");
         if (qrImg) qrImg.src = makeQRFromLink(linkMostrado);
 
-        // ✅ FIX GitHub Pages: verificación relativa
+        // ✅ Verificación relativa (GitHub Pages OK)
         const linkVer = document.getElementById("linkVerificacion");
         if (linkVer){
           linkVer.href = `verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;

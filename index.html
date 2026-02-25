@@ -42,6 +42,7 @@
       padding:14px 16px;border:1px solid var(--border);border-radius:22px;
       background:rgba(0,0,0,.25);backdrop-filter: blur(8px);
       box-shadow: var(--shadow);
+      flex-wrap:wrap;
     }
     .brand{display:flex;align-items:center;gap:12px;}
     .logo{
@@ -73,14 +74,8 @@
       font-size:12px;
       white-space:nowrap;
     }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:18px;
-      margin-top:18px;
-    }
-    @media(max-width:860px){ .grid{grid-template-columns:1fr} }
+    .buyWrap{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+    .btn.buy{padding:10px 14px;border-radius:999px;font-weight:900;}
 
     .card{
       background:var(--card);
@@ -107,6 +102,14 @@
       line-height:1.4;
     }
     .cardBody{padding:16px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:18px;
+      margin-top:18px;
+    }
+    @media(max-width:860px){ .grid{grid-template-columns:1fr} }
 
     .pillRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
     .pill{
@@ -245,6 +248,9 @@
       background:rgba(255,255,255,.06);
       color:var(--text);
       font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
 
     .footer{
@@ -279,18 +285,102 @@
     .rowStat:last-child{border-bottom:none}
     .updated{margin-top:10px;opacity:.75;font-size:12px}
 
-    /* Ocultar completamente la sección de datos del cliente en la página principal */
-    #datosClienteSection { display: none; }
-    /* Mostrar datos del cliente solo cuando hay un código activo */
-    body.modo-cliente #datosClienteSection { display: block; }
-    /* Ocultar mensaje principal cuando hay cliente */
-    body.modo-cliente #mainPageMessage { display: none; }
+    /* HERO + VIDEO + TESTIMONIOS */
+    .hero{
+      margin-top:18px;
+      padding:18px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(34,197,94,.10), rgba(0,0,0,.22));
+      box-shadow: var(--shadow);
+    }
+    .heroGrid{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media(max-width:860px){ .heroGrid{grid-template-columns:1fr} }
+    .hero h2{
+      margin:0;
+      font-family:Outfit,Inter;
+      font-size:26px;
+      letter-spacing:.2px;
+      line-height:1.15;
+    }
+    .hero p{
+      margin:10px 0 0 0;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:13px;
+    }
+    .benefits{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .benefit{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      color:#cbd5e1;
+      font-weight:800;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .heroCtas{display:grid;gap:10px;}
+    .heroBox{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      border-radius:18px;
+      padding:14px;
+    }
+    .miniTitle{
+      font-family:Outfit,Inter;
+      font-size:14px;
+      margin:0;
+    }
+    .miniSub{
+      margin:6px 0 0 0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+    .videoWrap{margin-top:18px;}
+    .videoFrame{
+      width:100%;
+      aspect-ratio: 16 / 9;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      overflow:hidden;
+      background:rgba(0,0,0,.22);
+      box-shadow: var(--shadow);
+    }
+    .videoFrame iframe{width:100%;height:100%;border:0}
+    .testGrid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+    }
+    @media(max-width:860px){ .testGrid{grid-template-columns:1fr} }
+    .testCard{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      border-radius:18px;
+      padding:12px;
+    }
+    .testCard b{display:block;margin-bottom:6px}
+    .testCard p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
   </style>
 </head>
 
 <body>
   <div class="container">
 
+    <!-- TOP BAR -->
     <div class="topbar">
       <div class="brand">
         <div class="logo"><i class="fas fa-map-location-dot"></i></div>
@@ -299,9 +389,99 @@
           <p>Sistema Digital de Direcciones Panamá</p>
         </div>
       </div>
-      <div class="badge"><i class="fa-solid fa-shield-halved"></i> Enlace seguro</div>
+
+      <!-- ✅ Se oculta en modo cliente -->
+      <div class="buyWrap" id="buyWrap">
+        <div class="badge"><i class="fa-solid fa-shield-halved"></i> Enlace seguro</div>
+        <a id="btnComprarTop" class="btn whats buy" href="#" target="_blank" rel="noopener">
+          <i class="fa-brands fa-whatsapp"></i> Comprar inmediato
+        </a>
+      </div>
     </div>
 
+    <!-- ✅ HOME ONLY (se oculta en panel del cliente) -->
+    <div id="homeHero">
+      <div class="hero">
+        <div class="heroGrid">
+          <div>
+            <h2>Tu dirección exacta en 1 link. Listo para WhatsApp, Waze, Google y Uber.</h2>
+            <p>
+              Olvídate de “¿cómo llego?” y de explicar en audio. Con Direcciones507 compartes un enlace y el cliente
+              abre su app favorita en un toque. Ideal para hogares, delivery, negocios, Airbnb y ventas.
+            </p>
+
+            <div class="benefits">
+              <div class="benefit"><i class="fa-solid fa-bolt"></i> 1 toque</div>
+              <div class="benefit"><i class="fa-brands fa-waze"></i> Waze</div>
+              <div class="benefit"><i class="fa-brands fa-google"></i> Google Maps</div>
+              <div class="benefit"><i class="fa-brands fa-uber"></i> Uber</div>
+              <div class="benefit"><i class="fa-solid fa-qrcode"></i> QR</div>
+              <div class="benefit"><i class="fa-solid fa-chart-line"></i> Contador (Negocios)</div>
+            </div>
+          </div>
+
+          <div class="heroCtas">
+            <!-- ✅ Se ocultan en modo cliente -->
+            <div class="heroBox" id="heroComprarBox">
+              <p class="miniTitle">Comprar ahora</p>
+              <p class="miniSub">Te atendemos por WhatsApp y te activamos tu enlace.</p>
+              <div style="display:grid;gap:10px;margin-top:10px;">
+                <a id="btnHeroPersonal" class="btn whats" href="#" target="_blank" rel="noopener">
+                  <i class="fa-brands fa-whatsapp"></i> Comprar Personal $6.99
+                </a>
+                <a id="btnHeroNegocios" class="btn whats" href="#" target="_blank" rel="noopener">
+                  <i class="fa-brands fa-whatsapp"></i> Comprar Negocios $10.99
+                </a>
+              </div>
+            </div>
+
+            <!-- ✅ Se oculta en modo cliente -->
+            <div class="heroBox" id="heroEjemploBox">
+              <p class="miniTitle">Ver ejemplo real</p>
+              <button class="btn primary" type="button" onclick="verEjemplo()">
+                <i class="fa-solid fa-play"></i> Ver ejemplo real
+              </button>
+              <p class="miniSub" style="margin-top:10px;opacity:.85"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="videoWrap">
+          <p class="sectionTitle" style="margin:0 0 10px 0;">Mira cómo funciona (30s)</p>
+          <div class="videoFrame">
+            <iframe
+              id="demoVideo"
+              src="https://www.youtube.com/embed/VIDEO_ID_AQUI"
+              title="Demo Direcciones507"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div class="smallNote" style="margin-top:10px;"></div>
+        </div>
+
+        <div style="margin-top:18px;">
+          <p class="sectionTitle" style="margin:0 0 10px 0;">Lo que dicen los clientes</p>
+          <div class="testGrid">
+            <div class="testCard">
+              <b>Delivery (Panamá)</b>
+              <p>“Ahora mando 1 link y llegan sin llamar. Me ahorra tiempo y gasolina.”</p>
+            </div>
+            <div class="testCard">
+              <b>Negocio (Chiriquí)</b>
+              <p>“Los clientes abren Waze directo. Se acabó el ‘no lo encuentro’.”</p>
+            </div>
+            <div class="testCard">
+              <b>Hogar</b>
+              <p>“Compartí el QR con mi familia. Llegan sin perderse.”</p>
+            </div>
+          </div>
+          <div class="smallNote"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUSCADOR -->
     <div style="margin-top:18px;margin-bottom:10px;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <input
@@ -319,6 +499,7 @@
             font-weight:700;
             outline:none;
           "
+          onkeydown="if(event.key==='Enter'){ buscarCodigo(); }"
         />
         <button
           type="button"
@@ -341,90 +522,72 @@
     </div>
 
     <div class="grid">
+      <!-- LEFT -->
       <div class="card">
-        <div id="datosClienteSection">
-          <div class="cardHeader">
-            <h2>Datos del cliente</h2>
-            <div class="sub">Aquí solo aparece lo esencial: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.</div>
+        <div class="cardHeader">
+          <h2>Datos del cliente</h2>
+          <div class="sub">Aquí solo aparece lo esencial: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.</div>
 
-            <div class="pillRow">
-              <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
-              <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
-            </div>
-          </div>
-
-          <div class="cardBody">
-            <div class="field">
-              <span>Nombre</span>
-              <b id="uiNombre">-</b>
-            </div>
-
-            <div class="field">
-              <span>Referencia</span>
-              <b id="uiRef">-</b>
-            </div>
-
-            <div class="divider"></div>
-
-            <div id="seccionUbicacion">
-              <h3 class="sectionTitle">Abrir ubicación</h3>
-              <div class="btnGrid">
-                <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
-                  <i class="fa-brands fa-google"></i> Google Maps
-                </a>
-                <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener">
-                  <i class="fa-brands fa-waze"></i> Waze
-                </a>
-                <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener">
-                  <i class="fa-brands fa-uber"></i> Uber
-                </a>
-                <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener">
-                  <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
-                </a>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <h3 class="sectionTitle">Compartir</h3>
-            <div class="btnGrid">
-              <button class="btn" type="button" onclick="shareLink()">
-                <i class="fa-solid fa-share-nodes"></i> Compartir
-              </button>
-              <button class="btn copy" type="button" onclick="copyLink()">
-                <i class="fa-solid fa-copy"></i> Copiar link
-              </button>
-            </div>
-
-            <div class="smallNote">
-              <b>Verificación para imprimir:</b>
-              <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
-                Ver enlace de verificación
-              </a>
-            </div>
-
-            <div class="divider"></div>
+          <div class="pillRow">
+            <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
+            <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
           </div>
         </div>
 
-        <div id="mainPageMessage" style="padding: 40px 20px; text-align: center;">
-          <i class="fa-solid fa-map-location-dot" style="font-size: 48px; color: var(--brand); margin-bottom: 16px;"></i>
-          <h3 style="margin: 0 0 10px 0; font-size: 20px;">Bienvenido a Direcciones507</h3>
-          <p style="color: var(--muted); margin: 0 0 20px 0; line-height: 1.6;">
-            Ingresa tu código en el buscador para ver los datos de tu cliente y acceder a todas las funcionalidades.
-          </p>
-          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <span class="pill"><i class="fa-brands fa-google"></i> Google Maps</span>
-            <span class="pill"><i class="fa-brands fa-waze"></i> Waze</span>
-            <span class="pill"><i class="fa-brands fa-uber"></i> Uber</span>
-            <span class="pill"><i class="fa-brands fa-whatsapp"></i> Aviso</span>
+        <div class="cardBody" id="panelClienteBody">
+          <div class="field" id="fieldNombre">
+            <span>Nombre</span>
+            <b id="uiNombre">-</b>
           </div>
-        </div>
 
-        <!-- Pasos y Precios SIEMPRE visibles -->
-        <div class="cardBody">
+          <div class="field" id="fieldRef">
+            <span>Referencia</span>
+            <b id="uiRef">-</b>
+          </div>
+
           <div class="divider"></div>
 
+          <h3 class="sectionTitle" id="tituloUbicacion">Abrir ubicación</h3>
+          <div class="btnGrid" id="gridUbicacion">
+            <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-google"></i> Google Maps
+            </a>
+            <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-waze"></i> Waze
+            </a>
+            <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-uber"></i> Uber
+            </a>
+            <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
+            </a>
+          </div>
+
+          <div class="divider" id="divAfterUbic"></div>
+
+          <h3 class="sectionTitle" id="tituloCompartir">Compartir</h3>
+          <div class="btnGrid" id="gridCompartir">
+            <button class="btn" type="button" onclick="shareLink()">
+              <i class="fa-solid fa-share-nodes"></i> Compartir
+            </button>
+            <button class="btn copy" type="button" onclick="copyLink()">
+              <i class="fa-solid fa-copy"></i> Copiar link
+            </button>
+          </div>
+
+          <div class="smallNote" id="notaVerificacion">
+            <b>Verificación para imprimir:</b>
+            <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
+              Ver enlace de verificación
+            </a>
+            <div style="margin-top:10px;">
+              <img id="qrVerificacion" class="qrImg" style="display:none" alt="QR verificación" />
+            </div>
+          </div>
+
+          <div class="divider" id="divAfterVerif"></div>
+
+          <!-- HOME parts inside left card -->
           <div id="seccionPasos">
             <h3 class="sectionTitle">Pasos</h3>
             <div class="steps">
@@ -465,7 +628,13 @@
                   <li>Google + Waze + Uber</li>
                   <li>Compartir y copiar link</li>
                 </ul>
+                <div style="margin-top:10px;">
+                  <a class="btn whats" id="btnComprarPersonal" href="#" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-whatsapp"></i> Comprar Personal
+                  </a>
+                </div>
               </div>
+
               <div class="priceCard">
                 <span class="tag"><i class="fa-solid fa-briefcase"></i> Negocios</span>
                 <div class="amt">$10.99</div>
@@ -474,12 +643,21 @@
                   <li>Contador de actividad (clics)</li>
                   <li>Ideal para entregas/ventas</li>
                 </ul>
+                <div style="margin-top:10px;">
+                  <a class="btn whats" id="btnComprarNegocios" href="#" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-whatsapp"></i> Comprar Negocios
+                  </a>
+                </div>
               </div>
             </div>
+
+            <div class="smallNote" style="margin-top:12px;"></div>
           </div>
+
         </div>
       </div>
 
+      <!-- RIGHT -->
       <div class="card">
         <div class="qrWrap">
           <div class="qrBox">
@@ -491,7 +669,7 @@
             </div>
           </div>
 
-          <div id="seccionStats" style="margin-top:14px;">
+          <div style="margin-top:14px;">
             <button id="btnStats" class="statsBtn" type="button">
               <span>📊 Ver actividad del cliente</span>
               <span id="statsChevron" style="opacity:.85;">▾</span>
@@ -518,11 +696,11 @@
             <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener">
               <i class="fa-brands fa-instagram"></i> Instagram
             </a>
-            <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">
-              <i class="fa-brands fa-facebook"></i> Facebook
-            </a>
             <a href="https://www.tiktok.com/@direcciones507" target="_blank" rel="noopener">
               <i class="fa-brands fa-tiktok"></i> TikTok
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">
+              <i class="fa-brands fa-facebook"></i> Facebook
             </a>
             <a href="https://wa.me/50765996532" target="_blank" rel="noopener">
               <i class="fa-brands fa-whatsapp"></i> WhatsApp
@@ -541,20 +719,29 @@
   </div>
 
   <script>
-    // ✅ VERSIÓN CORREGIDA - CON ENLACES QUE FUNCIONAN
-    window.addEventListener("error", (e) => {
-      console.log("Error JS:", e.message);
-    });
-
+    // ✅ WebApp
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
+    const WA_NUMBER = "50765996532";
     const EJEMPLO_CODE = "AD507-0001";
 
-    // Coordenadas de ejemplo (Panamá)
-    const LAT_EJEMPLO = "8.9833";
-    const LNG_EJEMPLO = "-79.5167";
+    function waLink(plan){
+      const base = `https://wa.me/${WA_NUMBER}`;
+      const msg = [
+        "Hola, quiero comprar mi Dirección Digital AD507.",
+        plan ? `Plan: ${plan}` : "",
+        "Nombre:",
+        "Provincia:",
+        "Referencia:",
+        "Ubicación (link de Google Maps):"
+      ].filter(Boolean).join("\n");
+      return `${base}?text=${encodeURIComponent(msg)}`;
+    }
 
-    function makeQRFromLink(link) {
-      return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
+    function verEjemplo(){
+      const input = document.getElementById("inputCodigo");
+      if(input) input.value = EJEMPLO_CODE;
+      buscarCodigo();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function setMsg(t) {
@@ -562,207 +749,366 @@
       if (el) el.textContent = t || "";
     }
 
-    function safeText(id, value) {
+    function safeText(id, value){
       const el = document.getElementById(id);
-      if (el) el.textContent = value ?? "-";
+      if (el) el.textContent = value ?? "";
     }
 
-    // Cargar datos de ejemplo (siempre funcionan)
-    function cargarDatosEjemplo() {
-      console.log("Usando datos de ejemplo");
-      
-      window.CODIGO_CLIENTE = EJEMPLO_CODE;
-      
-      // URLs de ejemplo que YA FUNCIONAN
-      const googleUrl = `https://www.google.com/maps/search/?api=1&query=${LAT_EJEMPLO},${LNG_EJEMPLO}`;
-      const wazeUrl = `https://www.waze.com/ul?ll=${LAT_EJEMPLO}%2C${LNG_EJEMPLO}&navigate=yes`;
-      const uberUrl = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropup%5BformattedAddress%5D=${LAT_EJEMPLO}%2C${LNG_EJEMPLO}`;
-      const avisoUrl = "https://wa.me/50760000000?text=Hola%2C%20ya%20estoy%20llegando";
-      
-      // Textos
-      safeText("uiCodigo", EJEMPLO_CODE);
-      safeText("uiNombre", "Cliente Ejemplo");
-      safeText("uiRef", "Frente al parque, casa blanca");
-      safeText("uiEstado", "Activo");
-      
-      // Asignar URLs a los botones
-      const btnGoogle = document.getElementById("btnGoogle");
-      const btnWaze = document.getElementById("btnWaze");
-      const btnUber = document.getElementById("btnUber");
-      const btnAviso = document.getElementById("btnAviso");
-      
-      if (btnGoogle) {
-        btnGoogle.href = googleUrl;
-        btnGoogle.onclick = function(e) {
-          e.preventDefault();
-          window.open(googleUrl, '_blank', 'noopener');
-          return false;
-        };
-      }
-      
-      if (btnWaze) {
-        btnWaze.href = wazeUrl;
-        btnWaze.onclick = function(e) {
-          e.preventDefault();
-          window.open(wazeUrl, '_blank', 'noopener');
-          return false;
-        };
-      }
-      
-      if (btnUber) {
-        btnUber.href = uberUrl;
-        btnUber.onclick = function(e) {
-          e.preventDefault();
-          window.open(uberUrl, '_blank', 'noopener');
-          return false;
-        };
-      }
-      
-      if (btnAviso) {
-        btnAviso.href = avisoUrl;
-        btnAviso.onclick = function(e) {
-          e.preventDefault();
-          window.open(avisoUrl, '_blank', 'noopener');
-          return false;
-        };
-      }
-      
-      // Link de verificación
-      const linkVer = document.getElementById("linkVerificacion");
-      if (linkVer) {
-        linkVer.href = googleUrl;
-        linkVer.onclick = function(e) {
-          e.preventDefault();
-          window.open(googleUrl, '_blank', 'noopener');
-          return false;
-        };
-      }
-      
-      // QR y link para compartir
-      const linkCompartir = window.location.origin + window.location.pathname + "?code=" + EJEMPLO_CODE;
-      safeText("uiLink", linkCompartir);
-      
-      const qrImg = document.getElementById("qrImg");
-      if (qrImg) {
-        qrImg.src = makeQRFromLink(linkCompartir);
-      }
-      
-      setMsg("✅ Listo");
+    function safeHref(id, value){
+      const el = document.getElementById(id);
+      if (el) el.href = value || "#";
     }
 
-    // Mostrar interfaz de cliente
-    function mostrarInterfazCliente() {
-      document.body.classList.add('modo-cliente');
-      
-      const mainMsg = document.getElementById("mainPageMessage");
-      if (mainMsg) mainMsg.style.display = "none";
-      
-      const datosCliente = document.getElementById("datosClienteSection");
-      if (datosCliente) datosCliente.style.display = "block";
-      
-      const ubic = document.getElementById("seccionUbicacion");
-      if (ubic) ubic.style.display = "block";
-      
-      const stats = document.getElementById("seccionStats");
-      if (stats) stats.style.display = "block";
+    function normalizeUrl(url){
+      url = String(url ?? "").trim();
+      if(!url || url === "-" || url === "#") return "";
+      if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+      return url;
     }
 
-    // Función principal de búsqueda
-    function buscarCodigo() {
+    function makeQRFromLink(link){
+      return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
+    }
+
+    function track(ev){
+      try{
+        const code = window.CODIGO_CLIENTE || "";
+        if(!code) return;
+
+        const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
+
+        if (navigator.sendBeacon) {
+          const blob = new Blob([], { type: "text/plain" });
+          const ok = navigator.sendBeacon(url, blob);
+          if (ok) return;
+        }
+
+        fetch(url, { method:"GET", mode:"no-cors", cache:"no-store", keepalive:true }).catch(()=>{});
+        const img = new Image();
+        img.src = url;
+      }catch(e){}
+    }
+
+    // ✅ Rebind: no duplica listeners
+    function attachTrack(id, ev){
+      const old = document.getElementById(id);
+      if(!old) return;
+
+      const a = old.cloneNode(true);
+      old.parentNode.replaceChild(a, old);
+
+      a.addEventListener("click", function(e){
+        const href = (a.getAttribute("href") || "").trim();
+        const target = a.getAttribute("target") || "_blank";
+
+        if(!href || href === "#"){
+          e.preventDefault();
+          return;
+        }
+
+        track(ev);
+        e.preventDefault();
+
+        if(target === "_blank"){
+          window.open(href, "_blank", "noopener");
+        }else{
+          window.location.href = href;
+        }
+      }, { passive:false });
+    }
+
+    function toggleStatsNegocios(esNegocios){
+      const btn = document.getElementById("btnStats");
+      const panel = document.getElementById("statsPanel");
+      if(btn) btn.style.display = esNegocios ? "flex" : "none";
+      if(panel) panel.style.display = "none";
+      const chev = document.getElementById("statsChevron");
+      if(chev) chev.textContent = "▾";
+    }
+
+    // ✅ Oculta TODO lo que me mandaste cuando hay cliente
+    function toggleHomeBloques(showHome){
+      const homeHero = document.getElementById("homeHero");
+      const buyWrap = document.getElementById("buyWrap");        // top comprar
+      const heroComprar = document.getElementById("heroComprarBox"); // 2 comprar
+      const heroEjemplo = document.getElementById("heroEjemploBox"); // ver ejemplo
+
+      if(homeHero) homeHero.style.display = showHome ? "" : "none";
+      if(buyWrap) buyWrap.style.display = showHome ? "flex" : "none";
+      if(heroComprar) heroComprar.style.display = showHome ? "" : "none";
+      if(heroEjemplo) heroEjemplo.style.display = showHome ? "" : "none";
+    }
+
+    function toggleModoCliente(isCliente){
+      const pasos = document.getElementById("seccionPasos");
+      const precios = document.getElementById("seccionPrecios");
+      if (pasos) pasos.style.display = isCliente ? "none" : "block";
+      if (precios) precios.style.display = isCliente ? "none" : "block";
+
+      // ✅ Esto es lo que pediste:
+      toggleHomeBloques(!isCliente);
+    }
+
+    function togglePanelCliente(hasClient){
+      const ids = [
+        "fieldNombre","fieldRef",
+        "tituloUbicacion","gridUbicacion","divAfterUbic",
+        "tituloCompartir","gridCompartir",
+        "notaVerificacion","divAfterVerif"
+      ];
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.style.display = hasClient ? "" : "none";
+      });
+    }
+
+    function getShareUrl(){
+      return window.CODIGO_CLIENTE
+        ? `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`
+        : `${location.origin}${location.pathname}`;
+    }
+
+    function safeNum(v){
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function setStatsUI(obj){
+      const g = obj.google ?? obj.Google ?? obj.google_maps ?? obj.googleMaps ?? obj.gmaps ?? obj.GMaps;
+      const w = obj.waze ?? obj.Waze;
+      const u = obj.uber ?? obj.Uber;
+      const sh = obj.share ?? obj.shared ?? obj.compartir ?? obj.compartido;
+      const cp = obj.copy ?? obj.copied ?? obj.copiar ?? obj.copiado;
+      const updated = obj.updated ?? obj.last_update ?? obj.lastUpdated ?? obj.timestamp ?? obj.time ?? "";
+
+      const elG = document.getElementById("stGoogle");
+      const elW = document.getElementById("stWaze");
+      const elU = document.getElementById("stUber");
+      const elS = document.getElementById("stShare");
+      const elC = document.getElementById("stCopy");
+      const elT = document.getElementById("stUpdated");
+
+      if(elG) elG.textContent = safeNum(g);
+      if(elW) elW.textContent = safeNum(w);
+      if(elU) elU.textContent = safeNum(u);
+      if(elS) elS.textContent = safeNum(sh);
+      if(elC) elC.textContent = safeNum(cp);
+
+      if(elT){
+        elT.textContent = updated ? `Actualizado: ${updated}` : `Actualizado: ${new Date().toLocaleString()}`;
+      }
+    }
+
+    async function fetchStatsAnyAction(code){
+      const actions = ["stats","getStats","activity","analytics"];
+      for(const action of actions){
+        try{
+          const url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}&code=${encodeURIComponent(code)}&t=${Date.now()}`;
+          const res = await fetch(url, { cache:"no-store" });
+          const txt = await res.text();
+
+          let data = null;
+          try { data = JSON.parse(txt); } catch(e){ data = null; }
+          if(!data) continue;
+          if (data.ok === false) continue;
+
+          const payload = (data.stats && typeof data.stats === "object") ? data.stats : data;
+
+          const hasAny =
+            payload.google != null || payload.waze != null || payload.uber != null ||
+            payload.share != null || payload.copy != null ||
+            payload.Google != null || payload.Waze != null || payload.Uber != null;
+
+          if(hasAny) return payload;
+        }catch(e){}
+      }
+      return null;
+    }
+
+    async function cargarStats(){
+      const code = window.CODIGO_CLIENTE || "";
+      if(!code) return;
+
+      const panel = document.getElementById("statsPanel");
+      const elT = document.getElementById("stUpdated");
+      if(panel) panel.style.opacity = "0.85";
+      if(elT) elT.textContent = "Actualizado: cargando...";
+
+      try{
+        const stats = await fetchStatsAnyAction(code);
+        if(stats){
+          setStatsUI(stats);
+        }else{
+          if(elT) elT.textContent = "Actualizado: No disponible";
+        }
+      }catch(e){
+        if(elT) elT.textContent = "Actualizado: Error al cargar";
+      }finally{
+        if(panel) panel.style.opacity = "1";
+      }
+    }
+
+    function initStatsPanel(){
+      const btn = document.getElementById("btnStats");
+      const panel = document.getElementById("statsPanel");
+      const chev = document.getElementById("statsChevron");
+      if (!btn || !panel) return;
+
+      btn.addEventListener("click", async () => {
+        const opening = (panel.style.display === "none" || !panel.style.display);
+        panel.style.display = opening ? "block" : "none";
+        if (chev) chev.textContent = opening ? "▴" : "▾";
+        if(opening) await cargarStats();
+      });
+    }
+
+    async function buscarCodigo(){
       const input = document.getElementById("inputCodigo");
       const code = (input ? input.value : "").trim();
 
-      if (!code) {
-        alert("Ingresa un código");
+      if(!code){
+        setMsg("Ingresa tu código para buscar.");
+        toggleModoCliente(false);
+        togglePanelCliente(false);
+        toggleStatsNegocios(false);
+
+        const homeLink = `${location.origin}${location.pathname}`;
+        safeText("uiLink", homeLink);
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg) qrImg.src = makeQRFromLink(homeLink);
         return;
       }
 
       setMsg("Buscando...");
-      mostrarInterfazCliente();
-      
-      // Por ahora siempre usamos ejemplo
-      // Cuando la WebApp funcione, aquí se integrará
-      setTimeout(cargarDatosEjemplo, 500);
+
+      try{
+        const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
+        const data = await res.json();
+
+        if(!data.ok){
+          setMsg(data.message || "Código no encontrado.");
+          toggleModoCliente(false);
+          togglePanelCliente(false);
+          toggleStatsNegocios(false);
+          return;
+        }
+
+        window.CODIGO_CLIENTE = data.codigo || data.code || code;
+
+        toggleModoCliente(true);
+        togglePanelCliente(true);
+
+        safeText("uiCodigo", data.codigo || data.code || code);
+        safeText("uiNombre", data.nombre || "Cliente");
+        safeText("uiRef", data.referencia || "Referencia no indicada");
+        safeText("uiEstado", data.validacion || "Activo");
+
+        const google = normalizeUrl(data.google_maps || data.google || "");
+        const waze   = normalizeUrl(data.waze || "");
+        const uber   = normalizeUrl(data.uber || "");
+        const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+
+        safeHref("btnGoogle", google || "#");
+        safeHref("btnWaze", waze || "#");
+        safeHref("btnUber", uber || "#");
+        safeHref("btnAviso", aviso || "#");
+
+        attachTrack("btnGoogle","google");
+        attachTrack("btnWaze","waze");
+        attachTrack("btnUber","uber");
+        attachTrack("btnAviso","share"); // aviso contado como share
+
+        const linkMostrado = getShareUrl();
+        safeText("uiLink", linkMostrado);
+
+        const qrImg = document.getElementById("qrImg");
+        if (qrImg) qrImg.src = makeQRFromLink(linkMostrado);
+
+        // ✅ Verificación relativa (GitHub Pages OK)
+        const linkVer = document.getElementById("linkVerificacion");
+        if (linkVer){
+          linkVer.href = `verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
+          linkVer.target = "_blank";
+        }
+
+        const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
+        toggleStatsNegocios(esNegocios);
+        if(esNegocios) cargarStats();
+
+        setMsg("Listo ✅");
+      }catch(err){
+        setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
+        toggleModoCliente(false);
+        togglePanelCliente(false);
+        toggleStatsNegocios(false);
+      }
     }
 
-    // Función para botón de ejemplo (si existe)
-    function verEjemplo() {
-      const input = document.getElementById("inputCodigo");
-      if (input) input.value = EJEMPLO_CODE;
-      mostrarInterfazCliente();
-      cargarDatosEjemplo();
-    }
-
-    // Funciones de compartir
-    window.shareLink = function() {
-      const url = window.CODIGO_CLIENTE 
-        ? window.location.origin + window.location.pathname + "?code=" + window.CODIGO_CLIENTE
-        : window.location.href;
-      
-      if (navigator.share) {
-        navigator.share({ 
-          title: "Dirección Digital", 
-          text: "Mi ubicación en Direcciones507",
-          url: url 
-        }).catch(() => {});
+    function shareLink(){
+      track("share");
+      const url = getShareUrl();
+      if (navigator.share){
+        navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
       } else {
-        copyLink();
+        copyLink(true);
       }
-    };
-    
-    window.copyLink = async function() {
-      const url = window.CODIGO_CLIENTE 
-        ? window.location.origin + window.location.pathname + "?code=" + window.CODIGO_CLIENTE
-        : window.location.href;
-      
-      try {
-        await navigator.clipboard.writeText(url);
-        alert("Link copiado ✅");
-      } catch (e) {
-        alert("Copia manualmente: " + url);
-      }
-    };
+    }
 
-    // Inicialización
-    (function init() {
+    async function copyLink(silent=false){
+      track("copy");
+      const url = getShareUrl();
+      try{
+        await navigator.clipboard.writeText(url);
+        if (!silent) alert("Link copiado ✅");
+      }catch(e){
+        if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
+      }
+    }
+
+    function initComprar(){
+      const top = document.getElementById("btnComprarTop");
+      const p = document.getElementById("btnComprarPersonal");
+      const n = document.getElementById("btnComprarNegocios");
+      const hp = document.getElementById("btnHeroPersonal");
+      const hn = document.getElementById("btnHeroNegocios");
+
+      const linkTop = waLink("");
+      const linkP = waLink("Personal ($6.99)");
+      const linkN = waLink("Negocios ($10.99)");
+
+      if(top) top.href = linkTop;
+      if(p) p.href = linkP;
+      if(n) n.href = linkN;
+      if(hp) hp.href = linkP;
+      if(hn) hn.href = linkN;
+    }
+
+    (function autoLoadFromURL(){
+      initStatsPanel();
+      initComprar();
+
       const qs = new URLSearchParams(location.search);
-      const code = qs.get("code");
-      
+      const code = (qs.get("code") || "").trim();
+
       if (code) {
         const input = document.getElementById("inputCodigo");
         if (input) input.value = code;
-        mostrarInterfazCliente();
-        setTimeout(cargarDatosEjemplo, 500);
+        buscarCodigo();
       } else {
-        // Página principal
-        document.body.classList.remove('modo-cliente');
-        
-        const datosCliente = document.getElementById("datosClienteSection");
-        if (datosCliente) datosCliente.style.display = "none";
-        
-        const mainMsg = document.getElementById("mainPageMessage");
-        if (mainMsg) mainMsg.style.display = "block";
-        
-        const ubic = document.getElementById("seccionUbicacion");
-        if (ubic) ubic.style.display = "none";
-        
-        const stats = document.getElementById("seccionStats");
-        if (stats) stats.style.display = "none";
-        
-        // QR del sitio principal
-        const homeLink = window.location.origin + window.location.pathname;
+        toggleModoCliente(false);
+        togglePanelCliente(false);
+        toggleStatsNegocios(false);
+
+        const homeLink = `${location.origin}${location.pathname}`;
         safeText("uiLink", homeLink);
-        
+
         const qrImg = document.getElementById("qrImg");
-        if (qrImg) {
-          qrImg.src = makeQRFromLink(homeLink);
-        }
+        if (qrImg) qrImg.src = makeQRFromLink(homeLink);
+
+        const linkVer = document.getElementById("linkVerificacion");
+        if (linkVer) linkVer.href = homeLink;
       }
     })();
-
-    // Exponer funciones globalmente
-    window.buscarCodigo = buscarCodigo;
-    window.verEjemplo = verEjemplo;
   </script>
 </body>
 </html>

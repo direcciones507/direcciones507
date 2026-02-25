@@ -962,87 +962,64 @@
       });
     }
 
-    async function buscarCodigo(){
-      const input = document.getElementById("inputCodigo");
-      const code = (input ? input.value : "").trim();
+ async function buscarCodigo(){
+  const input = document.getElementById("inputCodigo");
+  const code = (input ? input.value : "").trim();
 
-      if(!code){
-        setMsg("Ingresa tu código para buscar.");
-        toggleModoCliente(false);
-        togglePanelCliente(false);
-        toggleStatsNegocios(false);
+  if(!code){
+    setMsg("Ingresa tu código para buscar.");
+    return;
+  }
 
-        const homeLink = `${location.origin}${location.pathname}`;
-        safeText("uiLink", homeLink);
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) qrImg.src = makeQRFromLink(homeLink);
-        return;
-      }
+  setMsg("Buscando...");
 
-      setMsg("Buscando...");
+  try{
+    const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
+    const res = await fetch(url, { cache:"no-store" });
 
-      try{
-        const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
-        const data = await res.json();
+    const txt = await res.text();
+    console.log("WEBAPP status:", res.status);
+    console.log("WEBAPP respuesta (inicio):", txt.slice(0, 250));
 
-        if(!data.ok){
-          setMsg(data.message || "Código no encontrado.");
-          toggleModoCliente(false);
-          togglePanelCliente(false);
-          toggleStatsNegocios(false);
-          return;
-        }
-
-        window.CODIGO_CLIENTE = data.codigo || data.code || code;
-
-        toggleModoCliente(true);
-        togglePanelCliente(true);
-
-        safeText("uiCodigo", data.codigo || data.code || code);
-        safeText("uiNombre", data.nombre || "Cliente");
-        safeText("uiRef", data.referencia || "Referencia no indicada");
-        safeText("uiEstado", data.validacion || "Activo");
-
-        const google = normalizeUrl(data.google_maps || data.google || "");
-        const waze   = normalizeUrl(data.waze || "");
-        const uber   = normalizeUrl(data.uber || "");
-        const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
-
-        safeHref("btnGoogle", google || "#");
-        safeHref("btnWaze", waze || "#");
-        safeHref("btnUber", uber || "#");
-        safeHref("btnAviso", aviso || "#");
-
-        attachTrack("btnGoogle","google");
-        attachTrack("btnWaze","waze");
-        attachTrack("btnUber","uber");
-        attachTrack("btnAviso","share"); // aviso contado como share
-
-        const linkMostrado = getShareUrl();
-        safeText("uiLink", linkMostrado);
-
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) qrImg.src = makeQRFromLink(linkMostrado);
-
-        // ✅ Verificación relativa (GitHub Pages OK)
-        const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer){
-          linkVer.href = `verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
-          linkVer.target = "_blank";
-        }
-
-        const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
-        toggleStatsNegocios(esNegocios);
-        if(esNegocios) cargarStats();
-
-        setMsg("Listo ✅");
-      }catch(err){
-        setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
-        toggleModoCliente(false);
-        togglePanelCliente(false);
-        toggleStatsNegocios(false);
-      }
+    if(!res.ok){
+      throw new Error(`WebApp respondió ${res.status}. Revisa permisos/deploy.`);
     }
+
+    let data;
+    try{
+      data = JSON.parse(txt);
+    }catch(e){
+      throw new Error("La WebApp NO devolvió JSON (probable permiso/login o error del script).");
+    }
+
+    if(!data.ok){
+      throw new Error(data.message || "Código no encontrado.");
+    }
+
+    // ✅ Aquí ya tienes data bueno
+    window.CODIGO_CLIENTE = data.codigo || data.code || code;
+
+    const google = normalizeUrl(data.google_maps || data.google || "");
+    const waze   = normalizeUrl(data.waze || "");
+    const uber   = normalizeUrl(data.uber || "");
+    const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+
+    safeHref("btnGoogle", google);
+    safeHref("btnWaze", waze);
+    safeHref("btnUber", uber);
+    safeHref("btnAviso", aviso);
+
+    attachTrack("btnGoogle","google");
+    attachTrack("btnWaze","waze");
+    attachTrack("btnUber","uber");
+    attachTrack("btnAviso","share");
+
+    setMsg("Listo ✅");
+  }catch(err){
+    console.log("❌ buscarCodigo error:", err);
+    setMsg("Error: " + (err?.message || "No se pudo conectar"));
+  }
+}
 
     function shareLink(){
       track("share");

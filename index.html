@@ -721,16 +721,12 @@
 <script>
   // ✅ WebApp (NUEVO)
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
-  const WA_NUMBER = "50765996532"; // solo para "Comprar", no para aviso
+  const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
 
-  // ✅ Diagnóstico
-  window.addEventListener("error", (e) => {
-    console.log("❌ Error JS:", e.message, "en", e.filename, "línea", e.lineno);
-  });
-  window.addEventListener("unhandledrejection", (e) => {
-    console.log("❌ Promise error:", e.reason);
-  });
+  // Variables globales
+  window.CODIGO_CLIENTE = "";
+  window.DATOS_CLIENTE = null;
 
   function waLink(plan){
     const base = `https://wa.me/${WA_NUMBER}`;
@@ -745,8 +741,7 @@
     return `${base}?text=${encodeURIComponent(msg)}`;
   }
 
-  function verEjemplo(e){
-    if (e && typeof e.preventDefault === "function") e.preventDefault();
+  function verEjemplo(){
     const input = document.getElementById("inputCodigo");
     if(input) input.value = EJEMPLO_CODE;
     buscarCodigo();
@@ -758,174 +753,8 @@
     if (el) el.textContent = t || "";
   }
 
-  function safeText(id, value){
-    const el = document.getElementById(id);
-    if (el) el.textContent = value ?? "";
-  }
-
-  function normalizeUrl(url){
-    if(!url) return "#";
-    const str = String(url).trim();
-    if(str === "" || str === "-" || str === "#") return "#";
-    if(!/^https?:\/\//i.test(str)) return "#";
-    return str;
-  }
-
-  function makeQRFromLink(link){
-    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
-  }
-
-  // ✅ FUNCIÓN CORREGIDA - track con fetch
-  function track(evento){
-    const code = window.CODIGO_CLIENTE || "";
-    if(!code) return;
-    
-    const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(evento)}&t=${Date.now()}`;
-    
-    fetch(url, { 
-      method: "GET", 
-      mode: "no-cors",  // importante para Google Apps Script
-      cache: "no-store", 
-      keepalive: true 
-    }).catch(() => {});
-  }
-
-  // ✅ FUNCIÓN CORREGIDA para asignar href a botones
-  function setButtonHref(buttonId, url, evento) {
-    const btn = document.getElementById(buttonId);
-    if(!btn) return;
-
-    // Limpiar evento anterior
-    const nuevoBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(nuevoBtn, btn);
-
-    const href = normalizeUrl(url);
-    nuevoBtn.href = href;
-    
-    if(href === "#") {
-      nuevoBtn.style.opacity = "0.5";
-      nuevoBtn.style.pointerEvents = "none";
-      return;
-    }
-
-    nuevoBtn.addEventListener("click", function(e) {
-      track(evento);  // Registrar el clic
-      // No prevenir default, dejar que el link funcione
-    });
-  }
-
-  // ✅ FUNCIÓN CORREGIDA para botones que no son links (compartir/copiar)
-  function setupButton(buttonId, evento, callback) {
-    const btn = document.getElementById(buttonId);
-    if(!btn) return;
-
-    const nuevoBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(nuevoBtn, btn);
-
-    nuevoBtn.addEventListener("click", function(e) {
-      e.preventDefault();
-      track(evento);
-      if(callback) callback();
-    });
-  }
-
-  function toggleStatsNegocios(esNegocios){
-    const btn = document.getElementById("btnStats");
-    const panel = document.getElementById("statsPanel");
-    if(btn) btn.style.display = esNegocios ? "flex" : "none";
-    if(panel) panel.style.display = "none";
-    const chev = document.getElementById("statsChevron");
-    if(chev) chev.textContent = "▾";
-  }
-
-  function toggleHomeBloques(showHome){
-    const homeHero = document.getElementById("homeHero");
-    const buyWrap = document.getElementById("buyWrap");
-    const heroComprar = document.getElementById("heroComprarBox");
-    const heroEjemplo = document.getElementById("heroEjemploBox");
-
-    if(homeHero) homeHero.style.display = showHome ? "" : "none";
-    if(buyWrap) buyWrap.style.display = showHome ? "flex" : "none";
-    if(heroComprar) heroComprar.style.display = showHome ? "" : "none";
-    if(heroEjemplo) heroEjemplo.style.display = showHome ? "" : "none";
-  }
-
-  function toggleModoCliente(isCliente){
-    const pasos = document.getElementById("seccionPasos");
-    const precios = document.getElementById("seccionPrecios");
-    if (pasos) pasos.style.display = isCliente ? "none" : "block";
-    if (precios) precios.style.display = isCliente ? "none" : "block";
-    toggleHomeBloques(!isCliente);
-  }
-
-  function togglePanelCliente(hasClient){
-    const ids = [
-      "fieldNombre","fieldRef",
-      "tituloUbicacion","gridUbicacion","divAfterUbic",
-      "tituloCompartir","gridCompartir",
-      "notaVerificacion","divAfterVerif"
-    ];
-    ids.forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.style.display = hasClient ? "" : "none";
-    });
-  }
-
-  function getShareUrl(){
-    return window.CODIGO_CLIENTE
-      ? `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`
-      : `${location.origin}${location.pathname}`;
-  }
-
-  // ✅ Extraer lat/lng del QR
-  function parseLatLngFromQr(qrUrl){
-    try{
-      const u = new URL(qrUrl);
-      const data = u.searchParams.get("data") || "";
-      const decoded = decodeURIComponent(data);
-      const m = decoded.match(/query=([-0-9.]+),\s*([-0-9.]+)/i);
-      if(!m) return null;
-      return { lat: m[1], lng: m[2] };
-    }catch(e){
-      return null;
-    }
-  }
-
-  function buildLinksFromLatLng(lat, lng){
-    const google = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + "," + lng)}`;
-    const waze   = `https://waze.com/ul?ll=${encodeURIComponent(lat + "," + lng)}&navigate=yes`;
-    const uber   = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${encodeURIComponent(lat)}&dropoff[longitude]=${encodeURIComponent(lng)}`;
-    return { google, waze, uber };
-  }
-
-  function cleanPhone507(v){
-    let d = String(v || "").replace(/\D/g, "");
-    if(!d) return "";
-    if(d.startsWith("507")) d = d.slice(3);
-    if(d.length > 8) d = d.slice(-8);
-    return d;
-  }
-
-  function buildAvisoWhatsAppToClient(phone507or8, code){
-    const p8 = cleanPhone507(phone507or8);
-    if(!p8) return "";
-
-    const shareUrl = getShareUrl();
-    const msg = [
-      "Hola 👋",
-      `Aquí está tu Dirección Digital ${code}:`,
-      shareUrl,
-      "",
-      "Ábrela para ver Google Maps, Waze y Uber."
-    ].join("\n");
-
-    return `https://wa.me/507${p8}?text=${encodeURIComponent(msg)}`;
-  }
-
-  // fallback si no hay teléfono
-  function buildAvisoWhatsAppFallback(code){
-    const msg = `Hola 👋\nTe comparto tu Dirección Digital ${code}:\n${getShareUrl()}`;
-    return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  function cleanPhone(v){
+    return String(v || "").replace(/\D/g, "");
   }
 
   async function buscarCodigo(){
@@ -940,194 +769,238 @@
     setMsg("Buscando...");
 
     try{
+      // 1. Obtener datos del cliente
       const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
-      const res = await fetch(url, { cache:"no-store" });
-      const txt = await res.text();
-
-      console.log("Respuesta completa:", txt);
-
-      if(!res.ok){
-        throw new Error(`WebApp respondió ${res.status}`);
-      }
-
-      let data;
-      try{ data = JSON.parse(txt); }
-      catch(e){ throw new Error("La WebApp NO devolvió JSON"); }
-
-      if(!data.ok){
-        throw new Error(data.message || "Código no encontrado.");
-      }
-
-      window.CODIGO_CLIENTE = data.codigo || code;
-
-      // ✅ Mostrar datos del cliente
-      safeText("uiCodigo", window.CODIGO_CLIENTE);
-      safeText("uiNombre", data.nombre || "-");
-      safeText("uiRef", data.referencia || "-");
-
-      // ✅ Verificar si es negocio para stats
-      const plan = String(data.plan || "").toLowerCase();
-      const esNegocio = plan.includes("negocio") || plan.includes("business");
-      toggleStatsNegocios(esNegocio);
-
-      // ✅ CORREGIDO: Extraer URLs del JSON
-      // El backend devuelve google, waze, uber como URLs completas
-      let googleUrl = data.google || "#";
-      let wazeUrl = data.waze || "#";
-      let uberUrl = data.uber || "#";
-
-      // Si no vienen URLs, intentar extraer del QR
-      if((googleUrl === "#" || wazeUrl === "#" || uberUrl === "#") && data.qr){
-        const ll = parseLatLngFromQr(data.qr);
-        if(ll){
-          const built = buildLinksFromLatLng(ll.lat, ll.lng);
-          if(googleUrl === "#") googleUrl = built.google;
-          if(wazeUrl === "#") wazeUrl = built.waze;
-          if(uberUrl === "#") uberUrl = built.uber;
-        }
-      }
-
-      // ✅ CORREGIDO: Configurar botones de navegación
-      setButtonHref("btnGoogle", googleUrl, "google");
-      setButtonHref("btnWaze", wazeUrl, "waze");
-      setButtonHref("btnUber", uberUrl, "uber");
-
-      // ✅ CORREGIDO: Configurar botón de aviso
-      let avisoUrl = data.whatsapp || "";
-      if(avisoUrl === "#" || !avisoUrl) {
-        if(data.telefono) {
-          avisoUrl = buildAvisoWhatsAppToClient(data.telefono, window.CODIGO_CLIENTE);
-        } else {
-          avisoUrl = buildAvisoWhatsAppFallback(window.CODIGO_CLIENTE);
-        }
-      }
-      setButtonHref("btnAviso", avisoUrl, "aviso");
-
-      // ✅ Configurar botones de compartir/copiar
-      setupButton("btnCompartir", "share", shareLink);
-      setupButton("btnCopiar", "copy", copyLink);
-
-      // ✅ Actualizar QR y link
-      const shareUrl = getShareUrl();
-      safeText("uiLink", shareUrl);
-      
-      const qrImg = document.getElementById("qrImg");
-      if(qrImg) qrImg.src = makeQRFromLink(shareUrl);
-
-      // ✅ Actualizar link de verificación
-      const linkVer = document.getElementById("linkVerificacion");
-      if(linkVer) linkVer.href = shareUrl;
-
-      toggleModoCliente(true);
-      togglePanelCliente(true);
-
-      setMsg("Listo ✅");
-    }catch(err){
-      console.error("Error:", err);
-      setMsg("Error: " + (err?.message || "No se pudo conectar"));
-    }
-  }
-
-  function shareLink(){
-    const url = getShareUrl();
-    if (navigator.share){
-      navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
-    } else {
-      copyLink(true);
-    }
-  }
-
-  async function copyLink(silent=false){
-    const url = getShareUrl();
-    try{
-      await navigator.clipboard.writeText(url);
-      if (!silent) alert("Link copiado ✅");
-    }catch(e){
-      if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
-    }
-  }
-
-  function initComprar(){
-    const top = document.getElementById("btnComprarTop");
-    const p = document.getElementById("btnComprarPersonal");
-    const n = document.getElementById("btnComprarNegocios");
-    const hp = document.getElementById("btnHeroPersonal");
-    const hn = document.getElementById("btnHeroNegocios");
-
-    const linkTop = waLink("");
-    const linkP = waLink("Personal ($6.99)");
-    const linkN = waLink("Negocios ($10.99)");
-
-    if(top) top.href = linkTop;
-    if(p) p.href = linkP;
-    if(n) p.href = linkN;  // Corregido: antes era n.href
-    if(hp) hp.href = linkP;
-    if(hn) hn.href = linkN;
-  }
-
-  function initStatsPanel(){
-    const btn = document.getElementById("btnStats");
-    const panel = document.getElementById("statsPanel");
-    
-    if(btn && panel) {
-      btn.addEventListener("click", () => {
-        const visible = panel.style.display === "block";
-        panel.style.display = visible ? "none" : "block";
-        const chev = document.getElementById("statsChevron");
-        if(chev) chev.textContent = visible ? "▾" : "▴";
-        
-        if(!visible) cargarStats();
-      });
-    }
-  }
-
-  async function cargarStats(){
-    const code = window.CODIGO_CLIENTE;
-    if(!code) return;
-    
-    try {
-      const url = `${WEBAPP_URL}?action=stats&code=${encodeURIComponent(code)}&t=${Date.now()}`;
       const res = await fetch(url);
       const data = await res.json();
       
-      if(data.ok && data.stats) {
-        safeText("stGoogle", data.stats.google || 0);
-        safeText("stWaze", data.stats.waze || 0);
-        safeText("stUber", data.stats.uber || 0);
-        safeText("stShare", data.stats.share || 0);
-        safeText("stCopy", data.stats.copy || 0);
-        safeText("stUpdated", data.stats.updated || "-");
+      console.log("Datos recibidos:", data);
+
+      if(!data.ok){
+        throw new Error(data.message || "Código no encontrado");
       }
-    } catch(e) {
-      console.log("Error cargando stats:", e);
+
+      // Guardar datos
+      window.CODIGO_CLIENTE = data.codigo;
+      window.DATOS_CLIENTE = data;
+
+      // 2. Mostrar información básica
+      document.getElementById("uiCodigo").textContent = data.codigo || code;
+      document.getElementById("uiNombre").textContent = data.nombre || "-";
+      document.getElementById("uiRef").textContent = data.referencia || "-";
+      
+      // 3. Verificar si es negocio
+      const plan = (data.plan || "").toLowerCase();
+      const esNegocio = plan.includes("negocio") || plan.includes("business");
+      
+      // 4. Configurar URLs de navegación
+      const googleUrl = data.google || "#";
+      const wazeUrl = data.waze || "#";
+      const uberUrl = data.uber || "#";
+      const whatsappUrl = data.whatsapp || "#";
+      const qrUrl = data.qr || "";
+
+      console.log("URLs:", { googleUrl, wazeUrl, uberUrl, whatsappUrl });
+
+      // Función para configurar enlaces
+      function setupLink(buttonId, url, evento) {
+        const btn = document.getElementById(buttonId);
+        if(!btn) return;
+        
+        // Limpiar evento anterior
+        const nuevoBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(nuevoBtn, btn);
+        
+        if(!url || url === "#" || url === "-") {
+          nuevoBtn.style.opacity = "0.5";
+          nuevoBtn.style.pointerEvents = "none";
+          nuevoBtn.href = "#";
+          return;
+        }
+        
+        nuevoBtn.href = url;
+        nuevoBtn.addEventListener("click", function(e) {
+          // Registrar clic (solo si es negocio)
+          if(esNegocio && window.CODIGO_CLIENTE) {
+            const trackUrl = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=${evento}&t=${Date.now()}`;
+            fetch(trackUrl, { mode: "no-cors" }).catch(()=>{});
+          }
+          // Dejar que el link funcione normalmente
+        });
+      }
+
+      // Configurar cada botón
+      setupLink("btnGoogle", googleUrl, "google");
+      setupLink("btnWaze", wazeUrl, "waze");
+      setupLink("btnUber", uberUrl, "uber");
+      setupLink("btnAviso", whatsappUrl, "aviso");
+
+      // 5. Configurar botones de compartir/copiar
+      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
+      
+      document.getElementById("uiLink").textContent = shareUrl;
+      
+      // QR
+      if(qrUrl) {
+        document.getElementById("qrImg").src = qrUrl;
+      } else {
+        document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
+      }
+      
+      // Link de verificación
+      document.getElementById("linkVerificacion").href = shareUrl;
+
+      // Botón compartir
+      const btnShare = document.getElementById("btnCompartir");
+      const newShare = btnShare.cloneNode(true);
+      btnShare.parentNode.replaceChild(newShare, btnShare);
+      newShare.addEventListener("click", function() {
+        if(esNegocio && window.CODIGO_CLIENTE) {
+          fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=share&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
+        }
+        if(navigator.share) {
+          navigator.share({ title: "Dirección Digital", url: shareUrl }).catch(()=>{});
+        } else {
+          navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado ✅")).catch(()=>{});
+        }
+      });
+
+      // Botón copiar
+      const btnCopy = document.getElementById("btnCopiar");
+      const newCopy = btnCopy.cloneNode(true);
+      btnCopy.parentNode.replaceChild(newCopy, btnCopy);
+      newCopy.addEventListener("click", function() {
+        if(esNegocio && window.CODIGO_CLIENTE) {
+          fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=copy&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
+        }
+        navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado ✅")).catch(()=>{});
+      });
+
+      // 6. Configurar panel de estadísticas (solo para negocios)
+      const statsBtn = document.getElementById("btnStats");
+      const statsPanel = document.getElementById("statsPanel");
+      
+      if(esNegocio) {
+        statsBtn.style.display = "flex";
+        statsBtn.onclick = async function() {
+          const visible = statsPanel.style.display === "block";
+          statsPanel.style.display = visible ? "none" : "block";
+          document.getElementById("statsChevron").textContent = visible ? "▾" : "▴";
+          
+          if(!visible && window.CODIGO_CLIENTE) {
+            try {
+              const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&t=${Date.now()}`);
+              const statsData = await statsRes.json();
+              if(statsData.ok && statsData.stats) {
+                document.getElementById("stGoogle").textContent = statsData.stats.google || 0;
+                document.getElementById("stWaze").textContent = statsData.stats.waze || 0;
+                document.getElementById("stUber").textContent = statsData.stats.uber || 0;
+                document.getElementById("stShare").textContent = statsData.stats.share || 0;
+                document.getElementById("stCopy").textContent = statsData.stats.copy || 0;
+                document.getElementById("stUpdated").textContent = "Actualizado: " + (statsData.stats.updated || "-");
+              }
+            } catch(e) {
+              console.log("Error cargando stats:", e);
+            }
+          }
+        };
+      } else {
+        statsBtn.style.display = "none";
+        statsPanel.style.display = "none";
+      }
+
+      // 7. Mostrar/ocultar secciones según modo
+      document.getElementById("homeHero").style.display = "none";
+      document.getElementById("buyWrap").style.display = "none";
+      document.getElementById("heroComprarBox").style.display = "none";
+      document.getElementById("heroEjemploBox").style.display = "none";
+      
+      // Mostrar panel cliente
+      document.getElementById("fieldNombre").style.display = "grid";
+      document.getElementById("fieldRef").style.display = "grid";
+      document.getElementById("tituloUbicacion").style.display = "block";
+      document.getElementById("gridUbicacion").style.display = "grid";
+      document.getElementById("divAfterUbic").style.display = "block";
+      document.getElementById("tituloCompartir").style.display = "block";
+      document.getElementById("gridCompartir").style.display = "grid";
+      document.getElementById("notaVerificacion").style.display = "block";
+      document.getElementById("divAfterVerif").style.display = "block";
+      
+      // Ocultar pasos y precios en modo cliente
+      document.getElementById("seccionPasos").style.display = "none";
+      document.getElementById("seccionPrecios").style.display = "none";
+
+      setMsg("✅ Listo");
+
+    } catch(err) {
+      console.error("Error completo:", err);
+      setMsg("Error: " + (err.message || "No se pudo conectar"));
     }
   }
 
+  // Inicialización
   document.addEventListener("DOMContentLoaded", () => {
-    initStatsPanel();
-    initComprar();
+    // Configurar botones de compra
+    const comprarLinks = [
+      "btnComprarTop", "btnComprarPersonal", "btnComprarNegocios",
+      "btnHeroPersonal", "btnHeroNegocios"
+    ];
+    
+    comprarLinks.forEach(id => {
+      const btn = document.getElementById(id);
+      if(btn) {
+        if(id.includes("Negocios")) {
+          btn.href = waLink("Negocios ($10.99)");
+        } else if(id.includes("Personal") || id === "btnHeroPersonal") {
+          btn.href = waLink("Personal ($6.99)");
+        } else {
+          btn.href = waLink("");
+        }
+      }
+    });
 
-    const qs = new URLSearchParams(location.search);
-    const code = (qs.get("code") || "").trim();
-
-    if (code) {
-      const input = document.getElementById("inputCodigo");
-      if (input) input.value = code;
+    // Verificar si hay código en la URL
+    const params = new URLSearchParams(window.location.search);
+    const urlCode = params.get("code");
+    
+    if(urlCode) {
+      document.getElementById("inputCodigo").value = urlCode;
       buscarCodigo();
     } else {
-      toggleModoCliente(false);
-      togglePanelCliente(false);
-      toggleStatsNegocios(false);
-
-      const homeLink = `${location.origin}${location.pathname}`;
-      safeText("uiLink", homeLink);
-
-      const qrImg = document.getElementById("qrImg");
-      if (qrImg) qrImg.src = makeQRFromLink(homeLink);
-
-      const linkVer = document.getElementById("linkVerificacion");
-      if (linkVer) linkVer.href = homeLink;
+      // Modo home
+      document.getElementById("homeHero").style.display = "block";
+      document.getElementById("buyWrap").style.display = "flex";
+      document.getElementById("heroComprarBox").style.display = "block";
+      document.getElementById("heroEjemploBox").style.display = "block";
+      
+      // Ocultar panel cliente
+      document.getElementById("fieldNombre").style.display = "none";
+      document.getElementById("fieldRef").style.display = "none";
+      document.getElementById("tituloUbicacion").style.display = "none";
+      document.getElementById("gridUbicacion").style.display = "none";
+      document.getElementById("divAfterUbic").style.display = "none";
+      document.getElementById("tituloCompartir").style.display = "none";
+      document.getElementById("gridCompartir").style.display = "none";
+      document.getElementById("notaVerificacion").style.display = "none";
+      document.getElementById("divAfterVerif").style.display = "none";
+      document.getElementById("btnStats").style.display = "none";
+      document.getElementById("statsPanel").style.display = "none";
+      
+      // Mostrar pasos y precios
+      document.getElementById("seccionPasos").style.display = "block";
+      document.getElementById("seccionPrecios").style.display = "block";
+      
+      // QR del home
+      const homeUrl = window.location.href.split('?')[0];
+      document.getElementById("uiLink").textContent = homeUrl;
+      document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
+      document.getElementById("linkVerificacion").href = homeUrl;
     }
+
+    // Enter en el input
+    document.getElementById("inputCodigo").addEventListener("keypress", (e) => {
+      if(e.key === "Enter") buscarCodigo();
+    });
   });
 </script>
 </body>

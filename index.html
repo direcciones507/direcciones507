@@ -764,34 +764,39 @@
     // Actualizar href directamente
     btn.href = url || "#";
     
+    // Asegurar que abra en nueva pestaña
+    btn.target = "_blank";
+    btn.rel = "noopener noreferrer";
+    
     // Si no hay URL válida, deshabilitar visualmente
     if(!url || url === "#" || url === "-") {
       btn.style.opacity = "0.5";
       btn.style.pointerEvents = "none";
+      btn.onclick = null;
     } else {
       btn.style.opacity = "1";
       btn.style.pointerEvents = "auto";
       
-      // Guardar el evento y la URL para el click
+      // Guardar el evento para el click
       btn.setAttribute("data-evento", evento);
-      btn.setAttribute("data-url", url);
       
-      // Remover event listeners anteriores (simplificado)
+      // Remover event listeners anteriores
       btn.onclick = function(e) {
-        e.preventDefault(); // Prevenir para poder trackear
+        // No prevenir default para que el link funcione normalmente
+        // pero trackeamos antes de que navegue
         
         const code = window.CODIGO_CLIENTE;
         const plan = window.DATOS_CLIENTE?.plan || "";
         const esNegocio = plan.toLowerCase().includes("negocio") || plan.toLowerCase().includes("business");
         
-        // Trackear si es negocio
+        // Trackear si es negocio (async, no bloquea)
         if(esNegocio && code) {
           const trackUrl = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${evento}&t=${Date.now()}`;
           fetch(trackUrl, { mode: "no-cors" }).catch(()=>{});
         }
         
-        // Abrir el enlace después del track
-        window.open(url, "_blank", "noopener");
+        // El link se abrirá normalmente en _blank
+        return true;
       };
     }
   }
@@ -862,7 +867,11 @@
       
       // Link de verificación
       const linkVer = document.getElementById("linkVerificacion");
-      if(linkVer) linkVer.href = shareUrl;
+      if(linkVer) {
+        linkVer.href = shareUrl;
+        linkVer.target = "_blank";
+        linkVer.rel = "noopener noreferrer";
+      }
 
       // Botón compartir
       const btnShare = document.getElementById("btnCompartir");
@@ -990,6 +999,8 @@
       const btn = document.getElementById(item.id);
       if(btn) {
         btn.href = waLink(item.plan);
+        btn.target = "_blank";
+        btn.rel = "noopener noreferrer";
         console.log("Botón configurado:", item.id);
       } else {
         console.log("Botón no encontrado:", item.id);
@@ -1048,7 +1059,11 @@
       
       if(uiLink) uiLink.textContent = homeUrl;
       if(qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
-      if(linkVer) linkVer.href = homeUrl;
+      if(linkVer) {
+        linkVer.href = homeUrl;
+        linkVer.target = "_blank";
+        linkVer.rel = "noopener noreferrer";
+      }
     }
 
     // Enter en el input

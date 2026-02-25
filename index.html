@@ -719,9 +719,9 @@
   </div>
 
 <script>
-  // ✅ WebApp
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
-  const WA_NUMBER = "50765996532";
+  // ✅ WebApp (NUEVO)
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
+  const WA_NUMBER = "50765996532"; // solo para "Comprar", no para aviso
   const EJEMPLO_CODE = "AD507-0001";
 
   // ✅ Diagnóstico
@@ -745,7 +745,6 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
     return `${base}?text=${encodeURIComponent(msg)}`;
   }
 
-  // ✅ Ver ejemplo robusto
   function verEjemplo(e){
     if (e && typeof e.preventDefault === "function") e.preventDefault();
     const input = document.getElementById("inputCodigo");
@@ -781,6 +780,7 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
       const code = window.CODIGO_CLIENTE || "";
       if(!code) return;
 
+      // ✅ manda el evento a tu contador (google|waze|uber|share|copy|aviso)
       const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
 
       if (navigator.sendBeacon) {
@@ -795,29 +795,24 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
     }catch(e){}
   }
 
-  // ✅ FIX CLAVE: links para <a> y <button>
+  // ✅ links para <a> y <button>
   function safeHref(id, value){
     const el = document.getElementById(id);
     if (!el) return;
 
     const href = (value && value !== "-" && value !== "#") ? value : "#";
-
-    // guardamos siempre
     el.dataset.href = href;
 
-    // si es <a>, seteamos href real
     if (el.tagName === "A") {
       el.setAttribute("href", href);
       el.href = href;
     }
 
-    // cursor para botones
     if (el.tagName === "BUTTON") {
       el.style.cursor = (href !== "#") ? "pointer" : "not-allowed";
     }
   }
 
-  // ✅ Click handler (sirve para <a> y <button>)
   function attachTrack(id, ev){
     const old = document.getElementById(id);
     if(!old) return;
@@ -897,17 +892,15 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
       : `${location.origin}${location.pathname}`;
   }
 
-  // ✅ RELLENAR UI (esto te faltaba)
+  // ✅ RELLENAR UI
   function putSmart(id, value){
     const el = document.getElementById(id);
     if(!el) return false;
 
     const v = (value ?? "").toString();
 
-    // Si es input
     if ("value" in el) { el.value = v; return true; }
 
-    // Si es un contenedor (tiene hijos), tratamos de encontrar un “valor”
     if (el.children && el.children.length > 0){
       const inner =
         el.querySelector("[data-value]") ||
@@ -921,7 +914,6 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
       }
     }
 
-    // Si no, escribe directo
     el.textContent = v;
     return true;
   }
@@ -932,111 +924,19 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
     const ref    = data.referencia || data.ref || "";
     const plan   = data.plan || "";
 
-    // ✅ Si tu HTML usa estos wrappers, esto lo llena sin romper formato
     putSmart("fieldNombre", nombre);
     putSmart("fieldRef", ref);
 
-    // Por si tienes campos dedicados (si existen, los llena)
     putSmart("uiCodigo", codigo);
     putSmart("fieldCodigo", codigo);
     putSmart("uiPlan", plan);
+
+    // ✅ mostrar stats solo si es negocio
+    const planTxt = String(plan || "").toLowerCase();
+    toggleStatsNegocios(planTxt.includes("negocio") || planTxt.includes("business"));
   }
 
-  function safeNum(v){
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function setStatsUI(obj){
-    const g = obj.google ?? obj.Google ?? obj.google_maps ?? obj.googleMaps ?? obj.gmaps ?? obj.GMaps;
-    const w = obj.waze ?? obj.Waze;
-    const u = obj.uber ?? obj.Uber;
-    const sh = obj.share ?? obj.shared ?? obj.compartir ?? obj.compartido;
-    const cp = obj.copy ?? obj.copied ?? obj.copiar ?? obj.copiado;
-    const updated = obj.updated ?? obj.last_update ?? obj.lastUpdated ?? obj.timestamp ?? obj.time ?? "";
-
-    const elG = document.getElementById("stGoogle");
-    const elW = document.getElementById("stWaze");
-    const elU = document.getElementById("stUber");
-    const elS = document.getElementById("stShare");
-    const elC = document.getElementById("stCopy");
-    const elT = document.getElementById("stUpdated");
-
-    if(elG) elG.textContent = safeNum(g);
-    if(elW) elW.textContent = safeNum(w);
-    if(elU) elU.textContent = safeNum(u);
-    if(elS) elS.textContent = safeNum(sh);
-    if(elC) elC.textContent = safeNum(cp);
-
-    if(elT){
-      elT.textContent = updated ? `Actualizado: ${updated}` : `Actualizado: ${new Date().toLocaleString()}`;
-    }
-  }
-
-  async function fetchStatsAnyAction(code){
-    const actions = ["stats","getStats","activity","analytics"];
-    for(const action of actions){
-      try{
-        const url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}&code=${encodeURIComponent(code)}&t=${Date.now()}`;
-        const res = await fetch(url, { cache:"no-store" });
-        const txt = await res.text();
-
-        let data = null;
-        try { data = JSON.parse(txt); } catch(e){ data = null; }
-        if(!data) continue;
-        if (data.ok === false) continue;
-
-        const payload = (data.stats && typeof data.stats === "object") ? data.stats : data;
-
-        const hasAny =
-          payload.google != null || payload.waze != null || payload.uber != null ||
-          payload.share != null || payload.copy != null ||
-          payload.Google != null || payload.Waze != null || payload.Uber != null;
-
-        if(hasAny) return payload;
-      }catch(e){}
-    }
-    return null;
-  }
-
-  async function cargarStats(){
-    const code = window.CODIGO_CLIENTE || "";
-    if(!code) return;
-
-    const panel = document.getElementById("statsPanel");
-    const elT = document.getElementById("stUpdated");
-    if(panel) panel.style.opacity = "0.85";
-    if(elT) elT.textContent = "Actualizado: cargando...";
-
-    try{
-      const stats = await fetchStatsAnyAction(code);
-      if(stats){
-        setStatsUI(stats);
-      }else{
-        if(elT) elT.textContent = "Actualizado: No disponible";
-      }
-    }catch(e){
-      if(elT) elT.textContent = "Actualizado: Error al cargar";
-    }finally{
-      if(panel) panel.style.opacity = "1";
-    }
-  }
-
-  function initStatsPanel(){
-    const btn = document.getElementById("btnStats");
-    const panel = document.getElementById("statsPanel");
-    const chev = document.getElementById("statsChevron");
-    if (!btn || !panel) return;
-
-    btn.addEventListener("click", async () => {
-      const opening = (panel.style.display === "none" || !panel.style.display);
-      panel.style.display = opening ? "block" : "none";
-      if (chev) chev.textContent = opening ? "▴" : "▾";
-      if(opening) await cargarStats();
-    });
-  }
-
-  // ✅ Para cuando el backend manda etiquetas y el QR trae coords
+  // ✅ Extraer lat/lng desde el QR que trae data=...query=LAT,LNG
   function parseLatLngFromQr(qrUrl){
     try{
       const u = new URL(qrUrl);
@@ -1057,9 +957,34 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
     return { google, waze, uber };
   }
 
-  // ⚠️ Fallback si no viene link real de aviso (y no viene teléfono)
+  function cleanPhone507(v){
+    let d = String(v || "").replace(/\D/g, "");
+    if(!d) return "";
+    if(d.startsWith("507")) d = d.slice(3);
+    if(d.length > 8) d = d.slice(-8);
+    return d;
+  }
+
+  // ✅ Avisar al cliente por WhatsApp (usa telefono del JSON)
+  function buildAvisoWhatsAppToClient(phone507or8, code){
+    const p8 = cleanPhone507(phone507or8);
+    if(!p8) return "";
+
+    const shareUrl = `${location.origin}${location.pathname}?code=${encodeURIComponent(code)}`;
+    const msg = [
+      "Hola 👋",
+      `Aquí está tu Dirección Digital ${code}:`,
+      shareUrl,
+      "",
+      "Ábrela para ver Google Maps, Waze y Uber."
+    ].join("\n");
+
+    return `https://wa.me/507${p8}?text=${encodeURIComponent(msg)}`;
+  }
+
+  // fallback si no hay teléfono
   function buildAvisoWhatsAppFallback(code){
-    const msg = `Hola, te comparto tu Dirección Digital ${code}.\n${getShareUrl()}`;
+    const msg = `Hola 👋\nTe comparto tu Dirección Digital ${code}:\n${getShareUrl()}`;
     return `https://wa.me/?text=${encodeURIComponent(msg)}`;
   }
 
@@ -1077,8 +1002,8 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
     try{
       const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
       const res = await fetch(url, { cache:"no-store" });
-
       const txt = await res.text();
+
       console.log("WEBAPP status:", res.status);
       console.log("WEBAPP respuesta (inicio):", txt.slice(0, 250));
 
@@ -1087,11 +1012,8 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
       }
 
       let data;
-      try{
-        data = JSON.parse(txt);
-      }catch(e){
-        throw new Error("La WebApp NO devolvió JSON (probable permiso/login o error del script).");
-      }
+      try{ data = JSON.parse(txt); }
+      catch(e){ throw new Error("La WebApp NO devolvió JSON (permiso/login o error del script)."); }
 
       if(!data.ok){
         throw new Error(data.message || "Código no encontrado.");
@@ -1099,10 +1021,10 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
 
       window.CODIGO_CLIENTE = data.codigo || data.code || code;
 
-      // ✅ AQUÍ: pinta los datos del cliente (esto era lo que faltaba)
+      // ✅ Pinta datos del cliente
       fillClientUI(data, code);
 
-      // ✅ Links
+      // ✅ Links del backend (pero ahora vienen como etiquetas)
       let google = normalizeUrl(data.google_maps || data.google || "");
       let waze   = normalizeUrl(data.waze_link || data.waze || "");
       let uber   = normalizeUrl(data.uber_link || data.uber || "");
@@ -1110,7 +1032,7 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
 
       const looksLikeUrl = (s) => /^https?:\/\//i.test(String(s || "").trim());
 
-      // ✅ Si backend manda etiquetas, armamos desde QR
+      // ✅ Si backend manda etiquetas, armamos Google/Waze/Uber desde el QR
       if((!looksLikeUrl(google) || !looksLikeUrl(waze) || !looksLikeUrl(uber)) && data.qr){
         const ll = parseLatLngFromQr(data.qr);
         if(ll){
@@ -1121,16 +1043,23 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
         }
       }
 
-      // ✅ Aviso fallback si no viene URL real
-      if(!looksLikeUrl(aviso)){
+      // ✅ Avisar al cliente: usar telefono del JSON (prioridad)
+      const tel = data.telefono || data.phone || data.celular || "";
+      const avisoBuilt = buildAvisoWhatsAppToClient(tel, window.CODIGO_CLIENTE || code);
+
+      if(avisoBuilt){
+        aviso = avisoBuilt;
+      } else if(!looksLikeUrl(aviso)){
         aviso = buildAvisoWhatsAppFallback(window.CODIGO_CLIENTE || code);
       }
 
+      // ✅ set links
       safeHref("btnGoogle", google);
       safeHref("btnWaze", waze);
       safeHref("btnUber", uber);
       safeHref("btnAviso", aviso);
 
+      // ✅ track handlers (IMPORTANTE: aviso = "aviso" para tu contador)
       attachTrack("btnGoogle","google");
       attachTrack("btnWaze","waze");
       attachTrack("btnUber","uber");
@@ -1208,7 +1137,7 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    initStatsPanel();
+    initStatsPanel?.();
     initComprar();
     initBuscarBindings();
 
@@ -1234,6 +1163,9 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynF
       if (linkVer) linkVer.href = homeLink;
     }
   });
+
+  // Si tu página no tiene stats panel, esto evita errores
+  function initStatsPanel(){ /* opcional */ }
 </script>
 </body>
 </html>

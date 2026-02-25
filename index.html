@@ -721,460 +721,446 @@
   </div>
 
   <script>
-    window.addEventListener("error", (e) => {
-      console.log("❌ Error JS:", e.message, "en", e.filename, "línea", e.lineno);
-    });
+  window.addEventListener("error", (e) => {
+    console.log("❌ Error JS:", e.message, "en", e.filename, "línea", e.lineno);
+  });
 
-    // ✅ WebApp
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
-    const WA_NUMBER = "50765996532";
-    const EJEMPLO_CODE = "AD507-0001";
+  // ✅ WebApp
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
+  const WA_NUMBER = "50765996532";
+  const EJEMPLO_CODE = "AD507-0001";
 
-    function waLink(plan){
-      const base = `https://wa.me/${WA_NUMBER}`;
-      const msg = [
-        "Hola, quiero comprar mi Dirección Digital AD507.",
-        plan ? `Plan: ${plan}` : "",
-        "Nombre:",
-        "Provincia:",
-        "Referencia:",
-        "Ubicación (link de Google Maps):"
-      ].filter(Boolean).join("\n");
-      return `${base}?text=${encodeURIComponent(msg)}`;
+  function waLink(plan){
+    const base = `https://wa.me/${WA_NUMBER}`;
+    const msg = [
+      "Hola, quiero comprar mi Dirección Digital AD507.",
+      plan ? `Plan: ${plan}` : "",
+      "Nombre:",
+      "Provincia:",
+      "Referencia:",
+      "Ubicación (link de Google Maps):"
+    ].filter(Boolean).join("\n");
+    return `${base}?text=${encodeURIComponent(msg)}`;
+  }
+
+  function verEjemplo(){
+    const input = document.getElementById("inputCodigo");
+    if(input) input.value = EJEMPLO_CODE;
+    buscarCodigo();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function setMsg(t) {
+    const el = document.getElementById("msgBusqueda");
+    if (el) el.textContent = t || "";
+  }
+
+  function safeText(id, value){
+    const el = document.getElementById(id);
+    if (el) el.textContent = value ?? "";
+  }
+
+  // ✅ NO uses "#" porque te manda a /#
+  function safeHref(id, value){
+    const el = document.getElementById(id);
+    if(!el) return;
+
+    if(value && String(value).trim()){
+      el.href = value;
+    }else{
+      el.removeAttribute("href"); // queda como botón visual, pero no navega
     }
+  }
 
-    function verEjemplo(){
-      const input = document.getElementById("inputCodigo");
-      if(input) input.value = EJEMPLO_CODE;
-      buscarCodigo();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+  // ✅ Extrae URL aunque venga "sucia" o sin https
+  function extractUrl(raw){
+    const s = String(raw ?? "").replace(/\u00A0/g," ").replace(/\u200B/g," ").trim();
+    if(!s) return "";
 
-    function setMsg(t) {
-      const el = document.getElementById("msgBusqueda");
-      if (el) el.textContent = t || "";
-    }
+    // 1) URL completa http/https
+    const m1 = s.match(/https?:\/\/[^\s"'<>()]+/i);
+    if(m1) return m1[0];
 
-    function safeText(id, value){
-      const el = document.getElementById(id);
-      if (el) el.textContent = value ?? "";
-    }
+    // 2) www.algo.com/...
+    const m2 = s.match(/www\.[^\s"'<>()]+/i);
+    if(m2) return "https://" + m2[0];
 
-function safeHref(id, value){
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.href = value ? value : "javascript:void(0)";
-}
-   function extractUrl(raw){
-  const s = String(raw ?? "").replace(/\u00A0/g," ").replace(/\u200B/g," ").trim();
-  if(!s) return "";
+    // 3) dominio sin esquema (maps.app.goo.gl/..., waze.com/..., uber.com/..., wa.me/...)
+    const m3 = s.match(/\b([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s"'<>()]*)?/i);
+    if(m3) return "https://" + m3[0];
 
-  // 1) URL completa http/https
-  const m1 = s.match(/https?:\/\/[^\s"'<>()]+/i);
-  if(m1) return m1[0];
+    // 4) wa.me/507...
+    const m4 = s.match(/\bwa\.me\/[0-9]+[^\s"'<>()]*/i);
+    if(m4) return "https://" + m4[0];
 
-  // 2) www.algo.com/...
-  const m2 = s.match(/www\.[^\s"'<>()]+/i);
-  if(m2) return "https://" + m2[0];
+    return "";
+  }
 
-  // 3) dominios SIN esquema (waze.com/..., maps.app.goo.gl/..., wa.me/..., uber.com/...)
-  //    captura algo.tipo/... (con o sin ruta/query)
-  const m3 = s.match(/\b([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s"'<>()]*)?/i);
-  if(m3) return "https://" + m3[0];
+  // ✅ ESTA ES LA ÚNICA normalizeUrl QUE DEBE EXISTIR
+  function normalizeUrl(raw){
+    let url = extractUrl(raw);
+    if(!url) return "";
 
-  // 4) wa.me sin punto (por si viene como wa.me/507...)
-  const m4 = s.match(/\bwa\.me\/[0-9]+[^\s"'<>()]*/i);
-  if(m4) return "https://" + m4[0];
+    url = url.replace(/\s+/g, "");
 
-  return "";
-}
+    // evita casos tipo "https://waze"
+    if (!/https?:\/\/.+\..+/i.test(url) && !/^(waze|uber|whatsapp):\/\//i.test(url)) return "";
 
-function normalizeUrl(raw){
-  let url = extractUrl(raw);
-  if(!url) return "";
+    return url;
+  }
 
-  // limpia espacios internos raros
-  url = url.replace(/\s+/g, "");
+  function makeQRFromLink(link){
+    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
+  }
 
-  // por seguridad: si quedó como "https://waze" (sin punto), lo invalidamos
-  if (!/https?:\/\/.+\..+/i.test(url) && !/^(waze|uber|whatsapp):\/\//i.test(url)) return "";
-
-  return url;
-}
-
-    // ✅ Evita NXDOMAIN (si es solo texto tipo "Waze", retorna vacío)
-    function normalizeUrl(url){
-      url = String(url ?? "")
-        .replace(/\u00A0/g, " ")
-        .replace(/\u200B/g, "")
-        .trim();
-
-      if(!url || url === "-" || url === "#") return "";
-
-      url = url.replace(/\s+/g, "");
-
-      // esquemas válidos (http/https o apps)
-      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url) || /^tel:|^mailto:/i.test(url)) {
-        return url;
-      }
-
-      // si es solo texto, no lo conviertas en URL
-      const looksLikeWeb = url.includes(".") || url.startsWith("www.");
-      if(!looksLikeWeb) return "";
-
-      return "https://" + url;
-    }
-
-    function makeQRFromLink(link){
-      return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
-    }
-
-    // ✅ TRACK robusto
-    function track(ev){
-      try{
-        const code = window.CODIGO_CLIENTE || "";
-        if(!code) return;
-
-        const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
-
-        if (navigator.sendBeacon) {
-          const blob = new Blob([], { type: "text/plain" });
-          const ok = navigator.sendBeacon(url, blob);
-          if (ok) return;
-        }
-
-        fetch(url, { method:"GET", mode:"no-cors", cache:"no-store", keepalive:true }).catch(()=>{});
-        const img = new Image();
-        img.src = url;
-      }catch(e){}
-    }
-
-    // ✅ Cuenta pero NO rompe la apertura
-    function attachTrack(id, ev){
-      const old = document.getElementById(id);
-      if(!old) return;
-
-      const a = old.cloneNode(true);
-      old.parentNode.replaceChild(a, old);
-
-      a.addEventListener("click", function(){
-        track(ev);
-      }, { passive:true });
-    }
-
-    function toggleStatsNegocios(esNegocios){
-      const btn = document.getElementById("btnStats");
-      const panel = document.getElementById("statsPanel");
-      if(btn) btn.style.display = esNegocios ? "flex" : "none";
-      if(panel) panel.style.display = "none";
-      const chev = document.getElementById("statsChevron");
-      if(chev) chev.textContent = "▾";
-    }
-
-    // ✅ Oculta TODO lo que pediste cuando hay cliente
-    function toggleHomeBloques(showHome){
-      const homeHero = document.getElementById("homeHero");
-      const buyWrap = document.getElementById("buyWrap");             // top comprar
-      const heroComprar = document.getElementById("heroComprarBox");  // 2 comprar
-      const heroEjemplo = document.getElementById("heroEjemploBox");  // ver ejemplo
-
-      if(homeHero) homeHero.style.display = showHome ? "" : "none";
-      if(buyWrap) buyWrap.style.display = showHome ? "flex" : "none";
-      if(heroComprar) heroComprar.style.display = showHome ? "" : "none";
-      if(heroEjemplo) heroEjemplo.style.display = showHome ? "" : "none";
-    }
-
-    function toggleModoCliente(isCliente){
-      const pasos = document.getElementById("seccionPasos");
-      const precios = document.getElementById("seccionPrecios");
-      if (pasos) pasos.style.display = isCliente ? "none" : "block";
-      if (precios) precios.style.display = isCliente ? "none" : "block";
-
-      toggleHomeBloques(!isCliente);
-    }
-
-    function togglePanelCliente(hasClient){
-      const ids = [
-        "fieldNombre","fieldRef",
-        "tituloUbicacion","gridUbicacion","divAfterUbic",
-        "tituloCompartir","gridCompartir",
-        "notaVerificacion","divAfterVerif"
-      ];
-      ids.forEach(id=>{
-        const el = document.getElementById(id);
-        if(el) el.style.display = hasClient ? "" : "none";
-      });
-    }
-
-    function getShareUrl(){
-      return window.CODIGO_CLIENTE
-        ? `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`
-        : `${location.origin}${location.pathname}`;
-    }
-
-    // ---------- STATS ----------
-    function safeNum(v){
-      const n = Number(v);
-      return Number.isFinite(n) ? n : 0;
-    }
-
-    function setStatsUI(obj){
-      const g = obj.google ?? obj.Google ?? obj.google_maps ?? obj.googleMaps ?? obj.gmaps ?? obj.GMaps;
-      const w = obj.waze ?? obj.Waze;
-      const u = obj.uber ?? obj.Uber;
-      const sh = obj.share ?? obj.shared ?? obj.compartir ?? obj.compartido;
-      const cp = obj.copy ?? obj.copied ?? obj.copiar ?? obj.copiado;
-      const updated = obj.updated ?? obj.last_update ?? obj.lastUpdated ?? obj.timestamp ?? obj.time ?? "";
-
-      const elG = document.getElementById("stGoogle");
-      const elW = document.getElementById("stWaze");
-      const elU = document.getElementById("stUber");
-      const elS = document.getElementById("stShare");
-      const elC = document.getElementById("stCopy");
-      const elT = document.getElementById("stUpdated");
-
-      if(elG) elG.textContent = safeNum(g);
-      if(elW) elW.textContent = safeNum(w);
-      if(elU) elU.textContent = safeNum(u);
-      if(elS) elS.textContent = safeNum(sh);
-      if(elC) elC.textContent = safeNum(cp);
-
-      if(elT){
-        elT.textContent = updated ? `Actualizado: ${updated}` : `Actualizado: ${new Date().toLocaleString()}`;
-      }
-    }
-
-    async function fetchStatsAnyAction(code){
-      const actions = ["stats","getStats","activity","analytics"];
-      for(const action of actions){
-        try{
-          const url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}&code=${encodeURIComponent(code)}&t=${Date.now()}`;
-          const res = await fetch(url, { cache:"no-store" });
-          const txt = await res.text();
-
-          let data = null;
-          try { data = JSON.parse(txt); } catch(e){ data = null; }
-          if(!data) continue;
-          if (data.ok === false) continue;
-
-          const payload = (data.stats && typeof data.stats === "object") ? data.stats : data;
-
-          const hasAny =
-            payload.google != null || payload.waze != null || payload.uber != null ||
-            payload.share != null || payload.copy != null ||
-            payload.Google != null || payload.Waze != null || payload.Uber != null;
-
-          if(hasAny) return payload;
-        }catch(e){}
-      }
-      return null;
-    }
-
-    async function cargarStats(){
+  // ✅ TRACK robusto
+  function track(ev){
+    try{
       const code = window.CODIGO_CLIENTE || "";
       if(!code) return;
 
-      const panel = document.getElementById("statsPanel");
-      const elT = document.getElementById("stUpdated");
-      if(panel) panel.style.opacity = "0.85";
-      if(elT) elT.textContent = "Actualizado: cargando...";
+      const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
 
-      try{
-        const stats = await fetchStatsAnyAction(code);
-        if(stats){
-          setStatsUI(stats);
-        }else{
-          if(elT) elT.textContent = "Actualizado: No disponible";
-        }
-      }catch(e){
-        if(elT) elT.textContent = "Actualizado: Error al cargar";
-      }finally{
-        if(panel) panel.style.opacity = "1";
+      if (navigator.sendBeacon) {
+        const blob = new Blob([], { type: "text/plain" });
+        const ok = navigator.sendBeacon(url, blob);
+        if (ok) return;
       }
+
+      fetch(url, { method:"GET", mode:"no-cors", cache:"no-store", keepalive:true }).catch(()=>{});
+      const img = new Image();
+      img.src = url;
+    }catch(e){}
+  }
+
+  // ✅ Cuenta y deja abrir normal (NO bloquea)
+  function attachTrack(id, ev){
+    const old = document.getElementById(id);
+    if(!old) return;
+
+    const a = old.cloneNode(true);
+    old.parentNode.replaceChild(a, old);
+
+    a.addEventListener("click", function(){
+      track(ev);
+      // NO preventDefault -> abre el link normal
+    }, { passive:true });
+  }
+
+  function toggleStatsNegocios(esNegocios){
+    const btn = document.getElementById("btnStats");
+    const panel = document.getElementById("statsPanel");
+    if(btn) btn.style.display = esNegocios ? "flex" : "none";
+    if(panel) panel.style.display = "none";
+    const chev = document.getElementById("statsChevron");
+    if(chev) chev.textContent = "▾";
+  }
+
+  function toggleHomeBloques(showHome){
+    const homeHero = document.getElementById("homeHero");
+    const buyWrap = document.getElementById("buyWrap");
+    const heroComprar = document.getElementById("heroComprarBox");
+    const heroEjemplo = document.getElementById("heroEjemploBox");
+
+    if(homeHero) homeHero.style.display = showHome ? "" : "none";
+    if(buyWrap) buyWrap.style.display = showHome ? "flex" : "none";
+    if(heroComprar) heroComprar.style.display = showHome ? "" : "none";
+    if(heroEjemplo) heroEjemplo.style.display = showHome ? "" : "none";
+  }
+
+  function toggleModoCliente(isCliente){
+    const pasos = document.getElementById("seccionPasos");
+    const precios = document.getElementById("seccionPrecios");
+    if (pasos) pasos.style.display = isCliente ? "none" : "block";
+    if (precios) precios.style.display = isCliente ? "none" : "block";
+    toggleHomeBloques(!isCliente);
+  }
+
+  function togglePanelCliente(hasClient){
+    const ids = [
+      "fieldNombre","fieldRef",
+      "tituloUbicacion","gridUbicacion","divAfterUbic",
+      "tituloCompartir","gridCompartir",
+      "notaVerificacion","divAfterVerif"
+    ];
+    ids.forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.display = hasClient ? "" : "none";
+    });
+  }
+
+  function getShareUrl(){
+    return window.CODIGO_CLIENTE
+      ? `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`
+      : `${location.origin}${location.pathname}`;
+  }
+
+  // ---------- STATS ----------
+  function safeNum(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function setStatsUI(obj){
+    const g = obj.google ?? obj.Google ?? obj.google_maps ?? obj.googleMaps ?? obj.gmaps ?? obj.GMaps;
+    const w = obj.waze ?? obj.Waze;
+    const u = obj.uber ?? obj.Uber;
+    const sh = obj.share ?? obj.shared ?? obj.compartir ?? obj.compartido;
+    const cp = obj.copy ?? obj.copied ?? obj.copiar ?? obj.copiado;
+    const updated = obj.updated ?? obj.last_update ?? obj.lastUpdated ?? obj.timestamp ?? obj.time ?? "";
+
+    const elG = document.getElementById("stGoogle");
+    const elW = document.getElementById("stWaze");
+    const elU = document.getElementById("stUber");
+    const elS = document.getElementById("stShare");
+    const elC = document.getElementById("stCopy");
+    const elT = document.getElementById("stUpdated");
+
+    if(elG) elG.textContent = safeNum(g);
+    if(elW) elW.textContent = safeNum(w);
+    if(elU) elU.textContent = safeNum(u);
+    if(elS) elS.textContent = safeNum(sh);
+    if(elC) elC.textContent = safeNum(cp);
+
+    if(elT){
+      elT.textContent = updated ? `Actualizado: ${updated}` : `Actualizado: ${new Date().toLocaleString()}`;
+    }
+  }
+
+  async function fetchStatsAnyAction(code){
+    const actions = ["stats","getStats","activity","analytics"];
+    for(const action of actions){
+      try{
+        const url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}&code=${encodeURIComponent(code)}&t=${Date.now()}`;
+        const res = await fetch(url, { cache:"no-store" });
+        const txt = await res.text();
+
+        let data = null;
+        try { data = JSON.parse(txt); } catch(e){ data = null; }
+        if(!data) continue;
+        if (data.ok === false) continue;
+
+        const payload = (data.stats && typeof data.stats === "object") ? data.stats : data;
+
+        const hasAny =
+          payload.google != null || payload.waze != null || payload.uber != null ||
+          payload.share != null || payload.copy != null ||
+          payload.Google != null || payload.Waze != null || payload.Uber != null;
+
+        if(hasAny) return payload;
+      }catch(e){}
+    }
+    return null;
+  }
+
+  async function cargarStats(){
+    const code = window.CODIGO_CLIENTE || "";
+    if(!code) return;
+
+    const panel = document.getElementById("statsPanel");
+    const elT = document.getElementById("stUpdated");
+    if(panel) panel.style.opacity = "0.85";
+    if(elT) elT.textContent = "Actualizado: cargando...";
+
+    try{
+      const stats = await fetchStatsAnyAction(code);
+      if(stats){
+        setStatsUI(stats);
+      }else{
+        if(elT) elT.textContent = "Actualizado: No disponible";
+      }
+    }catch(e){
+      if(elT) elT.textContent = "Actualizado: Error al cargar";
+    }finally{
+      if(panel) panel.style.opacity = "1";
+    }
+  }
+
+  function initStatsPanel(){
+    const btn = document.getElementById("btnStats");
+    const panel = document.getElementById("statsPanel");
+    const chev = document.getElementById("statsChevron");
+    if (!btn || !panel) return;
+
+    btn.addEventListener("click", async () => {
+      const opening = (panel.style.display === "none" || !panel.style.display);
+      panel.style.display = opening ? "block" : "none";
+      if (chev) chev.textContent = opening ? "▴" : "▾";
+      if(opening) await cargarStats();
+    });
+  }
+
+  async function buscarCodigo(){
+    const input = document.getElementById("inputCodigo");
+    const code = (input ? input.value : "").trim();
+
+    if(!code){
+      setMsg("Ingresa tu código para buscar.");
+      toggleModoCliente(false);
+      togglePanelCliente(false);
+      toggleStatsNegocios(false);
+
+      const homeLink = `${location.origin}${location.pathname}`;
+      safeText("uiLink", homeLink);
+      const qrImg = document.getElementById("qrImg");
+      if (qrImg) qrImg.src = makeQRFromLink(homeLink);
+      return;
     }
 
-    function initStatsPanel(){
-      const btn = document.getElementById("btnStats");
-      const panel = document.getElementById("statsPanel");
-      const chev = document.getElementById("statsChevron");
-      if (!btn || !panel) return;
+    setMsg("Buscando...");
 
-      btn.addEventListener("click", async () => {
-        const opening = (panel.style.display === "none" || !panel.style.display);
-        panel.style.display = opening ? "block" : "none";
-        if (chev) chev.textContent = opening ? "▴" : "▾";
-        if(opening) await cargarStats();
+    try{
+      const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
+      const data = await res.json();
+
+      console.log("LINKS RAW:", {
+        google_maps: data.google_maps,
+        google: data.google,
+        waze: data.waze,
+        uber: data.uber,
+        whatsapp: data.whatsapp,
+        link_whatsapp: data.link_whatsapp
       });
-    }
 
-    async function buscarCodigo(){
-      const input = document.getElementById("inputCodigo");
-      const code = (input ? input.value : "").trim();
-
-      if(!code){
-        setMsg("Ingresa tu código para buscar.");
+      if(!data.ok){
+        setMsg(data.message || "Código no encontrado.");
         toggleModoCliente(false);
         togglePanelCliente(false);
         toggleStatsNegocios(false);
-
-        const homeLink = `${location.origin}${location.pathname}`;
-        safeText("uiLink", homeLink);
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) qrImg.src = makeQRFromLink(homeLink);
         return;
       }
 
-      setMsg("Buscando...");
+      window.CODIGO_CLIENTE = data.codigo || data.code || code;
 
-      try{
-        const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
-        const data = await res.json();
-        console.log("LINKS RAW:", {
-  google_maps: data.google_maps,
-  google: data.google,
-  waze: data.waze,
-  uber: data.uber,
-  whatsapp: data.whatsapp,
-  link_whatsapp: data.link_whatsapp
-});
+      toggleModoCliente(true);
+      togglePanelCliente(true);
 
-        if(!data.ok){
-          setMsg(data.message || "Código no encontrado.");
-          toggleModoCliente(false);
-          togglePanelCliente(false);
-          toggleStatsNegocios(false);
-          return;
-        }
+      safeText("uiCodigo", data.codigo || data.code || code);
+      safeText("uiNombre", data.nombre || "Cliente");
+      safeText("uiRef", data.referencia || "Referencia no indicada");
+      safeText("uiEstado", data.validacion || "Activo");
 
-        window.CODIGO_CLIENTE = data.codigo || data.code || code;
+      const google = normalizeUrl(data.google_maps || data.google || "");
+      const waze   = normalizeUrl(data.waze || "");
+      const uber   = normalizeUrl(data.uber || "");
+      const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
 
-        toggleModoCliente(true);
-        togglePanelCliente(true);
+      console.log("LINKS PARSED:", { google, waze, uber, aviso });
 
-        safeText("uiCodigo", data.codigo || data.code || code);
-        safeText("uiNombre", data.nombre || "Cliente");
-        safeText("uiRef", data.referencia || "Referencia no indicada");
-        safeText("uiEstado", data.validacion || "Activo");
+      safeHref("btnGoogle", google);
+      safeHref("btnWaze", waze);
+      safeHref("btnUber", uber);
+      safeHref("btnAviso", aviso);
 
-        const google = normalizeUrl(data.google_maps || data.google || "");
-        const waze   = normalizeUrl(data.waze || "");
-        const uber   = normalizeUrl(data.uber || "");
-        const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+      attachTrack("btnGoogle","google");
+      attachTrack("btnWaze","waze");
+      attachTrack("btnUber","uber");
+      attachTrack("btnAviso","share"); // aviso contado como share
 
-        safeHref("btnGoogle", google || "#");
-        safeHref("btnWaze", waze || "#");
-        safeHref("btnUber", uber || "#");
-        safeHref("btnAviso", aviso || "#");
+      const linkMostrado = getShareUrl();
+      safeText("uiLink", linkMostrado);
 
-        attachTrack("btnGoogle","google");
-        attachTrack("btnWaze","waze");
-        attachTrack("btnUber","uber");
-        attachTrack("btnAviso","share"); // aviso contado como share (tu Apps Script no tiene "aviso")
+      const qrImg = document.getElementById("qrImg");
+      if (qrImg) qrImg.src = makeQRFromLink(linkMostrado);
 
-        const linkMostrado = getShareUrl();
-        safeText("uiLink", linkMostrado);
-
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) qrImg.src = makeQRFromLink(linkMostrado);
-
-        const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer){
-          linkVer.href = `verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
-          linkVer.target = "_blank";
-        }
-
-        const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
-        toggleStatsNegocios(esNegocios);
-        if(esNegocios) cargarStats();
-
-        setMsg("Listo ✅");
-      }catch(err){
-        setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
-        toggleModoCliente(false);
-        togglePanelCliente(false);
-        toggleStatsNegocios(false);
+      const linkVer = document.getElementById("linkVerificacion");
+      if (linkVer){
+        linkVer.href = `verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
+        linkVer.target = "_blank";
       }
+
+      const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
+      toggleStatsNegocios(esNegocios);
+      if(esNegocios) cargarStats();
+
+      setMsg("Listo ✅");
+    }catch(err){
+      setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
+      toggleModoCliente(false);
+      togglePanelCliente(false);
+      toggleStatsNegocios(false);
     }
+  }
 
-    function shareLink(){
-      track("share");
-      const url = getShareUrl();
-      if (navigator.share){
-        navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
-      } else {
-        copyLink(true);
-      }
+  function shareLink(){
+    track("share");
+    const url = getShareUrl();
+    if (navigator.share){
+      navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
+    } else {
+      copyLink(true);
     }
+  }
 
-    async function copyLink(silent=false){
-      track("copy");
-      const url = getShareUrl();
-      try{
-        await navigator.clipboard.writeText(url);
-        if (!silent) alert("Link copiado ✅");
-      }catch(e){
-        if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
-      }
+  async function copyLink(silent=false){
+    track("copy");
+    const url = getShareUrl();
+    try{
+      await navigator.clipboard.writeText(url);
+      if (!silent) alert("Link copiado ✅");
+    }catch(e){
+      if (!silent) alert("No se pudo copiar. Copia manualmente el link.");
     }
+  }
 
-    function initComprar(){
-      const top = document.getElementById("btnComprarTop");
-      const p = document.getElementById("btnComprarPersonal");
-      const n = document.getElementById("btnComprarNegocios");
-      const hp = document.getElementById("btnHeroPersonal");
-      const hn = document.getElementById("btnHeroNegocios");
+  function initComprar(){
+    const top = document.getElementById("btnComprarTop");
+    const p = document.getElementById("btnComprarPersonal");
+    const n = document.getElementById("btnComprarNegocios");
+    const hp = document.getElementById("btnHeroPersonal");
+    const hn = document.getElementById("btnHeroNegocios");
 
-      const linkTop = waLink("");
-      const linkP = waLink("Personal ($6.99)");
-      const linkN = waLink("Negocios ($10.99)");
+    const linkTop = waLink("");
+    const linkP = waLink("Personal ($6.99)");
+    const linkN = waLink("Negocios ($10.99)");
 
-      if(top) top.href = linkTop;
-      if(p) p.href = linkP;
-      if(n) n.href = linkN;
-      if(hp) hp.href = linkP;
-      if(hn) hn.href = linkN;
+    if(top) top.href = linkTop;
+    if(p) p.href = linkP;
+    if(n) n.href = linkN;
+    if(hp) hp.href = linkP;
+    if(hn) hn.href = linkN;
+  }
+
+  (function autoLoadFromURL(){
+    initStatsPanel();
+    initComprar();
+
+    const qs = new URLSearchParams(location.search);
+    const code = (qs.get("code") || "").trim();
+
+    if (code) {
+      const input = document.getElementById("inputCodigo");
+      if (input) input.value = code;
+      buscarCodigo();
+    } else {
+      toggleModoCliente(false);
+      togglePanelCliente(false);
+      toggleStatsNegocios(false);
+
+      const homeLink = `${location.origin}${location.pathname}`;
+      safeText("uiLink", homeLink);
+
+      const qrImg = document.getElementById("qrImg");
+      if (qrImg) qrImg.src = makeQRFromLink(homeLink);
+
+      const linkVer = document.getElementById("linkVerificacion");
+      if (linkVer) linkVer.href = homeLink;
     }
+  })();
 
-    (function autoLoadFromURL(){
-      initStatsPanel();
-      initComprar();
+  // ✅ Exporta funciones al global para onclick
+  window.buscarCodigo = buscarCodigo;
+  window.verEjemplo = verEjemplo;
+  window.shareLink = shareLink;
+  window.copyLink = copyLink;
 
-      const qs = new URLSearchParams(location.search);
-      const code = (qs.get("code") || "").trim();
-
-      if (code) {
-        const input = document.getElementById("inputCodigo");
-        if (input) input.value = code;
-        buscarCodigo();
-      } else {
-        toggleModoCliente(false);
-        togglePanelCliente(false);
-        toggleStatsNegocios(false);
-
-        const homeLink = `${location.origin}${location.pathname}`;
-        safeText("uiLink", homeLink);
-
-        const qrImg = document.getElementById("qrImg");
-        if (qrImg) qrImg.src = makeQRFromLink(homeLink);
-
-        const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer) linkVer.href = homeLink;
-      }
-    })();
-
-    // ✅ Exporta funciones al global para que funcionen los onclick del HTML
-    window.buscarCodigo = buscarCodigo;
-    window.verEjemplo = verEjemplo;
-    window.shareLink = shareLink;
-    window.copyLink = copyLink;
-
-    // ✅ Refuerzo: click del botón buscar por JS también
-    (function bindBuscarBtn(){
-      const btn = document.querySelector('button[onclick*="buscarCodigo"]');
-      if(btn){
-        btn.onclick = (e) => { e.preventDefault(); buscarCodigo(); };
-      }
-    })();
-  </script>
+  // ✅ Refuerzo: botón buscar
+  (function bindBuscarBtn(){
+    const btn = document.querySelector('button[onclick*="buscarCodigo"]');
+    if(btn){
+      btn.onclick = (e) => { e.preventDefault(); buscarCodigo(); };
+    }
+  })();
+</script>
 </body>
 </html>

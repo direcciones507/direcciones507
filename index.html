@@ -728,7 +728,7 @@
       if(msg) msg.textContent = texto || "";
     }
 
-  async function buscarCodigo() {
+async function buscarCodigo() {
   const input = document.getElementById("inputCodigo");
   if(!input) return;
   
@@ -763,7 +763,7 @@
     // URL para compartir
     const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
     
-    // Extraer coordenadas del QR (ya que el script no da URLs)
+    // Extraer coordenadas del QR
     let lat = "", lng = "";
     if (data.qr) {
       try {
@@ -777,23 +777,135 @@
       } catch(e) {}
     }
     
-    // Construir URLs manualmente
+    // ===== CONFIGURAR BOTONES DE NAVEGACIÓN =====
     if (lat && lng) {
-      document.getElementById("btnGoogle").href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-      document.getElementById("btnWaze").href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-      document.getElementById("btnUber").href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+      // Google Maps
+      const btnGoogle = document.getElementById("btnGoogle");
+      btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      btnGoogle.target = "_blank";
+      btnGoogle.rel = "noopener noreferrer";
+      btnGoogle.onclick = function(e) {
+        if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" });
+      };
       
+      // Waze
+      const btnWaze = document.getElementById("btnWaze");
+      btnWaze.href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+      btnWaze.target = "_blank";
+      btnWaze.rel = "noopener noreferrer";
+      btnWaze.onclick = function(e) {
+        if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" });
+      };
+      
+      // Uber
+      const btnUber = document.getElementById("btnUber");
+      btnUber.href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+      btnUber.target = "_blank";
+      btnUber.rel = "noopener noreferrer";
+      btnUber.onclick = function(e) {
+        if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" });
+      };
+      
+      // Aviso WhatsApp
       if (data.telefono) {
         const msg = `Hola 👋, ya llegué. Código: ${data.codigo}`;
-        document.getElementById("btnAviso").href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
+        const btnAviso = document.getElementById("btnAviso");
+        btnAviso.href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
+        btnAviso.target = "_blank";
+        btnAviso.rel = "noopener noreferrer";
+        btnAviso.onclick = function(e) {
+          if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" });
+        };
+      }
+    }
+    
+    // ===== BOTONES DE COMPARTIR =====
+    const btnCompartir = document.getElementById("btnCompartir");
+    btnCompartir.onclick = function(e) {
+      e.preventDefault();
+      if(esNegocio) {
+        fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" });
       }
       
-      // Configurar target blank
-      ["btnGoogle", "btnWaze", "btnUber", "btnAviso"].forEach(id => {
-        const btn = document.getElementById(id);
-        btn.target = "_blank";
-        btn.rel = "noopener noreferrer";
-      });
+      if(navigator.share) {
+        navigator.share({
+          title: "Dirección Digital",
+          text: `Mi dirección digital ${CODIGO_ACTUAL}`,
+          url: shareUrl
+        }).catch(() => {
+          navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
+        });
+      } else {
+        navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
+      }
+    };
+    
+    // ===== BOTÓN COPIAR =====
+    const btnCopiar = document.getElementById("btnCopiar");
+    btnCopiar.onclick = function(e) {
+      e.preventDefault();
+      if(esNegocio) {
+        fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" });
+      }
+      navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
+    };
+    
+    // ===== LINK DE VERIFICACIÓN =====
+    const linkVer = document.getElementById("linkVerificacion");
+    linkVer.href = shareUrl;
+    linkVer.target = "_blank";
+    linkVer.rel = "noopener noreferrer";
+    linkVer.onclick = function(e) {
+      if(esNegocio) {
+        fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" });
+      }
+      // El link abrirá en nueva pestaña por el target="_blank"
+    };
+    
+    // ===== QR =====
+    const qrImg = document.getElementById("qrImg");
+    if(data.qr) {
+      qrImg.src = data.qr;
+    } else {
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
+    }
+    
+    document.getElementById("uiLink").textContent = shareUrl;
+    
+    // ===== ESTADÍSTICAS =====
+    const statsBtn = document.getElementById("btnStats");
+    const statsPanel = document.getElementById("statsPanel");
+    
+    if(statsBtn && statsPanel) {
+      if(esNegocio) {
+        statsBtn.style.display = "flex";
+        statsBtn.onclick = async function(e) {
+          e.preventDefault();
+          const visible = statsPanel.style.display === "block";
+          statsPanel.style.display = visible ? "none" : "block";
+          
+          if(!visible) {
+            try {
+              const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${CODIGO_ACTUAL}`);
+              const statsData = await statsRes.json();
+              
+              if(statsData.ok) {
+                document.getElementById("stGoogle").textContent = statsData.stats?.google || 0;
+                document.getElementById("stWaze").textContent = statsData.stats?.waze || 0;
+                document.getElementById("stUber").textContent = statsData.stats?.uber || 0;
+                document.getElementById("stShare").textContent = statsData.stats?.share || 0;
+                document.getElementById("stCopy").textContent = statsData.stats?.copy || 0;
+                document.getElementById("stUpdated").textContent = "Actualizado: " + (statsData.stats?.updated || "-");
+              }
+            } catch(e) {
+              console.log("Error stats:", e);
+            }
+          }
+        };
+      } else {
+        statsBtn.style.display = "none";
+        statsPanel.style.display = "none";
+      }
     }
     
     // ===== MOSTRAR PANEL CLIENTE =====
@@ -804,7 +916,6 @@
     document.getElementById("seccionPasos").style.display = "none";
     document.getElementById("seccionPrecios").style.display = "none";
     
-    // Mostrar elementos del cliente
     document.getElementById("fieldNombre").style.display = "grid";
     document.getElementById("fieldRef").style.display = "grid";
     document.getElementById("tituloUbicacion").style.display = "block";
@@ -814,27 +925,6 @@
     document.getElementById("gridCompartir").style.display = "grid";
     document.getElementById("notaVerificacion").style.display = "block";
     document.getElementById("divAfterVerif").style.display = "block";
-    
-    // Actualizar QR y link
-    document.getElementById("uiLink").textContent = shareUrl;
-    document.getElementById("linkVerificacion").href = shareUrl;
-    document.getElementById("linkVerificacion").target = "_blank";
-    
-    if (data.qr) {
-      document.getElementById("qrImg").src = data.qr;
-    }
-    
-    // Estadísticas
-    const statsBtn = document.getElementById("btnStats");
-    const statsPanel = document.getElementById("statsPanel");
-    
-    if (esNegocio) {
-      statsBtn.style.display = "flex";
-      // ... resto del código de stats
-    } else {
-      statsBtn.style.display = "none";
-      statsPanel.style.display = "none";
-    }
     
     setMsg("✅ Listo");
     

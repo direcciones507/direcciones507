@@ -730,6 +730,25 @@
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
 
+  // ✅ Función faltante para generar QR
+  function makeQRFromLink(link) {
+    return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
+  }
+
+  // ✅ Función track faltante
+  function track(evento) {
+    const code = window.CODIGO_CLIENTE;
+    if (!code) return;
+    
+    // Solo trackear si es negocio
+    if (!window.ES_NEGOCIOS) return;
+    
+    // Enviar track sin esperar respuesta
+    fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(evento)}&t=${Date.now()}`, {
+      cache: "no-store"
+    }).catch(() => {});
+  }
+
   function waLink(plan){
     const base = `https://wa.me/${WA_NUMBER}`;
     const msg = [
@@ -760,84 +779,87 @@
     if (el) el.textContent = value ?? "";
   }
 
- function safeHref(id, value){
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.setAttribute("href", (value && String(value).trim()) ? value : "#");
-}
+  function safeHref(id, value){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.setAttribute("href", (value && String(value).trim()) ? value : "#");
+  }
 
-function extractUrl(raw){
-  const s = String(raw ?? "")
-    .replace(/\u00A0/g," ")
-    .replace(/\u200B/g," ")
-    .trim();
+  function extractUrl(raw){
+    const s = String(raw ?? "")
+      .replace(/\u00A0/g," ")
+      .replace(/\u200B/g," ")
+      .trim();
 
-  if(!s) return "";
+    if(!s) return "";
 
-  // 1) http(s)://...
-  const m1 = s.match(/https?:\/\/[^\s"'<>()]+/i);
-  if(m1) return m1[0];
+    // 1) http(s)://...
+    const m1 = s.match(/https?:\/\/[^\s"'<>()]+/i);
+    if(m1) return m1[0];
 
-  // 2) www....
-  const m2 = s.match(/www\.[^\s"'<>()]+/i);
-  if(m2) return "https://" + m2[0];
+    // 2) www....
+    const m2 = s.match(/www\.[^\s"'<>()]+/i);
+    if(m2) return "https://" + m2[0];
 
-  // 3) dominio sin esquema: maps.app.goo.gl/..., waze.com/..., wa.me/..., uber.com/...
-  const m3 = s.match(/\b([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s"'<>()]*)?/i);
-  if(m3) return "https://" + m3[0];
+    // 3) dominio sin esquema: maps.app.goo.gl/..., waze.com/..., wa.me/..., uber.com/...
+    const m3 = s.match(/\b([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s"'<>()]*)?/i);
+    if(m3) return "https://" + m3[0];
 
-  // 4) wa.me/507... (por si acaso)
-  const m4 = s.match(/\bwa\.me\/[0-9]+[^\s"'<>()]*/i);
-  if(m4) return "https://" + m4[0];
+    // 4) wa.me/507... (por si acaso)
+    const m4 = s.match(/\bwa\.me\/[0-9]+[^\s"'<>()]*/i);
+    if(m4) return "https://" + m4[0];
 
-  return "";
-}
+    return "";
+  }
 
-function normalizeUrl(raw){
-  let url = extractUrl(raw);
-  if(!url) return "";
+  function normalizeUrl(raw){
+    let url = extractUrl(raw);
+    if(!url) return "";
 
-  // limpia espacios internos raros
-  url = url.replace(/\s+/g,"");
+    // limpia espacios internos raros
+    url = url.replace(/\s+/g,"");
 
-  // evita basura tipo "https://waze"
-  if(!/^https?:\/\/.+\..+/i.test(url)) return "";
+    // evita basura tipo "https://waze"
+    if(!/^https?:\/\/.+\..+/i.test(url)) return "";
 
-  return url;
-}
+    return url;
+  }
 
-// ✅ abre + cuenta, sin perder click, sin duplicar listeners
-function attachTrack(id, ev){
-  const old = document.getElementById(id);
-  if(!old) return;
+  // ✅ abre + cuenta, sin perder click, sin duplicar listeners
+  function attachTrack(id, ev){
+    const old = document.getElementById(id);
+    if(!old) return;
 
-  // quita listeners viejos
-  const a = old.cloneNode(true);
-  old.parentNode.replaceChild(a, old);
+    // quita listeners viejos
+    const a = old.cloneNode(true);
+    old.parentNode.replaceChild(a, old);
 
-  a.addEventListener("click", function(e){
-    const href = (a.getAttribute("href") || "").trim();
+    a.addEventListener("click", function(e){
+      const href = (a.getAttribute("href") || "").trim();
 
-    // si no hay link válido, no navegues
-    if(!href || href === "#"){
+      // si no hay link válido, no navegues
+      if(!href || href === "#"){
+        e.preventDefault();
+        alert("Este enlace no está configurado todavía para este cliente.");
+        return;
+      }
+
+      // cuenta el click
+      track(ev);
+
+      // abre sin perder el contador
       e.preventDefault();
-      return;
-    }
-
-    // cuenta el click
-    track(ev);
-
-    // abre sin perder el contador
-    e.preventDefault();
-    const target = a.getAttribute("target") || "_blank";
-    if(target === "_blank"){
-      window.open(href, "_blank", "noopener");
-    }else{
-      window.location.href = href;
-    }
-  }, { passive:false });
-}
+      const target = a.getAttribute("target") || "_blank";
+      if(target === "_blank"){
+        window.open(href, "_blank", "noopener");
+      }else{
+        window.location.href = href;
+      }
+    }, { passive:false });
+  }
+  
   function toggleStatsNegocios(esNegocios){
+    window.ES_NEGOCIOS = esNegocios;
     const btn = document.getElementById("btnStats");
     const panel = document.getElementById("statsPanel");
     if(btn) btn.style.display = esNegocios ? "flex" : "none";
@@ -1000,19 +1022,20 @@ function attachTrack(id, ev){
     setMsg("Buscando...");
 
     try{
-     const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
-const res = await fetch(url, { cache:"no-store" });
+      const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
+      const res = await fetch(url, { cache:"no-store" });
 
-const txt = await res.text();
-console.log("WEBAPP status:", res.status);
-console.log("WEBAPP respuesta (inicio):", txt.slice(0, 300));
+      const txt = await res.text();
+      console.log("WEBAPP status:", res.status);
+      console.log("WEBAPP respuesta (inicio):", txt.slice(0, 300));
 
-let data;
-try{
-  data = JSON.parse(txt);
-}catch(e){
-  throw new Error("La WebApp NO devolvió JSON. Devuelve HTML/permisos. Revisa publicación. Inicio: " + txt.slice(0, 120));
-}
+      let data;
+      try{
+        data = JSON.parse(txt);
+      }catch(e){
+        throw new Error("La WebApp NO devolvió JSON. Devuelve HTML/permisos. Revisa publicación. Inicio: " + txt.slice(0, 120));
+      }
+      
       console.log("LINKS RAW:", {
         google_maps: data.google_maps,
         google: data.google,
@@ -1023,7 +1046,7 @@ try{
       });
 
       if(!data.ok){
-        setMsg("Error: " + (err && err.message ? err.message : "No se pudo conectar"));
+        setMsg("Error: " + (data.message ? data.message : "No se pudo conectar"));
         toggleModoCliente(false);
         togglePanelCliente(false);
         toggleStatsNegocios(false);
@@ -1041,19 +1064,19 @@ try{
       safeText("uiEstado", data.validacion || "Activo");
 
       const google = normalizeUrl(data.google_maps || data.google || "");
-const waze   = normalizeUrl(data.waze || "");
-const uber   = normalizeUrl(data.uber || "");
-const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+      const waze   = normalizeUrl(data.waze || "");
+      const uber   = normalizeUrl(data.uber || "");
+      const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
 
-safeHref("btnGoogle", google);
-safeHref("btnWaze", waze);
-safeHref("btnUber", uber);
-safeHref("btnAviso", aviso);
+      safeHref("btnGoogle", google);
+      safeHref("btnWaze", waze);
+      safeHref("btnUber", uber);
+      safeHref("btnAviso", aviso);
 
-attachTrack("btnGoogle","google");
-attachTrack("btnWaze","waze");
-attachTrack("btnUber","uber");
-attachTrack("btnAviso","share");
+      attachTrack("btnGoogle","google");
+      attachTrack("btnWaze","waze");
+      attachTrack("btnUber","uber");
+      attachTrack("btnAviso","aviso");
 
       const linkMostrado = getShareUrl();
       safeText("uiLink", linkMostrado);
@@ -1073,6 +1096,7 @@ attachTrack("btnAviso","share");
 
       setMsg("Listo ✅");
     }catch(err){
+      console.error("Error en buscarCodigo:", err);
       setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
       toggleModoCliente(false);
       togglePanelCliente(false);
@@ -1084,7 +1108,7 @@ attachTrack("btnAviso","share");
     track("share");
     const url = getShareUrl();
     if (navigator.share){
-      navigator.share({ title:"Dirección Digital", url }).catch(()=>{});
+      navigator.share({ title:"Dirección Digital", url }).catch(() => {});
     } else {
       copyLink(true);
     }
@@ -1119,7 +1143,14 @@ attachTrack("btnAviso","share");
     if(hn) hn.href = linkN;
   }
 
-  (function autoLoadFromURL(){
+  // ✅ Exponer funciones globalmente
+  window.buscarCodigo = buscarCodigo;
+  window.verEjemplo = verEjemplo;
+  window.shareLink = shareLink;
+  window.copyLink = copyLink;
+
+  // ✅ Inicialización
+  (function init() {
     initStatsPanel();
     initComprar();
 
@@ -1129,7 +1160,7 @@ attachTrack("btnAviso","share");
     if (code) {
       const input = document.getElementById("inputCodigo");
       if (input) input.value = code;
-      buscarCodigo();
+      setTimeout(buscarCodigo, 100);
     } else {
       toggleModoCliente(false);
       togglePanelCliente(false);
@@ -1146,19 +1177,26 @@ attachTrack("btnAviso","share");
     }
   })();
 
-  // ✅ Exporta funciones al global para onclick
-  window.buscarCodigo = buscarCodigo;
-  window.verEjemplo = verEjemplo;
-  window.shareLink = shareLink;
-  window.copyLink = copyLink;
-
   // ✅ Refuerzo: botón buscar
-  (function bindBuscarBtn(){
-    const btn = document.querySelector('button[onclick*="buscarCodigo"]');
-    if(btn){
-      btn.onclick = (e) => { e.preventDefault(); buscarCodigo(); };
+  document.addEventListener('DOMContentLoaded', function() {
+    const buscarBtn = document.querySelector('button[style*="background:linear-gradient(135deg,#22c55e,#16a34a)"]');
+    if (buscarBtn) {
+      buscarBtn.onclick = function(e) {
+        e.preventDefault();
+        buscarCodigo();
+      };
     }
-  })();
+    
+    const inputCodigo = document.getElementById('inputCodigo');
+    if (inputCodigo) {
+      inputCodigo.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          buscarCodigo();
+        }
+      });
+    }
+  });
 </script>
 </body>
 </html>

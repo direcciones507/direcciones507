@@ -760,10 +760,37 @@
       if (el) el.textContent = value ?? "";
     }
 
-    function safeHref(id, value){
-      const el = document.getElementById(id);
-      if (el) el.href = value || "#";
-    }
+function safeHref(id, value){
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.href = value && value.trim() ? value : "javascript:void(0)";
+}
+    function extractUrl(raw){
+  const s = String(raw ?? "").trim();
+
+  // agarra la primera URL http/https dentro del texto
+  const m1 = s.match(/https?:\/\/[^\s"'<>()]+/i);
+  if(m1) return m1[0];
+
+  // soporta deep links (por si usas apps)
+  const m2 = s.match(/(waze|uber|whatsapp):\/\/[^\s"'<>()]+/i);
+  if(m2) return m2[0];
+
+  // si viene como www.algo.com...
+  const m3 = s.match(/www\.[^\s"'<>()]+/i);
+  if(m3) return "https://" + m3[0];
+
+  return "";
+}
+
+function normalizeUrl(url){
+  url = extractUrl(url); // ✅ aquí está la magia
+  if(!url) return "";
+
+  // limpia cosas invisibles/espacios
+  url = url.replace(/\u00A0/g, " ").replace(/\u200B/g, "").trim();
+  return url;
+}
 
     // ✅ Evita NXDOMAIN (si es solo texto tipo "Waze", retorna vacío)
     function normalizeUrl(url){

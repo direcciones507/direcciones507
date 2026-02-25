@@ -286,7 +286,7 @@
     .rowStat:last-child{border-bottom:none}
     .updated{margin-top:10px;opacity:.75;font-size:12px}
 
-    /* ---------- MASIVO: HERO + VIDEO + TESTIMONIOS ---------- */
+    /* ---------- HERO + VIDEO + TESTIMONIOS ---------- */
     .hero{
       margin-top:18px;
       padding:18px;
@@ -331,10 +331,7 @@
       font-size:12px;
       white-space:nowrap;
     }
-    .heroCtas{
-      display:grid;
-      gap:10px;
-    }
+    .heroCtas{display:grid;gap:10px;}
     .heroBox{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(0,0,0,.22);
@@ -352,9 +349,7 @@
       font-size:12px;
       line-height:1.5;
     }
-    .videoWrap{
-      margin-top:18px;
-    }
+    .videoWrap{margin-top:18px;}
     .videoFrame{
       width:100%;
       aspect-ratio: 16 / 9;
@@ -404,7 +399,7 @@
       </div>
     </div>
 
-    <!-- ✅ MASIVO #1: HERO QUE VENDE -->
+    <!-- HERO -->
     <div class="hero">
       <div class="heroGrid">
         <div>
@@ -438,23 +433,19 @@
             </div>
           </div>
 
-          <!-- ✅ MASIVO #4: EJEMPLO REAL FUNCIONANDO -->
           <div class="heroBox">
             <p class="miniTitle">Ver ejemplo real</p>
             <button class="btn primary" type="button" onclick="verEjemplo()">
               <i class="fa-solid fa-play"></i> Ver ejemplo real
             </button>
-            <p class="miniSub" style="margin-top:10px;opacity:.85">
-            </p>
+            <p class="miniSub" style="margin-top:10px;opacity:.85"></p>
           </div>
         </div>
       </div>
 
-      <!-- ✅ MASIVO #3: VIDEO DEMO -->
       <div class="videoWrap">
         <p class="sectionTitle" style="margin:0 0 10px 0;">Mira cómo funciona (30s)</p>
         <div class="videoFrame">
-          <!-- Cambia el src por tu video (YouTube). Ej: https://www.youtube.com/embed/XXXXXXXX -->
           <iframe
             id="demoVideo"
             src="https://www.youtube.com/embed/VIDEO_ID_AQUI"
@@ -463,11 +454,9 @@
             allowfullscreen
           ></iframe>
         </div>
-        <div class="smallNote" style="margin-top:10px;">
-        </div>
+        <div class="smallNote" style="margin-top:10px;"></div>
       </div>
 
-      <!-- (Extra útil, no cuenta como punto, pero ayuda a masivo) -->
       <div style="margin-top:18px;">
         <p class="sectionTitle" style="margin:0 0 10px 0;">Lo que dicen los clientes</p>
         <div class="testGrid">
@@ -484,12 +473,11 @@
             <p>“Compartí el QR con mi familia. Llegan sin perderse.”</p>
           </div>
         </div>
-        <div class="smallNote">
-        </div>
+        <div class="smallNote"></div>
       </div>
     </div>
 
-    <!-- BUSCADOR POR CODIGO -->
+    <!-- BUSCADOR -->
     <div style="margin-top:18px;margin-bottom:10px;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <input
@@ -530,7 +518,7 @@
     </div>
 
     <div class="grid">
-      <!-- LEFT: INFO + BOTONES -->
+      <!-- LEFT -->
       <div class="card">
         <div class="cardHeader">
           <h2>Datos del cliente</h2>
@@ -595,7 +583,6 @@
 
           <div class="divider" id="divAfterVerif"></div>
 
-          <!-- Pasos (solo home) -->
           <div id="seccionPasos">
             <h3 class="sectionTitle">Pasos</h3>
             <div class="steps">
@@ -625,7 +612,6 @@
 
           <div class="divider"></div>
 
-          <!-- Precios (solo home) -->
           <div id="seccionPrecios">
             <h3 class="sectionTitle">Precios</h3>
             <div class="priceRow">
@@ -660,14 +646,13 @@
               </div>
             </div>
 
-            <div class="smallNote" style="margin-top:12px;">
-            </div>
+            <div class="smallNote" style="margin-top:12px;"></div>
           </div>
 
         </div>
       </div>
 
-      <!-- RIGHT: QR + PANEL STATS -->
+      <!-- RIGHT -->
       <div class="card">
         <div class="qrWrap">
           <div class="qrBox">
@@ -729,13 +714,9 @@
   </div>
 
   <script>
-    // ✅ Tu WebApp (la nueva)
+    // ✅ Tu WebApp (Apps Script)
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
-
-    // ✅ WhatsApp del negocio
     const WA_NUMBER = "50765996532";
-
-    // ✅ EJEMPLO (cambia por un código real cuando quieras)
     const EJEMPLO_CODE = "AD507-0001";
 
     function waLink(plan){
@@ -784,7 +765,7 @@
       return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
     }
 
-    // ✅ TRACK robusto (no se pierde al abrir Google/Waze/Uber)
+    // ✅ TRACK robusto (cuenta antes de abrir)
     function track(ev){
       try{
         const code = window.CODIGO_CLIENTE || "";
@@ -792,10 +773,11 @@
 
         const url = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${encodeURIComponent(ev)}&t=${Date.now()}`;
 
+        // ⚠️ Mantengo sendBeacon (requiere doPost en Apps Script). Si no tienes doPost, igual cae al GET.
         if (navigator.sendBeacon) {
           const blob = new Blob([], { type: "text/plain" });
-          navigator.sendBeacon(url, blob);
-          return;
+          const ok = navigator.sendBeacon(url, blob);
+          if (ok) return;
         }
 
         fetch(url, { method:"GET", mode:"no-cors", cache:"no-store", keepalive:true }).catch(()=>{});
@@ -804,10 +786,13 @@
       }catch(e){}
     }
 
-    // ✅ attachTrack: cuenta y abre sin perder click
+    // ✅ attachTrack corregido: NO duplica listeners (rebind con cloneNode)
     function attachTrack(id, ev){
-      const a = document.getElementById(id);
-      if(!a) return;
+      const old = document.getElementById(id);
+      if(!old) return;
+
+      const a = old.cloneNode(true); // ✅ borra listeners viejos
+      old.parentNode.replaceChild(a, old);
 
       a.addEventListener("click", function(e){
         const href = (a.getAttribute("href") || "").trim();
@@ -864,7 +849,7 @@
         : `${location.origin}${location.pathname}`;
     }
 
-    // ---------- STATS (intenta 4 endpoints sin preguntarte) ----------
+    // ---------- STATS ----------
     function safeNum(v){
       const n = Number(v);
       return Number.isFinite(n) ? n : 0;
@@ -898,7 +883,6 @@
 
     async function fetchStatsAnyAction(code){
       const actions = ["stats","getStats","activity","analytics"];
-
       for(const action of actions){
         try{
           const url = `${WEBAPP_URL}?action=${encodeURIComponent(action)}&code=${encodeURIComponent(code)}&t=${Date.now()}`;
@@ -908,7 +892,6 @@
           let data = null;
           try { data = JSON.parse(txt); } catch(e){ data = null; }
           if(!data) continue;
-
           if (data.ok === false) continue;
 
           const payload = (data.stats && typeof data.stats === "object") ? data.stats : data;
@@ -919,9 +902,7 @@
             payload.Google != null || payload.Waze != null || payload.Uber != null;
 
           if(hasAny) return payload;
-        }catch(e){
-          // sigue intentando
-        }
+        }catch(e){}
       }
       return null;
     }
@@ -959,10 +940,7 @@
         const opening = (panel.style.display === "none" || !panel.style.display);
         panel.style.display = opening ? "block" : "none";
         if (chev) chev.textContent = opening ? "▴" : "▾";
-
-        if(opening){
-          await cargarStats();
-        }
+        if(opening) await cargarStats();
       });
     }
 
@@ -997,12 +975,12 @@
           return;
         }
 
-        window.CODIGO_CLIENTE = data.codigo || code;
+        window.CODIGO_CLIENTE = data.codigo || data.code || code;
 
         toggleModoCliente(true);
         togglePanelCliente(true);
 
-        safeText("uiCodigo", data.codigo || code);
+        safeText("uiCodigo", data.codigo || data.code || code);
         safeText("uiNombre", data.nombre || "Cliente");
         safeText("uiRef", data.referencia || "Referencia no indicada");
         safeText("uiEstado", data.validacion || "Activo");
@@ -1017,10 +995,13 @@
         safeHref("btnUber", uber || "#");
         safeHref("btnAviso", aviso || "#");
 
+        // ✅ rebind sin duplicar listeners
         attachTrack("btnGoogle","google");
         attachTrack("btnWaze","waze");
         attachTrack("btnUber","uber");
-        attachTrack("btnAviso","aviso");
+
+        // ✅ "aviso" no existe en tu mapping del Apps Script, lo contamos como share
+        attachTrack("btnAviso","share");
 
         const linkMostrado = getShareUrl();
         safeText("uiLink", linkMostrado);
@@ -1028,17 +1009,15 @@
         const qrImg = document.getElementById("qrImg");
         if (qrImg) qrImg.src = makeQRFromLink(linkMostrado);
 
+        // ✅ FIX GitHub Pages: verificación relativa
         const linkVer = document.getElementById("linkVerificacion");
         if (linkVer){
-          const linkVerificacion = `${location.origin}/verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
-          linkVer.href = linkVerificacion;
+          linkVer.href = `verificar.html?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
           linkVer.target = "_blank";
         }
 
         const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
         toggleStatsNegocios(esNegocios);
-
-        // ✅ si es negocios, refresca stats de una vez
         if(esNegocios) cargarStats();
 
         setMsg("Listo ✅");
@@ -1118,5 +1097,4 @@
   </script>
 </body>
 </html>
-
 

@@ -719,12 +719,13 @@
   </div>
 
 <script>
-  // ✅ WebApp (VERSIÓN ULTRA SIMPLE)
+  // ✅ WebApp (VERSIÓN FINAL CORREGIDA)
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
 
   let CODIGO_ACTUAL = "";
+  let DATOS_CLIENTE = null;
 
   function verEjemplo() {
     const input = document.getElementById("inputCodigo");
@@ -760,8 +761,9 @@
       }
       
       CODIGO_ACTUAL = data.codigo;
+      DATOS_CLIENTE = data;
       
-      // Mostrar información básica (con verificaciones)
+      // Mostrar información básica
       const uiCodigo = document.getElementById("uiCodigo");
       if(uiCodigo) uiCodigo.textContent = data.codigo;
       
@@ -771,18 +773,25 @@
       const uiRef = document.getElementById("uiRef");
       if(uiRef) uiRef.textContent = data.referencia || "-";
       
-      const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
+      const esNegocio = (data.plan || "").toLowerCase().includes("negocio") || (data.plan || "").toLowerCase().includes("business");
       
-      // ===== CONFIGURAR CADA BOTÓN INDIVIDUALMENTE =====
+      // URL para compartir
+      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+      
+      // ===== CONFIGURAR BOTONES DE NAVEGACIÓN =====
       
       // Google Maps
       const btnGoogle = document.getElementById("btnGoogle");
       if(btnGoogle) {
         btnGoogle.onclick = function(e) {
           e.preventDefault();
-          if(data.google && data.google !== "#") {
-            if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" });
+          if(data.google && data.google !== "#" && data.google !== "-") {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
+            }
             window.open(data.google, "_blank");
+          } else {
+            alert("No hay enlace de Google Maps disponible");
           }
         };
       }
@@ -792,9 +801,13 @@
       if(btnWaze) {
         btnWaze.onclick = function(e) {
           e.preventDefault();
-          if(data.waze && data.waze !== "#") {
-            if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" });
+          if(data.waze && data.waze !== "#" && data.waze !== "-") {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
+            }
             window.open(data.waze, "_blank");
+          } else {
+            alert("No hay enlace de Waze disponible");
           }
         };
       }
@@ -804,9 +817,13 @@
       if(btnUber) {
         btnUber.onclick = function(e) {
           e.preventDefault();
-          if(data.uber && data.uber !== "#") {
-            if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" });
+          if(data.uber && data.uber !== "#" && data.uber !== "-") {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
+            }
             window.open(data.uber, "_blank");
+          } else {
+            alert("No hay enlace de Uber disponible");
           }
         };
       }
@@ -816,26 +833,38 @@
       if(btnAviso) {
         btnAviso.onclick = function(e) {
           e.preventDefault();
-          if(data.whatsapp && data.whatsapp !== "#") {
-            if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" });
+          if(data.whatsapp && data.whatsapp !== "#" && data.whatsapp !== "-") {
+            if(esNegocio) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
+            }
             window.open(data.whatsapp, "_blank");
+          } else {
+            alert("No hay enlace de WhatsApp disponible");
           }
         };
       }
+      
+      // ===== BOTONES DE COMPARTIR =====
       
       // Compartir
       const btnCompartir = document.getElementById("btnCompartir");
       if(btnCompartir) {
         btnCompartir.onclick = function(e) {
           e.preventDefault();
-          const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
-          if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" });
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=share`, { mode: "no-cors" }).catch(()=>{});
+          }
           
           if(navigator.share) {
-            navigator.share({ title: "Dirección Digital", url: shareUrl });
+            navigator.share({
+              title: "Dirección Digital",
+              text: `Mi dirección digital ${CODIGO_ACTUAL}`,
+              url: shareUrl
+            }).catch(() => {
+              navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado al portapapeles"));
+            });
           } else {
-            navigator.clipboard.writeText(shareUrl);
-            alert("Link copiado");
+            navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado al portapapeles"));
           }
         };
       }
@@ -845,10 +874,10 @@
       if(btnCopiar) {
         btnCopiar.onclick = function(e) {
           e.preventDefault();
-          const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
-          if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" });
-          navigator.clipboard.writeText(shareUrl);
-          alert("Link copiado");
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
+          }
+          navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado al portapapeles"));
         };
       }
       
@@ -857,7 +886,6 @@
       if(linkVer) {
         linkVer.onclick = function(e) {
           e.preventDefault();
-          const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
           window.open(shareUrl, "_blank");
         };
       }
@@ -865,8 +893,7 @@
       // QR
       const qrImg = document.getElementById("qrImg");
       if(qrImg) {
-        const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
-        if(data.qr) {
+        if(data.qr && data.qr !== "#") {
           qrImg.src = data.qr;
         } else {
           qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
@@ -876,8 +903,76 @@
       // Link en UI
       const uiLink = document.getElementById("uiLink");
       if(uiLink) {
-        uiLink.textContent = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+        uiLink.textContent = shareUrl;
       }
+      
+      // ===== ESTADÍSTICAS =====
+      const statsBtn = document.getElementById("btnStats");
+      const statsPanel = document.getElementById("statsPanel");
+      
+      if(statsBtn && statsPanel) {
+        if(esNegocio) {
+          statsBtn.style.display = "flex";
+          statsBtn.onclick = async function(e) {
+            e.preventDefault();
+            const visible = statsPanel.style.display === "block";
+            statsPanel.style.display = visible ? "none" : "block";
+            
+            if(!visible) {
+              try {
+                const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${CODIGO_ACTUAL}`);
+                const statsData = await statsRes.json();
+                console.log("Stats:", statsData);
+                
+                if(statsData.ok) {
+                  document.getElementById("stGoogle").textContent = statsData.stats?.google || 0;
+                  document.getElementById("stWaze").textContent = statsData.stats?.waze || 0;
+                  document.getElementById("stUber").textContent = statsData.stats?.uber || 0;
+                  document.getElementById("stShare").textContent = statsData.stats?.share || 0;
+                  document.getElementById("stCopy").textContent = statsData.stats?.copy || 0;
+                  document.getElementById("stUpdated").textContent = "Actualizado: " + (statsData.stats?.updated || "-");
+                }
+              } catch(e) {
+                console.log("Error stats:", e);
+              }
+            }
+          };
+        } else {
+          statsBtn.style.display = "none";
+          statsPanel.style.display = "none";
+        }
+      }
+      
+      // ===== MOSTRAR/OCULTAR SECCIONES =====
+      const homeHero = document.getElementById("homeHero");
+      if(homeHero) homeHero.style.display = "none";
+      
+      const buyWrap = document.getElementById("buyWrap");
+      if(buyWrap) buyWrap.style.display = "none";
+      
+      const heroComprar = document.getElementById("heroComprarBox");
+      if(heroComprar) heroComprar.style.display = "none";
+      
+      const heroEjemplo = document.getElementById("heroEjemploBox");
+      if(heroEjemplo) heroEjemplo.style.display = "none";
+      
+      const seccionPasos = document.getElementById("seccionPasos");
+      if(seccionPasos) seccionPasos.style.display = "none";
+      
+      const seccionPrecios = document.getElementById("seccionPrecios");
+      if(seccionPrecios) seccionPrecios.style.display = "none";
+      
+      // Mostrar panel cliente
+      const elementosMostrar = [
+        "fieldNombre", "fieldRef", "tituloUbicacion", "gridUbicacion", 
+        "divAfterUbic", "tituloCompartir", "gridCompartir", 
+        "notaVerificacion", "divAfterVerif"
+      ];
+      
+      elementosMostrar.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = "";
+      });
       
       setMsg("✅ Listo");
       
@@ -887,10 +982,10 @@
     }
   }
 
-  // Inicialización
+  // Inicialización al cargar la página
   document.addEventListener("DOMContentLoaded", function() {
     
-    // Botones de compra (con verificaciones)
+    // Botones de compra
     const comprarBase = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
     
     const btnTop = document.getElementById("btnComprarTop");
@@ -905,7 +1000,7 @@
     if(btnPersonal) {
       btnPersonal.onclick = function(e) {
         e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Personal", "_blank");
+        window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
       };
     }
     
@@ -913,7 +1008,7 @@
     if(btnNegocios) {
       btnNegocios.onclick = function(e) {
         e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Negocios", "_blank");
+        window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
       };
     }
     
@@ -921,7 +1016,7 @@
     if(btnHeroPersonal) {
       btnHeroPersonal.onclick = function(e) {
         e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Personal", "_blank");
+        window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
       };
     }
     
@@ -929,7 +1024,7 @@
     if(btnHeroNegocios) {
       btnHeroNegocios.onclick = function(e) {
         e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Negocios", "_blank");
+        window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
       };
     }
     
@@ -947,7 +1042,48 @@
     
     if(urlCode && input) {
       input.value = urlCode;
-      buscarCodigo();
+      setTimeout(buscarCodigo, 100);
+    } else {
+      // Modo home - mostrar secciones
+      const homeHero = document.getElementById("homeHero");
+      if(homeHero) homeHero.style.display = "block";
+      
+      const buyWrap = document.getElementById("buyWrap");
+      if(buyWrap) buyWrap.style.display = "flex";
+      
+      const heroComprar = document.getElementById("heroComprarBox");
+      if(heroComprar) heroComprar.style.display = "block";
+      
+      const heroEjemplo = document.getElementById("heroEjemploBox");
+      if(heroEjemplo) heroEjemplo.style.display = "block";
+      
+      const seccionPasos = document.getElementById("seccionPasos");
+      if(seccionPasos) seccionPasos.style.display = "block";
+      
+      const seccionPrecios = document.getElementById("seccionPrecios");
+      if(seccionPrecios) seccionPrecios.style.display = "block";
+      
+      // Ocultar panel cliente
+      const elementosOcultar = [
+        "fieldNombre", "fieldRef", "tituloUbicacion", "gridUbicacion", 
+        "divAfterUbic", "tituloCompartir", "gridCompartir", 
+        "notaVerificacion", "divAfterVerif"
+      ];
+      
+      elementosOcultar.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = "none";
+      });
+      
+      // QR del home
+      const homeUrl = window.location.href.split('?')[0];
+      const uiLink = document.getElementById("uiLink");
+      if(uiLink) uiLink.textContent = homeUrl;
+      
+      const qrImg = document.getElementById("qrImg");
+      if(qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
+      }
     }
   });
 </script>

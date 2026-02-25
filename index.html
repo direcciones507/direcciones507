@@ -707,7 +707,7 @@
   </div>
 
   <!-- ========== JAVASCRIPT FINAL CORREGIDO ========== -->
-  <script>
+ <script>
     // WebApp URL
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
     const WA_NUMBER = "50765996532";
@@ -729,34 +729,33 @@
     }
 
     function extractLinkFromQr(qrUrl){
-  // qrUrl viene como: https://api.qrserver.com/...&data=<URL_ENCODED>
-  try{
-    const u = new URL(qrUrl);
-    const data = u.searchParams.get("data");
-    if(!data) return "";
-    return decodeURIComponent(data); // devuelve el link real (Google Maps)
-  }catch(e){
-    return "";
-  }
-}
+      // qrUrl viene como: https://api.qrserver.com/...&data=<URL_ENCODED>
+      try{
+        const u = new URL(qrUrl);
+        const data = u.searchParams.get("data");
+        if(!data) return "";
+        return decodeURIComponent(data); // devuelve el link real (Google Maps)
+      }catch(e){
+        return "";
+      }
+    }
 
-function setLinkEl(id, href, label){
-  const el = document.getElementById(id);
-  if(!el) return;
+    function setLinkEl(id, href, label){
+      const el = document.getElementById(id);
+      if(!el) return;
 
-  const ok = href && href !== "#";
-  if(el.tagName === "A"){
-    el.href = ok ? href : "#";
-    el.setAttribute("href", ok ? href : "#");
-    el.target = "_blank";
-    el.rel = "noopener";
-    el.textContent = label || (ok ? href : "No disponible");
-  }else{
-    // si no es <a>, al menos muestra texto
-    el.textContent = ok ? (label || href) : "No disponible";
-  }
-}
-    
+      const ok = href && href !== "#";
+      if(el.tagName === "A"){
+        el.href = ok ? href : "#";
+        el.setAttribute("href", ok ? href : "#");
+        el.target = "_blank";
+        el.rel = "noopener";
+        el.textContent = label || (ok ? href : "No disponible");
+      }else{
+        el.textContent = ok ? (label || href) : "No disponible";
+      }
+    }
+
 async function buscarCodigo() {
   const input = document.getElementById("inputCodigo");
   if(!input) return;
@@ -776,11 +775,11 @@ async function buscarCodigo() {
     console.log("📦 Datos recibidos:", data);
     
     if(!data.ok){
-  throw new Error(data.message || "Código no encontrado.");
-}
+      throw new Error(data.message || "Código no encontrado.");
+    }
 
-// 🔥 AQUÍ EXACTAMENTE
-window.CODIGO_CLIENTE = data.codigo || data.code || code;
+    // ✅ FIX: usa "codigo" (tu variable), no "code"
+    window.CODIGO_CLIENTE = data.codigo || data.code || codigo;
     
     CODIGO_ACTUAL = data.codigo;
     DATOS_CLIENTE = data;
@@ -795,12 +794,13 @@ window.CODIGO_CLIENTE = data.codigo || data.code || code;
     // URL para compartir
     const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
     
-    // Extraer coordenadas del QR
+    // ✅ FIX: Extraer coordenadas bien desde el QR (data.qr)
     let lat = "", lng = "";
+    let verifLink = "";
     if (data.qr) {
       try {
-        const decoded = decodeURIComponent(data.qr);
-        const match = decoded.match(/query=([0-9.-]+),([0-9.-]+)/);
+        verifLink = extractLinkFromQr(data.qr); // link real dentro del QR
+        const match = String(verifLink).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
         if (match) {
           lat = match[1];
           lng = match[2];
@@ -884,23 +884,20 @@ window.CODIGO_CLIENTE = data.codigo || data.code || code;
     
     // ===== LINK DE VERIFICACIÓN =====
     const linkVer = document.getElementById("linkVerificacion");
-    linkVer.href = shareUrl;
+    // ✅ FIX: esto debe ser el enlace real del QR (no shareUrl)
+    linkVer.href = verifLink ? verifLink : "#";
     linkVer.target = "_blank";
     linkVer.rel = "noopener noreferrer";
+    linkVer.textContent = "Ver enlace de verificación";
     linkVer.onclick = function(e) {
-      if(esNegocio) {
-        fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" });
-      }
-      // El link abrirá en nueva pestaña por el target="_blank"
+      if(!verifLink){ e.preventDefault(); return; }
+      // (no trackeo aquí, lo de verificación no lo estabas contando antes)
     };
     
     // ===== QR =====
     const qrImg = document.getElementById("qrImg");
-    if(data.qr) {
-      qrImg.src = data.qr;
-    } else {
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
-    }
+    // ✅ FIX: QR para compartir SIEMPRE es el shareUrl (no el qr de verificación)
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
     
     document.getElementById("uiLink").textContent = shareUrl;
     

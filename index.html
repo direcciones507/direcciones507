@@ -834,7 +834,7 @@ async function buscarCodigo() {
 const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
   
     // 🔥 URL VERIFICACIÓN PARA IMPRIMIR
-const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+let verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
   
     // ✅ FIX: Extraer coordenadas bien desde el QR (data.qr)
     let lat = "", lng = "";

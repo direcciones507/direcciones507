@@ -286,7 +286,7 @@
     .rowStat:last-child{border-bottom:none}
     .updated{margin-top:10px;opacity:.75;font-size:12px}
 
-    /* ---------- MASIVO: HERO + VIDEO + TESTIMONIOS ---------- */
+    /* HERO + VIDEO + TESTIMONIOS (masivo) */
     .hero{
       margin-top:18px;
       padding:18px;
@@ -404,14 +404,14 @@
       </div>
     </div>
 
-    <!-- ✅ MASIVO #1: HERO QUE VENDE -->
+    <!-- HERO -->
     <div class="hero">
       <div class="heroGrid">
         <div>
           <h2>Tu dirección exacta en 1 link. Listo para WhatsApp, Waze, Google y Uber.</h2>
           <p>
             Olvídate de “¿cómo llego?” y de explicar en audio. Con Direcciones507 compartes un enlace y el cliente
-            abre su app favorita en un toque. Ideal para hogares, delivery, negocios, Airbnb y ventas.
+            abre su app favorita en un toque.
           </p>
 
           <div class="benefits">
@@ -438,23 +438,19 @@
             </div>
           </div>
 
-          <!-- ✅ MASIVO #4: EJEMPLO REAL FUNCIONANDO -->
           <div class="heroBox">
             <p class="miniTitle">Ver ejemplo real</p>
+            <p class="miniSub">Carga un ejemplo para ver cómo se ve el panel del cliente.</p>
             <button class="btn primary" type="button" onclick="verEjemplo()">
               <i class="fa-solid fa-play"></i> Ver ejemplo real
             </button>
-            <p class="miniSub" style="margin-top:10px;opacity:.85">
-            </p>
           </div>
         </div>
       </div>
 
-      <!-- ✅ MASIVO #3: VIDEO DEMO -->
       <div class="videoWrap">
         <p class="sectionTitle" style="margin:0 0 10px 0;">Mira cómo funciona (30s)</p>
         <div class="videoFrame">
-          <!-- Cambia el src por tu video (YouTube). Ej: https://www.youtube.com/embed/XXXXXXXX -->
           <iframe
             id="demoVideo"
             src="https://www.youtube.com/embed/VIDEO_ID_AQUI"
@@ -463,11 +459,8 @@
             allowfullscreen
           ></iframe>
         </div>
-        <div class="smallNote" style="margin-top:10px;">
-        </div>
       </div>
 
-      <!-- (Extra útil, no cuenta como punto, pero ayuda a masivo) -->
       <div style="margin-top:18px;">
         <p class="sectionTitle" style="margin:0 0 10px 0;">Lo que dicen los clientes</p>
         <div class="testGrid">
@@ -484,12 +477,10 @@
             <p>“Compartí el QR con mi familia. Llegan sin perderse.”</p>
           </div>
         </div>
-        <div class="smallNote">
-        </div>
       </div>
     </div>
 
-    <!-- BUSCADOR POR CODIGO -->
+    <!-- BUSCADOR -->
     <div style="margin-top:18px;margin-bottom:10px;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <input
@@ -530,72 +521,14 @@
     </div>
 
     <div class="grid">
-      <!-- LEFT: INFO + BOTONES -->
-      <div class="card">
+      <!-- LEFT: BLOQUE HOME (pasos+precios) -->
+      <div class="card" id="cardHome">
         <div class="cardHeader">
-          <h2>Datos del cliente</h2>
-          <div class="sub">Aquí solo aparece lo esencial: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.</div>
-
-          <div class="pillRow">
-            <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
-            <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
-          </div>
+          <h2>Cómo funciona</h2>
+          <div class="sub">Compra tu plan y comparte tu enlace en WhatsApp. El cliente abre su app favorita.</div>
         </div>
 
-        <div class="cardBody" id="panelClienteBody">
-          <div class="field" id="fieldNombre">
-            <span>Nombre</span>
-            <b id="uiNombre">-</b>
-          </div>
-
-          <div class="field" id="fieldRef">
-            <span>Referencia</span>
-            <b id="uiRef">-</b>
-          </div>
-
-          <div class="divider"></div>
-
-          <h3 class="sectionTitle" id="tituloUbicacion">Abrir ubicación</h3>
-          <div class="btnGrid" id="gridUbicacion">
-            <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
-              <i class="fa-brands fa-google"></i> Google Maps
-            </a>
-            <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener">
-              <i class="fa-brands fa-waze"></i> Waze
-            </a>
-            <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener">
-              <i class="fa-brands fa-uber"></i> Uber
-            </a>
-            <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener">
-              <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
-            </a>
-          </div>
-
-          <div class="divider" id="divAfterUbic"></div>
-
-          <h3 class="sectionTitle" id="tituloCompartir">Compartir</h3>
-          <div class="btnGrid" id="gridCompartir">
-            <button class="btn" type="button" onclick="shareLink()">
-              <i class="fa-solid fa-share-nodes"></i> Compartir
-            </button>
-            <button class="btn copy" type="button" onclick="copyLink()">
-              <i class="fa-solid fa-copy"></i> Copiar link
-            </button>
-          </div>
-
-          <div class="smallNote" id="notaVerificacion">
-            <b>Verificación para imprimir:</b>
-            <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
-              Ver enlace de verificación
-            </a>
-            <div style="margin-top:10px;">
-              <img id="qrVerificacion" class="qrImg" style="display:none" alt="QR verificación" />
-            </div>
-          </div>
-
-          <div class="divider" id="divAfterVerif"></div>
-
-          <!-- Pasos (solo home) -->
+        <div class="cardBody">
           <div id="seccionPasos">
             <h3 class="sectionTitle">Pasos</h3>
             <div class="steps">
@@ -625,7 +558,6 @@
 
           <div class="divider"></div>
 
-          <!-- Precios (solo home) -->
           <div id="seccionPrecios">
             <h3 class="sectionTitle">Precios</h3>
             <div class="priceRow">
@@ -661,13 +593,13 @@
             </div>
 
             <div class="smallNote" style="margin-top:12px;">
+              Paga por Yappy o transferencia (menciónalo en WhatsApp) y te activamos el enlace.
             </div>
           </div>
-
         </div>
       </div>
 
-      <!-- RIGHT: QR + PANEL STATS -->
+      <!-- RIGHT: QR + STATS + REDES (se mantiene siempre) -->
       <div class="card">
         <div class="qrWrap">
           <div class="qrBox">
@@ -718,6 +650,69 @@
           </div>
         </div>
       </div>
+
+      <!-- LEFT: BLOQUE CLIENTE (tarjeta separada, oculto en home) -->
+      <div class="card" id="cardCliente" style="display:none;">
+        <div class="cardHeader">
+          <h2>Datos del cliente</h2>
+          <div class="sub">Aquí solo aparece lo esencial: <b>Nombre</b>, <b>Referencia</b> y <b>Código</b>.</div>
+
+          <div class="pillRow">
+            <div class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></div>
+            <div class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></div>
+          </div>
+        </div>
+
+        <div class="cardBody">
+          <div class="field">
+            <span>Nombre</span>
+            <b id="uiNombre">-</b>
+          </div>
+
+          <div class="field">
+            <span>Referencia</span>
+            <b id="uiRef">-</b>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3 class="sectionTitle">Abrir ubicación</h3>
+          <div class="btnGrid">
+            <a class="btn primary" id="btnGoogle" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-google"></i> Google Maps
+            </a>
+            <a class="btn primary" id="btnWaze" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-waze"></i> Waze
+            </a>
+            <a class="btn secondary" id="btnUber" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-uber"></i> Uber
+            </a>
+            <a class="btn whats" id="btnAviso" href="#" target="_blank" rel="noopener">
+              <i class="fa-brands fa-whatsapp"></i> Aviso de llegada
+            </a>
+          </div>
+
+          <div class="divider"></div>
+
+          <h3 class="sectionTitle">Compartir</h3>
+          <div class="btnGrid">
+            <button class="btn" type="button" onclick="shareLink()">
+              <i class="fa-solid fa-share-nodes"></i> Compartir
+            </button>
+            <button class="btn copy" type="button" onclick="copyLink()">
+              <i class="fa-solid fa-copy"></i> Copiar link
+            </button>
+          </div>
+
+          <div class="smallNote" style="margin-top:12px;">
+            <b>Verificación para imprimir:</b>
+            <a id="linkVerificacion" href="#" target="_blank" rel="noopener" style="color:var(--brand);font-weight:900;text-decoration:none;">
+              Ver enlace de verificación
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="footer">
@@ -729,13 +724,9 @@
   </div>
 
   <script>
-    // ✅ Tu WebApp (la nueva)
+    // ✅ WebApp
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
-
-    // ✅ WhatsApp del negocio
     const WA_NUMBER = "50765996532";
-
-    // ✅ EJEMPLO (cambia por un código real cuando quieras)
     const EJEMPLO_CODE = "AD507-0001";
 
     function waLink(plan){
@@ -784,7 +775,7 @@
       return `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(link)}`;
     }
 
-    // ✅ TRACK robusto (no se pierde al abrir Google/Waze/Uber)
+    // ✅ TRACK robusto
     function track(ev){
       try{
         const code = window.CODIGO_CLIENTE || "";
@@ -804,14 +795,18 @@
       }catch(e){}
     }
 
-    // ✅ attachTrack: cuenta y abre sin perder click
-    function attachTrack(id, ev){
-      const a = document.getElementById(id);
-      if(!a) return;
+    // ✅ FIX: botones que NO abren. Esto los hace abrir SIEMPRE y contar click.
+    // Importante: "rebind" para que al buscar varias veces no se dañen por listeners duplicados.
+    function rebindLink(id, ev){
+      const old = document.getElementById(id);
+      if(!old) return;
 
-      a.addEventListener("click", function(e){
-        const href = (a.getAttribute("href") || "").trim();
-        const target = a.getAttribute("target") || "_blank";
+      const fresh = old.cloneNode(true); // elimina listeners viejos
+      old.parentNode.replaceChild(fresh, old);
+
+      fresh.addEventListener("click", function(e){
+        const href = (fresh.getAttribute("href") || "").trim();
+        const target = fresh.getAttribute("target") || "_blank";
 
         if(!href || href === "#"){
           e.preventDefault();
@@ -819,8 +814,9 @@
         }
 
         track(ev);
-        e.preventDefault();
 
+        // Abrir SIEMPRE (sin cambiar formato)
+        e.preventDefault();
         if(target === "_blank"){
           window.open(href, "_blank", "noopener");
         }else{
@@ -829,33 +825,18 @@
       }, { passive:false });
     }
 
-    function toggleStatsNegocios(esNegocios){
-      const btn = document.getElementById("btnStats");
-      const panel = document.getElementById("statsPanel");
-      if(btn) btn.style.display = esNegocios ? "flex" : "none";
-      if(panel) panel.style.display = "none";
-      const chev = document.getElementById("statsChevron");
-      if(chev) chev.textContent = "▾";
+    function showHome(){
+      const ch = document.getElementById("cardHome");
+      const cc = document.getElementById("cardCliente");
+      if(ch) ch.style.display = "";
+      if(cc) cc.style.display = "none";
     }
 
-    function toggleModoCliente(isCliente){
-      const pasos = document.getElementById("seccionPasos");
-      const precios = document.getElementById("seccionPrecios");
-      if (pasos) pasos.style.display = isCliente ? "none" : "block";
-      if (precios) precios.style.display = isCliente ? "none" : "block";
-    }
-
-    function togglePanelCliente(hasClient){
-      const ids = [
-        "fieldNombre","fieldRef",
-        "tituloUbicacion","gridUbicacion","divAfterUbic",
-        "tituloCompartir","gridCompartir",
-        "notaVerificacion","divAfterVerif"
-      ];
-      ids.forEach(id=>{
-        const el = document.getElementById(id);
-        if(el) el.style.display = hasClient ? "" : "none";
-      });
+    function showCliente(){
+      const ch = document.getElementById("cardHome");
+      const cc = document.getElementById("cardCliente");
+      if(ch) ch.style.display = "none";
+      if(cc) cc.style.display = "";
     }
 
     function getShareUrl(){
@@ -864,7 +845,7 @@
         : `${location.origin}${location.pathname}`;
     }
 
-    // ---------- STATS (intenta 4 endpoints sin preguntarte) ----------
+    // ---------- STATS (intenta 4 endpoints) ----------
     function safeNum(v){
       const n = Number(v);
       return Number.isFinite(n) ? n : 0;
@@ -919,9 +900,7 @@
             payload.Google != null || payload.Waze != null || payload.Uber != null;
 
           if(hasAny) return payload;
-        }catch(e){
-          // sigue intentando
-        }
+        }catch(e){}
       }
       return null;
     }
@@ -959,10 +938,7 @@
         const opening = (panel.style.display === "none" || !panel.style.display);
         panel.style.display = opening ? "block" : "none";
         if (chev) chev.textContent = opening ? "▴" : "▾";
-
-        if(opening){
-          await cargarStats();
-        }
+        if(opening) await cargarStats();
       });
     }
 
@@ -972,9 +948,7 @@
 
       if(!code){
         setMsg("Ingresa tu código para buscar.");
-        toggleModoCliente(false);
-        togglePanelCliente(false);
-        toggleStatsNegocios(false);
+        showHome(); // ✅ ocultar datos en home
 
         const homeLink = `${location.origin}${location.pathname}`;
         safeText("uiLink", homeLink);
@@ -991,16 +965,14 @@
 
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");
-          toggleModoCliente(false);
-          togglePanelCliente(false);
-          toggleStatsNegocios(false);
+          showHome();
           return;
         }
 
-        window.CODIGO_CLIENTE = data.codigo || code;
+        // ✅ mostrar panel cliente en bloque aparte
+        showCliente();
 
-        toggleModoCliente(true);
-        togglePanelCliente(true);
+        window.CODIGO_CLIENTE = data.codigo || code;
 
         safeText("uiCodigo", data.codigo || code);
         safeText("uiNombre", data.nombre || "Cliente");
@@ -1017,10 +989,11 @@
         safeHref("btnUber", uber || "#");
         safeHref("btnAviso", aviso || "#");
 
-        attachTrack("btnGoogle","google");
-        attachTrack("btnWaze","waze");
-        attachTrack("btnUber","uber");
-        attachTrack("btnAviso","aviso");
+        // ✅ Rebind (arregla que no funcionen y evita duplicados)
+        rebindLink("btnGoogle","google");
+        rebindLink("btnWaze","waze");
+        rebindLink("btnUber","uber");
+        rebindLink("btnAviso","aviso");
 
         const linkMostrado = getShareUrl();
         safeText("uiLink", linkMostrado);
@@ -1036,17 +1009,19 @@
         }
 
         const esNegocios = String(data.plan || "").toUpperCase().includes("NEGOC");
-        toggleStatsNegocios(esNegocios);
+        const btnStats = document.getElementById("btnStats");
+        const statsPanel = document.getElementById("statsPanel");
+        if(btnStats) btnStats.style.display = esNegocios ? "flex" : "none";
+        if(statsPanel) statsPanel.style.display = "none";
+        const chev = document.getElementById("statsChevron");
+        if(chev) chev.textContent = "▾";
 
-        // ✅ si es negocios, refresca stats de una vez
         if(esNegocios) cargarStats();
 
         setMsg("Listo ✅");
       }catch(err){
         setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
-        toggleModoCliente(false);
-        togglePanelCliente(false);
-        toggleStatsNegocios(false);
+        showHome();
       }
     }
 
@@ -1101,18 +1076,14 @@
         if (input) input.value = code;
         buscarCodigo();
       } else {
-        toggleModoCliente(false);
-        togglePanelCliente(false);
-        toggleStatsNegocios(false);
+        // ✅ HOME: ocultar datos cliente
+        showHome();
 
         const homeLink = `${location.origin}${location.pathname}`;
         safeText("uiLink", homeLink);
 
         const qrImg = document.getElementById("qrImg");
         if (qrImg) qrImg.src = makeQRFromLink(homeLink);
-
-        const linkVer = document.getElementById("linkVerificacion");
-        if (linkVer) linkVer.href = homeLink;
       }
     })();
   </script>

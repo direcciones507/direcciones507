@@ -744,7 +744,7 @@
     const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
     const data = await response.json();
     
-    console.log("🔍 DATOS RECIBIDOS COMPLETOS:", JSON.stringify(data, null, 2));
+    console.log("📦 Datos recibidos:", data);
     
     if(!data.ok) {
       throw new Error(data.message || "No encontrado");
@@ -758,115 +758,91 @@
     document.getElementById("uiNombre").textContent = data.nombre || "-";
     document.getElementById("uiRef").textContent = data.referencia || "-";
     
-    const esNegocio = (data.plan || "").toLowerCase().includes("negocio") || (data.plan || "").toLowerCase().includes("business");
+    const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
     
     // URL para compartir
     const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
     
-    console.log("🔗 URLs recibidas:", {
-      google: data.google,
-      waze: data.waze,
-      uber: data.uber,
-      whatsapp: data.whatsapp
-    });
+    // Extraer coordenadas del QR (ya que el script no da URLs)
+    let lat = "", lng = "";
+    if (data.qr) {
+      try {
+        const decoded = decodeURIComponent(data.qr);
+        const match = decoded.match(/query=([0-9.-]+),([0-9.-]+)/);
+        if (match) {
+          lat = match[1];
+          lng = match[2];
+          console.log("📍 Coordenadas extraídas:", lat, lng);
+        }
+      } catch(e) {}
+    }
     
-    // ===== FORZAR ASIGNACIÓN DE ENLACES =====
-    
-    // Google Maps
-    const btnGoogle = document.getElementById("btnGoogle");
-    if(btnGoogle) {
-      if(data.google && data.google !== "#") {
-        btnGoogle.href = data.google;
-        btnGoogle.target = "_blank";
-        btnGoogle.rel = "noopener noreferrer";
-        btnGoogle.onclick = function(e) {
-          console.log("👉 Click en Google, URL:", this.href);
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-        console.log("✅ Google asignado:", btnGoogle.href);
-      } else {
-        console.log("❌ Google sin URL válida");
+    // Construir URLs manualmente
+    if (lat && lng) {
+      document.getElementById("btnGoogle").href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      document.getElementById("btnWaze").href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+      document.getElementById("btnUber").href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+      
+      if (data.telefono) {
+        const msg = `Hola 👋, ya llegué. Código: ${data.codigo}`;
+        document.getElementById("btnAviso").href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
       }
+      
+      // Configurar target blank
+      ["btnGoogle", "btnWaze", "btnUber", "btnAviso"].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.target = "_blank";
+        btn.rel = "noopener noreferrer";
+      });
     }
     
-    // Waze
-    const btnWaze = document.getElementById("btnWaze");
-    if(btnWaze) {
-      if(data.waze && data.waze !== "#") {
-        btnWaze.href = data.waze;
-        btnWaze.target = "_blank";
-        btnWaze.rel = "noopener noreferrer";
-        btnWaze.onclick = function(e) {
-          console.log("👉 Click en Waze, URL:", this.href);
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-        console.log("✅ Waze asignado:", btnWaze.href);
-      } else {
-        console.log("❌ Waze sin URL válida");
-      }
+    // ===== MOSTRAR PANEL CLIENTE =====
+    document.getElementById("homeHero").style.display = "none";
+    document.getElementById("buyWrap").style.display = "none";
+    document.getElementById("heroComprarBox").style.display = "none";
+    document.getElementById("heroEjemploBox").style.display = "none";
+    document.getElementById("seccionPasos").style.display = "none";
+    document.getElementById("seccionPrecios").style.display = "none";
+    
+    // Mostrar elementos del cliente
+    document.getElementById("fieldNombre").style.display = "grid";
+    document.getElementById("fieldRef").style.display = "grid";
+    document.getElementById("tituloUbicacion").style.display = "block";
+    document.getElementById("gridUbicacion").style.display = "grid";
+    document.getElementById("divAfterUbic").style.display = "block";
+    document.getElementById("tituloCompartir").style.display = "block";
+    document.getElementById("gridCompartir").style.display = "grid";
+    document.getElementById("notaVerificacion").style.display = "block";
+    document.getElementById("divAfterVerif").style.display = "block";
+    
+    // Actualizar QR y link
+    document.getElementById("uiLink").textContent = shareUrl;
+    document.getElementById("linkVerificacion").href = shareUrl;
+    document.getElementById("linkVerificacion").target = "_blank";
+    
+    if (data.qr) {
+      document.getElementById("qrImg").src = data.qr;
     }
     
-    // Uber
-    const btnUber = document.getElementById("btnUber");
-    if(btnUber) {
-      if(data.uber && data.uber !== "#") {
-        btnUber.href = data.uber;
-        btnUber.target = "_blank";
-        btnUber.rel = "noopener noreferrer";
-        btnUber.onclick = function(e) {
-          console.log("👉 Click en Uber, URL:", this.href);
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-        console.log("✅ Uber asignado:", btnUber.href);
-      } else {
-        console.log("❌ Uber sin URL válida");
-      }
+    // Estadísticas
+    const statsBtn = document.getElementById("btnStats");
+    const statsPanel = document.getElementById("statsPanel");
+    
+    if (esNegocio) {
+      statsBtn.style.display = "flex";
+      // ... resto del código de stats
+    } else {
+      statsBtn.style.display = "none";
+      statsPanel.style.display = "none";
     }
     
-    // Aviso WhatsApp
-    const btnAviso = document.getElementById("btnAviso");
-    if(btnAviso) {
-      if(data.whatsapp && data.whatsapp !== "#") {
-        btnAviso.href = data.whatsapp;
-        btnAviso.target = "_blank";
-        btnAviso.rel = "noopener noreferrer";
-        btnAviso.onclick = function(e) {
-          console.log("👉 Click en Aviso, URL:", this.href);
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
-          }
-        };
-        console.log("✅ Aviso asignado:", btnAviso.href);
-      } else {
-        console.log("❌ Aviso sin URL válida");
-      }
-    }
-    
-    // Link de verificación
-    const linkVer = document.getElementById("linkVerificacion");
-    if(linkVer) {
-      linkVer.href = shareUrl;
-      linkVer.target = "_blank";
-      linkVer.rel = "noopener noreferrer";
-      console.log("✅ Link verificación asignado:", linkVer.href);
-    }
-    
-    // ===== RESTO DEL CÓDIGO (compartir, copiar, stats, etc.) =====
-    
-    // ... (mantén el resto del código igual) ...
+    setMsg("✅ Listo");
     
   } catch(error) {
     console.error("❌ ERROR:", error);
     setMsg("Error: " + error.message);
   }
 }
-
     // Inicialización
     document.addEventListener("DOMContentLoaded", function() {
       console.log("Página cargada");

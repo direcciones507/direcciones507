@@ -749,15 +749,14 @@
       if (el) el.textContent = t || "";
     }
 
-    function safeText(id, value){
-      const el = document.getElementById(id);
-      if (el) el.textContent = value ?? "";
-    }
+   function safeHref(id, value){
+  const el = document.getElementById(id);
+  if (!el) return;
 
-    function safeHref(id, value){
-      const el = document.getElementById(id);
-      if (el) el.href = value || "#";
-    }
+  const href = value || "#";
+  el.setAttribute("href", href); // <- clave (actualiza el atributo)
+  el.href = href;                // <- mantiene la propiedad también
+}
 
     function normalizeUrl(url){
       url = String(url ?? "").trim();

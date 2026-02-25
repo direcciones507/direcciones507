@@ -719,7 +719,7 @@
   </div>
 
 <script>
-  // ✅ WebApp (VERSIÓN FINAL - CON CORRECCIÓN DE ENLACES)
+  // ✅ WebApp (VERSIÓN DEFINITIVA - CORREGIDA)
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
@@ -785,74 +785,69 @@
         whatsapp: data.whatsapp
       });
       
-      // ===== BOTONES DE NAVEGACIÓN =====
+      // ===== CONFIGURACIÓN DE BOTONES =====
       
-      // Google Maps
-      const btnGoogle = document.getElementById("btnGoogle");
-      if(btnGoogle && data.google && data.google !== "#" && data.google !== "-") {
-        btnGoogle.href = data.google;
-        btnGoogle.target = "_blank";
-        btnGoogle.rel = "noopener noreferrer";
-        btnGoogle.onclick = function(e) {
-          // No prevenir default para que el link funcione
-          console.log("Click en Google");
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
-          }
-          return true; // Permitir que el link funcione
-        };
+      // Función para configurar botones de navegación
+      function configurarBoton(id, url, evento) {
+        const btn = document.getElementById(id);
+        if(!btn) return;
+        
+        if(url && url !== "#" && url !== "-") {
+          console.log(`Configurando ${id} con URL:`, url);
+          
+          // Eliminar cualquier onclick anterior
+          btn.onclick = null;
+          
+          // Establecer atributos
+          btn.href = url;
+          btn.target = "_blank";
+          btn.rel = "noopener noreferrer";
+          
+          // Agregar evento para trackear
+          btn.addEventListener("click", function(e) {
+            console.log(`Click en ${id} (${evento})`);
+            if(esNegocio && CODIGO_ACTUAL) {
+              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=${evento}`, { mode: "no-cors" })
+                .catch(() => {});
+            }
+            // No prevenir default, dejar que el link funcione
+          });
+          
+          btn.style.opacity = "1";
+          btn.style.pointerEvents = "auto";
+        } else {
+          btn.href = "#";
+          btn.style.opacity = "0.5";
+          btn.style.pointerEvents = "none";
+        }
       }
       
-      // Waze
-      const btnWaze = document.getElementById("btnWaze");
-      if(btnWaze && data.waze && data.waze !== "#" && data.waze !== "-") {
-        btnWaze.href = data.waze;
-        btnWaze.target = "_blank";
-        btnWaze.rel = "noopener noreferrer";
-        btnWaze.onclick = function(e) {
-          console.log("Click en Waze");
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
-          }
-          return true;
-        };
-      }
+      // Configurar cada botón de navegación
+      configurarBoton("btnGoogle", data.google, "google");
+      configurarBoton("btnWaze", data.waze, "waze");
+      configurarBoton("btnUber", data.uber, "uber");
+      configurarBoton("btnAviso", data.whatsapp, "aviso");
       
-      // Uber
-      const btnUber = document.getElementById("btnUber");
-      if(btnUber && data.uber && data.uber !== "#" && data.uber !== "-") {
-        btnUber.href = data.uber;
-        btnUber.target = "_blank";
-        btnUber.rel = "noopener noreferrer";
-        btnUber.onclick = function(e) {
-          console.log("Click en Uber");
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
-          }
-          return true;
-        };
-      }
-      
-      // Aviso WhatsApp
-      const btnAviso = document.getElementById("btnAviso");
-      if(btnAviso && data.whatsapp && data.whatsapp !== "#" && data.whatsapp !== "-") {
-        btnAviso.href = data.whatsapp;
-        btnAviso.target = "_blank";
-        btnAviso.rel = "noopener noreferrer";
-        btnAviso.onclick = function(e) {
-          console.log("Click en Aviso");
-          if(esNegocio) {
-            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
-          }
-          return true;
-        };
+      // Configurar link de verificación
+      const linkVer = document.getElementById("linkVerificacion");
+      if(linkVer) {
+        linkVer.href = shareUrl;
+        linkVer.target = "_blank";
+        linkVer.rel = "noopener noreferrer";
+        linkVer.addEventListener("click", function(e) {
+          console.log("Click en link de verificación");
+          // No prevenir default
+        });
       }
       
       // ===== BOTONES DE COMPARTIR =====
       
       const btnCompartir = document.getElementById("btnCompartir");
       if(btnCompartir) {
-        btnCompartir.onclick = function(e) {
+        // Eliminar cualquier onclick anterior
+        btnCompartir.onclick = null;
+        
+        btnCompartir.addEventListener("click", function(e) {
           e.preventDefault();
           console.log("Click en Compartir");
           if(esNegocio) {
@@ -870,27 +865,21 @@
           } else {
             navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
           }
-        };
+        });
       }
       
       const btnCopiar = document.getElementById("btnCopiar");
       if(btnCopiar) {
-        btnCopiar.onclick = function(e) {
+        btnCopiar.onclick = null;
+        
+        btnCopiar.addEventListener("click", function(e) {
           e.preventDefault();
           console.log("Click en Copiar");
           if(esNegocio) {
             fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=copy`, { mode: "no-cors" }).catch(()=>{});
           }
           navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
-        };
-      }
-      
-      // Link de verificación
-      const linkVer = document.getElementById("linkVerificacion");
-      if(linkVer) {
-        linkVer.href = shareUrl;
-        linkVer.target = "_blank";
-        linkVer.rel = "noopener noreferrer";
+        });
       }
       
       // QR
@@ -915,7 +904,9 @@
       if(statsBtn && statsPanel) {
         if(esNegocio) {
           statsBtn.style.display = "flex";
-          statsBtn.onclick = async function(e) {
+          statsBtn.onclick = null;
+          
+          statsBtn.addEventListener("click", async function(e) {
             e.preventDefault();
             const visible = statsPanel.style.display === "block";
             statsPanel.style.display = visible ? "none" : "block";
@@ -938,7 +929,7 @@
                 console.log("Error stats:", e);
               }
             }
-          };
+          });
         } else {
           statsBtn.style.display = "none";
           statsPanel.style.display = "none";

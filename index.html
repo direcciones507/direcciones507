@@ -608,6 +608,15 @@ function track(ev){
         : `${location.origin}${location.pathname}`;
     }
 
+    // función segura para contar clics
+function attachTrack(id, ev){
+  const a = document.getElementById(id);
+  if(!a) return;
+
+  a.onclick = () => {
+    track(ev);
+  };
+}
     async function buscarCodigo(){
       const input = document.getElementById("inputCodigo");
       const code = (input ? input.value : "").trim();

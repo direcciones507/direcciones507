@@ -753,8 +753,47 @@
     if (el) el.textContent = t || "";
   }
 
-  function cleanPhone(v){
-    return String(v || "").replace(/\D/g, "");
+  // Función para actualizar link sin clonar (más simple)
+  function updateLink(buttonId, url, evento) {
+    const btn = document.getElementById(buttonId);
+    if(!btn) {
+      console.log("Botón no encontrado:", buttonId);
+      return;
+    }
+    
+    // Actualizar href directamente
+    btn.href = url || "#";
+    
+    // Si no hay URL válida, deshabilitar visualmente
+    if(!url || url === "#" || url === "-") {
+      btn.style.opacity = "0.5";
+      btn.style.pointerEvents = "none";
+    } else {
+      btn.style.opacity = "1";
+      btn.style.pointerEvents = "auto";
+      
+      // Guardar el evento y la URL para el click
+      btn.setAttribute("data-evento", evento);
+      btn.setAttribute("data-url", url);
+      
+      // Remover event listeners anteriores (simplificado)
+      btn.onclick = function(e) {
+        e.preventDefault(); // Prevenir para poder trackear
+        
+        const code = window.CODIGO_CLIENTE;
+        const plan = window.DATOS_CLIENTE?.plan || "";
+        const esNegocio = plan.toLowerCase().includes("negocio") || plan.toLowerCase().includes("business");
+        
+        // Trackear si es negocio
+        if(esNegocio && code) {
+          const trackUrl = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${evento}&t=${Date.now()}`;
+          fetch(trackUrl, { mode: "no-cors" }).catch(()=>{});
+        }
+        
+        // Abrir el enlace después del track
+        window.open(url, "_blank", "noopener");
+      };
+    }
   }
 
   async function buscarCodigo(){
@@ -769,7 +808,7 @@
     setMsg("Buscando...");
 
     try{
-      // 1. Obtener datos del cliente
+      // Obtener datos del cliente
       const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -784,151 +823,147 @@
       window.CODIGO_CLIENTE = data.codigo;
       window.DATOS_CLIENTE = data;
 
-      // 2. Mostrar información básica
-      document.getElementById("uiCodigo").textContent = data.codigo || code;
-      document.getElementById("uiNombre").textContent = data.nombre || "-";
-      document.getElementById("uiRef").textContent = data.referencia || "-";
+      // Actualizar UI básica
+      const uiCodigo = document.getElementById("uiCodigo");
+      const uiNombre = document.getElementById("uiNombre");
+      const uiRef = document.getElementById("uiRef");
       
-      // 3. Verificar si es negocio
+      if(uiCodigo) uiCodigo.textContent = data.codigo || code;
+      if(uiNombre) uiNombre.textContent = data.nombre || "-";
+      if(uiRef) uiRef.textContent = data.referencia || "-";
+      
+      // Verificar si es negocio
       const plan = (data.plan || "").toLowerCase();
       const esNegocio = plan.includes("negocio") || plan.includes("business");
       
-      // 4. Configurar URLs de navegación
-      const googleUrl = data.google || "#";
-      const wazeUrl = data.waze || "#";
-      const uberUrl = data.uber || "#";
-      const whatsappUrl = data.whatsapp || "#";
-      const qrUrl = data.qr || "";
+      console.log("Es negocio:", esNegocio, "Plan:", data.plan);
 
-      console.log("URLs:", { googleUrl, wazeUrl, uberUrl, whatsappUrl });
+      // Actualizar enlaces de navegación
+      updateLink("btnGoogle", data.google || "#", "google");
+      updateLink("btnWaze", data.waze || "#", "waze");
+      updateLink("btnUber", data.uber || "#", "uber");
+      updateLink("btnAviso", data.whatsapp || "#", "aviso");
 
-      // Función para configurar enlaces
-      function setupLink(buttonId, url, evento) {
-        const btn = document.getElementById(buttonId);
-        if(!btn) return;
-        
-        // Limpiar evento anterior
-        const nuevoBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(nuevoBtn, btn);
-        
-        if(!url || url === "#" || url === "-") {
-          nuevoBtn.style.opacity = "0.5";
-          nuevoBtn.style.pointerEvents = "none";
-          nuevoBtn.href = "#";
-          return;
-        }
-        
-        nuevoBtn.href = url;
-        nuevoBtn.addEventListener("click", function(e) {
-          // Registrar clic (solo si es negocio)
-          if(esNegocio && window.CODIGO_CLIENTE) {
-            const trackUrl = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=${evento}&t=${Date.now()}`;
-            fetch(trackUrl, { mode: "no-cors" }).catch(()=>{});
-          }
-          // Dejar que el link funcione normalmente
-        });
-      }
-
-      // Configurar cada botón
-      setupLink("btnGoogle", googleUrl, "google");
-      setupLink("btnWaze", wazeUrl, "waze");
-      setupLink("btnUber", uberUrl, "uber");
-      setupLink("btnAviso", whatsappUrl, "aviso");
-
-      // 5. Configurar botones de compartir/copiar
+      // URL para compartir
       const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`;
       
-      document.getElementById("uiLink").textContent = shareUrl;
+      const uiLink = document.getElementById("uiLink");
+      if(uiLink) uiLink.textContent = shareUrl;
       
       // QR
-      if(qrUrl) {
-        document.getElementById("qrImg").src = qrUrl;
-      } else {
-        document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
+      const qrImg = document.getElementById("qrImg");
+      if(qrImg) {
+        if(data.qr) {
+          qrImg.src = data.qr;
+        } else {
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
+        }
       }
       
       // Link de verificación
-      document.getElementById("linkVerificacion").href = shareUrl;
+      const linkVer = document.getElementById("linkVerificacion");
+      if(linkVer) linkVer.href = shareUrl;
 
       // Botón compartir
       const btnShare = document.getElementById("btnCompartir");
-      const newShare = btnShare.cloneNode(true);
-      btnShare.parentNode.replaceChild(newShare, btnShare);
-      newShare.addEventListener("click", function() {
-        if(esNegocio && window.CODIGO_CLIENTE) {
-          fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=share&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
-        }
-        if(navigator.share) {
-          navigator.share({ title: "Dirección Digital", url: shareUrl }).catch(()=>{});
-        } else {
-          navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado ✅")).catch(()=>{});
-        }
-      });
+      if(btnShare) {
+        btnShare.onclick = function() {
+          if(esNegocio && window.CODIGO_CLIENTE) {
+            fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=share&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
+          }
+          if(navigator.share) {
+            navigator.share({ title: "Dirección Digital", url: shareUrl }).catch(()=>{});
+          } else {
+            navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado ✅")).catch(()=>{});
+          }
+        };
+      }
 
       // Botón copiar
       const btnCopy = document.getElementById("btnCopiar");
-      const newCopy = btnCopy.cloneNode(true);
-      btnCopy.parentNode.replaceChild(newCopy, btnCopy);
-      newCopy.addEventListener("click", function() {
-        if(esNegocio && window.CODIGO_CLIENTE) {
-          fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=copy&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
-        }
-        navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado ✅")).catch(()=>{});
-      });
+      if(btnCopy) {
+        btnCopy.onclick = function() {
+          if(esNegocio && window.CODIGO_CLIENTE) {
+            fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=copy&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
+          }
+          navigator.clipboard.writeText(shareUrl).then(() => alert("Link copiado ✅")).catch(()=>{});
+        };
+      }
 
-      // 6. Configurar panel de estadísticas (solo para negocios)
+      // Panel de estadísticas
       const statsBtn = document.getElementById("btnStats");
       const statsPanel = document.getElementById("statsPanel");
       
-      if(esNegocio) {
-        statsBtn.style.display = "flex";
-        statsBtn.onclick = async function() {
-          const visible = statsPanel.style.display === "block";
-          statsPanel.style.display = visible ? "none" : "block";
-          document.getElementById("statsChevron").textContent = visible ? "▾" : "▴";
-          
-          if(!visible && window.CODIGO_CLIENTE) {
-            try {
-              const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&t=${Date.now()}`);
-              const statsData = await statsRes.json();
-              if(statsData.ok && statsData.stats) {
-                document.getElementById("stGoogle").textContent = statsData.stats.google || 0;
-                document.getElementById("stWaze").textContent = statsData.stats.waze || 0;
-                document.getElementById("stUber").textContent = statsData.stats.uber || 0;
-                document.getElementById("stShare").textContent = statsData.stats.share || 0;
-                document.getElementById("stCopy").textContent = statsData.stats.copy || 0;
-                document.getElementById("stUpdated").textContent = "Actualizado: " + (statsData.stats.updated || "-");
+      if(statsBtn && statsPanel) {
+        if(esNegocio) {
+          statsBtn.style.display = "flex";
+          statsBtn.onclick = async function() {
+            const visible = statsPanel.style.display === "block";
+            statsPanel.style.display = visible ? "none" : "block";
+            const chevron = document.getElementById("statsChevron");
+            if(chevron) chevron.textContent = visible ? "▾" : "▴";
+            
+            if(!visible && window.CODIGO_CLIENTE) {
+              try {
+                const statsRes = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&t=${Date.now()}`);
+                const statsData = await statsRes.json();
+                console.log("Stats recibidos:", statsData);
+                
+                if(statsData.ok && statsData.stats) {
+                  const stGoogle = document.getElementById("stGoogle");
+                  const stWaze = document.getElementById("stWaze");
+                  const stUber = document.getElementById("stUber");
+                  const stShare = document.getElementById("stShare");
+                  const stCopy = document.getElementById("stCopy");
+                  const stUpdated = document.getElementById("stUpdated");
+                  
+                  if(stGoogle) stGoogle.textContent = statsData.stats.google || 0;
+                  if(stWaze) stWaze.textContent = statsData.stats.waze || 0;
+                  if(stUber) stUber.textContent = statsData.stats.uber || 0;
+                  if(stShare) stShare.textContent = statsData.stats.share || 0;
+                  if(stCopy) stCopy.textContent = statsData.stats.copy || 0;
+                  if(stUpdated) stUpdated.textContent = "Actualizado: " + (statsData.stats.updated || "-");
+                }
+              } catch(e) {
+                console.log("Error cargando stats:", e);
               }
-            } catch(e) {
-              console.log("Error cargando stats:", e);
             }
-          }
-        };
-      } else {
-        statsBtn.style.display = "none";
-        statsPanel.style.display = "none";
+          };
+        } else {
+          statsBtn.style.display = "none";
+          statsPanel.style.display = "none";
+        }
       }
 
-      // 7. Mostrar/ocultar secciones según modo
-      document.getElementById("homeHero").style.display = "none";
-      document.getElementById("buyWrap").style.display = "none";
-      document.getElementById("heroComprarBox").style.display = "none";
-      document.getElementById("heroEjemploBox").style.display = "none";
+      // Mostrar/ocultar secciones
+      const homeHero = document.getElementById("homeHero");
+      const buyWrap = document.getElementById("buyWrap");
+      const heroComprar = document.getElementById("heroComprarBox");
+      const heroEjemplo = document.getElementById("heroEjemploBox");
+      
+      if(homeHero) homeHero.style.display = "none";
+      if(buyWrap) buyWrap.style.display = "none";
+      if(heroComprar) heroComprar.style.display = "none";
+      if(heroEjemplo) heroEjemplo.style.display = "none";
       
       // Mostrar panel cliente
-      document.getElementById("fieldNombre").style.display = "grid";
-      document.getElementById("fieldRef").style.display = "grid";
-      document.getElementById("tituloUbicacion").style.display = "block";
-      document.getElementById("gridUbicacion").style.display = "grid";
-      document.getElementById("divAfterUbic").style.display = "block";
-      document.getElementById("tituloCompartir").style.display = "block";
-      document.getElementById("gridCompartir").style.display = "grid";
-      document.getElementById("notaVerificacion").style.display = "block";
-      document.getElementById("divAfterVerif").style.display = "block";
+      const elementosMostrar = [
+        "fieldNombre", "fieldRef", "tituloUbicacion", "gridUbicacion", 
+        "divAfterUbic", "tituloCompartir", "gridCompartir", 
+        "notaVerificacion", "divAfterVerif"
+      ];
       
-      // Ocultar pasos y precios en modo cliente
-      document.getElementById("seccionPasos").style.display = "none";
-      document.getElementById("seccionPrecios").style.display = "none";
+      elementosMostrar.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = "";
+      });
+      
+      // Ocultar pasos y precios
+      const seccionPasos = document.getElementById("seccionPasos");
+      const seccionPrecios = document.getElementById("seccionPrecios");
+      
+      if(seccionPasos) seccionPasos.style.display = "none";
+      if(seccionPrecios) seccionPrecios.style.display = "none";
 
       setMsg("✅ Listo");
 
@@ -940,22 +975,24 @@
 
   // Inicialización
   document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM cargado, iniciando...");
+    
     // Configurar botones de compra
     const comprarLinks = [
-      "btnComprarTop", "btnComprarPersonal", "btnComprarNegocios",
-      "btnHeroPersonal", "btnHeroNegocios"
+      { id: "btnComprarTop", plan: "" },
+      { id: "btnComprarPersonal", plan: "Personal ($6.99)" },
+      { id: "btnComprarNegocios", plan: "Negocios ($10.99)" },
+      { id: "btnHeroPersonal", plan: "Personal ($6.99)" },
+      { id: "btnHeroNegocios", plan: "Negocios ($10.99)" }
     ];
     
-    comprarLinks.forEach(id => {
-      const btn = document.getElementById(id);
+    comprarLinks.forEach(item => {
+      const btn = document.getElementById(item.id);
       if(btn) {
-        if(id.includes("Negocios")) {
-          btn.href = waLink("Negocios ($10.99)");
-        } else if(id.includes("Personal") || id === "btnHeroPersonal") {
-          btn.href = waLink("Personal ($6.99)");
-        } else {
-          btn.href = waLink("");
-        }
+        btn.href = waLink(item.plan);
+        console.log("Botón configurado:", item.id);
+      } else {
+        console.log("Botón no encontrado:", item.id);
       }
     });
 
@@ -964,43 +1001,63 @@
     const urlCode = params.get("code");
     
     if(urlCode) {
-      document.getElementById("inputCodigo").value = urlCode;
+      const input = document.getElementById("inputCodigo");
+      if(input) input.value = urlCode;
       buscarCodigo();
     } else {
+      console.log("Modo home");
       // Modo home
-      document.getElementById("homeHero").style.display = "block";
-      document.getElementById("buyWrap").style.display = "flex";
-      document.getElementById("heroComprarBox").style.display = "block";
-      document.getElementById("heroEjemploBox").style.display = "block";
+      const homeHero = document.getElementById("homeHero");
+      const buyWrap = document.getElementById("buyWrap");
+      const heroComprar = document.getElementById("heroComprarBox");
+      const heroEjemplo = document.getElementById("heroEjemploBox");
+      const statsBtn = document.getElementById("btnStats");
+      const statsPanel = document.getElementById("statsPanel");
+      
+      if(homeHero) homeHero.style.display = "block";
+      if(buyWrap) buyWrap.style.display = "flex";
+      if(heroComprar) heroComprar.style.display = "block";
+      if(heroEjemplo) heroEjemplo.style.display = "block";
+      if(statsBtn) statsBtn.style.display = "none";
+      if(statsPanel) statsPanel.style.display = "none";
       
       // Ocultar panel cliente
-      document.getElementById("fieldNombre").style.display = "none";
-      document.getElementById("fieldRef").style.display = "none";
-      document.getElementById("tituloUbicacion").style.display = "none";
-      document.getElementById("gridUbicacion").style.display = "none";
-      document.getElementById("divAfterUbic").style.display = "none";
-      document.getElementById("tituloCompartir").style.display = "none";
-      document.getElementById("gridCompartir").style.display = "none";
-      document.getElementById("notaVerificacion").style.display = "none";
-      document.getElementById("divAfterVerif").style.display = "none";
-      document.getElementById("btnStats").style.display = "none";
-      document.getElementById("statsPanel").style.display = "none";
+      const elementosOcultar = [
+        "fieldNombre", "fieldRef", "tituloUbicacion", "gridUbicacion", 
+        "divAfterUbic", "tituloCompartir", "gridCompartir", 
+        "notaVerificacion", "divAfterVerif"
+      ];
+      
+      elementosOcultar.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = "none";
+      });
       
       // Mostrar pasos y precios
-      document.getElementById("seccionPasos").style.display = "block";
-      document.getElementById("seccionPrecios").style.display = "block";
+      const seccionPasos = document.getElementById("seccionPasos");
+      const seccionPrecios = document.getElementById("seccionPrecios");
+      
+      if(seccionPasos) seccionPasos.style.display = "block";
+      if(seccionPrecios) seccionPrecios.style.display = "block";
       
       // QR del home
       const homeUrl = window.location.href.split('?')[0];
-      document.getElementById("uiLink").textContent = homeUrl;
-      document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
-      document.getElementById("linkVerificacion").href = homeUrl;
+      const uiLink = document.getElementById("uiLink");
+      const qrImg = document.getElementById("qrImg");
+      const linkVer = document.getElementById("linkVerificacion");
+      
+      if(uiLink) uiLink.textContent = homeUrl;
+      if(qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
+      if(linkVer) linkVer.href = homeUrl;
     }
 
     // Enter en el input
-    document.getElementById("inputCodigo").addEventListener("keypress", (e) => {
-      if(e.key === "Enter") buscarCodigo();
-    });
+    const input = document.getElementById("inputCodigo");
+    if(input) {
+      input.addEventListener("keypress", (e) => {
+        if(e.key === "Enter") buscarCodigo();
+      });
+    }
   });
 </script>
 </body>

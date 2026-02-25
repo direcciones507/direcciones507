@@ -781,12 +781,6 @@ async function buscarCodigo() {
 
 // 🔥 AQUÍ EXACTAMENTE
 window.CODIGO_CLIENTE = data.codigo || data.code || code;
-
-// ahora sigue todo lo demás
-let google = normalizeUrl(data.google_maps || data.google || "");
-let waze   = normalizeUrl(data.waze || "");
-let uber   = normalizeUrl(data.uber || "");
-let aviso  = normalizeUrl(data.whatsapp || "");
     
     CODIGO_ACTUAL = data.codigo;
     DATOS_CLIENTE = data;

@@ -719,7 +719,7 @@
   </div>
 
 <script>
-  // ✅ WebApp (VERSIÓN FINAL)
+  // ✅ WebApp (VERSIÓN FINAL - CON CORRECCIÓN DE ENLACES)
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
@@ -787,71 +787,68 @@
       
       // ===== BOTONES DE NAVEGACIÓN =====
       
+      // Google Maps
       const btnGoogle = document.getElementById("btnGoogle");
-      if(btnGoogle) {
+      if(btnGoogle && data.google && data.google !== "#" && data.google !== "-") {
+        btnGoogle.href = data.google;
+        btnGoogle.target = "_blank";
+        btnGoogle.rel = "noopener noreferrer";
         btnGoogle.onclick = function(e) {
-          e.preventDefault();
+          // No prevenir default para que el link funcione
           console.log("Click en Google");
-          if(data.google && data.google !== "#" && data.google !== "-") {
-            if(esNegocio) {
-              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
-            }
-            window.open(data.google, "_blank");
-          } else {
-            alert("No hay enlace de Google Maps disponible");
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=google`, { mode: "no-cors" }).catch(()=>{});
           }
+          return true; // Permitir que el link funcione
         };
       }
       
+      // Waze
       const btnWaze = document.getElementById("btnWaze");
-      if(btnWaze) {
+      if(btnWaze && data.waze && data.waze !== "#" && data.waze !== "-") {
+        btnWaze.href = data.waze;
+        btnWaze.target = "_blank";
+        btnWaze.rel = "noopener noreferrer";
         btnWaze.onclick = function(e) {
-          e.preventDefault();
           console.log("Click en Waze");
-          if(data.waze && data.waze !== "#" && data.waze !== "-") {
-            if(esNegocio) {
-              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
-            }
-            window.open(data.waze, "_blank");
-          } else {
-            alert("No hay enlace de Waze disponible");
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=waze`, { mode: "no-cors" }).catch(()=>{});
           }
+          return true;
         };
       }
       
+      // Uber
       const btnUber = document.getElementById("btnUber");
-      if(btnUber) {
+      if(btnUber && data.uber && data.uber !== "#" && data.uber !== "-") {
+        btnUber.href = data.uber;
+        btnUber.target = "_blank";
+        btnUber.rel = "noopener noreferrer";
         btnUber.onclick = function(e) {
-          e.preventDefault();
           console.log("Click en Uber");
-          if(data.uber && data.uber !== "#" && data.uber !== "-") {
-            if(esNegocio) {
-              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
-            }
-            window.open(data.uber, "_blank");
-          } else {
-            alert("No hay enlace de Uber disponible");
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=uber`, { mode: "no-cors" }).catch(()=>{});
           }
+          return true;
         };
       }
       
+      // Aviso WhatsApp
       const btnAviso = document.getElementById("btnAviso");
-      if(btnAviso) {
+      if(btnAviso && data.whatsapp && data.whatsapp !== "#" && data.whatsapp !== "-") {
+        btnAviso.href = data.whatsapp;
+        btnAviso.target = "_blank";
+        btnAviso.rel = "noopener noreferrer";
         btnAviso.onclick = function(e) {
-          e.preventDefault();
           console.log("Click en Aviso");
-          if(data.whatsapp && data.whatsapp !== "#" && data.whatsapp !== "-") {
-            if(esNegocio) {
-              fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
-            }
-            window.open(data.whatsapp, "_blank");
-          } else {
-            alert("No hay enlace de WhatsApp disponible");
+          if(esNegocio) {
+            fetch(`${WEBAPP_URL}?action=track&code=${CODIGO_ACTUAL}&event=aviso`, { mode: "no-cors" }).catch(()=>{});
           }
+          return true;
         };
       }
       
-      // ===== BOTONES DE COMPARTIR (SIN ONCLICK EN HTML) =====
+      // ===== BOTONES DE COMPARTIR =====
       
       const btnCompartir = document.getElementById("btnCompartir");
       if(btnCompartir) {
@@ -891,10 +888,9 @@
       // Link de verificación
       const linkVer = document.getElementById("linkVerificacion");
       if(linkVer) {
-        linkVer.onclick = function(e) {
-          e.preventDefault();
-          window.open(shareUrl, "_blank");
-        };
+        linkVer.href = shareUrl;
+        linkVer.target = "_blank";
+        linkVer.rel = "noopener noreferrer";
       }
       
       // QR
@@ -966,42 +962,37 @@
     
     const btnTop = document.getElementById("btnComprarTop");
     if(btnTop) {
-      btnTop.onclick = function(e) {
-        e.preventDefault();
-        window.open(comprarBase, "_blank");
-      };
+      btnTop.href = comprarBase;
+      btnTop.target = "_blank";
+      btnTop.rel = "noopener noreferrer";
     }
     
     const btnPersonal = document.getElementById("btnComprarPersonal");
     if(btnPersonal) {
-      btnPersonal.onclick = function(e) {
-        e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
-      };
+      btnPersonal.href = comprarBase + "%20Plan:%20Personal%20($6.99)";
+      btnPersonal.target = "_blank";
+      btnPersonal.rel = "noopener noreferrer";
     }
     
     const btnNegocios = document.getElementById("btnComprarNegocios");
     if(btnNegocios) {
-      btnNegocios.onclick = function(e) {
-        e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
-      };
+      btnNegocios.href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
+      btnNegocios.target = "_blank";
+      btnNegocios.rel = "noopener noreferrer";
     }
     
     const btnHeroPersonal = document.getElementById("btnHeroPersonal");
     if(btnHeroPersonal) {
-      btnHeroPersonal.onclick = function(e) {
-        e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Personal%20($6.99)", "_blank");
-      };
+      btnHeroPersonal.href = comprarBase + "%20Plan:%20Personal%20($6.99)";
+      btnHeroPersonal.target = "_blank";
+      btnHeroPersonal.rel = "noopener noreferrer";
     }
     
     const btnHeroNegocios = document.getElementById("btnHeroNegocios");
     if(btnHeroNegocios) {
-      btnHeroNegocios.onclick = function(e) {
-        e.preventDefault();
-        window.open(comprarBase + "%20Plan:%20Negocios%20($10.99)", "_blank");
-      };
+      btnHeroNegocios.href = comprarBase + "%20Plan:%20Negocios%20($10.99)";
+      btnHeroNegocios.target = "_blank";
+      btnHeroNegocios.rel = "noopener noreferrer";
     }
     
     // Enter en input

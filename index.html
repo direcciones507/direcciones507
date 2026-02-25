@@ -577,7 +577,43 @@
               Ver enlace de verificación
             </a>
           </div>
-          <img id="qrVerificacion" style="display:none;margin-top:15px;width:220px;">
+
+          <!-- ✅ Tarjeta PRO para imprimir -->
+<div id="printCardWrap" style="display:none;margin-top:14px;">
+  <div id="printCard" style="background:#fff;border-radius:16px;padding:16px;max-width:360px;box-shadow:0 10px 30px rgba(0,0,0,.25);border:1px solid rgba(0,0,0,.12);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(145deg,#1E51D3,#0B2A6F);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;">
+        AD
+      </div>
+      <div style="line-height:1.1;">
+        <div style="font-weight:900;color:#0b1020;font-size:16px;">Dirección Digital AD507</div>
+        <div style="color:#374151;font-size:12px;">Escanea para verificar ubicación</div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-weight:800;color:#111827;font-size:13px;">Código:</div>
+      <div id="printCodigo" style="font-weight:900;color:#111827;font-size:13px;">-</div>
+    </div>
+
+    <div style="display:flex;justify-content:center;margin:12px 0;">
+      <img id="qrVerificacion" alt="QR Verificación" style="width:260px;height:260px;border-radius:14px;border:8px solid #f3f4f6;">
+    </div>
+
+    <div style="color:#111827;font-size:12px;text-align:center;">
+      Escanea este QR para abrir la verificación en <b>direcciones507.com</b>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button id="btnImprimirQR" type="button" style="flex:1;background:#111827;color:#fff;border:none;border-radius:12px;padding:10px 12px;font-weight:900;cursor:pointer;">
+        Imprimir QR
+      </button>
+      <button id="btnOcultarQR" type="button" style="background:#f3f4f6;color:#111827;border:none;border-radius:12px;padding:10px 12px;font-weight:800;cursor:pointer;">
+        Ocultar
+      </button>
+    </div>
+  </div>
+</div>
 
           <!-- SECCIONES QUE SIEMPRE SE VEN EN HOME -->
           <div id="seccionPasos">
@@ -794,6 +830,8 @@ async function buscarCodigo() {
     
     // URL para compartir
     const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+    // ✅ URL de verificación (la que irá en el QR para imprimir)
+const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
   
     // 🔥 URL VERIFICACIÓN PARA IMPRIMIR
 const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
@@ -886,19 +924,70 @@ const verificacionUrl = `${window.location.origin}${window.location.pathname}?co
       navigator.clipboard.writeText(shareUrl).then(() => alert("✅ Link copiado"));
     };
     
-// ===== VERIFICACIÓN PARA IMPRIMIR =====
+// ===== VERIFICACIÓN PARA IMPRIMIR (muestra tarjeta + QR) =====
 const linkVer = document.getElementById("linkVerificacion");
+const wrap = document.getElementById("printCardWrap");
+const qrVerif = document.getElementById("qrVerificacion");
+const printCodigo = document.getElementById("printCodigo");
+const btnPrint = document.getElementById("btnImprimirQR");
+const btnHide = document.getElementById("btnOcultarQR");
 
-linkVer.onclick = function(e){
-  e.preventDefault();
+if(linkVer){
+  linkVer.href = "#";
+  linkVer.target = "";
+  linkVer.rel = "noopener";
+  linkVer.onclick = function(e){
+    e.preventDefault();
 
-  const qrVerif = document.getElementById("qrVerificacion");
+    if(printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
 
-  if(qrVerif){
-    qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(verificacionUrl)}`;
-    qrVerif.style.display = "block";
-  }
-};
+    if(qrVerif){
+      qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(verificacionUrl)}`;
+    }
+
+    if(wrap) wrap.style.display = "block";
+  };
+}
+
+if(btnHide && wrap){
+  btnHide.onclick = function(){
+    wrap.style.display = "none";
+  };
+}
+
+if(btnPrint){
+  btnPrint.onclick = function(){
+    // abre una ventana de impresión con SOLO la tarjeta
+    const card = document.getElementById("printCard");
+    if(!card) return;
+
+    const w = window.open("", "_blank");
+    if(!w) return;
+
+    const html = `
+      <html>
+        <head>
+          <meta charset="utf-8"/>
+          <meta name="viewport" content="width=device-width, initial-scale=1"/>
+          <title>Imprimir QR Verificación</title>
+          <style>
+            body{ margin:0; padding:24px; font-family: Arial, sans-serif; background:#fff; }
+            .wrap{ display:flex; justify-content:center; }
+          </style>
+        </head>
+        <body>
+          <div class="wrap">${card.outerHTML}</div>
+          <script>
+            window.onload = function(){ window.print(); };
+          <\/script>
+        </body>
+      </html>
+    `;
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  };
+}
     
     // ===== QR =====
     const qrImg = document.getElementById("qrImg");

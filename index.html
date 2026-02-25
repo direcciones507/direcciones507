@@ -720,7 +720,7 @@
     </div>
   </div>
 
-  <script>
+ <script>
   window.addEventListener("error", (e) => {
     console.log("❌ Error JS:", e.message, "en", e.filename, "línea", e.lineno);
   });
@@ -782,10 +782,14 @@
   function safeHref(id, value){
     const el = document.getElementById(id);
     if(!el) return;
-    el.setAttribute("href", (value && String(value).trim()) ? value : "#");
+    const href = (value && String(value).trim()) ? value : "#";
+    el.setAttribute("href", href);
+    console.log(`✅ safeHref ${id}:`, href); // Debug
   }
 
   function extractUrl(raw){
+    if (!raw) return "";
+    
     const s = String(raw ?? "")
       .replace(/\u00A0/g," ")
       .replace(/\u200B/g," ")
@@ -813,6 +817,8 @@
   }
 
   function normalizeUrl(raw){
+    if (!raw) return "";
+    
     let url = extractUrl(raw);
     if(!url) return "";
 
@@ -828,7 +834,12 @@
   // ✅ abre + cuenta, sin perder click, sin duplicar listeners
   function attachTrack(id, ev){
     const old = document.getElementById(id);
-    if(!old) return;
+    if(!old) {
+      console.log(`⚠️ Elemento ${id} no encontrado`);
+      return;
+    }
+
+    console.log(`✅ Attaching track a ${id} para evento ${ev}`);
 
     // quita listeners viejos
     const a = old.cloneNode(true);
@@ -836,9 +847,10 @@
 
     a.addEventListener("click", function(e){
       const href = (a.getAttribute("href") || "").trim();
+      console.log(`🔍 Click en ${id} - href:`, href);
 
       // si no hay link válido, no navegues
-      if(!href || href === "#"){
+      if(!href || href === "#" || href === ""){
         e.preventDefault();
         alert("Este enlace no está configurado todavía para este cliente.");
         return;
@@ -855,7 +867,7 @@
       }else{
         window.location.href = href;
       }
-    }, { passive:false });
+    }, { passive: false });
   }
   
   function toggleStatsNegocios(esNegocios){
@@ -1023,30 +1035,25 @@
 
     try{
       const url = `${WEBAPP_URL}?code=${encodeURIComponent(code)}&t=${Date.now()}`;
+      console.log("🔍 Fetching:", url);
+      
       const res = await fetch(url, { cache:"no-store" });
 
       const txt = await res.text();
       console.log("WEBAPP status:", res.status);
-      console.log("WEBAPP respuesta (inicio):", txt.slice(0, 300));
+      console.log("WEBAPP respuesta:", txt);
 
       let data;
       try{
         data = JSON.parse(txt);
       }catch(e){
-        throw new Error("La WebApp NO devolvió JSON. Devuelve HTML/permisos. Revisa publicación. Inicio: " + txt.slice(0, 120));
+        throw new Error("La WebApp NO devolvió JSON. Inicio: " + txt.slice(0, 120));
       }
       
-      console.log("LINKS RAW:", {
-        google_maps: data.google_maps,
-        google: data.google,
-        waze: data.waze,
-        uber: data.uber,
-        whatsapp: data.whatsapp,
-        link_whatsapp: data.link_whatsapp
-      });
+      console.log("📦 Datos recibidos:", data);
 
       if(!data.ok){
-        setMsg("Error: " + (data.message ? data.message : "No se pudo conectar"));
+        setMsg("Error: " + (data.message ? data.message : "Código no encontrado"));
         toggleModoCliente(false);
         togglePanelCliente(false);
         toggleStatsNegocios(false);
@@ -1063,20 +1070,45 @@
       safeText("uiRef", data.referencia || "Referencia no indicada");
       safeText("uiEstado", data.validacion || "Activo");
 
+      // Extraer URLs correctamente
       const google = normalizeUrl(data.google_maps || data.google || "");
-      const waze   = normalizeUrl(data.waze || "");
-      const uber   = normalizeUrl(data.uber || "");
-      const aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+      const waze = normalizeUrl(data.waze || "");
+      const uber = normalizeUrl(data.uber || "");
+      const aviso = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+      
+      console.log("🔗 URLs normalizadas:", { google, waze, uber, aviso });
 
+      // Establecer los href
       safeHref("btnGoogle", google);
       safeHref("btnWaze", waze);
       safeHref("btnUber", uber);
       safeHref("btnAviso", aviso);
 
-      attachTrack("btnGoogle","google");
-      attachTrack("btnWaze","waze");
-      attachTrack("btnUber","uber");
-      attachTrack("btnAviso","aviso");
+      // Forzar atributos href directamente
+      const btnGoogle = document.getElementById("btnGoogle");
+      const btnWaze = document.getElementById("btnWaze");
+      const btnUber = document.getElementById("btnUber");
+      const btnAviso = document.getElementById("btnAviso");
+      
+      if (btnGoogle && google) btnGoogle.href = google;
+      if (btnWaze && waze) btnWaze.href = waze;
+      if (btnUber && uber) btnUber.href = uber;
+      if (btnAviso && aviso) btnAviso.href = aviso;
+      
+      console.log("✅ hrefs asignados:", {
+        google: btnGoogle?.href,
+        waze: btnWaze?.href,
+        uber: btnUber?.href,
+        aviso: btnAviso?.href
+      });
+
+      // Adjuntar tracks después de asignar hrefs
+      setTimeout(() => {
+        attachTrack("btnGoogle", "google");
+        attachTrack("btnWaze", "waze");
+        attachTrack("btnUber", "uber");
+        attachTrack("btnAviso", "aviso");
+      }, 100);
 
       const linkMostrado = getShareUrl();
       safeText("uiLink", linkMostrado);
@@ -1096,8 +1128,8 @@
 
       setMsg("Listo ✅");
     }catch(err){
-      console.error("Error en buscarCodigo:", err);
-      setMsg("Error conectando con el sistema. Revisa permisos/publicación del Script.");
+      console.error("❌ Error en buscarCodigo:", err);
+      setMsg("Error: " + err.message);
       toggleModoCliente(false);
       togglePanelCliente(false);
       toggleStatsNegocios(false);
@@ -1160,7 +1192,7 @@
     if (code) {
       const input = document.getElementById("inputCodigo");
       if (input) input.value = code;
-      setTimeout(buscarCodigo, 100);
+      setTimeout(buscarCodigo, 300);
     } else {
       toggleModoCliente(false);
       togglePanelCliente(false);

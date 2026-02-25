@@ -834,7 +834,7 @@ async function buscarCodigo() {
 const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
   
     // 🔥 URL VERIFICACIÓN PARA IMPRIMIR
-let verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+window.verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
   
     // ✅ FIX: Extraer coordenadas bien desde el QR (data.qr)
     let lat = "", lng = "";
@@ -942,7 +942,7 @@ if(linkVer){
     if(printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
 
     if(qrVerif){
-      qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(verificacionUrl)}`;
+      qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
     }
 
     if(wrap) wrap.style.display = "block";

@@ -762,16 +762,25 @@
     if (el) el.textContent = value ?? "";
   }
 
-  // ✅ FIX: setea atributo + propiedad
-  function safeHref(id, value){
-    const el = document.getElementById(id);
-    if (!el) return;
+ // ✅ HREF ultra seguro (no rompe aunque sea button o a)
+function safeHref(id, value){
+  const el = document.getElementById(id);
+  if (!el) return;
 
-    const href = value || "#";
+  const href = (value && value !== "-" && value !== "#") ? value : "#";
+
+  try{
     el.setAttribute("href", href);
     el.href = href;
-  }
+  }catch(e){}
 
+  // si algún botón es <button> en vez de <a>
+  if(el.tagName === "BUTTON"){
+    el.onclick = function(){
+      if(href !== "#") window.open(href, "_blank");
+    };
+  }
+}
   function normalizeUrl(url){
     url = String(url ?? "").trim();
     if(!url || url === "-" || url === "#") return "";

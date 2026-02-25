@@ -753,7 +753,7 @@
     if (el) el.textContent = t || "";
   }
 
-  // Función para actualizar link sin clonar (más simple)
+  // Función para actualizar link
   function updateLink(buttonId, url, evento) {
     const btn = document.getElementById(buttonId);
     if(!btn) {
@@ -761,44 +761,40 @@
       return;
     }
     
-    // Actualizar href directamente
-    btn.href = url || "#";
+    console.log(`Configurando ${buttonId} con URL:`, url);
     
-    // Asegurar que abra en nueva pestaña
-    btn.target = "_blank";
-    btn.rel = "noopener noreferrer";
-    
-    // Si no hay URL válida, deshabilitar visualmente
+    // Si no hay URL válida, deshabilitar
     if(!url || url === "#" || url === "-") {
       btn.style.opacity = "0.5";
       btn.style.pointerEvents = "none";
       btn.onclick = null;
-    } else {
-      btn.style.opacity = "1";
-      btn.style.pointerEvents = "auto";
-      
-      // Guardar el evento para el click
-      btn.setAttribute("data-evento", evento);
-      
-      // Remover event listeners anteriores
-      btn.onclick = function(e) {
-        // No prevenir default para que el link funcione normalmente
-        // pero trackeamos antes de que navegue
-        
-        const code = window.CODIGO_CLIENTE;
-        const plan = window.DATOS_CLIENTE?.plan || "";
-        const esNegocio = plan.toLowerCase().includes("negocio") || plan.toLowerCase().includes("business");
-        
-        // Trackear si es negocio (async, no bloquea)
-        if(esNegocio && code) {
-          const trackUrl = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${evento}&t=${Date.now()}`;
-          fetch(trackUrl, { mode: "no-cors" }).catch(()=>{});
-        }
-        
-        // El link se abrirá normalmente en _blank
-        return true;
-      };
+      return;
     }
+    
+    btn.style.opacity = "1";
+    btn.style.pointerEvents = "auto";
+    
+    // Remover cualquier onclick anterior
+    btn.onclick = function(e) {
+      e.preventDefault(); // Prevenir comportamiento por defecto
+      
+      const code = window.CODIGO_CLIENTE;
+      const plan = window.DATOS_CLIENTE?.plan || "";
+      const esNegocio = plan.toLowerCase().includes("negocio") || plan.toLowerCase().includes("business");
+      
+      console.log(`Click en ${buttonId} - evento: ${evento} - URL: ${url}`);
+      
+      // Trackear si es negocio
+      if(esNegocio && code) {
+        const trackUrl = `${WEBAPP_URL}?action=track&code=${encodeURIComponent(code)}&event=${evento}&t=${Date.now()}`;
+        fetch(trackUrl, { mode: "no-cors" }).catch(()=>{});
+      }
+      
+      // Abrir en nueva pestaña
+      window.open(url, "_blank", "noopener noreferrer");
+      
+      return false;
+    };
   }
 
   async function buscarCodigo(){
@@ -871,12 +867,17 @@
         linkVer.href = shareUrl;
         linkVer.target = "_blank";
         linkVer.rel = "noopener noreferrer";
+        linkVer.onclick = function(e) {
+          e.preventDefault();
+          window.open(shareUrl, "_blank", "noopener noreferrer");
+        };
       }
 
       // Botón compartir
       const btnShare = document.getElementById("btnCompartir");
       if(btnShare) {
-        btnShare.onclick = function() {
+        btnShare.onclick = function(e) {
+          e.preventDefault();
           if(esNegocio && window.CODIGO_CLIENTE) {
             fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=share&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
           }
@@ -891,7 +892,8 @@
       // Botón copiar
       const btnCopy = document.getElementById("btnCopiar");
       if(btnCopy) {
-        btnCopy.onclick = function() {
+        btnCopy.onclick = function(e) {
+          e.preventDefault();
           if(esNegocio && window.CODIGO_CLIENTE) {
             fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(window.CODIGO_CLIENTE)}&event=copy&t=${Date.now()}`, { mode: "no-cors" }).catch(()=>{});
           }
@@ -906,7 +908,8 @@
       if(statsBtn && statsPanel) {
         if(esNegocio) {
           statsBtn.style.display = "flex";
-          statsBtn.onclick = async function() {
+          statsBtn.onclick = async function(e) {
+            e.preventDefault();
             const visible = statsPanel.style.display === "block";
             statsPanel.style.display = visible ? "none" : "block";
             const chevron = document.getElementById("statsChevron");
@@ -998,9 +1001,11 @@
     comprarLinks.forEach(item => {
       const btn = document.getElementById(item.id);
       if(btn) {
-        btn.href = waLink(item.plan);
-        btn.target = "_blank";
-        btn.rel = "noopener noreferrer";
+        const url = waLink(item.plan);
+        btn.onclick = function(e) {
+          e.preventDefault();
+          window.open(url, "_blank", "noopener noreferrer");
+        };
         console.log("Botón configurado:", item.id);
       } else {
         console.log("Botón no encontrado:", item.id);
@@ -1061,8 +1066,10 @@
       if(qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
       if(linkVer) {
         linkVer.href = homeUrl;
-        linkVer.target = "_blank";
-        linkVer.rel = "noopener noreferrer";
+        linkVer.onclick = function(e) {
+          e.preventDefault();
+          window.open(homeUrl, "_blank", "noopener noreferrer");
+        };
       }
     }
 

@@ -1029,7 +1029,14 @@ function normalizeUrl(raw){
       try{
         const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(code)}`, { cache: "no-store" });
         const data = await res.json();
-        console.log("DATA:", data);
+        console.log("LINKS RAW:", {
+  google_maps: data.google_maps,
+  google: data.google,
+  waze: data.waze,
+  uber: data.uber,
+  whatsapp: data.whatsapp,
+  link_whatsapp: data.link_whatsapp
+});
 
         if(!data.ok){
           setMsg(data.message || "Código no encontrado.");

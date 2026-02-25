@@ -718,13 +718,13 @@
     </div>
   </div>
 
- <script>
+<script>
   // ✅ WebApp
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
   const WA_NUMBER = "50765996532";
   const EJEMPLO_CODE = "AD507-0001";
 
-  // ✅ Diagnóstico (no molesta, ayuda)
+  // ✅ Diagnóstico
   window.addEventListener("error", (e) => {
     console.log("❌ Error JS:", e.message, "en", e.filename, "línea", e.lineno);
   });
@@ -745,11 +745,14 @@
     return `${base}?text=${encodeURIComponent(msg)}`;
   }
 
-  function verEjemplo(){
+  // ✅ Ver ejemplo robusto (evita submit/recarga si es link o está en form)
+  function verEjemplo(e){
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
     const input = document.getElementById("inputCodigo");
     if(input) input.value = EJEMPLO_CODE;
-    buscarCodigo();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    Promise.resolve(buscarCodigo()).finally(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   function setMsg(t) {
@@ -762,25 +765,6 @@
     if (el) el.textContent = value ?? "";
   }
 
- // ✅ HREF ultra seguro (no rompe aunque sea button o a)
-function safeHref(id, value){
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  const href = (value && value !== "-" && value !== "#") ? value : "#";
-
-  try{
-    el.setAttribute("href", href);
-    el.href = href;
-  }catch(e){}
-
-  // si algún botón es <button> en vez de <a>
-  if(el.tagName === "BUTTON"){
-    el.onclick = function(){
-      if(href !== "#") window.open(href, "_blank");
-    };
-  }
-}
   function normalizeUrl(url){
     url = String(url ?? "").trim();
     if(!url || url === "-" || url === "#") return "";
@@ -811,7 +795,31 @@ function safeHref(id, value){
     }catch(e){}
   }
 
-  // ✅ Rebind: no duplica listeners + lee href correctamente
+  // ✅ FIX CLAVE:
+  // - Funciona si el elemento es <a> o <button>
+  // - Guarda el link en data-href SIEMPRE
+  function safeHref(id, value){
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const href = (value && value !== "-" && value !== "#") ? value : "#";
+
+    // guardamos siempre
+    el.dataset.href = href;
+
+    // si es <a>, seteamos href real
+    if (el.tagName === "A") {
+      el.setAttribute("href", href);
+      el.href = href;
+    }
+
+    // opcional: cursor para botones
+    if (el.tagName === "BUTTON") {
+      el.style.cursor = (href !== "#") ? "pointer" : "not-allowed";
+    }
+  }
+
+  // ✅ Rebind sin romper <button>
   function attachTrack(id, ev){
     const old = document.getElementById(id);
     if(!old) return;
@@ -820,9 +828,12 @@ function safeHref(id, value){
     old.parentNode.replaceChild(a, old);
 
     a.addEventListener("click", function(e){
-      // ✅ usa atributo (ya lo seteamos) y fallback a propiedad
+      // 🔥 Prioridad: data-href (sirve para <a> y <button>)
+      const dataHref = (a.dataset && a.dataset.href) ? String(a.dataset.href).trim() : "";
       const hrefAttr = (a.getAttribute("href") || "").trim();
-      const href = hrefAttr || (a.href || "").trim();
+      const hrefProp = (a.href || "").trim();
+
+      const href = dataHref || hrefAttr || hrefProp;
       const target = a.getAttribute("target") || "_blank";
 
       if(!href || href === "#" || href.endsWith("#")){
@@ -867,7 +878,6 @@ function safeHref(id, value){
     const precios = document.getElementById("seccionPrecios");
     if (pasos) pasos.style.display = isCliente ? "none" : "block";
     if (precios) precios.style.display = isCliente ? "none" : "block";
-
     toggleHomeBloques(!isCliente);
   }
 
@@ -983,35 +993,34 @@ function safeHref(id, value){
       if(opening) await cargarStats();
     });
   }
-function parseLatLngFromQr(qrUrl){
-  try{
-    const u = new URL(qrUrl);
-    const data = u.searchParams.get("data") || "";
-    const decoded = decodeURIComponent(data);
-    // Busca "...query=LAT,LNG"
-    const m = decoded.match(/query=([-0-9.]+),\s*([-0-9.]+)/i);
-    if(!m) return null;
-    return { lat: m[1], lng: m[2] };
-  }catch(e){
-    return null;
+
+  // ✅ Para cuando el backend manda etiquetas y solo qr trae coords
+  function parseLatLngFromQr(qrUrl){
+    try{
+      const u = new URL(qrUrl);
+      const data = u.searchParams.get("data") || "";
+      const decoded = decodeURIComponent(data);
+      const m = decoded.match(/query=([-0-9.]+),\s*([-0-9.]+)/i);
+      if(!m) return null;
+      return { lat: m[1], lng: m[2] };
+    }catch(e){
+      return null;
+    }
   }
-}
 
-function buildLinksFromLatLng(lat, lng){
-  const google = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + "," + lng)}`;
-  const waze   = `https://waze.com/ul?ll=${encodeURIComponent(lat + "," + lng)}&navigate=yes`;
-  // Uber (no siempre abre perfecto en desktop, pero sirve)
-  const uber   = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${encodeURIComponent(lat)}&dropoff[longitude]=${encodeURIComponent(lng)}`;
-  return { google, waze, uber };
-}
+  function buildLinksFromLatLng(lat, lng){
+    const google = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + "," + lng)}`;
+    const waze   = `https://waze.com/ul?ll=${encodeURIComponent(lat + "," + lng)}&navigate=yes`;
+    const uber   = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${encodeURIComponent(lat)}&dropoff[longitude]=${encodeURIComponent(lng)}`;
+    return { google, waze, uber };
+  }
 
-function buildAvisoWhatsApp(code){
-  // Ajusta el número si el aviso es a tu cliente, o si es tu número interno, etc.
-  // Aquí dejo un mensaje genérico:
-  const msg = `Hola, te comparto tu Dirección Digital ${code}.`;
-  return `https://wa.me/?text=${encodeURIComponent(msg)}`;
-}
-   
+  // ⚠️ Esto es solo fallback (sin teléfono del cliente, no puede “1”)
+  function buildAvisoWhatsAppFallback(code){
+    const msg = `Hola, te comparto tu Dirección Digital ${code}.\n${getShareUrl()}`;
+    return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  }
+
   async function buscarCodigo(){
     const input = document.getElementById("inputCodigo");
     const code = (input ? input.value : "").trim();
@@ -1048,39 +1057,42 @@ function buildAvisoWhatsApp(code){
 
       window.CODIGO_CLIENTE = data.codigo || data.code || code;
 
-    let google = normalizeUrl(data.google_maps || data.google || "");
-let waze   = normalizeUrl(data.waze_link || data.waze || "");
-let uber   = normalizeUrl(data.uber_link || data.uber || "");
-let aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
+      // ✅ links (si vienen)
+      let google = normalizeUrl(data.google_maps || data.google || "");
+      let waze   = normalizeUrl(data.waze_link || data.waze || "");
+      let uber   = normalizeUrl(data.uber_link || data.uber || "");
+      let aviso  = normalizeUrl(data.link_whatsapp || data.whatsapp || "");
 
-// ✅ Si el backend mandó etiquetas (emoji/texto) y no URLs, armamos links desde el QR
-const looksLikeUrl = (s) => /^https?:\/\//i.test(String(s || "").trim());
+      const looksLikeUrl = (s) => /^https?:\/\//i.test(String(s || "").trim());
 
-if((!looksLikeUrl(google) || !looksLikeUrl(waze) || !looksLikeUrl(uber) || !looksLikeUrl(aviso)) && data.qr){
-  const ll = parseLatLngFromQr(data.qr);
-  if(ll){
-    const built = buildLinksFromLatLng(ll.lat, ll.lng);
+      // ✅ si el backend manda etiquetas, armamos desde QR
+      if((!looksLikeUrl(google) || !looksLikeUrl(waze) || !looksLikeUrl(uber)) && data.qr){
+        const ll = parseLatLngFromQr(data.qr);
+        if(ll){
+          const built = buildLinksFromLatLng(ll.lat, ll.lng);
+          if(!looksLikeUrl(google)) google = built.google;
+          if(!looksLikeUrl(waze))   waze   = built.waze;
+          if(!looksLikeUrl(uber))   uber   = built.uber;
+        }
+      }
 
-    if(!looksLikeUrl(google)) google = built.google;
-    if(!looksLikeUrl(waze))   waze   = built.waze;
-    if(!looksLikeUrl(uber))   uber   = built.uber;
+      // ✅ Aviso: si no viene link real, dejamos fallback (para que al menos abra WhatsApp)
+      if(!looksLikeUrl(aviso)){
+        aviso = buildAvisoWhatsAppFallback(window.CODIGO_CLIENTE || code);
+      }
 
-    // Aviso WhatsApp: si no viene link real, lo construimos
-    if(!looksLikeUrl(aviso))  aviso  = buildAvisoWhatsApp(window.CODIGO_CLIENTE || code);
-  }
-}
-
+      // ✅ set links
       safeHref("btnGoogle", google);
       safeHref("btnWaze", waze);
       safeHref("btnUber", uber);
       safeHref("btnAviso", aviso);
 
+      // ✅ track handlers (funciona <a> y <button>)
       attachTrack("btnGoogle","google");
       attachTrack("btnWaze","waze");
       attachTrack("btnUber","uber");
-      attachTrack("btnAviso","aviso"); // ✅ FIX: antes estaba share
+      attachTrack("btnAviso","aviso");
 
-      // ✅ Si tu UI oculta/muestra bloques, aquí lo activas al encontrar cliente:
       toggleModoCliente(true);
       togglePanelCliente(true);
 
@@ -1130,10 +1142,36 @@ if((!looksLikeUrl(google) || !looksLikeUrl(waze) || !looksLikeUrl(uber) || !look
     if(hn) hn.href = linkN;
   }
 
-  // ✅ FIX MAYOR: correr cuando el DOM ya existe
+  // ✅ Enganche del buscador aunque NO tengas onclick en el HTML
+  function initBuscarBindings(){
+    // Si tienes un botón con id "btnBuscar" (si existe lo usa)
+    const btnBuscar = document.getElementById("btnBuscar");
+    if(btnBuscar){
+      btnBuscar.addEventListener("click", (e) => { e.preventDefault(); buscarCodigo(); });
+    }
+
+    // Si el input existe, Enter también busca (sin recargar)
+    const input = document.getElementById("inputCodigo");
+    if(input){
+      input.addEventListener("keydown", (e) => {
+        if(e.key === "Enter"){
+          e.preventDefault();
+          buscarCodigo();
+        }
+      });
+    }
+
+    // Si hay un form, evitamos submit recarga
+    const form = document.getElementById("formBuscar");
+    if(form){
+      form.addEventListener("submit", (e) => { e.preventDefault(); buscarCodigo(); });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initStatsPanel();
     initComprar();
+    initBuscarBindings();
 
     const qs = new URLSearchParams(location.search);
     const code = (qs.get("code") || "").trim();

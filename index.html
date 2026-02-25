@@ -719,6 +719,9 @@
   </div>
 
   <script>
+    window.addEventListener("error", (e) => {
+  console.log("❌ Error JS:", e.message, "en", e.filename, "línea", e.lineno);
+});
     // ✅ WebApp
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz6FtzDpsaSR2oQVrN7aUCfuZSQibSyyI5aOJktx5P-LKO6wC6dUFwXzq4IJPZuMNg6kw/exec";
     const WA_NUMBER = "50765996532";

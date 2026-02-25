@@ -793,7 +793,10 @@ async function buscarCodigo() {
     
     // URL para compartir
     const shareUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
-    
+  
+    // 🔥 URL VERIFICACIÓN PARA IMPRIMIR
+const verificacionUrl = `${window.location.origin}${window.location.pathname}?code=${CODIGO_ACTUAL}`;
+  
     // ✅ FIX: Extraer coordenadas bien desde el QR (data.qr)
     let lat = "", lng = "";
     let verifLink = "";
@@ -883,7 +886,6 @@ async function buscarCodigo() {
     };
     
 // ===== VERIFICACIÓN PARA IMPRIMIR (NO ABRE PESTAÑA) =====
-    <img id="qrVerificacion" style="display:none;margin-top:12px;width:220px;">
 const linkVer = document.getElementById("linkVerificacion");
 if(linkVer){
   linkVer.href = "#"; // para que no navegue

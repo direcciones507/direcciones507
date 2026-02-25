@@ -745,7 +745,7 @@
     return `${base}?text=${encodeURIComponent(msg)}`;
   }
 
-  // ✅ Ver ejemplo robusto (evita submit/recarga si es link o está en form)
+  // ✅ Ver ejemplo robusto
   function verEjemplo(e){
     if (e && typeof e.preventDefault === "function") e.preventDefault();
     const input = document.getElementById("inputCodigo");
@@ -795,9 +795,7 @@
     }catch(e){}
   }
 
-  // ✅ FIX CLAVE:
-  // - Funciona si el elemento es <a> o <button>
-  // - Guarda el link en data-href SIEMPRE
+  // ✅ FIX CLAVE: links para <a> y <button>
   function safeHref(id, value){
     const el = document.getElementById(id);
     if (!el) return;
@@ -813,13 +811,13 @@
       el.href = href;
     }
 
-    // opcional: cursor para botones
+    // cursor para botones
     if (el.tagName === "BUTTON") {
       el.style.cursor = (href !== "#") ? "pointer" : "not-allowed";
     }
   }
 
-  // ✅ Rebind sin romper <button>
+  // ✅ Click handler (sirve para <a> y <button>)
   function attachTrack(id, ev){
     const old = document.getElementById(id);
     if(!old) return;
@@ -828,12 +826,11 @@
     old.parentNode.replaceChild(a, old);
 
     a.addEventListener("click", function(e){
-      // 🔥 Prioridad: data-href (sirve para <a> y <button>)
       const dataHref = (a.dataset && a.dataset.href) ? String(a.dataset.href).trim() : "";
       const hrefAttr = (a.getAttribute("href") || "").trim();
       const hrefProp = (a.href || "").trim();
-
       const href = dataHref || hrefAttr || hrefProp;
+
       const target = a.getAttribute("target") || "_blank";
 
       if(!href || href === "#" || href.endsWith("#")){
@@ -898,6 +895,51 @@
     return window.CODIGO_CLIENTE
       ? `${location.origin}${location.pathname}?code=${encodeURIComponent(window.CODIGO_CLIENTE)}`
       : `${location.origin}${location.pathname}`;
+  }
+
+  // ✅ RELLENAR UI (esto te faltaba)
+  function putSmart(id, value){
+    const el = document.getElementById(id);
+    if(!el) return false;
+
+    const v = (value ?? "").toString();
+
+    // Si es input
+    if ("value" in el) { el.value = v; return true; }
+
+    // Si es un contenedor (tiene hijos), tratamos de encontrar un “valor”
+    if (el.children && el.children.length > 0){
+      const inner =
+        el.querySelector("[data-value]") ||
+        el.querySelector(".value, .val, .dato, .data, .texto, .text") ||
+        el.querySelector("span:last-child, div:last-child, p:last-child");
+
+      if(inner){
+        if ("value" in inner) inner.value = v;
+        else inner.textContent = v;
+        return true;
+      }
+    }
+
+    // Si no, escribe directo
+    el.textContent = v;
+    return true;
+  }
+
+  function fillClientUI(data, codeFallback){
+    const codigo = data.codigo || data.code || codeFallback || "";
+    const nombre = data.nombre || data.name || "";
+    const ref    = data.referencia || data.ref || "";
+    const plan   = data.plan || "";
+
+    // ✅ Si tu HTML usa estos wrappers, esto lo llena sin romper formato
+    putSmart("fieldNombre", nombre);
+    putSmart("fieldRef", ref);
+
+    // Por si tienes campos dedicados (si existen, los llena)
+    putSmart("uiCodigo", codigo);
+    putSmart("fieldCodigo", codigo);
+    putSmart("uiPlan", plan);
   }
 
   function safeNum(v){
@@ -994,7 +1036,7 @@
     });
   }
 
-  // ✅ Para cuando el backend manda etiquetas y solo qr trae coords
+  // ✅ Para cuando el backend manda etiquetas y el QR trae coords
   function parseLatLngFromQr(qrUrl){
     try{
       const u = new URL(qrUrl);
@@ -1015,7 +1057,7 @@
     return { google, waze, uber };
   }
 
-  // ⚠️ Esto es solo fallback (sin teléfono del cliente, no puede “1”)
+  // ⚠️ Fallback si no viene link real de aviso (y no viene teléfono)
   function buildAvisoWhatsAppFallback(code){
     const msg = `Hola, te comparto tu Dirección Digital ${code}.\n${getShareUrl()}`;
     return `https://wa.me/?text=${encodeURIComponent(msg)}`;
@@ -1057,7 +1099,10 @@
 
       window.CODIGO_CLIENTE = data.codigo || data.code || code;
 
-      // ✅ links (si vienen)
+      // ✅ AQUÍ: pinta los datos del cliente (esto era lo que faltaba)
+      fillClientUI(data, code);
+
+      // ✅ Links
       let google = normalizeUrl(data.google_maps || data.google || "");
       let waze   = normalizeUrl(data.waze_link || data.waze || "");
       let uber   = normalizeUrl(data.uber_link || data.uber || "");
@@ -1065,7 +1110,7 @@
 
       const looksLikeUrl = (s) => /^https?:\/\//i.test(String(s || "").trim());
 
-      // ✅ si el backend manda etiquetas, armamos desde QR
+      // ✅ Si backend manda etiquetas, armamos desde QR
       if((!looksLikeUrl(google) || !looksLikeUrl(waze) || !looksLikeUrl(uber)) && data.qr){
         const ll = parseLatLngFromQr(data.qr);
         if(ll){
@@ -1076,18 +1121,16 @@
         }
       }
 
-      // ✅ Aviso: si no viene link real, dejamos fallback (para que al menos abra WhatsApp)
+      // ✅ Aviso fallback si no viene URL real
       if(!looksLikeUrl(aviso)){
         aviso = buildAvisoWhatsAppFallback(window.CODIGO_CLIENTE || code);
       }
 
-      // ✅ set links
       safeHref("btnGoogle", google);
       safeHref("btnWaze", waze);
       safeHref("btnUber", uber);
       safeHref("btnAviso", aviso);
 
-      // ✅ track handlers (funciona <a> y <button>)
       attachTrack("btnGoogle","google");
       attachTrack("btnWaze","waze");
       attachTrack("btnUber","uber");
@@ -1142,15 +1185,12 @@
     if(hn) hn.href = linkN;
   }
 
-  // ✅ Enganche del buscador aunque NO tengas onclick en el HTML
   function initBuscarBindings(){
-    // Si tienes un botón con id "btnBuscar" (si existe lo usa)
     const btnBuscar = document.getElementById("btnBuscar");
     if(btnBuscar){
       btnBuscar.addEventListener("click", (e) => { e.preventDefault(); buscarCodigo(); });
     }
 
-    // Si el input existe, Enter también busca (sin recargar)
     const input = document.getElementById("inputCodigo");
     if(input){
       input.addEventListener("keydown", (e) => {
@@ -1161,7 +1201,6 @@
       });
     }
 
-    // Si hay un form, evitamos submit recarga
     const form = document.getElementById("formBuscar");
     if(form){
       form.addEventListener("submit", (e) => { e.preventDefault(); buscarCodigo(); });

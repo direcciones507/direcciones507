@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liliana Guerra | Direcciones Digitales de Panamá</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:rgba(255,255,255,.07);
+      --border:rgba(255,255,255,.14);
+      --text:#e5e7eb;
+      --muted:rgba(229,231,235,.75);
+      --pink:#ec4899;
+      --violet:#8b5cf6;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --r:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      color:var(--text);
+      background:
+        radial-gradient(1100px 700px at 15% 10%, rgba(236,72,153,.18), transparent 60%),
+        radial-gradient(900px 600px at 85% 20%, rgba(139,92,246,.18), transparent 55%),
+        linear-gradient(180deg, #070a14, var(--bg));
+    }
+    .wrap{width:min(460px,100%)}
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+      padding:20px;
+    }
+    .top{
+      display:flex;align-items:center;gap:12px;margin-bottom:12px;
+      padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .logo{
+      width:56px;height:56px;border-radius:16px;
+      background: linear-gradient(145deg, rgba(236,72,153,.95), rgba(139,92,246,.95));
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.18);
+      flex:0 0 auto;
+    }
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .brand{line-height:1.1}
+    .brand .t1{font-family:Outfit,Inter;font-weight:800;font-size:16px}
+    .brand .t2{margin-top:4px;font-size:12px;color:var(--muted)}
+    .name{margin:14px 0 4px;font-size:24px;font-weight:800}
+    .role{margin:0 0 10px;font-weight:800;color:#ffd1ea}
+    .tagline{margin:0 0 14px;color:var(--muted);line-height:1.5}
+    .btn{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      text-decoration:none;font-weight:900;
+      padding:14px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      user-select:none;
+      transition:transform .08s ease, border-color .15s ease;
+    }
+    .btn:active{transform:scale(.99)}
+    .btn:hover{border-color:rgba(236,72,153,.35)}
+    .wa{background:rgba(236,72,153,.20); border-color:rgba(236,72,153,.30)}
+    .call{background:rgba(17,24,39,.55)}
+    .web{background:rgba(139,92,246,.18); border-color:rgba(139,92,246,.28)}
+    .grid{display:grid;gap:10px;margin-top:10px}
+    .qrbox{
+      margin-top:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.22);
+      border-radius:16px;
+      padding:14px;
+      display:grid;
+      grid-template-columns:1fr 220px;
+      gap:12px;
+      align-items:center;
+    }
+    .qrbox p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+    .qr{
+      display:flex;align-items:center;justify-content:center;
+      background:#fff;border-radius:14px;padding:8px;
+    }
+    .qr img{width:200px;height:200px;border-radius:10px}
+    .prices{
+      margin-top:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:14px;
+    }
+    .prices h3{margin:0 0 10px;font-size:13px;letter-spacing:.2px}
+    .row{display:flex;justify-content:space-between;gap:10px;margin:6px 0}
+    .row span{color:var(--muted)}
+    .footer{
+      margin-top:12px;
+      display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      font-size:12px;color:var(--muted);
+    }
+    .social a{color:var(--text);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.25)}
+    @media(max-width:520px){
+      .qrbox{grid-template-columns:1fr}
+      .qr img{width:220px;height:220px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="logo" title="Direcciones Digitales de Panamá">
+          <img src="../assets/logo.png" alt="AD507 Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="brand">
+          <div class="t1">Direcciones Digitales de Panamá</div>
+          <div class="t2">direcciones507.com</div>
+        </div>
+      </div>
+
+      <div class="name">Liliana Guerra</div>
+      <div class="role">Operaciones y Administración</div>
+      <p class="tagline">La nueva forma de compartir direcciones en Panamá</p>
+
+      <div class="grid">
+        <a class="btn wa" href="https://wa.me/50765996532" target="_blank" rel="noopener">💬 WhatsApp directo</a>
+        <a class="btn call" href="tel:+50765996532">📞 Llamar</a>
+        <a class="btn web" href="https://direcciones507.com" target="_blank" rel="noopener">🌐 Abrir direcciones507.com</a>
+      </div>
+
+      <div class="qrbox">
+        <p><b>QR para compartir</b><br>Escanéalo para abrir esta tarjeta y contactar al instante.<br><br>
+        WhatsApp: <b>6599-6532</b><br>
+        Web: <b>direcciones507.com</b></p>
+        <div class="qr"><img id="qr" alt="QR Liliana"></div>
+      </div>
+
+      <div class="prices">
+        <h3>Planes (pago único)</h3>
+        <div class="row"><b>Persona</b> <span>$6.99</span></div>
+        <div class="row"><b>Negocio</b> <span>desde $10.99</span></div>
+        <div class="row"><b>PH</b> <span>según apartamentos</span></div>
+      </div>
+
+      <div class="footer">
+        <div>© Direcciones507</div>
+        <div class="social">
+          <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener">Instagram</a> ·
+          <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const url = "https://direcciones507.github.io/direcciones507/liliana/index.html";
+    document.getElementById("qr").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(url);
+  </script>
+</body>
+</html>

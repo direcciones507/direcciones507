@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jacinto Salazar | Direcciones Digitales de Panamá</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.12);
+      --text:#e5e7eb;
+      --muted:rgba(229,231,235,.75);
+      --green:#22c55e;
+      --blue:#1e3a8a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:radial-gradient(1200px 700px at 20% 10%, rgba(34,197,94,.18), transparent 60%),
+                 radial-gradient(900px 600px at 80% 30%, rgba(30,58,138,.22), transparent 55%),
+                 var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .wrap{width:min(460px,100%)}
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:22px;
+      box-shadow:0 20px 60px rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+    }
+    .top{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:16px;
+      background:linear-gradient(145deg, rgba(30,81,211,.9), rgba(11,42,111,.9));
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .logo img{width:100%;height:100%;object-fit:cover}
+    .brand{line-height:1.1}
+    .brand .t1{font-weight:800;font-size:16px;letter-spacing:.2px}
+    .brand .t2{font-size:13px;color:var(--muted);margin-top:4px}
+    .name{font-size:24px;font-weight:800;margin:10px 0 4px}
+    .role{color:var(--green);font-weight:700;margin:0 0 10px}
+    .tagline{color:var(--muted);margin:0 0 16px}
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      padding:14px 14px;
+      border-radius:14px;
+      text-decoration:none;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.14);
+      transition:transform .08s ease;
+      user-select:none;
+    }
+    .btn:active{transform:scale(.99)}
+    .wa{background:rgba(34,197,94,.95); color:#04140a;}
+    .call{background:rgba(17,24,39,.92); color:var(--text);}
+    .web{background:rgba(30,58,138,.92); color:var(--text);}
+    .qrbox{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:1fr 220px;
+      gap:14px;
+      align-items:center;
+    }
+    .qr{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:10px;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .qr img{width:200px;height:200px;border-radius:10px}
+    .mini{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .prices{
+      margin-top:14px;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+    }
+    .prices h3{margin:0 0 10px;font-size:14px;letter-spacing:.2px}
+    .row{display:flex;justify-content:space-between;gap:10px;margin:6px 0;color:var(--text)}
+    .row span{color:var(--muted)}
+    .footer{
+      margin-top:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-size:12px;
+      color:var(--muted);
+      flex-wrap:wrap;
+    }
+    .social a{color:var(--text);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.25)}
+    @media (max-width:520px){
+      .qrbox{grid-template-columns:1fr}
+      .qr img{width:220px;height:220px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div class="logo" title="Direcciones Digitales de Panamá">
+          <!-- Si tienes un logo en tu repo, súbelo a /assets/logo.png y listo -->
+          <img src="../assets/logo.png" alt="AD507 Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="brand">
+          <div class="t1">Direcciones Digitales de Panamá</div>
+          <div class="t2">direcciones507.com</div>
+        </div>
+      </div>
+
+      <div class="name">Jacinto Salazar</div>
+      <div class="role">Fundador</div>
+      <p class="tagline">La nueva forma de compartir direcciones</p>
+
+      <div class="grid">
+        <a class="btn wa" href="https://wa.me/50765996532" target="_blank" rel="noopener">📲 WhatsApp directo</a>
+        <a class="btn call" href="tel:+50765996532">📞 Llamar</a>
+        <a class="btn web" href="https://direcciones507.com" target="_blank" rel="noopener">🌐 Abrir direcciones507.com</a>
+      </div>
+
+      <div class="qrbox">
+        <div class="mini">
+          <b>QR para compartir</b><br>
+          Escanéalo para abrir esta tarjeta y contactarme al instante.<br><br>
+          WhatsApp: <b>6599-6532</b><br>
+          Web: <b>direcciones507.com</b>
+        </div>
+        <div class="qr">
+          <img id="qr" alt="QR Jacinto">
+        </div>
+      </div>
+
+      <div class="prices">
+        <h3>Planes (pago único)</h3>
+        <div class="row"><b>Persona</b> <span>$6.99</span></div>
+        <div class="row"><b>Negocio</b> <span>desde $10.99</span></div>
+        <div class="row"><b>PH</b> <span>según apartamentos</span></div>
+      </div>
+
+      <div class="footer">
+        <div>© Direcciones507</div>
+        <div class="social">
+          Redes: <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener">Instagram</a> ·
+          <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">Facebook</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // IMPORTANTE: este QR apunta a la URL publicada. Si tu dominio está conectado, luego lo cambiamos.
+  const url = "https://direcciones507.github.io/direcciones507/jacinto/";
+  const qr = document.getElementById("qr");
+  qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(url);
+</script>
+</body>
+</html>

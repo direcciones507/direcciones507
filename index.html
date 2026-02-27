@@ -603,7 +603,7 @@
 
       <div class="divider-pro"></div>
       <h3 style="font-size:16px;">Redes</h3>
-      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; justify-content:center;">
+    <div class="social-wrap">
         <a class="pill-metadata" href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener"><i class="fa-brands fa-instagram"></i> Instagram</a>
         <a class="pill-metadata" href="https://www.tiktok.com/@direcciones507" target="_blank" rel="noopener"><i class="fa-brands fa-tiktok"></i> TikTok</a>
         <a class="pill-metadata" href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener"><i class="fa-brands fa-facebook"></i> Facebook</a>
@@ -804,6 +804,108 @@
   .buy-wrap{ width:100%; justify-content:flex-start; }
   .btn-whatsapp-premium{ width:100%; justify-content:center; }
   .field-elegant{ grid-template-columns:1fr !important; gap:8px; }
+}
+/* =========================
+   ✅ HOME: orden y aire en móvil
+   ========================= */
+@media (max-width: 900px){
+  /* que todo tenga aire */
+  .hero-pro{ padding:18px !important; }
+  .card-header{ padding:18px 18px 12px !important; }
+  .card-body{ padding:16px 18px 18px !important; }
+
+  /* testimonios: 1 columna y sin romper */
+  #homeHero .hero-pro > div:last-child > div{
+    grid-template-columns: 1fr !important;
+  }
+
+  /* buscador: botón abajo */
+  #inputCodigo{
+    width:100% !important;
+  }
+  #inputCodigo + button,
+  button[onclick="buscarCodigo()"]{
+    width:100% !important;
+    height:52px;
+  }
+
+  /* planes: 1 columna */
+  .price-grid{
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* celulares chicos */
+@media (max-width: 520px){
+  /* título grande del hero (tú lo tienes inline) */
+  #homeHero h1[style*="font-size:44px"]{
+    font-size:28px !important;
+  }
+}
+/* =========================
+   ✅ PANEL CLIENTE: modo móvil
+   ========================= */
+@media (max-width: 900px){
+  /* pills (Código/Estado) que no se estiren raro */
+  .card-header > div[style*="display:flex"]{
+    gap:10px !important;
+  }
+  .pill-metadata{
+    width:100%;
+    justify-content:space-between;
+  }
+
+  /* campos nombre y referencia */
+  .field-elegant{
+    grid-template-columns: 1fr !important;
+    gap:8px;
+  }
+
+  /* botones del panel: 1 por fila y full ancho */
+  .btn-grid-pro{
+    grid-template-columns: 1fr !important;
+  }
+  .btn-pro{
+    width:100%;
+    justify-content:flex-start;
+    padding:16px 14px;
+  }
+  .btn-pro i{ width:22px; text-align:center; }
+}
+
+/* impresión: tarjeta se ajusta */
+@media (max-width: 520px){
+  #printCard{
+    max-width: 100% !important;
+  }
+  #qrVerificacion{
+    width:100% !important;
+    height:auto !important;
+  }
+}
+/* =========================
+   ✅ REDES RESPONSIVE
+   ========================= */
+
+.social-wrap{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+  justify-content:center;
+}
+
+/* móvil */
+@media (max-width:900px){
+  .social-wrap{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .social-wrap a{
+    width:100%;
+    justify-content:center;
+  }
 }
                 </style>
               </head>

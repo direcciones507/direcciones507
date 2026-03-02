@@ -812,22 +812,25 @@
   </div>
 
   <script>
-    // 🔎 Consola visible en pantalla (modo diagnóstico)
-window.addEventListener("error", function(e){
-  alert(
-    "ERROR JS:\n" +
-    e.message +
-    "\nLínea: " + e.lineno +
-    "\nArchivo: " + e.filename
-  );
-});
+    const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
 
-window.addEventListener("unhandledrejection", function(e){
-  alert(
-    "PROMISE ERROR:\n" +
-    (e.reason?.message || e.reason)
-  );
-});
+if(DEBUG){
+  window.addEventListener("error", function(e){
+    alert(
+      "ERROR JS:\n" +
+      e.message +
+      "\nLínea: " + e.lineno +
+      "\nArchivo: " + e.filename
+    );
+  });
+
+  window.addEventListener("unhandledrejection", function(e){
+    alert(
+      "PROMISE ERROR:\n" +
+      (e.reason?.message || e.reason)
+    );
+  });
+}
    
     // ✅ CONFIG
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";

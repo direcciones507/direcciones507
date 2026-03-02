@@ -897,6 +897,11 @@
         document.getElementById("uiRef").textContent = data.referencia || "-";
 
         const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
+        // 🔒 Bloquear búsqueda para planes personales
+if(!esNegocio){
+  setMsg("Este código es privado. Usa el enlace directo.");
+  return;
+}
 
         // URL share/verificación
         const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;

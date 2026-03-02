@@ -1014,266 +1014,246 @@ function seqSuspicion(code){
   p.textContent = new Date().toLocaleTimeString() + " · " + txt;
   box.appendChild(p);
 }
-    async function buscarCodigo(){
-      const input = document.getElementById("inputCodigo");
-      if(!input) return;
+   async function buscarCodigo(){
+  const input = document.getElementById("inputCodigo");
+  if(!input) return;
 
-      const codigo = input.value.trim();
-      if(!codigo){ setMsg("Ingresa un código"); return; }
-      const codigo = input.value.trim();
-if(!codigo){ setMsg("Ingresa un código"); return; }
+  const codigo = input.value.trim();
+  if(!codigo){ setMsg("Ingresa un código"); return; }
 
-// 🔎 LOG + ANTI-SPAM
-logUI("Intento de búsqueda: " + codigo);
+  // 🔎 LOG + ANTI-SPAM
+  if(typeof logUI === "function") logUI("Intento de búsqueda: " + codigo);
 
-const chk = spamCheckOrBan();
-if(!chk.ok){
-  logUI("BLOQUEADO: " + chk.msg);
-  setMsg(chk.msg);
-  return;
-}
+  const chk = spamCheckOrBan();
+  if(!chk.ok){
+    if(typeof logUI === "function") logUI("BLOQUEADO: " + chk.msg);
+    setMsg(chk.msg);
+    return;
+  }
 
-const seq = seqSuspicion(codigo);
-if(seq.suspicious){
-  logUI("SECUENCIAL detectado");
-  setMsg("Búsqueda detectada como secuencial. Usa el enlace directo.");
-  return;
-}
+  const seq = seqSuspicion(codigo);
+  if(seq.suspicious){
+    if(typeof logUI === "function") logUI("SECUENCIAL detectado");
+    setMsg("Búsqueda detectada como secuencial. Usa el enlace directo.");
+    return;
+  }
 
-logUI("OK, consultando WebApp...");
+  if(typeof logUI === "function") logUI("OK, consultando WebApp...");
+  setMsg("Buscando...");
 
-setMsg("Buscando...");
+  try{
+    const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+    const data = await res.json();
 
-      setMsg("Buscando...");
-      // 🛡️ Anti-spam: bloquear intentos masivos
-const chk = spamCheckOrBan();
-if(!chk.ok){
-  setMsg(chk.msg);
-  return;
-}
+    if(!data.ok) throw new Error(data.message || "Código no encontrado.");
 
-// 🧠 Detectar búsqueda secuencial rápida
-const seq = seqSuspicion(codigo);
-if(seq.suspicious){
-  setMsg("Búsqueda detectada como secuencial. Usa el enlace directo.");
-  return;
-}
+    CODIGO_ACTUAL = data.codigo || data.code || codigo;
+    DATOS_CLIENTE = data;
+    window.CODIGO_CLIENTE = CODIGO_ACTUAL;
 
-      try{
-        const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
-        const data = await res.json();
+    // UI base
+    document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL;
+    document.getElementById("uiNombre").textContent = data.nombre || "-";
+    document.getElementById("uiRef").textContent = data.referencia || "-";
 
-        if(!data.ok) throw new Error(data.message || "Código no encontrado.");
+    const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
 
-        CODIGO_ACTUAL = data.codigo || data.code || codigo;
-        DATOS_CLIENTE = data;
-        window.CODIGO_CLIENTE = CODIGO_ACTUAL;
+    // ✅ Detectar si el código viene desde el enlace (?code=...)
+    const codeFromUrl = new URLSearchParams(window.location.search).get("code");
+    const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
 
-        // UI base
-        document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL;
-        document.getElementById("uiNombre").textContent = data.nombre || "-";
-        document.getElementById("uiRef").textContent = data.referencia || "-";
-
-        const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
-        // ✅ Detectar si el código viene desde el enlace (?code=...)
-const codeFromUrl = new URLSearchParams(window.location.search).get("code");
-const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
-        // 🔒 SEO: ocultar direcciones personales de Google
-if(!esNegocio){
-  setRobots("noindex,nofollow,noarchive");
-  setCanonical(window.location.origin + window.location.pathname);
-}else{
-  setRobots("index,follow");
-  setCanonical(window.location.origin + window.location.pathname);
-}
-
-// 🔒 Bloquear SOLO si es búsqueda manual (no viene del link) y no es negocio
-if(!esNegocio && !vieneDeLink){
-  setMsg("Este código es privado. Usa el enlace directo.");
-  return;
-}
-
-        // URL share/verificación
-        const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
-        window.verificacionUrl = shareUrl; // QR para imprimir apunta a la página con code
-
-        // Extraer coords desde data.qr (si viene como QR server con data=GoogleMapsURL)
-        let lat = "", lng = "";
-        if(data.qr){
-          const link = extractLinkFromQr(data.qr);
-          const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
-          if(match){ lat = match[1]; lng = match[2]; }
-        }
-
-        // Configurar botones navegación
-        const btnGoogle = document.getElementById("btnGoogle");
-        const btnWaze   = document.getElementById("btnWaze");
-        const btnUber   = document.getElementById("btnUber");
-        const btnAviso  = document.getElementById("btnAviso");
-
-        if(lat && lng){
-          btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-          btnWaze.href   = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-          btnUber.href   = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
-
-          if(data.telefono){
-            const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
-            btnAviso.href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
-          } else {
-            btnAviso.href = "#";
-          }
-
-          if(esNegocio){
-            btnGoogle.onclick = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=google&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-            btnWaze.onclick   = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=waze&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-            btnUber.onclick   = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=uber&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-            btnAviso.onclick  = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=aviso&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-          } else {
-            btnGoogle.onclick = null; btnWaze.onclick = null; btnUber.onclick = null; btnAviso.onclick = null;
-          }
-        } else {
-          // si no hay coords, desactiva
-          btnGoogle.href = "#"; btnWaze.href = "#"; btnUber.href = "#"; btnAviso.href = "#";
-          btnGoogle.onclick = null; btnWaze.onclick = null; btnUber.onclick = null; btnAviso.onclick = null;
-        }
-
-        // Compartir / Copiar
-        const btnCompartir = document.getElementById("btnCompartir");
-        const btnCopiar = document.getElementById("btnCopiar");
-
-        btnCompartir.onclick = async (e)=>{
-          e.preventDefault();
-          if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=share&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-
-          if(navigator.share){
-            try{
-              await navigator.share({ title:"Dirección Digital", text:`Mi código ${CODIGO_ACTUAL}`, url: shareUrl });
-            }catch(_){
-              try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(__){}
-            }
-          } else {
-            try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
-          }
-        };
-
-        btnCopiar.onclick = async (e)=>{
-          e.preventDefault();
-          if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=copy&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-          try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
-        };
-
-        // Ver QR para imprimir (tarjeta)
-        const linkVer = document.getElementById("linkVerificacion");
-        const wrap = document.getElementById("printCardWrap");
-        const qrVerif = document.getElementById("qrVerificacion");
-        const printCodigo = document.getElementById("printCodigo");
-
-        if(linkVer){
-          linkVer.onclick = (e)=>{
-            e.preventDefault();
-            if(printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
-            if(qrVerif) qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
-            show(wrap, "block");
-          };
-        }
-
-        const btnOcultarQR = document.getElementById("btnOcultarQR");
-        const btnImprimirQR = document.getElementById("btnImprimirQR");
-
-        if(btnOcultarQR && wrap){
-          btnOcultarQR.onclick = ()=> hide(wrap);
-        }
-
-        if(btnImprimirQR){
-          btnImprimirQR.onclick = ()=>{
-            const card = document.getElementById("printCard");
-            if(!card) return;
-            const w = window.open("", "_blank");
-            if(!w) return;
-
-            w.document.open();
-            w.document.write(`
-              <html>
-                <head>
-                  <meta charset="utf-8"/>
-                  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-                  <title>Imprimir QR</title>
-                  <style>
-                    body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#fff;}
-                    .wrap{display:flex;justify-content:center;}
-                  </style>
-                </head>
-                <body>
-                  <div class="wrap">${card.outerHTML}</div>
-                  <script>window.onload=()=>window.print();<\/script>
-                </body>
-              </html>
-            `);
-            w.document.close();
-          };
-        }
-
-        // QR para compartir (SIEMPRE shareUrl)
-        document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
-        document.getElementById("uiLink").textContent = shareUrl;
-
-        // Stats (solo Negocios)
-        const statsBtn = document.getElementById("btnStats");
-        const statsPanel = document.getElementById("statsPanel");
-
-        if(esNegocio){
-          show(statsBtn, "flex");
-          statsBtn.onclick = async ()=>{
-            const visible = statsPanel.style.display === "block";
-            statsPanel.style.display = visible ? "none" : "block";
-
-            if(!visible){
-              try{
-                const r = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-                const d = await r.json();
-                if(d.ok){
-                  document.getElementById("stGoogle").textContent = d.stats?.google || 0;
-                  document.getElementById("stWaze").textContent   = d.stats?.waze || 0;
-                  document.getElementById("stUber").textContent   = d.stats?.uber || 0;
-                  document.getElementById("stShare").textContent  = d.stats?.share || 0;
-                  document.getElementById("stCopy").textContent   = d.stats?.copy || 0;
-                  document.getElementById("stUpdated").textContent = "Actualizado: " + (d.stats?.updated || "-");
-                }
-              }catch(e){}
-            }
-          };
-        } else {
-          hide(statsBtn);
-          hide(statsPanel);
-        }
-
-        // Toggle UI: ocultar home, mostrar panel
-        hide(document.getElementById("homeHero"));
-        hide(document.getElementById("buyWrap"));
-        hide(document.getElementById("heroComprarBox"));
-        hide(document.getElementById("heroEjemploBox"));
-        hide(document.getElementById("seccionPasos"));
-        hide(document.getElementById("seccionPrecios"));
-
-        show(document.getElementById("fieldNombre"), "grid");
-        show(document.getElementById("fieldRef"), "grid");
-        show(document.getElementById("tituloUbicacion"), "block");
-        show(document.getElementById("gridUbicacion"), "grid");
-        show(document.getElementById("divAfterUbic"), "block");
-        show(document.getElementById("tituloCompartir"), "block");
-        show(document.getElementById("gridCompartir"), "grid");
-        show(document.getElementById("notaVerificacion"), "block");
-        show(document.getElementById("divAfterVerif"), "block");
-
-        // ✅ activa modo panel tipo app bancaria
-        setPanelMode(true);
-
-        setMsg("✅ Listo");
-      } catch(e){
-        setMsg("Error: " + (e?.message || "No se pudo buscar"));
-      }
+    // 🔒 SEO: ocultar direcciones personales de Google
+    if(!esNegocio){
+      setRobots("noindex,nofollow,noarchive");
+      setCanonical(window.location.origin + window.location.pathname);
+    }else{
+      setRobots("index,follow");
+      setCanonical(window.location.origin + window.location.pathname);
     }
 
+    // 🔒 Bloquear SOLO si es búsqueda manual (no viene del link) y no es negocio
+    if(!esNegocio && !vieneDeLink){
+      setMsg("Este código es privado. Usa el enlace directo.");
+      return;
+    }
+
+    // URL share/verificación
+    const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
+    window.verificacionUrl = shareUrl;
+
+    // Extraer coords desde data.qr (si viene)
+    let lat = "", lng = "";
+    if(data.qr){
+      const link = extractLinkFromQr(data.qr);
+      const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
+      if(match){ lat = match[1]; lng = match[2]; }
+    }
+
+    // Configurar botones navegación
+    const btnGoogle = document.getElementById("btnGoogle");
+    const btnWaze   = document.getElementById("btnWaze");
+    const btnUber   = document.getElementById("btnUber");
+    const btnAviso  = document.getElementById("btnAviso");
+
+    if(lat && lng){
+      btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      btnWaze.href   = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+      btnUber.href   = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+
+      if(data.telefono){
+        const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
+        btnAviso.href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
+      } else {
+        btnAviso.href = "#";
+      }
+
+      if(esNegocio){
+        btnGoogle.onclick = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=google&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+        btnWaze.onclick   = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=waze&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+        btnUber.onclick   = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=uber&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+        btnAviso.onclick  = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=aviso&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+      } else {
+        btnGoogle.onclick = null; btnWaze.onclick = null; btnUber.onclick = null; btnAviso.onclick = null;
+      }
+    } else {
+      btnGoogle.href = "#"; btnWaze.href = "#"; btnUber.href = "#"; btnAviso.href = "#";
+      btnGoogle.onclick = null; btnWaze.onclick = null; btnUber.onclick = null; btnAviso.onclick = null;
+    }
+
+    // Compartir / Copiar
+    const btnCompartir = document.getElementById("btnCompartir");
+    const btnCopiar = document.getElementById("btnCopiar");
+
+    btnCompartir.onclick = async (e)=>{
+      e.preventDefault();
+      if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=share&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+
+      if(navigator.share){
+        try{
+          await navigator.share({ title:"Dirección Digital", text:`Mi código ${CODIGO_ACTUAL}`, url: shareUrl });
+        }catch(_){
+          try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(__){}
+        }
+      } else {
+        try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
+      }
+    };
+
+    btnCopiar.onclick = async (e)=>{
+      e.preventDefault();
+      if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=copy&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+      try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
+    };
+
+    // Ver QR para imprimir (tarjeta)
+    const linkVer = document.getElementById("linkVerificacion");
+    const wrap = document.getElementById("printCardWrap");
+    const qrVerif = document.getElementById("qrVerificacion");
+    const printCodigo = document.getElementById("printCodigo");
+
+    if(linkVer){
+      linkVer.onclick = (e)=>{
+        e.preventDefault();
+        if(printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
+        if(qrVerif) qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
+        show(wrap, "block");
+      };
+    }
+
+    const btnOcultarQR = document.getElementById("btnOcultarQR");
+    const btnImprimirQR = document.getElementById("btnImprimirQR");
+
+    if(btnOcultarQR && wrap){
+      btnOcultarQR.onclick = ()=> hide(wrap);
+    }
+
+    if(btnImprimirQR){
+      btnImprimirQR.onclick = ()=>{
+        const card = document.getElementById("printCard");
+        if(!card) return;
+        const w = window.open("", "_blank");
+        if(!w) return;
+
+        w.document.open();
+        w.document.write(`
+          <html>
+            <head>
+              <meta charset="utf-8"/>
+              <meta name="viewport" content="width=device-width, initial-scale=1"/>
+              <title>Imprimir QR</title>
+              <style>
+                body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#fff;}
+                .wrap{display:flex;justify-content:center;}
+              </style>
+            </head>
+            <body>
+              <div class="wrap">${card.outerHTML}</div>
+              <script>window.onload=()=>window.print();<\/script>
+            </body>
+          </html>
+        `);
+        w.document.close();
+      };
+    }
+
+    // QR para compartir (SIEMPRE shareUrl)
+    document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
+    document.getElementById("uiLink").textContent = shareUrl;
+
+    // Stats (solo Negocios)
+    const statsBtn = document.getElementById("btnStats");
+    const statsPanel = document.getElementById("statsPanel");
+
+    if(esNegocio){
+      show(statsBtn, "flex");
+      statsBtn.onclick = async ()=>{
+        const visible = statsPanel.style.display === "block";
+        statsPanel.style.display = visible ? "none" : "block";
+
+        if(!visible){
+          try{
+            const r = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
+            const d = await r.json();
+            if(d.ok){
+              document.getElementById("stGoogle").textContent = d.stats?.google || 0;
+              document.getElementById("stWaze").textContent   = d.stats?.waze || 0;
+              document.getElementById("stUber").textContent   = d.stats?.uber || 0;
+              document.getElementById("stShare").textContent  = d.stats?.share || 0;
+              document.getElementById("stCopy").textContent   = d.stats?.copy || 0;
+              document.getElementById("stUpdated").textContent = "Actualizado: " + (d.stats?.updated || "-");
+            }
+          }catch(e){}
+        }
+      };
+    } else {
+      hide(statsBtn);
+      hide(statsPanel);
+    }
+
+    // Toggle UI: ocultar home, mostrar panel
+    hide(document.getElementById("homeHero"));
+    hide(document.getElementById("buyWrap"));
+    hide(document.getElementById("heroComprarBox"));
+    hide(document.getElementById("heroEjemploBox"));
+    hide(document.getElementById("seccionPasos"));
+    hide(document.getElementById("seccionPrecios"));
+
+    show(document.getElementById("fieldNombre"), "grid");
+    show(document.getElementById("fieldRef"), "grid");
+    show(document.getElementById("tituloUbicacion"), "block");
+    show(document.getElementById("gridUbicacion"), "grid");
+    show(document.getElementById("divAfterUbic"), "block");
+    show(document.getElementById("tituloCompartir"), "block");
+    show(document.getElementById("gridCompartir"), "grid");
+    show(document.getElementById("notaVerificacion"), "block");
+    show(document.getElementById("divAfterVerif"), "block");
+
+    setPanelMode(true);
+    setMsg("✅ Listo");
+  } catch(e){
+    setMsg("Error: " + (e?.message || "No se pudo buscar"));
+  }
+}
     window.addEventListener("DOMContentLoaded", ()=>{
       bindCompactTop();
 

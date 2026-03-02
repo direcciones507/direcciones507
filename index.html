@@ -871,7 +871,35 @@
 
     function show(el, mode){ if(el) el.style.display = mode || "block"; }
     function hide(el){ if(el) el.style.display = "none"; }
+function setRobots(content){
+  // crea o actualiza <meta name="robots">
+  let m = document.querySelector('meta[name="robots"]');
+  if(!m){
+    m = document.createElement("meta");
+    m.setAttribute("name","robots");
+    document.head.appendChild(m);
+  }
+  m.setAttribute("content", content);
 
+  // Googlebot específico (opcional pero útil)
+  let g = document.querySelector('meta[name="googlebot"]');
+  if(!g){
+    g = document.createElement("meta");
+    g.setAttribute("name","googlebot");
+    document.head.appendChild(g);
+  }
+  g.setAttribute("content", content);
+}
+
+function setCanonical(url){
+  let c = document.querySelector('link[rel="canonical"]');
+  if(!c){
+    c = document.createElement("link");
+    c.setAttribute("rel","canonical");
+    document.head.appendChild(c);
+  }
+  c.setAttribute("href", url);
+}
     async function buscarCodigo(){
       const input = document.getElementById("inputCodigo");
       if(!input) return;
@@ -900,6 +928,14 @@
         // ✅ Detectar si el código viene desde el enlace (?code=...)
 const codeFromUrl = new URLSearchParams(window.location.search).get("code");
 const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
+        // 🔒 SEO: ocultar direcciones personales de Google
+if(!esNegocio){
+  setRobots("noindex,nofollow,noarchive");
+  setCanonical(window.location.origin + window.location.pathname);
+}else{
+  setRobots("index,follow");
+  setCanonical(window.location.origin + window.location.pathname);
+}
 
 // 🔒 Bloquear SOLO si es búsqueda manual (no viene del link) y no es negocio
 if(!esNegocio && !vieneDeLink){

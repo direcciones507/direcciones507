@@ -988,12 +988,31 @@ function seqSuspicion(code){
 
   let suspicious = false;
   if(last && last.prefix === cur.prefix && (t - lastT) < 15_000){
-    const diff = cur.n - last.n;
-    if(diff === 1 || diff === -1) suspicious = true;
-  }
+  const diff = cur.n - last.n;
 
+  if(diff === 1 || diff === -1){
+    suspicious = true;
+
+    // 🔎 LOG VISUAL
+    if(typeof logUI === "function"){
+      logUI("⚠️ Secuencia detectada: " + last.n + " → " + cur.n);
+    }
+  }
+}
   try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){}
   return { suspicious };
+}
+    function logUI(txt){
+  let box = document.getElementById("debugLogAD507");
+  if(!box){
+    box = document.createElement("div");
+    box.id = "debugLogAD507";
+    box.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;background:#000c;color:#fff;padding:10px;border-radius:12px;font-size:12px;max-height:35vh;overflow:auto";
+    document.body.appendChild(box);
+  }
+  const p = document.createElement("div");
+  p.textContent = new Date().toLocaleTimeString() + " · " + txt;
+  box.appendChild(p);
 }
     async function buscarCodigo(){
       const input = document.getElementById("inputCodigo");

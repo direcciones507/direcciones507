@@ -828,6 +828,7 @@ window.addEventListener("unhandledrejection", function(e){
     (e.reason?.message || e.reason)
   );
 });
+    setTimeout(()=>{ throw new Error("TEST ERROR AD507"); }, 1200);
     // ✅ CONFIG
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
     const WA_NUMBER = "50765996532";

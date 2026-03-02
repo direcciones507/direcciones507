@@ -1005,8 +1005,20 @@ function seqSuspicion(code){
   try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){}
   return { suspicious };
 }
-    function logUI(txt){
+     function logUI(txt){
+  if(!DEBUG) return;   // 👈 SOLO agrega esta línea
+
   let box = document.getElementById("debugLogAD507");
+  if(!box){
+    box = document.createElement("div");
+    box.id = "debugLogAD507";
+    box.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;background:#000c;color:#fff;padding:10px;border-radius:12px;font-size:12px;max-height:35vh;overflow:auto";
+    document.body.appendChild(box);
+  }
+  const p = document.createElement("div");
+  p.textContent = new Date().toLocaleTimeString() + " · " + txt;
+  box.appendChild(p);
+}
   if(!box){
     box = document.createElement("div");
     box.id = "debugLogAD507";

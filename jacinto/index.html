@@ -6,7 +6,6 @@
   <title>Jacinto Salazar | Fundador · Direcciones507</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    /* === TUS ESTILOS ORIGINALES (los mantengo casi intactos) === */
     :root{
       --bg:#0b1020;
       --card:rgba(255,255,255,.06);
@@ -30,7 +29,7 @@
       justify-content:center;
       padding:24px;
     }
-    .wrap{width:min(600px,100%);} /* Aumenté un poco el ancho máximo */
+    .wrap{width:min(600px,100%);}
     .card{
       background:var(--card);
       border:1px solid var(--border);
@@ -59,10 +58,6 @@
     .name{font-size:24px;font-weight:800;margin:10px 0 4px}
     .role{color:var(--green);font-weight:700;margin:0 0 10px}
     .tagline{color:var(--muted);margin:0 0 16px}
-    
-    /* === NUEVAS SECCIONES Y ESTILOS MEJORADOS === */
-
-    /* Para la foto de perfil o logo del negocio */
     .profile-image {
       width: 100%;
       max-height: 180px;
@@ -71,8 +66,6 @@
       border: 1px solid var(--border);
       margin-bottom: 16px;
     }
-
-    /* Horarios y badges de "abierto/cerrado" */
     .schedule {
       background: rgba(0,0,0,0.2);
       border-radius: 30px;
@@ -87,13 +80,6 @@
       font-weight: 700;
       margin-right: 6px;
     }
-    .badge-closed {
-      color: #ef4444;
-      font-weight: 700;
-      margin-right: 6px;
-    }
-
-    /* Promoción destacada (dinámica) */
     .promo {
       background: rgba(34, 197, 94, 0.15);
       border-left: 4px solid var(--green);
@@ -103,8 +89,6 @@
       font-weight: 600;
     }
     .promo p { margin: 0; }
-
-    /* Grid de botones original, pero puedes añadir más */
     .grid{
       display:grid;
       grid-template-columns:1fr;
@@ -128,14 +112,6 @@
     .wa{background:rgba(34,197,94,.95); color:#04140a;}
     .call{background:rgba(17,24,39,.92); color:var(--text);}
     .web{background:rgba(30,58,138,.92); color:var(--text);}
-    /* Nuevo tipo de botón para acción secundaria */
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    /* Para las fotos del negocio (escaparate) */
     .gallery {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -149,7 +125,6 @@
       border-radius: 12px;
       border: 1px solid var(--border);
     }
-
     .qrbox{
       margin-top:16px;
       display:grid;
@@ -193,14 +168,14 @@
     @media (max-width:520px){
       .qrbox{grid-template-columns:1fr}
       .qr img{width:220px;height:220px}
-      .gallery { grid-template-columns: 1fr 1fr; } /* En móvil, 2 fotos por fila */
+      .gallery { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <!-- Cabecera: se mantiene igual -->
+      <!-- Cabecera -->
       <div class="top">
         <div class="logo" title="Direcciones Digitales de Panamá">
           <img src="../assets/logo.png" alt="AD507 Logo" onerror="this.style.display='none'">
@@ -211,39 +186,36 @@
         </div>
       </div>
 
-      <!-- FOTO DE PORTADA / PERFIL (NUEVO) -->
+      <!-- Foto de portada -->
       <img src="https://via.placeholder.com/600x180/1e3a8a/ffffff?text=Foto+de+Jacinto" 
            alt="Jacinto Salazar" 
            class="profile-image"
            onerror="this.style.display='none'">
-      <!-- Nota: Reemplaza el src con la URL de tu foto real -->
 
       <!-- Info principal -->
       <div class="name">Jacinto Salazar</div>
       <div class="role">Fundador · Direcciones507</div>
       <p class="tagline">Ayudo a negocios panameños a ser encontrados fácilmente 🚀</p>
 
-      <!-- HORARIOS (NUEVO - Ejemplo) -->
+      <!-- Horarios -->
       <div class="schedule">
         <span class="badge-open">🟢 Disponible ahora</span>
         · Lun-Vie 9am a 6pm
       </div>
 
-      <!-- PROMOCIÓN DESTACADA (NUEVO) -->
+      <!-- Promoción -->
       <div class="promo">
         <p>🔥 Promoción de lanzamiento: <strong>10% de descuento</strong> en Plan Negocios para emprendedores (Julio 2026).</p>
       </div>
 
-      <!-- Botones principales mejorados (son los mismos pero con pequeños cambios) -->
+      <!-- Botones principales (SIN videollamada) -->
       <div class="grid">
         <a class="btn wa" href="https://wa.me/50765996532" target="_blank" rel="noopener">📲 Enviar WhatsApp</a>
         <a class="btn call" href="tel:+50765996532">📞 Llamar ahora</a>
         <a class="btn web" href="https://direcciones507.com" target="_blank" rel="noopener">🌐 Nuestro sitio web</a>
-        <!-- Un botón extra: "Agendar reunión" (puede enlazar a Calendly) -->
-        <a class="btn btn-outline" href="#" target="_blank" rel="noopener">📅 Agendar videollamada</a>
       </div>
 
-      <!-- GALERÍA DE FOTOS (NUEVO - Escaparate del negocio) -->
+      <!-- Galería -->
       <div style="margin: 18px 0 8px;"><b>📸 Lo que hacemos</b></div>
       <div class="gallery">
         <img src="https://via.placeholder.com/200x200/22c55e/ffffff?text=Cliente+feliz" alt="Cliente feliz" onerror="this.style.display='none'">
@@ -251,7 +223,7 @@
         <img src="https://via.placeholder.com/200x200/22c55e/ffffff?text=Nuestro+equipo" alt="Equipo" onerror="this.style.display='none'">
       </div>
 
-      <!-- CÓDIGO QR (MEJORADO: ahora también incluye el enlace a esta misma página) -->
+      <!-- Código QR -->
       <div class="qrbox">
         <div class="mini">
           <b>📌 Comparte este perfil</b><br>
@@ -264,19 +236,18 @@
         </div>
       </div>
 
-      <!-- PLANES (se mantiene igual, pero podrías darle más estilo) -->
+      <!-- Planes -->
       <div class="prices">
         <h3>Planes Direcciones507 · Pago único</h3>
         <div class="row"><b>Persona</b> <span>$6.99</span></div>
         <div class="row"><b>Negocio</b> <span>desde $10.99</span></div>
         <div class="row"><b>PH / Edificio</b> <span>consultar</span></div>
-        <!-- Un pequeño llamado a la acción -->
         <div style="text-align: center; margin-top: 12px;">
           <a href="https://direcciones507.com" style="color: var(--green);">¡Quiero mi dirección digital! →</a>
         </div>
       </div>
 
-      <!-- FOOTER (se mantiene igual) -->
+      <!-- Footer -->
       <div class="footer">
         <div>© Direcciones507 · 2026</div>
         <div class="social">
@@ -288,11 +259,9 @@
   </div>
 
   <script>
-    // Actualizamos el QR para que apunte a la URL CORRECTA de este perfil.
-    // Si esta página está en https://direcciones507.github.io/direcciones507/jacinto/
+    // URL para el QR (ajústala si tienes dominio propio)
     const urlActual = "https://direcciones507.github.io/direcciones507/jacinto/";
-    // Si tienes un dominio personalizado, cámbialo aquí, por ejemplo:
-    // const urlActual = "https://direcciones507.com/jacinto/";
+    // Si usas dominio personalizado: "https://direcciones507.com/jacinto/"
     
     document.getElementById('qr').src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(urlActual);
   </script>

@@ -897,8 +897,12 @@
         document.getElementById("uiRef").textContent = data.referencia || "-";
 
         const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
-        // 🔒 Bloquear búsqueda para planes personales
-if(!esNegocio){
+        // ✅ Detectar si el código viene desde el enlace (?code=...)
+const codeFromUrl = new URLSearchParams(window.location.search).get("code");
+const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
+
+// 🔒 Bloquear SOLO si es búsqueda manual (no viene del link) y no es negocio
+if(!esNegocio && !vieneDeLink){
   setMsg("Este código es privado. Usa el enlace directo.");
   return;
 }

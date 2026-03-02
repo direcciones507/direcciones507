@@ -1020,6 +1020,29 @@ function seqSuspicion(code){
 
       const codigo = input.value.trim();
       if(!codigo){ setMsg("Ingresa un código"); return; }
+      const codigo = input.value.trim();
+if(!codigo){ setMsg("Ingresa un código"); return; }
+
+// 🔎 LOG + ANTI-SPAM
+logUI("Intento de búsqueda: " + codigo);
+
+const chk = spamCheckOrBan();
+if(!chk.ok){
+  logUI("BLOQUEADO: " + chk.msg);
+  setMsg(chk.msg);
+  return;
+}
+
+const seq = seqSuspicion(codigo);
+if(seq.suspicious){
+  logUI("SECUENCIAL detectado");
+  setMsg("Búsqueda detectada como secuencial. Usa el enlace directo.");
+  return;
+}
+
+logUI("OK, consultando WebApp...");
+
+setMsg("Buscando...");
 
       setMsg("Buscando...");
       // 🛡️ Anti-spam: bloquear intentos masivos

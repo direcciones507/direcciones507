@@ -317,6 +317,12 @@
       line-height: 1.7;
       backdrop-filter: blur(8px);
     }
+    /* ✅ Ocultar bloques informativos en celular */
+@media (max-width: 768px){
+  .bloques-info{
+    display:none !important;
+  }
+}
   </style>
 </head>
 
@@ -345,17 +351,20 @@
     </div>
   </div>
 
-  <!-- BLOQUES AZULES -->
-  <div style="margin-bottom:28px; display:flex; flex-wrap:wrap; gap:14px;">
-    <div style="padding:14px 22px; background:#0a1a3a; color:white; border-radius:40px; font-weight:600; border:1px solid #2563eb30;">
-      <i class="fa-regular fa-circle-check" style="color:#22c55e; margin-right:8px;"></i>
-      Direcciones507 es el sistema original de Dirección Digital en Panamá.
-    </div>
-    <div style="padding:14px 22px; background:#0a1a3a; color:white; border-radius:40px; font-weight:600; border:1px solid #2563eb30;">
-      <i class="fa-regular fa-registered" style="color:#94a3b8;"></i>
-      AD507 es un código exclusivo del sistema Direcciones507.
-    </div>
+<!-- BLOQUES AZULES -->
+<div class="bloques-info" style="margin-bottom:28px; display:flex; flex-wrap:wrap; gap:14px;">
+  
+  <div style="padding:14px 22px; background:#0a1a3a; color:white; border-radius:40px; font-weight:600; border:1px solid #2563eb30;">
+    <i class="fa-regular fa-circle-check" style="color:#22c55e; margin-right:8px;"></i>
+    Direcciones507 es el sistema original de Dirección Digital en Panamá.
   </div>
+
+  <div style="padding:14px 22px; background:#0a1a3a; color:white; border-radius:40px; font-weight:600; border:1px solid #2563eb30;">
+    <i class="fa-regular fa-registered" style="color:#94a3b8;"></i>
+    AD507 es un código exclusivo del sistema Direcciones507.
+  </div>
+
+</div>
 
   <!-- HOME HERO -->
   <div id="homeHero">

@@ -900,6 +900,84 @@ function setCanonical(url){
   }
   c.setAttribute("href", url);
 }
+    // 🛡️ Anti-búsqueda masiva (cliente)
+const ANTISPAM = {
+  windowMs: 60_000,
+  maxAttempts: 8,
+  banMs: 10 * 60_000,
+  key: "ad507_antispam_v1"
+};
+
+function now(){ return Date.now(); }
+
+function getSpamState(){
+  try{ return JSON.parse(localStorage.getItem(ANTISPAM.key) || "{}"); }
+  catch(e){ return {}; }
+}
+
+function setSpamState(state){
+  try{ localStorage.setItem(ANTISPAM.key, JSON.stringify(state)); }catch(e){}
+}
+
+function spamCheckOrBan(){
+  const t = now();
+  const s = getSpamState();
+
+  if(s.banUntil && t < s.banUntil){
+    const secs = Math.ceil((s.banUntil - t) / 1000);
+    return { ok:false, msg:`Demasiados intentos. Intenta de nuevo en ${secs}s.` };
+  }
+
+  let start = s.start || t;
+  let count = s.count || 0;
+
+  if(t - start > ANTISPAM.windowMs){
+    start = t;
+    count = 0;
+  }
+
+  count += 1;
+
+  if(count > ANTISPAM.maxAttempts){
+    const banUntil = t + ANTISPAM.banMs;
+    setSpamState({ start, count, banUntil });
+    return { ok:false, msg:"Demasiados intentos. Bloqueado temporalmente. Usa el enlace directo si eres cliente." };
+  }
+
+  setSpamState({ start, count, banUntil: 0 });
+  return { ok:true };
+}
+
+function parseSeq(code){
+  const m = String(code || "").toUpperCase().match(/^(AD507-)(\d+)$/);
+  if(!m) return null;
+  return { prefix: m[1], n: parseInt(m[2], 10) };
+}
+
+function seqSuspicion(code){
+  const key = "ad507_seq_v1";
+  const t = now();
+  let s = {};
+  try{ s = JSON.parse(localStorage.getItem(key) || "{}"); }catch(e){}
+
+  const cur = parseSeq(code);
+  if(!cur) return { suspicious:false };
+
+  const last = s.last ? parseSeq(s.last) : null;
+  const lastT = s.lastT || 0;
+
+  s.last = code;
+  s.lastT = t;
+
+  let suspicious = false;
+  if(last && last.prefix === cur.prefix && (t - lastT) < 15_000){
+    const diff = cur.n - last.n;
+    if(diff === 1 || diff === -1) suspicious = true;
+  }
+
+  try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){}
+  return { suspicious };
+}
     async function buscarCodigo(){
       const input = document.getElementById("inputCodigo");
       if(!input) return;
@@ -908,6 +986,19 @@ function setCanonical(url){
       if(!codigo){ setMsg("Ingresa un código"); return; }
 
       setMsg("Buscando...");
+      // 🛡️ Anti-spam: bloquear intentos masivos
+const chk = spamCheckOrBan();
+if(!chk.ok){
+  setMsg(chk.msg);
+  return;
+}
+
+// 🧠 Detectar búsqueda secuencial rápida
+const seq = seqSuspicion(codigo);
+if(seq.suspicious){
+  setMsg("Búsqueda detectada como secuencial. Usa el enlace directo.");
+  return;
+}
 
       try{
         const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);

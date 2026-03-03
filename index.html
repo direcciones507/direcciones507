@@ -1322,8 +1322,6 @@ function seqSuspicion(code){
         const homeUrl = location.href.split("?")[0];
         document.getElementById("uiLink").textContent = homeUrl;
         document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
-      }
-    });
       }catch(e){
     if(DEBUG) alert("❌ Error en DOMContentLoaded:\n" + (e?.message || e));
   }

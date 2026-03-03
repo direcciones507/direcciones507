@@ -1178,12 +1178,16 @@
           btnWaze.href   = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
           btnUber.href   = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
 
-          if(data.telefono){
-            const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
-            btnAviso.href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
-          } else {
-            btnAviso.href = "#";
-          }
+          // ✅ Aviso por WhatsApp (acepta 6599-6532 / 65996532 / +507 6599-6532)
+let tel = String(data.telefono || "").trim().replace(/\D/g, ""); // deja solo números
+if(tel.length === 8) tel = "507" + tel; // Panamá
+
+if(tel.length >= 11 || tel.length === 10){
+  const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
+  btnAviso.href = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+} else {
+  btnAviso.href = "#";
+}
 
           // ✅ tracking SOLO negocios (sin addEventListener)
           if(esNegocio){

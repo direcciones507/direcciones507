@@ -811,489 +811,524 @@
 
   </div>
 
-  <script>
-    const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
+ <script>
+  const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
 
-if(DEBUG){
-  window.addEventListener("error", function(e){
-    alert(
-      "ERROR JS:\n" +
-      e.message +
-      "\nLínea: " + e.lineno +
-      "\nArchivo: " + e.filename
-    );
-  });
+  if(DEBUG){
+    window.addEventListener("error", function(e){
+      alert(
+        "ERROR JS:\n" +
+        e.message +
+        "\nLínea: " + e.lineno +
+        "\nArchivo: " + e.filename
+      );
+    });
 
-  window.addEventListener("unhandledrejection", function(e){
-    alert(
-      "PROMISE ERROR:\n" +
-      (e.reason?.message || e.reason)
-    );
-  });
-}
- if(DEBUG){
-  alert("✅ DEBUG ON: script cargó hasta CONFIG");
-}  
-    // ✅ CONFIG
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
-    const WA_NUMBER = "50765996532";
-    const EJEMPLO_CODE = "AD507-0001";
+    window.addEventListener("unhandledrejection", function(e){
+      alert(
+        "PROMISE ERROR:\n" +
+        (e.reason?.message || e.reason)
+      );
+    });
 
-    let CODIGO_ACTUAL = "";
-    let DATOS_CLIENTE = null;
+    alert("✅ DEBUG ON: script cargó hasta CONFIG");
+  }
 
-    // ✅ UI tipo app bancaria (solo en móvil + modo panel)
-    function isMobile(){
-      return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+  // ✅ CONFIG
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx4zl8CfOTQTJ7TyBynFi8eWoyaZNQaA6A-UM7Pu2dxmdT3oPi-w2Jv3jNEnGmwJwjr8g/exec";
+  const WA_NUMBER = "50765996532";
+  const EJEMPLO_CODE = "AD507-0001";
+
+  let CODIGO_ACTUAL = "";
+  let DATOS_CLIENTE = null;
+
+  // ✅ UI tipo app bancaria (solo en móvil + modo panel)
+  function isMobile(){
+    return window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+  }
+
+  function setPanelMode(on){
+    document.body.classList.toggle("mode-panel", !!on);
+    if(on && isMobile()){
+      document.body.classList.toggle("compact-top", (window.scrollY || 0) > 10);
+    }else{
+      document.body.classList.remove("compact-top");
+    }
+  }
+
+  function bindCompactTop(){
+    window.addEventListener("scroll", ()=>{
+      if(document.body.classList.contains("mode-panel") && isMobile()){
+        document.body.classList.toggle("compact-top", (window.scrollY || 0) > 10);
+      }
+    }, { passive:true });
+
+    window.addEventListener("resize", ()=>{
+      if(!isMobile()) document.body.classList.remove("compact-top");
+      if(document.body.classList.contains("mode-panel") && isMobile()){
+        document.body.classList.toggle("compact-top", (window.scrollY || 0) > 10);
+      }
+    }, { passive:true });
+  }
+
+  function setMsg(t){
+    const el = document.getElementById("msgBusqueda");
+    if(el) el.textContent = t || "";
+  }
+
+  function verEjemplo() {
+    const input = document.getElementById("inputCodigo");
+    if(input) input.value = EJEMPLO_CODE;
+    buscarCodigo();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function extractLinkFromQr(qrUrl){
+    try{
+      const u = new URL(qrUrl);
+      const data = u.searchParams.get("data");
+      return data ? decodeURIComponent(data) : "";
+    }catch(e){ return ""; }
+  }
+
+  function show(el, mode){ if(el) el.style.display = mode || "block"; }
+  function hide(el){ if(el) el.style.display = "none"; }
+
+  function setRobots(content){
+    // crea o actualiza <meta name="robots">
+    let m = document.querySelector('meta[name="robots"]');
+    if(!m){
+      m = document.createElement("meta");
+      m.setAttribute("name","robots");
+      document.head.appendChild(m);
+    }
+    m.setAttribute("content", content);
+
+    // Googlebot específico
+    let g = document.querySelector('meta[name="googlebot"]');
+    if(!g){
+      g = document.createElement("meta");
+      g.setAttribute("name","googlebot");
+      document.head.appendChild(g);
+    }
+    g.setAttribute("content", content);
+  }
+
+  function setCanonical(url){
+    let c = document.querySelector('link[rel="canonical"]');
+    if(!c){
+      c = document.createElement("link");
+      c.setAttribute("rel","canonical");
+      document.head.appendChild(c);
+    }
+    c.setAttribute("href", url);
+  }
+
+  // 🛡️ Anti-búsqueda masiva (cliente)
+  const ANTISPAM = {
+    windowMs: 60_000,
+    maxAttempts: 8,
+    banMs: 10 * 60_000,
+    key: "ad507_antispam_v1"
+  };
+
+  function now(){ return Date.now(); }
+
+  function getSpamState(){
+    try{ return JSON.parse(localStorage.getItem(ANTISPAM.key) || "{}"); }
+    catch(e){ return {}; }
+  }
+
+  function setSpamState(state){
+    try{ localStorage.setItem(ANTISPAM.key, JSON.stringify(state)); }catch(e){}
+  }
+
+  function spamCheckOrBan(){
+    const t = now();
+    const s = getSpamState();
+
+    if(s.banUntil && t < s.banUntil){
+      const secs = Math.ceil((s.banUntil - t) / 1000);
+      return { ok:false, msg:`Demasiados intentos. Intenta de nuevo en ${secs}s.` };
     }
 
-    function setPanelMode(on){
-      document.body.classList.toggle("mode-panel", !!on);
-      if(on && isMobile()){
-        document.body.classList.toggle("compact-top", (window.scrollY || 0) > 10);
-      }else{
-        document.body.classList.remove("compact-top");
+    let start = s.start || t;
+    let count = s.count || 0;
+
+    if(t - start > ANTISPAM.windowMs){
+      start = t;
+      count = 0;
+    }
+
+    count += 1;
+
+    if(count > ANTISPAM.maxAttempts){
+      const banUntil = t + ANTISPAM.banMs;
+      setSpamState({ start, count, banUntil });
+      return { ok:false, msg:"Demasiados intentos. Bloqueado temporalmente. Usa el enlace directo si eres cliente." };
+    }
+
+    setSpamState({ start, count, banUntil: 0 });
+    return { ok:true };
+  }
+
+  function parseSeq(code){
+    const m = String(code || "").toUpperCase().match(/^(AD507-)(\d+)$/);
+    if(!m) return null;
+    return { prefix: m[1], n: parseInt(m[2], 10) };
+  }
+
+  function seqSuspicion(code){
+    const key = "ad507_seq_v1";
+    const t = now();
+    let s = {};
+    try{ s = JSON.parse(localStorage.getItem(key) || "{}"); }catch(e){}
+
+    const cur = parseSeq(code);
+    if(!cur) return { suspicious:false };
+
+    const last = s.last ? parseSeq(s.last) : null;
+    const lastT = s.lastT || 0;
+
+    s.last = code;
+    s.lastT = t;
+
+    let suspicious = false;
+    if(last && last.prefix === cur.prefix && (t - lastT) < 15_000){
+      const diff = cur.n - last.n;
+      if(diff === 1 || diff === -1){
+        suspicious = true;
+        if(typeof logUI === "function"){
+          logUI("⚠️ Secuencia detectada: " + last.n + " → " + cur.n);
+        }
       }
     }
 
-    function bindCompactTop(){
-      window.addEventListener("scroll", ()=>{
-        if(document.body.classList.contains("mode-panel") && isMobile()){
-          document.body.classList.toggle("compact-top", (window.scrollY || 0) > 10);
-        }
-      }, { passive:true });
+    try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){}
+    return { suspicious };
+  }
 
-      window.addEventListener("resize", ()=>{
-        if(!isMobile()) document.body.classList.remove("compact-top");
-        if(document.body.classList.contains("mode-panel") && isMobile()){
-          document.body.classList.toggle("compact-top", (window.scrollY || 0) > 10);
-        }
-      }, { passive:true });
+  function logUI(txt){
+    if(!DEBUG) return;
+
+    let box = document.getElementById("debugLogAD507");
+    if(!box){
+      box = document.createElement("div");
+      box.id = "debugLogAD507";
+      box.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;background:#000c;color:#fff;padding:10px;border-radius:12px;font-size:12px;max-height:35vh;overflow:auto";
+      document.body.appendChild(box);
     }
-
-    function setMsg(t){
-      const el = document.getElementById("msgBusqueda");
-      if(el) el.textContent = t || "";
-    }
-
-    function verEjemplo() {
-      const input = document.getElementById("inputCodigo");
-      if(input) input.value = EJEMPLO_CODE;
-      buscarCodigo();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function extractLinkFromQr(qrUrl){
-      try{
-        const u = new URL(qrUrl);
-        const data = u.searchParams.get("data");
-        return data ? decodeURIComponent(data) : "";
-      }catch(e){ return ""; }
-    }
-
-    function show(el, mode){ if(el) el.style.display = mode || "block"; }
-    function hide(el){ if(el) el.style.display = "none"; }
-function setRobots(content){
-  // crea o actualiza <meta name="robots">
-  let m = document.querySelector('meta[name="robots"]');
-  if(!m){
-    m = document.createElement("meta");
-    m.setAttribute("name","robots");
-    document.head.appendChild(m);
-  }
-  m.setAttribute("content", content);
-
-  // Googlebot específico (opcional pero útil)
-  let g = document.querySelector('meta[name="googlebot"]');
-  if(!g){
-    g = document.createElement("meta");
-    g.setAttribute("name","googlebot");
-    document.head.appendChild(g);
-  }
-  g.setAttribute("content", content);
-}
-
-function setCanonical(url){
-  let c = document.querySelector('link[rel="canonical"]');
-  if(!c){
-    c = document.createElement("link");
-    c.setAttribute("rel","canonical");
-    document.head.appendChild(c);
-  }
-  c.setAttribute("href", url);
-}
-    // 🛡️ Anti-búsqueda masiva (cliente)
-const ANTISPAM = {
-  windowMs: 60_000,
-  maxAttempts: 8,
-  banMs: 10 * 60_000,
-  key: "ad507_antispam_v1"
-};
-
-function now(){ return Date.now(); }
-
-function getSpamState(){
-  try{ return JSON.parse(localStorage.getItem(ANTISPAM.key) || "{}"); }
-  catch(e){ return {}; }
-}
-
-function setSpamState(state){
-  try{ localStorage.setItem(ANTISPAM.key, JSON.stringify(state)); }catch(e){}
-}
-
-function spamCheckOrBan(){
-  const t = now();
-  const s = getSpamState();
-
-  if(s.banUntil && t < s.banUntil){
-    const secs = Math.ceil((s.banUntil - t) / 1000);
-    return { ok:false, msg:`Demasiados intentos. Intenta de nuevo en ${secs}s.` };
+    const p = document.createElement("div");
+    p.textContent = new Date().toLocaleTimeString() + " · " + txt;
+    box.appendChild(p);
   }
 
-  let start = s.start || t;
-  let count = s.count || 0;
+  async function buscarCodigo(){
+    const input = document.getElementById("inputCodigo");
+    if(!input) return;
 
-  if(t - start > ANTISPAM.windowMs){
-    start = t;
-    count = 0;
-  }
+    const codigo = input.value.trim();
+    if(!codigo){ setMsg("Ingresa un código"); return; }
 
-  count += 1;
+    if(typeof logUI === "function") logUI("Intento de búsqueda: " + codigo);
 
-  if(count > ANTISPAM.maxAttempts){
-    const banUntil = t + ANTISPAM.banMs;
-    setSpamState({ start, count, banUntil });
-    return { ok:false, msg:"Demasiados intentos. Bloqueado temporalmente. Usa el enlace directo si eres cliente." };
-  }
-
-  setSpamState({ start, count, banUntil: 0 });
-  return { ok:true };
-}
-
-function parseSeq(code){
-  const m = String(code || "").toUpperCase().match(/^(AD507-)(\d+)$/);
-  if(!m) return null;
-  return { prefix: m[1], n: parseInt(m[2], 10) };
-}
-
-function seqSuspicion(code){
-  const key = "ad507_seq_v1";
-  const t = now();
-  let s = {};
-  try{ s = JSON.parse(localStorage.getItem(key) || "{}"); }catch(e){}
-
-  const cur = parseSeq(code);
-  if(!cur) return { suspicious:false };
-
-  const last = s.last ? parseSeq(s.last) : null;
-  const lastT = s.lastT || 0;
-
-  s.last = code;
-  s.lastT = t;
-
-  let suspicious = false;
-  if(last && last.prefix === cur.prefix && (t - lastT) < 15_000){
-  const diff = cur.n - last.n;
-
-  if(diff === 1 || diff === -1){
-    suspicious = true;
-
-    // 🔎 LOG VISUAL
-    if(typeof logUI === "function"){
-      logUI("⚠️ Secuencia detectada: " + last.n + " → " + cur.n);
-    }
-  }
-}
-  try{ localStorage.setItem(key, JSON.stringify(s)); }catch(e){}
-  return { suspicious };
-}
-     function logUI(txt){
-  if(!DEBUG) return;   // 👈 SOLO agrega esta línea
-
-  let box = document.getElementById("debugLogAD507");
-  if(!box){
-    box = document.createElement("div");
-    box.id = "debugLogAD507";
-    box.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;background:#000c;color:#fff;padding:10px;border-radius:12px;font-size:12px;max-height:35vh;overflow:auto";
-    document.body.appendChild(box);
-  }
-  const p = document.createElement("div");
-  p.textContent = new Date().toLocaleTimeString() + " · " + txt;
-  box.appendChild(p);
-}
-  if(!box){
-    box = document.createElement("div");
-    box.id = "debugLogAD507";
-    box.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;background:#000c;color:#fff;padding:10px;border-radius:12px;font-size:12px;max-height:35vh;overflow:auto";
-    document.body.appendChild(box);
-  }
-  const p = document.createElement("div");
-  p.textContent = new Date().toLocaleTimeString() + " · " + txt;
-  box.appendChild(p);
-}
-   async function buscarCodigo(){
-  const input = document.getElementById("inputCodigo");
-  if(!input) return;
-
-  const codigo = input.value.trim();
-  if(!codigo){ setMsg("Ingresa un código"); return; }
-
-  // 🔎 LOG + ANTI-SPAM
-  if(typeof logUI === "function") logUI("Intento de búsqueda: " + codigo);
-
-  const chk = spamCheckOrBan();
-  if(!chk.ok){
-    if(typeof logUI === "function") logUI("BLOQUEADO: " + chk.msg);
-    setMsg(chk.msg);
-    return;
-  }
-
-  const seq = seqSuspicion(codigo);
-  if(seq.suspicious){
-    if(typeof logUI === "function") logUI("SECUENCIAL detectado");
-    setMsg("Búsqueda detectada como secuencial. Usa el enlace directo.");
-    return;
-  }
-
-  if(typeof logUI === "function") logUI("OK, consultando WebApp...");
-  setMsg("Buscando...");
-
-  try{
-    const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
-    const data = await res.json();
-
-    if(!data.ok) throw new Error(data.message || "Código no encontrado.");
-
-    CODIGO_ACTUAL = data.codigo || data.code || codigo;
-    DATOS_CLIENTE = data;
-    window.CODIGO_CLIENTE = CODIGO_ACTUAL;
-
-    // UI base
-    document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL;
-    document.getElementById("uiNombre").textContent = data.nombre || "-";
-    document.getElementById("uiRef").textContent = data.referencia || "-";
-
-    const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
-
-    // ✅ Detectar si el código viene desde el enlace (?code=...)
-    const codeFromUrl = new URLSearchParams(window.location.search).get("code");
-    const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
-
-    // 🔒 SEO: ocultar direcciones personales de Google
-    if(!esNegocio){
-      setRobots("noindex,nofollow,noarchive");
-      setCanonical(window.location.origin + window.location.pathname);
-    }else{
-      setRobots("index,follow");
-      setCanonical(window.location.origin + window.location.pathname);
-    }
-
-    // 🔒 Bloquear SOLO si es búsqueda manual (no viene del link) y no es negocio
-    if(!esNegocio && !vieneDeLink){
-      setMsg("Este código es privado. Usa el enlace directo.");
+    const chk = spamCheckOrBan();
+    if(!chk.ok){
+      if(typeof logUI === "function") logUI("BLOQUEADO: " + chk.msg);
+      setMsg(chk.msg);
       return;
     }
 
-    // URL share/verificación
-    const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
-    window.verificacionUrl = shareUrl;
-
-    // Extraer coords desde data.qr (si viene)
-    let lat = "", lng = "";
-    if(data.qr){
-      const link = extractLinkFromQr(data.qr);
-      const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
-      if(match){ lat = match[1]; lng = match[2]; }
+    const seq = seqSuspicion(codigo);
+    if(seq.suspicious){
+      if(typeof logUI === "function") logUI("SECUENCIAL detectado");
+      setMsg("Búsqueda detectada como secuencial. Usa el enlace directo.");
+      return;
     }
 
-    // Configurar botones navegación
-    const btnGoogle = document.getElementById("btnGoogle");
-    const btnWaze   = document.getElementById("btnWaze");
-    const btnUber   = document.getElementById("btnUber");
-    const btnAviso  = document.getElementById("btnAviso");
+    if(typeof logUI === "function") logUI("OK, consultando WebApp...");
+    setMsg("Buscando...");
 
-    if(lat && lng){
-      btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-      btnWaze.href   = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-      btnUber.href   = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+    try{
+      const res = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+      const data = await res.json();
 
-      if(data.telefono){
-        const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
-        btnAviso.href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
-      } else {
-        btnAviso.href = "#";
+      if(!data.ok) throw new Error(data.message || "Código no encontrado.");
+
+      CODIGO_ACTUAL = data.codigo || data.code || codigo;
+      DATOS_CLIENTE = data;
+      window.CODIGO_CLIENTE = CODIGO_ACTUAL;
+
+      // UI base
+      const uiCodigo = document.getElementById("uiCodigo");
+      const uiNombre = document.getElementById("uiNombre");
+      const uiRef    = document.getElementById("uiRef");
+
+      if(uiCodigo) uiCodigo.textContent = CODIGO_ACTUAL;
+      if(uiNombre) uiNombre.textContent = data.nombre || "-";
+      if(uiRef)    uiRef.textContent    = data.referencia || "-";
+
+      const esNegocio = (data.plan || "").toLowerCase().includes("negocio");
+
+      // ✅ Detectar si el código viene desde el enlace (?code=...)
+      const codeFromUrl = new URLSearchParams(window.location.search).get("code");
+      const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
+
+      // 🔒 SEO: ocultar direcciones personales de Google
+      if(!esNegocio){
+        setRobots("noindex,nofollow,noarchive");
+        setCanonical(window.location.origin + window.location.pathname);
+      }else{
+        setRobots("index,follow");
+        setCanonical(window.location.origin + window.location.pathname);
       }
+
+      // URL share/verificación
+      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
+      window.verificacionUrl = shareUrl;
+
+      // Extraer coords desde data.qr (si viene)
+      let lat = "", lng = "";
+      if(data.qr){
+        const link = extractLinkFromQr(data.qr);
+        const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
+        if(match){ lat = match[1]; lng = match[2]; }
+      }
+
+      // 🔒 Privado (no negocio) y búsqueda manual: NO tumbes todo el panel
+      if(!esNegocio && !vieneDeLink){
+        setMsg("Este código es privado. Usa el enlace directo.");
+        // si quieres, bloquea solo navegación
+        hide(document.getElementById("gridUbicacion"));
+        // pero deja visible lo básico
+      }
+
+      // Configurar botones navegación (con protección si faltan IDs)
+      const btnGoogle = document.getElementById("btnGoogle");
+      const btnWaze   = document.getElementById("btnWaze");
+      const btnUber   = document.getElementById("btnUber");
+      const btnAviso  = document.getElementById("btnAviso");
+
+      if(btnGoogle && btnWaze && btnUber && btnAviso){
+        // reset listeners (simple)
+        btnGoogle.onclick = null;
+        btnWaze.onclick = null;
+        btnUber.onclick = null;
+        btnAviso.onclick = null;
+
+        if(lat && lng){
+          btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+          btnWaze.href   = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+          btnUber.href   = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+
+          if(data.telefono){
+            const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
+            btnAviso.href = `https://wa.me/${data.telefono}?text=${encodeURIComponent(msg)}`;
+          } else {
+            btnAviso.href = "#";
+          }
+
+          // Tracking SIN bloquear navegación (solo negocios)
+          if(esNegocio){
+            btnGoogle.addEventListener("click", ()=>{
+              fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=google&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+            }, { passive:true });
+
+            btnWaze.addEventListener("click", ()=>{
+              fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=waze&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+            }, { passive:true });
+
+            btnUber.addEventListener("click", ()=>{
+              fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=uber&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+            }, { passive:true });
+
+            btnAviso.addEventListener("click", ()=>{
+              fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=aviso&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+            }, { passive:true });
+          }
+        } else {
+          btnGoogle.href = "#"; btnWaze.href = "#"; btnUber.href = "#"; btnAviso.href = "#";
+        }
+      }
+
+      // Compartir / Copiar (con protección)
+      const btnCompartir = document.getElementById("btnCompartir");
+      const btnCopiar = document.getElementById("btnCopiar");
+
+      if(btnCompartir){
+        btnCompartir.onclick = async (e)=>{
+          e.preventDefault();
+          if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=share&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+
+          if(navigator.share){
+            try{
+              await navigator.share({ title:"Dirección Digital", text:`Mi código ${CODIGO_ACTUAL}`, url: shareUrl });
+            }catch(_){
+              try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(__){}
+            }
+          } else {
+            try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
+          }
+        };
+      }
+
+      if(btnCopiar){
+        btnCopiar.onclick = async (e)=>{
+          e.preventDefault();
+          if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=copy&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
+          try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
+        };
+      }
+
+      // Ver QR para imprimir (tarjeta)
+      const linkVer = document.getElementById("linkVerificacion");
+      const wrap = document.getElementById("printCardWrap");
+      const qrVerif = document.getElementById("qrVerificacion");
+      const printCodigo = document.getElementById("printCodigo");
+
+      if(linkVer){
+        linkVer.onclick = (e)=>{
+          e.preventDefault();
+          if(printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
+          if(qrVerif) qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
+          show(wrap, "block");
+        };
+      }
+
+      const btnOcultarQR = document.getElementById("btnOcultarQR");
+      const btnImprimirQR = document.getElementById("btnImprimirQR");
+
+      if(btnOcultarQR && wrap){
+        btnOcultarQR.onclick = ()=> hide(wrap);
+      }
+
+      if(btnImprimirQR){
+        btnImprimirQR.onclick = ()=>{
+          const card = document.getElementById("printCard");
+          if(!card) return;
+          const w = window.open("", "_blank");
+          if(!w) return;
+
+          w.document.open();
+          w.document.write(`
+            <html>
+              <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>Imprimir QR</title>
+                <style>
+                  body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#fff;}
+                  .wrap{display:flex;justify-content:center;}
+                </style>
+              </head>
+              <body>
+                <div class="wrap">${card.outerHTML}</div>
+                <script>window.onload=()=>window.print();<\/script>
+              </body>
+            </html>
+          `);
+          w.document.close();
+        };
+      }
+
+      // QR para compartir (SIEMPRE shareUrl)
+      const qrImg = document.getElementById("qrImg");
+      const uiLink = document.getElementById("uiLink");
+      if(qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
+      if(uiLink) uiLink.textContent = shareUrl;
+
+      // Stats (solo Negocios)
+      const statsBtn = document.getElementById("btnStats");
+      const statsPanel = document.getElementById("statsPanel");
 
       if(esNegocio){
-        btnGoogle.onclick = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=google&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-        btnWaze.onclick   = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=waze&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-        btnUber.onclick   = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=uber&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-        btnAviso.onclick  = () => fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=aviso&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-      } else {
-        btnGoogle.onclick = null; btnWaze.onclick = null; btnUber.onclick = null; btnAviso.onclick = null;
-      }
-    } else {
-      btnGoogle.href = "#"; btnWaze.href = "#"; btnUber.href = "#"; btnAviso.href = "#";
-      btnGoogle.onclick = null; btnWaze.onclick = null; btnUber.onclick = null; btnAviso.onclick = null;
-    }
+        show(statsBtn, "flex");
+        if(statsBtn){
+          statsBtn.onclick = async ()=>{
+            const visible = statsPanel && statsPanel.style.display === "block";
+            if(statsPanel) statsPanel.style.display = visible ? "none" : "block";
 
-    // Compartir / Copiar
-    const btnCompartir = document.getElementById("btnCompartir");
-    const btnCopiar = document.getElementById("btnCopiar");
+            if(!visible){
+              try{
+                const r = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
+                const d = await r.json();
+                if(d.ok){
+                  const stGoogle = document.getElementById("stGoogle");
+                  const stWaze   = document.getElementById("stWaze");
+                  const stUber   = document.getElementById("stUber");
+                  const stShare  = document.getElementById("stShare");
+                  const stCopy   = document.getElementById("stCopy");
+                  const stUpdated= document.getElementById("stUpdated");
 
-    btnCompartir.onclick = async (e)=>{
-      e.preventDefault();
-      if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=share&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-
-      if(navigator.share){
-        try{
-          await navigator.share({ title:"Dirección Digital", text:`Mi código ${CODIGO_ACTUAL}`, url: shareUrl });
-        }catch(_){
-          try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(__){}
-        }
-      } else {
-        try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
-      }
-    };
-
-    btnCopiar.onclick = async (e)=>{
-      e.preventDefault();
-      if(esNegocio) fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=copy&t=${Date.now()}`,{mode:'no-cors'}).catch(()=>{});
-      try{ await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }catch(_){}
-    };
-
-    // Ver QR para imprimir (tarjeta)
-    const linkVer = document.getElementById("linkVerificacion");
-    const wrap = document.getElementById("printCardWrap");
-    const qrVerif = document.getElementById("qrVerificacion");
-    const printCodigo = document.getElementById("printCodigo");
-
-    if(linkVer){
-      linkVer.onclick = (e)=>{
-        e.preventDefault();
-        if(printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
-        if(qrVerif) qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
-        show(wrap, "block");
-      };
-    }
-
-    const btnOcultarQR = document.getElementById("btnOcultarQR");
-    const btnImprimirQR = document.getElementById("btnImprimirQR");
-
-    if(btnOcultarQR && wrap){
-      btnOcultarQR.onclick = ()=> hide(wrap);
-    }
-
-    if(btnImprimirQR){
-      btnImprimirQR.onclick = ()=>{
-        const card = document.getElementById("printCard");
-        if(!card) return;
-        const w = window.open("", "_blank");
-        if(!w) return;
-
-        w.document.open();
-        w.document.write(`
-          <html>
-            <head>
-              <meta charset="utf-8"/>
-              <meta name="viewport" content="width=device-width, initial-scale=1"/>
-              <title>Imprimir QR</title>
-              <style>
-                body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#fff;}
-                .wrap{display:flex;justify-content:center;}
-              </style>
-            </head>
-            <body>
-              <div class="wrap">${card.outerHTML}</div>
-              <script>window.onload=()=>window.print();<\/script>
-            </body>
-          </html>
-        `);
-        w.document.close();
-      };
-    }
-
-    // QR para compartir (SIEMPRE shareUrl)
-    document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(shareUrl)}`;
-    document.getElementById("uiLink").textContent = shareUrl;
-
-    // Stats (solo Negocios)
-    const statsBtn = document.getElementById("btnStats");
-    const statsPanel = document.getElementById("statsPanel");
-
-    if(esNegocio){
-      show(statsBtn, "flex");
-      statsBtn.onclick = async ()=>{
-        const visible = statsPanel.style.display === "block";
-        statsPanel.style.display = visible ? "none" : "block";
-
-        if(!visible){
-          try{
-            const r = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-            const d = await r.json();
-            if(d.ok){
-              document.getElementById("stGoogle").textContent = d.stats?.google || 0;
-              document.getElementById("stWaze").textContent   = d.stats?.waze || 0;
-              document.getElementById("stUber").textContent   = d.stats?.uber || 0;
-              document.getElementById("stShare").textContent  = d.stats?.share || 0;
-              document.getElementById("stCopy").textContent   = d.stats?.copy || 0;
-              document.getElementById("stUpdated").textContent = "Actualizado: " + (d.stats?.updated || "-");
+                  if(stGoogle) stGoogle.textContent = d.stats?.google || 0;
+                  if(stWaze)   stWaze.textContent   = d.stats?.waze || 0;
+                  if(stUber)   stUber.textContent   = d.stats?.uber || 0;
+                  if(stShare)  stShare.textContent  = d.stats?.share || 0;
+                  if(stCopy)   stCopy.textContent   = d.stats?.copy || 0;
+                  if(stUpdated) stUpdated.textContent = "Actualizado: " + (d.stats?.updated || "-");
+                }
+              }catch(e){}
             }
-          }catch(e){}
+          };
         }
-      };
-    } else {
-      hide(statsBtn);
-      hide(statsPanel);
+      } else {
+        hide(statsBtn);
+        hide(statsPanel);
+      }
+
+      // Toggle UI: ocultar home, mostrar panel
+      hide(document.getElementById("homeHero"));
+      hide(document.getElementById("buyWrap"));
+      hide(document.getElementById("heroComprarBox"));
+      hide(document.getElementById("heroEjemploBox"));
+      hide(document.getElementById("seccionPasos"));
+      hide(document.getElementById("seccionPrecios"));
+
+      show(document.getElementById("fieldNombre"), "grid");
+      show(document.getElementById("fieldRef"), "grid");
+      show(document.getElementById("tituloUbicacion"), "block");
+      show(document.getElementById("gridUbicacion"), "grid");
+      show(document.getElementById("divAfterUbic"), "block");
+      show(document.getElementById("tituloCompartir"), "block");
+      show(document.getElementById("gridCompartir"), "grid");
+      show(document.getElementById("notaVerificacion"), "block");
+      show(document.getElementById("divAfterVerif"), "block");
+
+      setPanelMode(true);
+      setMsg("✅ Listo");
+    } catch(e){
+      setMsg("Error: " + (e?.message || "No se pudo buscar"));
     }
-
-    // Toggle UI: ocultar home, mostrar panel
-    hide(document.getElementById("homeHero"));
-    hide(document.getElementById("buyWrap"));
-    hide(document.getElementById("heroComprarBox"));
-    hide(document.getElementById("heroEjemploBox"));
-    hide(document.getElementById("seccionPasos"));
-    hide(document.getElementById("seccionPrecios"));
-
-    show(document.getElementById("fieldNombre"), "grid");
-    show(document.getElementById("fieldRef"), "grid");
-    show(document.getElementById("tituloUbicacion"), "block");
-    show(document.getElementById("gridUbicacion"), "grid");
-    show(document.getElementById("divAfterUbic"), "block");
-    show(document.getElementById("tituloCompartir"), "block");
-    show(document.getElementById("gridCompartir"), "grid");
-    show(document.getElementById("notaVerificacion"), "block");
-    show(document.getElementById("divAfterVerif"), "block");
-
-    setPanelMode(true);
-    setMsg("✅ Listo");
-  } catch(e){
-    setMsg("Error: " + (e?.message || "No se pudo buscar"));
   }
-}
-    window.addEventListener("DOMContentLoaded", ()=>{
-  try{
-    if(DEBUG) alert("✅ DOMContentLoaded corrió");
+
+  window.addEventListener("DOMContentLoaded", ()=>{
+    try{
+      if(DEBUG) alert("✅ DOMContentLoaded corrió");
       bindCompactTop();
 
-      // Botones compra
+      // Botones compra (con protección)
       const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
-      document.getElementById("btnComprarTop").href = baseWA;
-      document.getElementById("btnComprarPersonal").href = baseWA + "%20Plan:%20Personal%20($6.99)";
-      document.getElementById("btnComprarNegocios").href = baseWA + "%20Plan:%20Negocios%20($10.99)";
-      document.getElementById("btnHeroPersonal").href = baseWA + "%20Plan:%20Personal%20($6.99)";
-      document.getElementById("btnHeroNegocios").href = baseWA + "%20Plan:%20Negocios%20($10.99)";
+
+      const setHref = (id, href)=>{
+        const el = document.getElementById(id);
+        if(el) el.href = href;
+      };
+
+      setHref("btnComprarTop", baseWA);
+      setHref("btnComprarPersonal", baseWA + "%20Plan:%20Personal%20($6.99)");
+      setHref("btnComprarNegocios", baseWA + "%20Plan:%20Negocios%20($10.99)");
+      setHref("btnHeroPersonal", baseWA + "%20Plan:%20Personal%20($6.99)");
+      setHref("btnHeroNegocios", baseWA + "%20Plan:%20Negocios%20($10.99)");
 
       const input = document.getElementById("inputCodigo");
       if(input){
         input.addEventListener("keypress", e => { if(e.key === "Enter") buscarCodigo(); });
       }
-    
 
       // URL ?code=
       const urlParams = new URLSearchParams(location.search);
       const urlCode = urlParams.get("code");
-      if(urlCode){
+      if(urlCode && input){
         input.value = urlCode;
         setTimeout(buscarCodigo, 150);
       } else {
@@ -1320,18 +1355,19 @@ function seqSuspicion(code){
         hide(document.getElementById("statsPanel"));
 
         const homeUrl = location.href.split("?")[0];
-        document.getElementById("uiLink").textContent = homeUrl;
-      document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
-    } // ✅ cierra else
-  }   // ✅ cierra if(urlCode)
+        const uiLink = document.getElementById("uiLink");
+        const qrImg = document.getElementById("qrImg");
+        if(uiLink) uiLink.textContent = homeUrl;
+        if(qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
+      }
+    } catch(e){
+      if(DEBUG) alert("❌ Error en DOMContentLoaded:\n" + (e?.message || e));
+    }
+  });
 
-} catch(e){
-  if(DEBUG) alert("❌ Error en DOMContentLoaded:\n" + (e?.message || e));
-}
-});
-    window.buscarCodigo = buscarCodigo;
-    window.verEjemplo = verEjemplo;
-  </script>
+  window.buscarCodigo = buscarCodigo;
+  window.verEjemplo = verEjemplo;
+</script>
 
 </body>
 </html>

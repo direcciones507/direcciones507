@@ -1272,6 +1272,8 @@ function seqSuspicion(code){
   }
 }
     window.addEventListener("DOMContentLoaded", ()=>{
+  try{
+    if(DEBUG) alert("✅ DOMContentLoaded corrió");
       bindCompactTop();
 
       // Botones compra
@@ -1286,6 +1288,7 @@ function seqSuspicion(code){
       if(input){
         input.addEventListener("keypress", e => { if(e.key === "Enter") buscarCodigo(); });
       }
+    
 
       // URL ?code=
       const urlParams = new URLSearchParams(location.search);
@@ -1321,6 +1324,10 @@ function seqSuspicion(code){
         document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(homeUrl)}`;
       }
     });
+      }catch(e){
+    if(DEBUG) alert("❌ Error en DOMContentLoaded:\n" + (e?.message || e));
+  }
+});
 
     window.buscarCodigo = buscarCodigo;
     window.verEjemplo = verEjemplo;

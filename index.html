@@ -1376,6 +1376,23 @@ if(tel.length >= 11 || tel.length === 10){
         input.value = urlCode;
         setTimeout(buscarCodigo, 150);
       } else {
+        // ✅ SEO / URL indexable: si abren /ad507-0001, buscar automáticamente
+try{
+  const path = (window.location.pathname || "").toUpperCase();
+  const match = path.match(/AD507-\d{4,}/); // AD507-0001, AD507-0100, etc.
+
+  if(match && match[0]){
+    const codeFromUrl = match[0];
+
+    const input = document.getElementById("inputCodigo");
+    if(input) input.value = codeFromUrl;
+
+    // Ejecuta la búsqueda (usa tu función existente)
+    if(typeof buscarCodigo === "function"){
+      buscarCodigo();
+    }
+  }
+}catch(e){}
         // home por defecto
         showHome();
         hidePanelSections();

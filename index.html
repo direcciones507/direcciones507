@@ -1450,7 +1450,7 @@
       const urlCode = urlParams.get("code");
       if(urlCode && input){
         input.value = urlCode;
-        setTimeout(buscarCodigo, 150);
+       buscarCodigo(); 
       } else {
         // ✅ SEO / URL indexable: si abren /ad507-0001, buscar automáticamente
         try{

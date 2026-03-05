@@ -1089,7 +1089,7 @@
     hide(document.getElementById("printCardWrap"));
   }
 
-  async function buscarCodigo(){
+  window.buscarCodigo = buscarCodigo;
     const input = document.getElementById("inputCodigo");
     if(!input) return;
 

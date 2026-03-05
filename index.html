@@ -1375,7 +1375,7 @@ img{
             if(!visible){
               try{
                 const d = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-                if(d.ok){
+                if(statsData.ok){
                   const stGoogle = document.getElementById("stGoogle");
                   const stWaze   = document.getElementById("stWaze");
                   const stUber   = document.getElementById("stUber");

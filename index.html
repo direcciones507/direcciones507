@@ -815,6 +815,7 @@
     </div>
 
 <script>
+  const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
   async function fetchJsonSafe(url){
   const r = await fetch(url, { cache: "no-store" });
   const text = await r.text();

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://direcciones507.com/sitemap.xml

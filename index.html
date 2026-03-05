@@ -817,17 +817,18 @@
 <script>
   
   async function fetchJsonSafe(url){
-  const r = await fetch(url, { cache: "no-store" });
-  const text = await r.text();
+    const r = await fetch(url, { cache: "no-store" });
+    const text = await r.text();
 
-  try{
-    return JSON.parse(text);
-  }catch(e){
-    console.error("❌ Respuesta no es JSON. URL:", url);
-    console.error("⬇️ Respuesta (primeros 300 chars):", text.slice(0, 300));
-    throw new Error("El servidor devolvió HTML (o texto) en vez de JSON. Revisa el WebApp/Deploy/permisos.");
+    try{
+      return JSON.parse(text);
+    }catch(e){
+      console.error("❌ Respuesta no es JSON. URL:", url);
+      console.error("⬇️ Respuesta (primeros 300 chars):", text.slice(0, 300));
+      throw new Error("El servidor devolvió HTML (o texto) en vez de JSON. Revisa el WebApp/Deploy/permisos.");
+    }
   }
-}
+  
   const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
 
   if(DEBUG){
@@ -1091,23 +1092,15 @@
   }
 
   async function buscarCodigo(){
-  console.log("🟢 buscarCodigo() arrancó");  
+    console.log("🟢 buscarCodigo() arrancó");  
     const input = document.getElementById("inputCodigo");
-console.log("🧪 input:", input);
+    console.log("🧪 input:", input);
 
-const codigo = (input?.value || "").trim();
-console.log("🧪 codigo:", codigo);
+    if(!input) return;
 
-// justo ANTES del spam check:
-console.log("🧪 pasando a spamCheck");
-  const chk = spamCheckOrBan();
-console.log("🧪 spamCheck:", chk);
-  const seq = seqSuspicion(codigo);
-console.log("🧪 seqSuspicion:", seq);  
-  const input = document.getElementById("inputCodigo");
-  if(!input) return;
+    const codigo = (input?.value || "").trim();
+    console.log("🧪 codigo:", codigo);
 
-    const codigo = input.value.trim();
     if(!codigo){ setMsg("Ingresa un código"); return; }
 
     if(typeof logUI === "function") logUI("Intento de búsqueda: " + codigo);
@@ -1132,70 +1125,72 @@ console.log("🧪 seqSuspicion:", seq);
     console.log("🟡 Voy a consultar WebApp con:", codigo); 
     try{
       console.log("🟠 Entré al try");
-    
+      
+      const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+      
       if(!data.ok) throw new Error(data.message || "Código no encontrado.");
 
-     CODIGO_ACTUAL = data.codigo || data.code || codigo;
+      CODIGO_ACTUAL = data.codigo || data.code || codigo;
       const statsData = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-DATOS_CLIENTE = data;
-window.CODIGO_CLIENTE = CODIGO_ACTUAL;
-// ✅ Planes
-const planLower = String(data.plan || "").toLowerCase();
-const esPublico = planLower.includes("negocio") || planLower.includes("premium");
-const esNegocio = planLower.includes("negocio"); // por si lo usas en otras partes    
+      DATOS_CLIENTE = data;
+      window.CODIGO_CLIENTE = CODIGO_ACTUAL;
+      
+      // ✅ Planes
+      const planLower = String(data.plan || "").toLowerCase();
+      const esPublico = planLower.includes("negocio") || planLower.includes("premium");
+      const esNegocio = planLower.includes("negocio"); // por si lo usas en otras partes    
 
-// 🧠 SEO: título dinámico para negocios/premium
-try{
-  const plan = String((data.plan || "")).toLowerCase();
-  if(plan.includes("negocio") || plan.includes("premium")){
-    const nombre = (data.nombre || "Dirección Digital").trim();
-    document.title = `${nombre} | ${CODIGO_ACTUAL} | Direcciones507 Panamá`;
-  }
-}catch(e){}
-console.error("🔴 buscarCodigo() falló:", e);      
+      // 🧠 SEO: título dinámico para negocios/premium
+      try{
+        const plan = String((data.plan || "")).toLowerCase();
+        if(plan.includes("negocio") || plan.includes("premium")){
+          const nombre = (data.nombre || "Dirección Digital").trim();
+          document.title = `${nombre} | ${CODIGO_ACTUAL} | Direcciones507 Panamá`;
+        }
+      }catch(e){}
 
-// UI base (siempre el código)
-const uiCodigo = document.getElementById("uiCodigo");
-if(uiCodigo) uiCodigo.textContent = CODIGO_ACTUAL;
+      // UI base (siempre el código)
+      const uiCodigo = document.getElementById("uiCodigo");
+      if(uiCodigo) uiCodigo.textContent = CODIGO_ACTUAL;
 
-// ✅ Detectar si viene desde enlace (?code=...)
-const codeFromUrl = new URLSearchParams(window.location.search).get("code");
-const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
+      // ✅ Detectar si viene desde enlace (?code=...)
+      const codeFromUrl = new URLSearchParams(window.location.search).get("code");
+      const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
 
-// 🔒 SEO
-if(!esPublico){
-  setRobots("noindex,nofollow,noarchive");
-  setCanonical(window.location.origin + window.location.pathname);
-}else{
-  setRobots("index,follow");
-  setCanonical(window.location.origin + window.location.pathname);
-}
+      // 🔒 SEO
+      if(!esPublico){
+        setRobots("noindex,nofollow,noarchive");
+        setCanonical(window.location.origin + window.location.pathname);
+      }else{
+        setRobots("index,follow");
+        setCanonical(window.location.origin + window.location.pathname);
+      }
 
-// 🔒 PRIVACIDAD TOTAL: Personal solo abre por enlace
-// (Premium y Negocio SIEMPRE pueden abrir, con o sin ?code)
-if(!esPublico && !vieneDeLink){
-  setMsg("Este código es privado. Usa el enlace directo.");
+      // 🔒 PRIVACIDAD TOTAL: Personal solo abre por enlace
+      // (Premium y Negocio SIEMPRE pueden abrir, con o sin ?code)
+      if(!esPublico && !vieneDeLink){
+        setMsg("Este código es privado. Usa el enlace directo.");
 
-  // limpiar textos
-  const uiNombre = document.getElementById("uiNombre");
-  const uiRef    = document.getElementById("uiRef");
-  if(uiNombre) uiNombre.textContent = "-";
-  if(uiRef)    uiRef.textContent = "-";
+        // limpiar textos
+        const uiNombre = document.getElementById("uiNombre");
+        const uiRef    = document.getElementById("uiRef");
+        if(uiNombre) uiNombre.textContent = "-";
+        if(uiRef)    uiRef.textContent = "-";
 
-  hidePanelSections();
-  showHome();
-  return;
-}
+        hidePanelSections();
+        showHome();
+        return;
+      }
 
       // 🛡️ Seguridad: si referencia parece residencial, no indexar aunque sea Premium
-try{
-  const ref = String(data.referencia || "").toLowerCase();
-  const pareceResidencial = ref.includes("ph") || ref.includes("apto") || ref.includes("apart") || ref.includes("torre") || ref.includes("piso");
+      try{
+        const ref = String(data.referencia || "").toLowerCase();
+        const pareceResidencial = ref.includes("ph") || ref.includes("apto") || ref.includes("apart") || ref.includes("torre") || ref.includes("piso");
 
-  if(pareceResidencial){
-    setRobots("noindex,nofollow,noarchive");
-  }
-}catch(e){}
+        if(pareceResidencial){
+          setRobots("noindex,nofollow,noarchive");
+        }
+      }catch(e){}
 
       // ✅ si pasó privacidad, ya podemos mostrar datos
       const uiNombre = document.getElementById("uiNombre");
@@ -1234,15 +1229,15 @@ try{
           btnUber.href   = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
 
           // ✅ Aviso por WhatsApp (acepta 6599-6532 / 65996532 / +507 6599-6532)
-let tel = String(data.telefono || "").trim().replace(/\D/g, ""); // deja solo números
-if(tel.length === 8) tel = "507" + tel; // Panamá
+          let tel = String(data.telefono || "").trim().replace(/\D/g, ""); // deja solo números
+          if(tel.length === 8) tel = "507" + tel; // Panamá
 
-if(tel.length >= 11 || tel.length === 10){
-  const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
-  btnAviso.href = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
-} else {
-  btnAviso.href = "#";
-}
+          if(tel.length >= 11 || tel.length === 10){
+            const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
+            btnAviso.href = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+          } else {
+            btnAviso.href = "#";
+          }
 
           // ✅ tracking SOLO negocios (sin addEventListener)
           if(esNegocio){
@@ -1328,35 +1323,31 @@ if(tel.length >= 11 || tel.length === 10){
           w.document.write(`
             <html>
              <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Imprimir QR | Direcciones507</title>
-
-<style>
-body{
-  margin:0;
-  padding:24px;
-  font-family:Arial, sans-serif;
-  background:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-.wrap{
-  text-align:center;
-}
-
-img{
-  max-width:220px;
-}
-</style>
-</head>
-              <body>
-                <div class="wrap">${card.outerHTML}</div>
-                <script>window.onload=()=>window.print();<\/script>
-              </body>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Imprimir QR | Direcciones507</title>
+              <style>
+                body{
+                  margin:0;
+                  padding:24px;
+                  font-family:Arial, sans-serif;
+                  background:#fff;
+                  display:flex;
+                  justify-content:center;
+                  align-items:center;
+                }
+                .wrap{
+                  text-align:center;
+                }
+                img{
+                  max-width:220px;
+                }
+              </style>
+             </head>
+             <body>
+               <div class="wrap">${card.outerHTML}</div>
+               <script>window.onload=()=>window.print();<\/script>
+             </body>
             </html>
           `);
           w.document.close();
@@ -1383,7 +1374,7 @@ img{
             if(!visible){
               try{
                 const d = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-                if(statsData.ok){
+                if(d.ok){
                   const stGoogle = document.getElementById("stGoogle");
                   const stWaze   = document.getElementById("stWaze");
                   const stUber   = document.getElementById("stUber");
@@ -1411,6 +1402,7 @@ img{
       showPanel();
       setMsg("✅ Listo");
     } catch(e){
+      console.error("🔴 buscarCodigo() falló:", e);
       setMsg("Error: " + (e?.message || "No se pudo buscar"));
       // si falla, vuelve home
       // showHome();  // (opcional, si quieres)
@@ -1448,22 +1440,22 @@ img{
         setTimeout(buscarCodigo, 150);
       } else {
         // ✅ SEO / URL indexable: si abren /ad507-0001, buscar automáticamente
-try{
-  const path = (window.location.pathname || "").toUpperCase();
-  const match = path.match(/AD507-\d{4,}/); // AD507-0001, AD507-0100, etc.
+        try{
+          const path = (window.location.pathname || "").toUpperCase();
+          const match = path.match(/AD507-\d{4,}/); // AD507-0001, AD507-0100, etc.
 
-  if(match && match[0]){
-    const codeFromUrl = match[0];
+          if(match && match[0]){
+            const codeFromUrl = match[0];
 
-    const input = document.getElementById("inputCodigo");
-    if(input) input.value = codeFromUrl;
+            const input = document.getElementById("inputCodigo");
+            if(input) input.value = codeFromUrl;
 
-    // Ejecuta la búsqueda (usa tu función existente)
-    if(typeof buscarCodigo === "function"){
-      buscarCodigo();
-    }
-  }
-}catch(e){}
+            // Ejecuta la búsqueda (usa tu función existente)
+            if(typeof buscarCodigo === "function"){
+              buscarCodigo();
+            }
+          }
+        }catch(e){}
         // home por defecto
         showHome();
         hidePanelSections();
@@ -1475,41 +1467,6 @@ try{
 
   window.buscarCodigo = buscarCodigo;
   window.verEjemplo = verEjemplo;
-
-// Leer código desde la URL
-const params = new URLSearchParams(window.location.search);
-const codeFromUrl = params.get("code");
-
-if(codeFromUrl){
-  document.getElementById("inputCodigo").value = codeFromUrl;
-  buscarCodigo();
-}
-  console.log("✅ Autostart script cargó. URL:", location.href);
-window.addEventListener("load", () => {
-  const params = new URLSearchParams(location.search);
-  const codeFromUrl = params.get("code");
-
-  console.log("🚦 Autoload:", { codeFromUrl });
-
-  if (!codeFromUrl) return;
-
-  // 1) Asegura que el input exista
-  const input = document.getElementById("inputCodigo");
-  console.log("🧩 inputCodigo:", input);
-
-  if (input) input.value = codeFromUrl;
-
-  // 2) Asegura que buscarCodigo exista
-  console.log("🧠 typeof buscarCodigo:", typeof window.buscarCodigo);
-
-  if (typeof window.buscarCodigo === "function") {
-    window.buscarCodigo();
-  } else if (typeof buscarCodigo === "function") {
-    buscarCodigo();
-  } else {
-    console.error("❌ buscarCodigo NO existe en global. Debes exponerla: window.buscarCodigo = buscarCodigo;");
-  }
-});
   
 </script>
 

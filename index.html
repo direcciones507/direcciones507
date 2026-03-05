@@ -816,29 +816,24 @@
 
 <script>
   
- async function fetchJsonSafe(url){
-  console.log("🌐 fetchJsonSafe URL:", url);
-
+async function fetchJsonSafe(url){
   const r = await fetch(url, {
     method: "GET",
     cache: "no-store",
     redirect: "follow"
   });
 
-  console.log("📡 status:", r.status, r.statusText);
-  console.log("📡 content-type:", r.headers.get("content-type"));
+  if(!r.ok){
+    throw new Error("Error de red: " + r.status);
+  }
 
   const text = await r.text();
-  console.log("📦 respuesta cruda:", text.slice(0, 300));
 
   try{
-    const json = JSON.parse(text);
-    console.log("✅ JSON parseado:", json);
-    return json;
+    return JSON.parse(text);
   }catch(e){
-    console.error("❌ Respuesta no es JSON. URL:", url);
-    console.error("⬇️ Respuesta (primeros 300 chars):", text.slice(0, 300));
-    throw new Error("El servidor devolvió HTML (o texto) en vez de JSON. Revisa el WebApp/Deploy/permisos.");
+    console.error("❌ Respuesta no es JSON:", text.slice(0,200));
+    throw new Error("Respuesta inválida del servidor");
   }
 }
   

@@ -815,6 +815,18 @@
     </div>
 
 <script>
+  async function fetchJsonSafe(url){
+  const r = await fetch(url, { cache: "no-store" });
+  const text = await r.text();
+
+  try{
+    return JSON.parse(text);
+  }catch(e){
+    console.error("❌ Respuesta no es JSON. URL:", url);
+    console.error("⬇️ Respuesta (primeros 300 chars):", text.slice(0, 300));
+    throw new Error("El servidor devolvió HTML (o texto) en vez de JSON. Revisa el WebApp/Deploy/permisos.");
+  }
+}
   const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
 
   if(DEBUG){

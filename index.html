@@ -1107,6 +1107,10 @@
      CODIGO_ACTUAL = data.codigo || data.code || codigo;
 DATOS_CLIENTE = data;
 window.CODIGO_CLIENTE = CODIGO_ACTUAL;
+// ✅ Plan normalizado (evita "planLower is not defined")
+const planLower = String(data.plan || "").toLowerCase();
+const esPublico = planLower.includes("negocio") || planLower.includes("premium");
+const esNegocio = planLower.includes("negocio"); // por si tu código lo usa en otras partes      
 
 // 🧠 SEO: título dinámico para negocios/premium
 try{

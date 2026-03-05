@@ -1303,15 +1303,32 @@ if(tel.length >= 11 || tel.length === 10){
           w.document.open();
           w.document.write(`
             <html>
-              <head>
-                <meta charset="utf-8"/>
-                <meta name="viewport" content="width=device-width, initial-scale=1"/>
-                <title>Imprimir QR</title>
-                <style>
-                  body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#fff;}
-                  .wrap{display:flex;justify-content:center;}
-                </style>
-              </head>
+             <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Imprimir QR | Direcciones507</title>
+
+<style>
+body{
+  margin:0;
+  padding:24px;
+  font-family:Arial, sans-serif;
+  background:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.wrap{
+  text-align:center;
+}
+
+img{
+  max-width:220px;
+}
+</style>
+</head>
               <body>
                 <div class="wrap">${card.outerHTML}</div>
                 <script>window.onload=()=>window.print();<\/script>

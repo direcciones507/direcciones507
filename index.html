@@ -1091,6 +1091,7 @@
   }
 
   async function buscarCodigo(){
+  console.log("🟢 buscarCodigo() arrancó");  
   const input = document.getElementById("inputCodigo");
   if(!input) return;
 
@@ -1115,8 +1116,10 @@
 
     if(typeof logUI === "function") logUI("OK, consultando WebApp...");
     setMsg("Buscando...");
-
+    
+    console.log("🟡 Voy a consultar WebApp con:", codigo); 
     try{
+      console.log("🟠 Entré al try");
      const statsData = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
 
       if(!data.ok) throw new Error(data.message || "Código no encontrado.");
@@ -1137,6 +1140,7 @@ try{
     document.title = `${nombre} | ${CODIGO_ACTUAL} | Direcciones507 Panamá`;
   }
 }catch(e){}
+console.error("🔴 buscarCodigo() falló:", e);      
 
 // UI base (siempre el código)
 const uiCodigo = document.getElementById("uiCodigo");

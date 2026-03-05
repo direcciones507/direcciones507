@@ -1144,7 +1144,6 @@
       if(!data.ok) throw new Error(data.message || "Código no encontrado.");
 
       CODIGO_ACTUAL = data.codigo || data.code || codigo;
-      const statsData = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
       DATOS_CLIENTE = data;
       window.CODIGO_CLIENTE = CODIGO_ACTUAL;
       

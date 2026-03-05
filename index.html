@@ -837,6 +837,7 @@ async function fetchJsonSafe(url){
   }
 }
   
+  
   const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
 
   if(DEBUG){
@@ -1110,6 +1111,23 @@ async function fetchJsonSafe(url){
     console.log("🧪 codigo:", codigo);
 
     if(!codigo){ setMsg("Ingresa un código"); return; }
+    const cacheKey = "ad507_cache_" + codigo.toUpperCase();
+const cached = localStorage.getItem(cacheKey);
+
+if(cached){
+  try{
+    const data = JSON.parse(cached);
+    console.log("⚡ usando cache local");
+    DATOS_CLIENTE = data;
+    CODIGO_ACTUAL = data.codigo || codigo;
+
+    // mostrar datos inmediatamente
+    document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL;
+    document.getElementById("uiNombre").textContent = data.nombre || "-";
+    document.getElementById("uiRef").textContent = data.referencia || "-";
+
+  }catch(e){}
+}
 
     if(typeof logUI === "function") logUI("Intento de búsqueda: " + codigo);
 

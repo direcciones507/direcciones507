@@ -1477,7 +1477,32 @@ if(codeFromUrl){
   buscarCodigo();
 }
   console.log("✅ Autostart script cargó. URL:", location.href);
+window.addEventListener("load", () => {
+  const params = new URLSearchParams(location.search);
+  const codeFromUrl = params.get("code");
 
+  console.log("🚦 Autoload:", { codeFromUrl });
+
+  if (!codeFromUrl) return;
+
+  // 1) Asegura que el input exista
+  const input = document.getElementById("inputCodigo");
+  console.log("🧩 inputCodigo:", input);
+
+  if (input) input.value = codeFromUrl;
+
+  // 2) Asegura que buscarCodigo exista
+  console.log("🧠 typeof buscarCodigo:", typeof window.buscarCodigo);
+
+  if (typeof window.buscarCodigo === "function") {
+    window.buscarCodigo();
+  } else if (typeof buscarCodigo === "function") {
+    buscarCodigo();
+  } else {
+    console.error("❌ buscarCodigo NO existe en global. Debes exponerla: window.buscarCodigo = buscarCodigo;");
+  }
+});
+  
 </script>
 
 </body>

@@ -25,13 +25,22 @@ jobs:
           mkdir -p out
           TEMPLATE=$(cat ad507.html)
 
-          # codes.json esperado: {"ok":true,"codes":["AD507-0001","AD507-0002",...]}
-          CODES=$(cat codes.json | jq -r '.codes[]')
+        # codes.json esperado: {"ok":true,"codes":["AD507-0001","AD507-0002",...]}
 
-          for CODE in $CODES; do
-            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-            DIR="$SLUG"
-            mkdir -p "$DIR"
+CODES=$(jq -r '.codes[]' codes.json)
+
+for CODE in $CODES; do
+
+  SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+  DIR="$SLUG"
+
+  mkdir -p "$DIR"
+
+  cp ad507.template.html "$DIR/index.html"
+
+  sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
+
+done
 
             TITLE="$CODE | Dirección Digital Panamá | Direcciones507"
             DESC="Ubicación digital $CODE en Panamá. Abre en Google Maps, Waze o Uber."

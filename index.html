@@ -1092,6 +1092,18 @@
 
   async function buscarCodigo(){
   console.log("🟢 buscarCodigo() arrancó");  
+    const input = document.getElementById("inputCodigo");
+console.log("🧪 input:", input);
+
+const codigo = (input?.value || "").trim();
+console.log("🧪 codigo:", codigo);
+
+// justo ANTES del spam check:
+console.log("🧪 pasando a spamCheck");
+  const chk = spamCheckOrBan();
+console.log("🧪 spamCheck:", chk);
+  const seq = seqSuspicion(codigo);
+console.log("🧪 seqSuspicion:", seq);  
   const input = document.getElementById("inputCodigo");
   if(!input) return;
 

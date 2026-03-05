@@ -12,35 +12,31 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y jq curl
+  run: sudo apt-get update && sudo apt-get install -y jq curl
 
-      - name: Fetch codes from WebApp
-        run: |
-          # Tu WebApp debe soportar action=list para devolver lista de códigos
-          curl -s "${{ secrets.WEBAPP_URL }}?action=list" > codes.json
-          cat codes.json | head
+- name: Fetch codes from WebApp
+  run: |
+    curl -s "${{ secrets.WEBAPP_URL }}?action=list" > codes.json
+    cat codes.json | head
 
-      - name: Generate pages
-        run: |
-          mkdir -p out
-          TEMPLATE=$(cat ad507.html)
+- name: Generate pages
+  run: |
+    mkdir -p out
+    TEMPLATE=$(cat ad507.html)
 
-        # codes.json esperado: {"ok":true,"codes":["AD507-0001","AD507-0002",...]}
+    # leer códigos
+    CODES=$(jq -r '.codes[]' codes.json)
 
-CODES=$(jq -r '.codes[]' codes.json)
+    for CODE in $CODES; do
 
-for CODE in $CODES; do
+      SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+      DIR="out/$SLUG"
 
-  SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-  DIR="$SLUG"
+      mkdir -p "$DIR"
 
-  mkdir -p "$DIR"
+      echo "$TEMPLATE" | sed "s/AD507-CODE/$CODE/g" > "$DIR/index.html"
 
-  cp ad507.template.html "$DIR/index.html"
-
-  sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
-
-done
+    done
 
             TITLE="$CODE | Dirección Digital Panamá | Direcciones507"
             DESC="Ubicación digital $CODE en Panamá. Abre en Google Maps, Waze o Uber."

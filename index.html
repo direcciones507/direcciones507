@@ -1373,8 +1373,7 @@ img{
 
             if(!visible){
               try{
-                const r = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-                const d = await r.json();
+                const d = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
                 if(d.ok){
                   const stGoogle = document.getElementById("stGoogle");
                   const stWaze   = document.getElementById("stWaze");

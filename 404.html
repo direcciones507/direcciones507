@@ -23,7 +23,8 @@
 
       // Si viene con slash al final, filter(Boolean) ya lo arregla.
       // Validación del formato
-      if (code && /^AD507-\d+$/i.test(code)) {
+      if (code && /^ad507-\d+$/i.test(code)) {
+  code = code.toUpperCase();
         window.location.replace(base + "?code=" + encodeURIComponent(code));
       } else {
         window.location.replace(base);

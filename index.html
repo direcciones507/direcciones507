@@ -1112,10 +1112,10 @@
      CODIGO_ACTUAL = data.codigo || data.code || codigo;
 DATOS_CLIENTE = data;
 window.CODIGO_CLIENTE = CODIGO_ACTUAL;
-// ✅ Plan normalizado (evita "planLower is not defined")
+// ✅ Planes
 const planLower = String(data.plan || "").toLowerCase();
 const esPublico = planLower.includes("negocio") || planLower.includes("premium");
-const esNegocio = planLower.includes("negocio"); // por si tu código lo usa en otras partes      
+const esNegocio = planLower.includes("negocio"); // por si lo usas en otras partes    
 
 // 🧠 SEO: título dinámico para negocios/premium
 try{
@@ -1129,10 +1129,6 @@ try{
 // UI base (siempre el código)
 const uiCodigo = document.getElementById("uiCodigo");
 if(uiCodigo) uiCodigo.textContent = CODIGO_ACTUAL;
-
-// ✅ Planes
-const planLower = String(data.plan || "").toLowerCase();
-const esPublico = planLower.includes("negocio") || planLower.includes("premium");
 
 // ✅ Detectar si viene desde enlace (?code=...)
 const codeFromUrl = new URLSearchParams(window.location.search).get("code");

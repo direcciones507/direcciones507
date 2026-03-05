@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- SEO dinámico (se reemplaza al generar) -->
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESC}}">
+  <link rel="canonical" href="{{CANONICAL}}">
+
+  <!-- Redirige al index real que ya carga tu panel -->
+  <meta http-equiv="refresh" content="0; url={{TARGET}}">
+  <script>
+    location.replace("{{TARGET}}");
+  </script>
+</head>
+<body>
+  <p>Cargando {{CODE}}…</p>
+</body>
+</html>

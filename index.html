@@ -1140,6 +1140,7 @@ async function fetchJsonSafe(url){
 
       CODIGO_ACTUAL = data.codigo || data.code || codigo;
       DATOS_CLIENTE = data;
+      localStorage.setItem("ad507_cache_" + CODIGO_ACTUAL, JSON.stringify(data));
       window.CODIGO_CLIENTE = CODIGO_ACTUAL;
       
       // ✅ Planes

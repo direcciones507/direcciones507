@@ -1119,14 +1119,6 @@
     try{
      const statsData = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
 
-let data;
-try {
-  data = JSON.parse(text);
-} catch(e) {
-  console.error("Respuesta no es JSON:", text);
-  throw new Error("El servidor devolvió HTML en vez de JSON");
-}
-
       if(!data.ok) throw new Error(data.message || "Código no encontrado.");
 
      CODIGO_ACTUAL = data.codigo || data.code || codigo;
@@ -1467,7 +1459,6 @@ try{
 
   window.buscarCodigo = buscarCodigo;
   window.verEjemplo = verEjemplo;
-  <script>
 
 // Leer código desde la URL
 const params = new URLSearchParams(window.location.search);

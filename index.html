@@ -1090,9 +1090,9 @@
     hide(document.getElementById("printCardWrap"));
   }
 
-  window.buscarCodigo = buscarCodigo;
-    const input = document.getElementById("inputCodigo");
-    if(!input) return;
+  async function buscarCodigo(){
+  const input = document.getElementById("inputCodigo");
+  if(!input) return;
 
     const codigo = input.value.trim();
     if(!codigo){ setMsg("Ingresa un código"); return; }

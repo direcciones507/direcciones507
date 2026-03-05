@@ -1117,7 +1117,7 @@
     setMsg("Buscando...");
 
     try{
-     const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+     const statsData = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
 
 let data;
 try {

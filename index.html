@@ -1158,6 +1158,16 @@ if(!esPublico && !vieneDeLink){
   return;
 }
 
+      // 🛡️ Seguridad: si referencia parece residencial, no indexar aunque sea Premium
+try{
+  const ref = String(data.referencia || "").toLowerCase();
+  const pareceResidencial = ref.includes("ph") || ref.includes("apto") || ref.includes("apart") || ref.includes("torre") || ref.includes("piso");
+
+  if(pareceResidencial){
+    setRobots("noindex,nofollow,noarchive");
+  }
+}catch(e){}
+
       // ✅ si pasó privacidad, ya podemos mostrar datos
       const uiNombre = document.getElementById("uiNombre");
       const uiRef    = document.getElementById("uiRef");

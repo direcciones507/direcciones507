@@ -1,61 +1,104 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Dirección AD507-CODE | Direcciones507</title>
-  <meta name="description" content="Dirección digital AD507-CODE en Panamá. Abre en Waze, Google Maps o Uber.">
-  <link rel="canonical" href="https://direcciones507.com/ad507-CODE-SLUG">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-  <meta name="robots" content="index,follow">
+<title>Dirección AD507-CODE | Direcciones507 Panamá</title>
+
+<meta name="description" content="Dirección digital AD507-CODE en Panamá. Abre en Google Maps, Waze o Uber sin perderte.">
+
+<link rel="canonical" href="https://direcciones507.com/ad507-CODE">
+
+<meta name="robots" content="index,follow">
+
+<style>
+body{
+font-family:system-ui;
+background:#0b0f19;
+color:white;
+text-align:center;
+padding:40px
+}
+.card{
+background:#111827;
+padding:30px;
+border-radius:12px;
+max-width:600px;
+margin:auto
+}
+.btn{
+display:inline-block;
+padding:12px 18px;
+margin:6px;
+border-radius:8px;
+background:#2563eb;
+color:white;
+text-decoration:none;
+font-weight:600
+}
+</style>
 </head>
 
 <body>
-  <h1>Dirección: <span id="codigo">AD507-CODE</span></h1>
-  <p id="estado">Cargando datos…</p>
 
-  <div id="datos" style="display:none;">
-    <p><b>Nombre:</b> <span id="nombre"></span></p>
-    <p><b>Referencia:</b> <span id="ref"></span></p>
+<div class="card">
 
-    <p>
-      <a id="btnGmaps" href="#" target="_blank" rel="noopener">Abrir en Google Maps</a> |
-      <a id="btnWaze" href="#" target="_blank" rel="noopener">Abrir en Waze</a>
-    </p>
-  </div>
+<h1 id="codigo">AD507-CODE</h1>
 
-  <script>
-    const CODE = "AD507-CODE";
-    const WEBAPP_URL = "TU_WEBAPP_URL_AQUI"; // pon tu webapp
+<p id="estado">Cargando dirección...</p>
 
-    async function cargar(){
-      try{
-        const r = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
-        const data = await r.json();
+<div id="datos" style="display:none">
 
-        if(!data.ok){
-          document.getElementById("estado").textContent = "Código no encontrado o inactivo.";
-          return;
-        }
+<p><b>Nombre:</b> <span id="nombre"></span></p>
+<p><b>Referencia:</b> <span id="ref"></span></p>
 
-        document.getElementById("estado").textContent = "Listo ✅";
-        document.getElementById("datos").style.display = "block";
+<a id="btnGoogle" class="btn" target="_blank">Google Maps</a>
+<a id="btnWaze" class="btn" target="_blank">Waze</a>
 
-        document.getElementById("nombre").textContent = data.nombre || "-";
-        document.getElementById("ref").textContent = data.referencia || "-";
+</div>
 
-        // Si tu WebApp devuelve links listos, úsalo
-        const g = data.gmaps || data.google || data.link_google || "";
-        const w = data.waze || data.link_waze || "";
+</div>
 
-        if(g) document.getElementById("btnGmaps").href = g;
-        if(w) document.getElementById("btnWaze").href = w;
+<script>
 
-      }catch(e){
-        document.getElementById("estado").textContent = "Error cargando datos.";
-      }
-    }
-    cargar();
-  </script>
+const CODE = "AD507-CODE";
+
+const WEBAPP_URL =
+"https://script.google.com/macros/s/AKfycbyBnLcLaTEPKKdAQULGFIdxhPrA77QRSzJSpSZl3nXGCvNfyYRuooprKON1pZ6s976ZvQ/exec";
+
+async function cargar(){
+
+try{
+
+const r = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
+const data = await r.json();
+
+if(!data.ok){
+document.getElementById("estado").textContent = "Dirección no encontrada";
+return;
+}
+
+document.getElementById("estado").style.display="none";
+document.getElementById("datos").style.display="block";
+
+document.getElementById("nombre").textContent = data.nombre || "-";
+document.getElementById("ref").textContent = data.referencia || "-";
+
+if(data.gmaps) document.getElementById("btnGoogle").href = data.gmaps;
+if(data.waze) document.getElementById("btnWaze").href = data.waze;
+
+}catch(e){
+
+document.getElementById("estado").textContent = "Error cargando datos";
+
+}
+
+}
+
+cargar();
+
+</script>
+
 </body>
 </html>

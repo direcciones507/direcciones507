@@ -54,27 +54,26 @@ font-weight:600
 <p><b>Referencia:</b> <span id="ref"></span></p>
 
 <div style="margin-top:15px">
-
-<a id="btnGoogle" class="btn" target="_blank">Google Maps</a>
-<a id="btnWaze" class="btn" target="_blank">Waze</a>
-<a id="btnUber" class="btn" target="_blank">Uber</a>
-<a id="btnWhats" class="btn" target="_blank">WhatsApp</a>
-
+  <a id="btnGoogle" class="btn" target="_blank">Google Maps</a>
+  <a id="btnWaze" class="btn" target="_blank">Waze</a>
+  <a id="btnUber" class="btn" target="_blank">Uber</a>
+  <a id="btnWhats" class="btn" target="_blank">WhatsApp</a>
 </div>
-<a id="btnGoogle" class="btn" target="_blank">Google Maps</a>
-<a id="btnWaze" class="btn" target="_blank">Waze</a>
-if(data.uber) document.getElementById("btnUber").href = data.uber;
 
-if(data.telefono){
-document.getElementById("btnWhats").href =
-`https://wa.me/${data.telefono}`;
-}  
+<div id="qrBox" style="margin-top:28px;display:none">
+  <p style="margin-bottom:12px;font-weight:700">QR para compartir</p>
+  <img id="qrImg" alt="QR AD507" style="width:180px;max-width:100%;border-radius:12px;background:#fff;padding:10px">
+  <p style="margin-top:10px;font-size:14px;color:#cbd5e1">
+    Escanea y abre esta dirección digital
+  </p>
+</div>
 
 </div>
 
 <script>
 
 const CODE = "AD507-CODE";
+const PAGE_URL = `https://direcciones507.com/${CODE.toLowerCase()}/`;
 
 const WEBAPP_URL =
 "https://script.google.com/macros/s/AKfycbyBnLcLaTEPKKdAQULGFIdxhPrA77QRSzJSpSZl3nXGCvNfyYRuooprKON1pZ6s976ZvQ/exec";
@@ -99,6 +98,18 @@ document.getElementById("ref").textContent = data.referencia || "-";
 
 if(data.gmaps) document.getElementById("btnGoogle").href = data.gmaps;
 if(data.waze) document.getElementById("btnWaze").href = data.waze;
+if(data.uber) document.getElementById("btnUber").href = data.uber;
+
+if(data.telefono){
+document.getElementById("btnWhats").href =
+`https://wa.me/${data.telefono}`;
+}
+
+const qrUrl =
+`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(PAGE_URL)}`;
+
+document.getElementById("qrImg").src = qrUrl;
+document.getElementById("qrBox").style.display = "block";
 
 }catch(e){
 
@@ -109,7 +120,6 @@ document.getElementById("estado").textContent = "Error cargando datos";
 }
 
 cargar();
-
 </script>
 
 </body>

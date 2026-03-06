@@ -3,35 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Direcciones507</title>
-  <script>
-    (function () {
-      // Normaliza path y soporta trailing slash
-      var path = window.location.pathname || "/";
-      var parts = path.split("/").filter(Boolean); // quita vacíos
-
-      // Detecta base:
-      // - Dominio propio: /AD507-0006  -> base "/"
-      // - GitHub pages:   /direcciones507/AD507-0006 -> base "/direcciones507/"
-      var base = "/";
-      if (parts.length >= 2 && parts[0].toLowerCase() === "direcciones507") {
-        base = "/direcciones507/";
-      }
-
-      // El código es el último segmento
-      var code = parts.length ? parts[parts.length - 1] : "";
-
-      // Si viene con slash al final, filter(Boolean) ya lo arregla.
-      // Validación del formato
-      if (code && /^ad507-\d+$/i.test(code)) {
-  code = code.toUpperCase();
-        window.location.replace(base + "?code=" + encodeURIComponent(code));
-      } else {
-        window.location.replace(base);
-      }
-    })();
-  </script>
+  <title>Página no encontrada | Direcciones507</title>
+  <meta name="robots" content="noindex,follow">
+  <style>
+    body{
+      font-family:system-ui;
+      background:#0b0f19;
+      color:white;
+      text-align:center;
+      padding:60px 20px;
+    }
+    a{
+      color:#60a5fa;
+      text-decoration:none;
+      font-weight:600;
+    }
+  </style>
 </head>
-<body></body>
+<body>
+  <h1>404</h1>
+  <p>La página que buscas no existe.</p>
+  <p><a href="/">Volver al inicio</a></p>
+</body>
 </html>
 

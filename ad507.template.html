@@ -53,10 +53,22 @@ font-weight:600
 <p><b>Nombre:</b> <span id="nombre"></span></p>
 <p><b>Referencia:</b> <span id="ref"></span></p>
 
+<div style="margin-top:15px">
+
 <a id="btnGoogle" class="btn" target="_blank">Google Maps</a>
 <a id="btnWaze" class="btn" target="_blank">Waze</a>
+<a id="btnUber" class="btn" target="_blank">Uber</a>
+<a id="btnWhats" class="btn" target="_blank">WhatsApp</a>
 
 </div>
+<a id="btnGoogle" class="btn" target="_blank">Google Maps</a>
+<a id="btnWaze" class="btn" target="_blank">Waze</a>
+if(data.uber) document.getElementById("btnUber").href = data.uber;
+
+if(data.telefono){
+document.getElementById("btnWhats").href =
+`https://wa.me/${data.telefono}`;
+}  
 
 </div>
 

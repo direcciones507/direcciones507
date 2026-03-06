@@ -2,72 +2,70 @@ name: Generate AD507 pages + sitemap
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 */6 * * *"   # cada 6 horas
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Run actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Install tools
-  run: sudo apt-get update && sudo apt-get install -y jq curl
+        run: sudo apt-get update && sudo apt-get install -y jq curl
 
-- name: Fetch codes from WebApp
-  run: |
-    curl -s "${{ secrets.WEBAPP_URL }}?action=list" > codes.json
-    cat codes.json | head
+      - name: Fetch codes from WebApp
+        run: |
+          curl -s "${{ secrets.WEBAPP_URL }}?action=list" > codes.json
+          cat codes.json | head
 
-- name: Generate pages
-  run: |
-    mkdir -p out
-    TEMPLATE=$(cat ad507.html)
+      - name: Generate pages
+        run: |
+          mkdir -p out
 
-    # leer códigos
-    CODES=$(jq -r '.codes[]' codes.json)
+          CODES=$(jq -r '.codes[]' codes.json)
 
-    for CODE in $CODES; do
+          for CODE in $CODES; do
+            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+            DIR="out/$SLUG"
 
-      SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-      DIR="out/$SLUG"
+            mkdir -p "$DIR"
 
-      mkdir -p "$DIR"
-
-      echo "$TEMPLATE" | sed "s/AD507-CODE/$CODE/g" > "$DIR/index.html"
-
-    done
-
-            TITLE="$CODE | Dirección Digital Panamá | Direcciones507"
-            DESC="Ubicación digital $CODE en Panamá. Abre en Google Maps, Waze o Uber."
-            CANONICAL="https://direcciones507.com/$SLUG/"
-            TARGET="https://direcciones507.com/?code=$CODE"
-
-            PAGE="${TEMPLATE//\{\{TITLE\}\}/$TITLE}"
-            PAGE="${PAGE//\{\{DESC\}\}/$DESC}"
-            PAGE="${PAGE//\{\{CANONICAL\}\}/$CANONICAL}"
-            PAGE="${PAGE//\{\{TARGET\}\}/$TARGET}"
-            PAGE="${PAGE//\{\{CODE\}\}/$CODE}"
-
-            echo "$PAGE" > "$DIR/index.html"
+            cp ad507.template.html "$DIR/index.html"
+            sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
           done
 
       - name: Generate sitemap.xml
         run: |
-          echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
-          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
+          {
+            echo '<?xml version="1.0" encoding="UTF-8"?>'
+            echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+            echo '  <url><loc>https://direcciones507.com/</loc></url>'
 
-          for d in ad507-*/ ; do
-            URL="https://direcciones507.com${d}"
-            echo "  <url><loc>${URL}</loc></url>" >> sitemap.xml
-          done
+            for DIR in out/*; do
+              if [ -d "$DIR" ]; then
+                SLUG=$(basename "$DIR")
+                echo "  <url><loc>https://direcciones507.com/$SLUG</loc></url>"
+              fi
+            done
 
-          echo '</urlset>' >> sitemap.xml
+            echo '</urlset>'
+          } > out/sitemap.xml
+
+      - name: Copy generated files to root
+        run: |
+          cp -r out/* .
 
       - name: Commit changes
         run: |
-          git config user.name "direcciones507-bot"
-          git config user.email "bot@users.noreply.github.com"
-          git add sitemap.xml ad507-* || true
-          git commit -m "Auto-generate AD507 pages + sitemap" || echo "No changes"
-          git push
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Generate AD507 pages + sitemap"
+            git push
+          fi

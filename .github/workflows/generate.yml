@@ -22,7 +22,7 @@ jobs:
           echo "Contenido recibido del WebApp:"
           cat codes.json
 
-      - name: Generate pages
+            - name: Generate pages
         run: |
           mkdir -p out
 
@@ -35,15 +35,14 @@ jobs:
             mkdir -p "$DIR"
 
             cp ad507.template.html "$DIR/index.html"
-                     cp ad507.template.html "$DIR/index.html"
 
-          sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
-          sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
-          sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
-          sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá. Abre en Google Maps, Waze o Uber./g" "$DIR/index.html"
-          sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG|g" "$DIR/index.html"
-          sed -i "s|{{TARGET}}|https://direcciones507.com/?code=$CODE|g" "$DIR/index.html"
-        done
+            sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
+            sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
+            sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
+            sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá. Abre en Google Maps, Waze o Uber./g" "$DIR/index.html"
+            sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG|g" "$DIR/index.html"
+            sed -i "s|{{TARGET}}|https://direcciones507.com/?code=$CODE|g" "$DIR/index.html"
+          done
 
       - name: Generate sitemap.xml
         run: |

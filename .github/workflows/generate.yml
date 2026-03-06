@@ -2,9 +2,8 @@ name: Generate AD507 pages + sitemap
 
 on:
   workflow_dispatch:
-
-permissions:
-  contents: write  
+  schedule:
+    - cron: "0 */6 * * *"
 
 jobs:
   build:

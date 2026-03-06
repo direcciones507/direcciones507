@@ -95,24 +95,31 @@ async function cargar(){
     document.getElementById("ref").textContent = data.referencia || "-";
 
     const btnGoogle = document.getElementById("btnGoogle");
-    const btnWaze = document.getElementById("btnWaze");
-    const btnUber = document.getElementById("btnUber");
-    const btnWhats = document.getElementById("btnWhats");
+const btnWaze = document.getElementById("btnWaze");
+const btnUber = document.getElementById("btnUber");
+const btnWhats = document.getElementById("btnWhats");
 
-    if(data.gmaps) btnGoogle.href = data.gmaps;
-    else btnGoogle.style.display = "none";
+if(data.google) btnGoogle.href = data.google;
+else btnGoogle.style.display = "none";
 
-    if(data.waze) btnWaze.href = data.waze;
-    else btnWaze.style.display = "none";
+if(data.waze) btnWaze.href = data.waze;
+else btnWaze.style.display = "none";
 
-    if(data.uber) btnUber.href = data.uber;
-    else btnUber.style.display = "none";
+if(data.uber) btnUber.href = data.uber;
+else btnUber.style.display = "none";
 
-    if(data.telefono){
-      btnWhats.href = `https://wa.me/${data.telefono}`;
-    }else{
-      btnWhats.style.display = "none";
-    }
+if(data.whatsapp){
+  btnWhats.href = data.whatsapp;
+}else if(data.telefono){
+  const telefonoLimpio = String(data.telefono).replace(/\D/g, "");
+  if(telefonoLimpio){
+    btnWhats.href = `https://wa.me/${telefonoLimpio}`;
+  }else{
+    btnWhats.style.display = "none";
+  }
+}else{
+  btnWhats.style.display = "none";
+}
 
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(PAGE_URL)}`;
     document.getElementById("qrImg").src = qrUrl;

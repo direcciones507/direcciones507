@@ -3,19 +3,59 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dirección AD507-CODE | Direcciones507</title>
+  <meta name="description" content="Dirección digital AD507-CODE en Panamá. Abre en Waze, Google Maps o Uber.">
+  <link rel="canonical" href="https://direcciones507.com/ad507-CODE-SLUG">
 
-  <title>{{TITLE}}</title>
-  <meta name="description" content="{{DESC}}">
-  <link rel="canonical" href="{{CANONICAL}}">
-
-  <!-- Google: esta página existe y es indexable -->
   <meta name="robots" content="index,follow">
-
-  <!-- Usuario: lo llevamos a tu panel real -->
-  <meta http-equiv="refresh" content="0; url={{TARGET}}">
-  <script>location.replace("{{TARGET}}");</script>
 </head>
+
 <body>
-  <p>Cargando {{CODE}}…</p>
+  <h1>Dirección: <span id="codigo">AD507-CODE</span></h1>
+  <p id="estado">Cargando datos…</p>
+
+  <div id="datos" style="display:none;">
+    <p><b>Nombre:</b> <span id="nombre"></span></p>
+    <p><b>Referencia:</b> <span id="ref"></span></p>
+
+    <p>
+      <a id="btnGmaps" href="#" target="_blank" rel="noopener">Abrir en Google Maps</a> |
+      <a id="btnWaze" href="#" target="_blank" rel="noopener">Abrir en Waze</a>
+    </p>
+  </div>
+
+  <script>
+    const CODE = "AD507-CODE";
+    const WEBAPP_URL = "TU_WEBAPP_URL_AQUI"; // pon tu webapp
+
+    async function cargar(){
+      try{
+        const r = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
+        const data = await r.json();
+
+        if(!data.ok){
+          document.getElementById("estado").textContent = "Código no encontrado o inactivo.";
+          return;
+        }
+
+        document.getElementById("estado").textContent = "Listo ✅";
+        document.getElementById("datos").style.display = "block";
+
+        document.getElementById("nombre").textContent = data.nombre || "-";
+        document.getElementById("ref").textContent = data.referencia || "-";
+
+        // Si tu WebApp devuelve links listos, úsalo
+        const g = data.gmaps || data.google || data.link_google || "";
+        const w = data.waze || data.link_waze || "";
+
+        if(g) document.getElementById("btnGmaps").href = g;
+        if(w) document.getElementById("btnWaze").href = w;
+
+      }catch(e){
+        document.getElementById("estado").textContent = "Error cargando datos.";
+      }
+    }
+    cargar();
+  </script>
 </body>
 </html>

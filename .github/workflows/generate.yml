@@ -15,15 +15,17 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
       - name: Fetch codes from WebApp
-        run: |
-          curl -s "${{ secrets.WEBAPP_URL }}?action=list" > codes.json
-          cat codes.json | head
+  run: |
+    curl -s "${{ secrets.WEBAPP_URL }}?action=list" -o codes.json
+
+    echo "Contenido recibido del WebApp:"
+    cat codes.json
 
       - name: Generate pages
         run: |
           mkdir -p out
 
-          CODES=$(jq -r '.codes[]' codes.json)
+          CODES=$(jq -r '.codes[]?' codes.json)
 
           for CODE in $CODES; do
             SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')

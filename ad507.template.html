@@ -8,34 +8,35 @@
 
 <meta name="description" content="Ubicación exacta AD507-CODE en Panamá. Abre la dirección en Google Maps, Waze o Uber sin perderte.">
 
-<link rel="canonical" href="https://direcciones507.com/ad507-CODE">
-
+<link rel="canonical" href="https://direcciones507.com/{{SLUG}}/">
 <meta name="robots" content="index,follow">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
 
 <style>
 body{
-font-family:system-ui;
-background:#0b0f19;
-color:white;
-text-align:center;
-padding:40px
+  font-family:system-ui;
+  background:#0b0f19;
+  color:white;
+  text-align:center;
+  padding:40px;
 }
 .card{
-background:#111827;
-padding:30px;
-border-radius:12px;
-max-width:600px;
-margin:auto
+  background:#111827;
+  padding:30px;
+  border-radius:12px;
+  max-width:600px;
+  margin:auto;
 }
 .btn{
-display:inline-block;
-padding:12px 18px;
-margin:6px;
-border-radius:8px;
-background:#2563eb;
-color:white;
-text-decoration:none;
-font-weight:600
+  display:inline-block;
+  padding:12px 18px;
+  margin:6px;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  text-decoration:none;
+  font-weight:600;
 }
 </style>
 </head>
@@ -54,10 +55,10 @@ font-weight:600
 <p><b>Referencia:</b> <span id="ref"></span></p>
 
 <div style="margin-top:15px">
-  <a id="btnGoogle" class="btn" target="_blank">Google Maps</a>
-  <a id="btnWaze" class="btn" target="_blank">Waze</a>
-  <a id="btnUber" class="btn" target="_blank">Uber</a>
-  <a id="btnWhats" class="btn" target="_blank">WhatsApp</a>
+  <a id="btnGoogle" class="btn" target="_blank" rel="noopener">Google Maps</a>
+  <a id="btnWaze" class="btn" target="_blank" rel="noopener">Waze</a>
+  <a id="btnUber" class="btn" target="_blank" rel="noopener">Uber</a>
+  <a id="btnWhats" class="btn" target="_blank" rel="noopener">WhatsApp</a>
 </div>
 
 <div id="qrBox" style="margin-top:28px;display:none">
@@ -71,52 +72,56 @@ font-weight:600
 </div>
 
 <script>
-
 const CODE = "AD507-CODE";
-const PAGE_URL = `https://direcciones507.com/${CODE.toLowerCase()}/`;
+const SLUG = "{{SLUG}}";
+const PAGE_URL = `https://direcciones507.com/${SLUG}/`;
 
-const WEBAPP_URL =
-"https://script.google.com/macros/s/AKfycbyBnLcLaTEPKKdAQULGFIdxhPrA77QRSzJSpSZl3nXGCvNfyYRuooprKON1pZ6s976ZvQ/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyBnLcLaTEPKKdAQULGFIdxhPrA77QRSzJSpSZl3nXGCvNfyYRuooprKON1pZ6s976ZvQ/exec";
 
 async function cargar(){
+  try{
+    const r = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
+    const data = await r.json();
 
-try{
+    if(!data.ok){
+      document.getElementById("estado").textContent = "Dirección no encontrada";
+      return;
+    }
 
-const r = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
-const data = await r.json();
+    document.getElementById("estado").style.display = "none";
+    document.getElementById("datos").style.display = "block";
 
-if(!data.ok){
-document.getElementById("estado").textContent = "Dirección no encontrada";
-return;
-}
+    document.getElementById("nombre").textContent = data.nombre || "-";
+    document.getElementById("ref").textContent = data.referencia || "-";
 
-document.getElementById("estado").style.display="none";
-document.getElementById("datos").style.display="block";
+    const btnGoogle = document.getElementById("btnGoogle");
+    const btnWaze = document.getElementById("btnWaze");
+    const btnUber = document.getElementById("btnUber");
+    const btnWhats = document.getElementById("btnWhats");
 
-document.getElementById("nombre").textContent = data.nombre || "-";
-document.getElementById("ref").textContent = data.referencia || "-";
+    if(data.gmaps) btnGoogle.href = data.gmaps;
+    else btnGoogle.style.display = "none";
 
-if(data.gmaps) document.getElementById("btnGoogle").href = data.gmaps;
-if(data.waze) document.getElementById("btnWaze").href = data.waze;
-if(data.uber) document.getElementById("btnUber").href = data.uber;
+    if(data.waze) btnWaze.href = data.waze;
+    else btnWaze.style.display = "none";
 
-if(data.telefono){
-document.getElementById("btnWhats").href =
-`https://wa.me/${data.telefono}`;
-}
+    if(data.uber) btnUber.href = data.uber;
+    else btnUber.style.display = "none";
 
-const qrUrl =
-`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(PAGE_URL)}`;
+    if(data.telefono){
+      btnWhats.href = `https://wa.me/${data.telefono}`;
+    }else{
+      btnWhats.style.display = "none";
+    }
 
-document.getElementById("qrImg").src = qrUrl;
-document.getElementById("qrBox").style.display = "block";
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(PAGE_URL)}`;
+    document.getElementById("qrImg").src = qrUrl;
+    document.getElementById("qrBox").style.display = "block";
 
-}catch(e){
-
-document.getElementById("estado").textContent = "Error cargando datos";
-
-}
-
+  }catch(e){
+    document.getElementById("estado").textContent = "Error cargando datos";
+    console.error("Error cargando AD507:", e);
+  }
 }
 
 cargar();

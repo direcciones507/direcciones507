@@ -15,11 +15,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq curl
 
       - name: Fetch codes from WebApp
-  run: |
-    curl -s "${{ secrets.WEBAPP_URL }}?action=list" -o codes.json
-
-    echo "Contenido recibido del WebApp:"
-    cat codes.json
+        run: |
+          curl -s "${{ secrets.WEBAPP_URL }}?action=list" -o codes.json
+          echo "Contenido recibido del WebApp:"
+          cat codes.json
 
       - name: Generate pages
         run: |
@@ -71,3 +70,4 @@ jobs:
             git commit -m "Generate AD507 pages + sitemap"
             git push
           fi
+    

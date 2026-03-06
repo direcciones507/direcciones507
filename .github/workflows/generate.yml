@@ -43,6 +43,25 @@ jobs:
           cp sitemap.xml out/sitemap.xml || true
           cp robots.txt out/robots.txt || true
 
+       - name: Generate sitemap
+        run: |
+          cat > out/sitemap.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url>
+              <loc>https://direcciones507.com/</loc>
+            </url>
+          EOF
+
+          CODES=$(jq -r '.codes[]' codes.json)
+
+          for CODE in $CODES; do
+            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+            echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+          done
+
+          echo '</urlset>' >> out/sitemap.xml    
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

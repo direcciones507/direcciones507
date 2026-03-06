@@ -32,6 +32,7 @@ jobs:
 
             sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
             sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
+            sed -i "s/{{SLUG}}/$SLUG/g" "$DIR/index.html"
             sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
             sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá. Abre en Google Maps, Waze o Uber./g" "$DIR/index.html"
             sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"

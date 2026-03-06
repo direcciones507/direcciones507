@@ -16,7 +16,7 @@ jobs:
 
       - name: Fetch codes from WebApp
         run: |
-          curl -s "${{ secrets.WEBAPP_URL }}?action=list" -o codes.json
+          curl -L -sS "${{ secrets.WEBAPP_URL }}?action=list" -o codes.json
           echo "Contenido recibido del WebApp:"
           cat codes.json
 
@@ -24,7 +24,7 @@ jobs:
         run: |
           mkdir -p out
 
-          CODES=$(jq -r '.codes[]?' codes.json)
+          CODES=$(jq -r '.codes[]' codes.json)
 
           for CODE in $CODES; do
             SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')

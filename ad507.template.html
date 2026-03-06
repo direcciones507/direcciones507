@@ -1,142 +1,817 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Dirección AD507-CODE | Ubicación exacta en Panamá</title>
-<h2>Ubicación AD507 en Panamá</h2>
-<p>
-Esta es una dirección digital del sistema Direcciones507.
-Puedes abrir esta ubicación en Google Maps, Waze o Uber.
-</p>  
+  <!-- ===== TÍTULOS DINÁMICOS PARA SEO (MEJORADOS) ===== -->
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESC}}">
+  
+  <!-- Canonical con placeholder -->
+  <link rel="canonical" href="https://direcciones507.com/{{SLUG}}/">
+  
+  <meta name="robots" content="index, follow">
 
-<meta name="description" content="Ubicación exacta AD507-CODE en Panamá. Abre la dirección en Google Maps, Waze o Uber sin perderte.">
+  <!-- Fuentes Modernas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
 
-<link rel="canonical" href="https://direcciones507.com/{{SLUG}}/">
-<meta name="robots" content="index,follow">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+  <style>
+    /* ===== ESTILOS COMPLETOS ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-<style>
-body{
-  font-family:system-ui;
-  background:#0b0f19;
-  color:white;
-  text-align:center;
-  padding:40px;
-}
-.card{
-  background:#111827;
-  padding:30px;
-  border-radius:12px;
-  max-width:600px;
-  margin:auto;
-}
-.btn{
-  display:inline-block;
-  padding:12px 18px;
-  margin:6px;
-  border-radius:8px;
-  background:#2563eb;
-  color:white;
-  text-decoration:none;
-  font-weight:600;
-}
-</style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      margin: 0;
+      line-height: 1.5;
+      color: #1e293b;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      max-width: 42rem;
+      width: 100%;
+      padding: 2.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid #e9eef2;
+    }
+
+    .code-icon {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      width: 4rem;
+      height: 4rem;
+      border-radius: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    }
+
+    .code-title {
+      flex: 1;
+    }
+
+    .code-label {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    #codigo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .status-message {
+      background: #f8fafc;
+      border-radius: 1rem;
+      padding: 2.5rem;
+      text-align: center;
+      border: 2px dashed #cbd5e1;
+    }
+
+    .spinner {
+      border: 4px solid #e9eef2;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 3rem;
+      height: 3rem;
+      margin: 0 auto 1.5rem;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      color: #dc2626;
+      font-weight: 500;
+      background: #fee2e2;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-grid {
+      background: #f8fafc;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .info-item:first-child {
+      padding-top: 0;
+    }
+
+    .info-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .info-item:not(:last-child) {
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-icon {
+      color: #3b82f6;
+      font-size: 1.25rem;
+      min-width: 1.5rem;
+      margin-top: 0.2rem;
+    }
+
+    .info-content {
+      flex: 1;
+    }
+
+    .info-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      color: #64748b;
+      margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f172a;
+      word-break: break-word;
+    }
+
+    .seo-text {
+      margin-top: 1.5rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: rgba(59, 130, 246, 0.05);
+      border-radius: 1rem;
+      border-left: 4px solid #3b82f6;
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    /* Botones */
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 1.8rem;
+      border-radius: 1rem;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      flex: 1 1 auto;
+      min-width: 160px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border: 2px solid transparent;
+    }
+
+    .btn:hover {
+      transform: scale(1.02);
+    }
+
+    .btn-google {
+      background: #fff;
+      color: #1e293b;
+      border-color: #e9eef2;
+    }
+
+    .btn-google:hover {
+      background: #f1f5f9;
+      border-color: #3b82f6;
+    }
+
+    .btn-waze {
+      background: #33ccff;
+      color: #1e293b;
+    }
+
+    .btn-waze:hover {
+      background: #2db8e6;
+      box-shadow: 0 10px 15px -3px rgba(51, 204, 255, 0.4);
+    }
+
+    .btn-uber {
+      background: #000;
+      color: #fff;
+    }
+
+    .btn-uber:hover {
+      background: #1a1a1a;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+    }
+
+    .btn-whatsapp:hover {
+      background: #20BA5C;
+    }
+
+    .btn-call {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-call:hover {
+      background: #0e9f6e;
+    }
+
+    .btn-instagram {
+      background: linear-gradient(45deg, #f09433, #d62976, #962fbf);
+      color: white;
+    }
+
+    .btn-facebook {
+      background: #1877f2;
+      color: white;
+    }
+
+    .btn-tiktok {
+      background: #000000;
+      color: white;
+    }
+
+    .btn-tiktok:hover {
+      background: #1a1a1a;
+    }
+
+    .btn-instagram:hover, .btn-facebook:hover, .btn-tiktok:hover {
+      filter: brightness(1.1);
+    }
+
+    /* ===== NUEVA SECCIÓN: PLANES DE DIRECCIONES507 ===== */
+    .plans-section {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid #e9eef2;
+    }
+
+    .plans-title {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .plans-title i {
+      color: #3b82f6;
+    }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .plan-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e9eef2;
+      transition: transform 0.2s ease;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .plan-card.personal {
+      border-top: 4px solid #3b82f6;
+    }
+
+    .plan-card.negocio {
+      border-top: 4px solid #8b5cf6;
+    }
+
+    .plan-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .plan-card.personal .plan-icon {
+      color: #3b82f6;
+    }
+
+    .plan-card.negocio .plan-icon {
+      color: #8b5cf6;
+    }
+
+    .plan-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-price small {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: #64748b;
+    }
+
+    .plan-discount {
+      background: #e9eef2;
+      display: inline-block;
+      padding: 0.25rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .plan-card.personal .plan-discount {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .plan-card.negocio .plan-discount {
+      background: #ede9fe;
+      color: #6b21a8;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+      text-align: left;
+      padding-left: 0.5rem;
+    }
+
+    .plan-features li {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .plan-features i {
+      color: #10b981;
+      font-size: 0.75rem;
+    }
+
+    .plan-button {
+      display: inline-block;
+      background: #0f172a;
+      color: white;
+      padding: 0.6rem 1.5rem;
+      border-radius: 2rem;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      margin-top: 0.5rem;
+    }
+
+    .plan-button:hover {
+      background: #1e293b;
+      transform: scale(1.05);
+    }
+
+    .footer-note {
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-align: center;
+      padding-top: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      .card { padding: 1.5rem; }
+      .code-header { flex-direction: column; text-align: center; }
+      .code-icon { margin-bottom: 0.5rem; }
+      #codigo { font-size: 2rem; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; }
+      .plans-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
-
 <body>
 
 <div class="card">
+  <div class="code-header">
+    <div class="code-icon">
+      <i class="fas fa-map-pin"></i>
+    </div>
+    <div class="code-title">
+      <div class="code-label">Tu código de ubicación</div>
+      <h1 id="codigo">AD507-CODE</h1>
+    </div>
+  </div>
 
-<h1 id="codigo">AD507-CODE</h1>
+  <!-- Estado de carga -->
+  <div id="estado" class="status-message">
+    <div class="spinner"></div>
+    <p style="color: #475569; font-weight: 500;">Cargando dirección exacta...</p>
+    <p style="color: #64748b; font-size: 0.875rem;">Obteniendo los mejores datos de ubicación</p>
+  </div>
 
-<p id="estado">Cargando dirección...</p>
+  <!-- Datos (oculto inicialmente) -->
+  <div id="datos" style="display: none;">
+    <div class="info-grid">
+      <!-- Nombre del lugar -->
+      <div class="info-item">
+        <div class="info-icon"><i class="fas fa-tag"></i></div>
+        <div class="info-content">
+          <div class="info-label">Nombre del lugar</div>
+          <div class="info-value" id="nombre">—</div>
+        </div>
+      </div>
+      
+      <!-- Punto de referencia -->
+      <div class="info-item">
+        <div class="info-icon"><i class="fas fa-location-dot"></i></div>
+        <div class="info-content">
+          <div class="info-label">Punto de referencia</div>
+          <div class="info-value" id="ref">—</div>
+        </div>
+      </div>
+      
+      <!-- Horario del negocio -->
+      <div class="info-item" id="horario-container" style="display: none;">
+        <div class="info-icon"><i class="fas fa-clock"></i></div>
+        <div class="info-content">
+          <div class="info-label">Horario de atención</div>
+          <div class="info-value" id="horario">—</div>
+        </div>
+      </div>
+    </div>
 
-<div id="datos" style="display:none">
+    <!-- Texto SEO (evita soft 404) -->
+    <div class="seo-text">
+      <i class="fas fa-map-marked-alt" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+      <strong>Dirección digital del sistema Direcciones507 en Panamá.</strong> 
+      Este código <span id="codigo-seo">AD507-CODE</span> te lleva a una ubicación exacta. 
+      Abre esta dirección en Google Maps, Waze o Uber fácilmente.
+    </div>
 
-<p><b>Nombre:</b> <span id="nombre"></span></p>
-<p><b>Referencia:</b> <span id="ref"></span></p>
+    <!-- Botones de navegación -->
+    <div class="actions">
+      <a id="btnGoogle" class="btn btn-google" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-google"></i> Google Maps
+      </a>
+      <a id="btnWaze" class="btn btn-waze" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-waze"></i> Waze
+      </a>
+      <a id="btnUber" class="btn btn-uber" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-uber"></i> Uber
+      </a>
+    </div>
 
-<div style="margin-top:15px">
-  <a id="btnGoogle" class="btn" target="_blank" rel="noopener">Google Maps</a>
-  <a id="btnWaze" class="btn" target="_blank" rel="noopener">Waze</a>
-  <a id="btnUber" class="btn" target="_blank" rel="noopener">Uber</a>
-  <a id="btnWhats" class="btn" target="_blank" rel="noopener">WhatsApp</a>
-</div>
+    <!-- Botones de contacto -->
+    <div class="actions">
+      <a id="btnWhats" class="btn btn-whatsapp" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </a>
+      <a id="btnCall" class="btn btn-call">
+        <i class="fas fa-phone"></i> Llamar
+      </a>
+    </div>
 
-<div id="qrBox" style="margin-top:28px;display:none">
-  <p style="margin-bottom:12px;font-weight:700">QR para compartir</p>
-  <img id="qrImg" alt="QR AD507" style="width:180px;max-width:100%;border-radius:12px;background:#fff;padding:10px">
-  <p style="margin-top:10px;font-size:14px;color:#cbd5e1">
-    Escanea y abre esta dirección digital
-  </p>
-</div>
+    <!-- Redes sociales -->
+    <div class="actions" id="redes-container">
+      <a id="btnInstagram" class="btn btn-instagram" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-instagram"></i> Instagram
+      </a>
+      <a id="btnFacebook" class="btn btn-facebook" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-facebook"></i> Facebook
+      </a>
+      <a id="btnTikTok" class="btn btn-tiktok" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-tiktok"></i> TikTok
+      </a>
+    </div>
 
+    <!-- ===== NUEVA SECCIÓN: PLANES DIRECCIONES507 ===== -->
+    <div class="plans-section">
+      <div class="plans-title">
+        <i class="fas fa-star"></i> Planes Direcciones507
+      </div>
+      
+      <div class="plans-grid">
+        <!-- Plan Personal - 10% descuento -->
+        <div class="plan-card personal">
+          <div class="plan-icon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="plan-name">Plan Personal</div>
+          <div class="plan-price">$9.99 <small>/mes</small></div>
+          <div class="plan-discount">
+            <i class="fas fa-tag"></i> 10% OFF
+          </div>
+          <ul class="plan-features">
+            <li><i class="fas fa-check-circle"></i> Tu propia página de dirección</li>
+            <li><i class="fas fa-check-circle"></i> Botones de navegación</li>
+            <li><i class="fas fa-check-circle"></i> WhatsApp y Redes Sociales</li>
+            <li><i class="fas fa-check-circle"></i> Horario de atención</li>
+            <li><i class="fas fa-check-circle"></i> Soporte básico</li>
+          </ul>
+          <a href="https://direcciones507.com/planes/personal" class="plan-button" target="_blank">
+            Elegir plan <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Plan Negocio - 15% descuento -->
+        <div class="plan-card negocio">
+          <div class="plan-icon">
+            <i class="fas fa-building"></i>
+          </div>
+          <div class="plan-name">Plan Negocio</div>
+          <div class="plan-price">$19.99 <small>/mes</small></div>
+          <div class="plan-discount">
+            <i class="fas fa-tag"></i> 15% OFF
+          </div>
+          <ul class="plan-features">
+            <li><i class="fas fa-check-circle"></i> Todo lo del Plan Personal</li>
+            <li><i class="fas fa-check-circle"></i> Promociones destacadas</li>
+            <li><i class="fas fa-check-circle"></i> Anuncios en la zona</li>
+            <li><i class="fas fa-check-circle"></i> Estadísticas de visitas</li>
+            <li><i class="fas fa-check-circle"></i> Soporte prioritario 24/7</li>
+          </ul>
+          <a href="https://direcciones507.com/planes/negocio" class="plan-button" target="_blank">
+            Elegir plan <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <i class="fas fa-shield-alt"></i> Ubicación verificada · <i class="fas fa-map-pin"></i> Direcciones507 Panamá
+    </div>
+  </div>
 </div>
 
 <script>
-const CODE = "AD507-CODE";
-const SLUG = "{{SLUG}}";
-const PAGE_URL = `https://direcciones507.com/${SLUG}/`;
-
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyiz7NwJe_EesySZbFOYRMwO3kZ-_odWGWmyZOK3QCSrt2yBEBjDqbdFDpw3t_5jS48XA/exec";
-
-async function cargar(){
-  try{
-    const r = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
-    const data = await r.json();
-
-    if(!data.ok){
-      document.getElementById("estado").textContent = "Dirección no encontrada";
+  // ===== CÓDIGO FINAL CON TODAS LAS MEJORAS =====
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    // Configuración
+    const CODE = "AD507-CODE"; // Placeholder para reemplazar
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyiz7NwJe_EesySZbFOYRMwO3kZ-_odWGWmyZOK3QCSrt2yBEBjDqbdFDpw3t_5jS48XA/exec";
+    
+    // Referencias a elementos
+    const estadoDiv = document.getElementById('estado');
+    const datosDiv = document.getElementById('datos');
+    const codigoH1 = document.getElementById('codigo');
+    const codigoSeo = document.getElementById('codigo-seo');
+    const nombreSpan = document.getElementById('nombre');
+    const refSpan = document.getElementById('ref');
+    
+    // Botones de navegación
+    const btnGoogle = document.getElementById('btnGoogle');
+    const btnWaze = document.getElementById('btnWaze');
+    const btnUber = document.getElementById('btnUber');
+    
+    // Botones de contacto
+    const btnWhats = document.getElementById('btnWhats');
+    const btnCall = document.getElementById('btnCall');
+    
+    // Redes sociales
+    const btnInstagram = document.getElementById('btnInstagram');
+    const btnFacebook = document.getElementById('btnFacebook');
+    const btnTikTok = document.getElementById('btnTikTok');
+    
+    // Horario
+    const horarioContainer = document.getElementById('horario-container');
+    const horarioSpan = document.getElementById('horario');
+    
+    // Verificar elementos críticos
+    if (!estadoDiv || !datosDiv || !codigoH1) {
+      console.error('Error: Elementos críticos no encontrados');
       return;
     }
-
-    document.getElementById("estado").style.display = "none";
-    document.getElementById("datos").style.display = "block";
-
-    document.getElementById("nombre").textContent = data.nombre || "-";
-    document.getElementById("ref").textContent = data.referencia || "-";
-
-    const btnGoogle = document.getElementById("btnGoogle");
-const btnWaze = document.getElementById("btnWaze");
-const btnUber = document.getElementById("btnUber");
-const btnWhats = document.getElementById("btnWhats");
-
-if(data.google) btnGoogle.href = data.google;
-else btnGoogle.style.display = "none";
-
-if(data.waze) btnWaze.href = data.waze;
-else btnWaze.style.display = "none";
-
-if(data.uber) btnUber.href = data.uber;
-else btnUber.style.display = "none";
-
-if(data.whatsapp){
-  btnWhats.href = data.whatsapp;
-}else if(data.telefono){
-  const telefonoLimpio = String(data.telefono).replace(/\D/g, "");
-  if(telefonoLimpio){
-    btnWhats.href = `https://wa.me/${telefonoLimpio}`;
-  }else{
-    btnWhats.style.display = "none";
-  }
-}else{
-  btnWhats.style.display = "none";
-}
-
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(PAGE_URL)}`;
-    document.getElementById("qrImg").src = qrUrl;
-    document.getElementById("qrBox").style.display = "block";
-
-  }catch(e){
-    document.getElementById("estado").textContent = "Error cargando datos";
-    console.error("Error cargando AD507:", e);
-  }
-}
-
-cargar();
+    
+    // Actualizar textos con el código
+    codigoH1.textContent = CODE;
+    if (codigoSeo) codigoSeo.textContent = CODE;
+    
+    // Función principal
+    async function cargarDireccion() {
+      try {
+        // Mostrar carga
+        estadoDiv.style.display = 'block';
+        datosDiv.style.display = 'none';
+        
+        console.log('Fetching data for code:', CODE);
+        const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
+        
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Respuesta:', data);
+        
+        // ===== MEJORA #3: Mensaje de error robusto =====
+        if (!data || !data.ok) {
+          throw new Error(data?.mensaje || data?.message || 'Dirección no encontrada');
+        }
+        
+        // Mostrar datos
+        estadoDiv.style.display = 'none';
+        datosDiv.style.display = 'block';
+        
+        // Información básica
+        if (nombreSpan) nombreSpan.textContent = data.nombre || '—';
+        if (refSpan) refSpan.textContent = data.referencia || '—';
+        
+        // Horario
+        if (data.horario && horarioContainer && horarioSpan) {
+          horarioSpan.textContent = data.horario;
+          horarioContainer.style.display = 'flex';
+        } else if (horarioContainer) {
+          horarioContainer.style.display = 'none';
+        }
+        
+        // Google Maps
+        if (btnGoogle && data.google) {
+          btnGoogle.href = data.google;
+        } else if (btnGoogle) {
+          btnGoogle.style.opacity = '0.5';
+          btnGoogle.style.pointerEvents = 'none';
+          btnGoogle.title = 'No disponible';
+        }
+        
+        // Waze
+        if (btnWaze && data.waze) {
+          btnWaze.href = data.waze;
+        } else if (btnWaze) {
+          btnWaze.style.opacity = '0.5';
+          btnWaze.style.pointerEvents = 'none';
+          btnWaze.title = 'No disponible';
+        }
+        
+        // Uber
+        if (btnUber && data.uber) {
+          btnUber.href = data.uber;
+        } else if (btnUber) {
+          btnUber.style.opacity = '0.5';
+          btnUber.style.pointerEvents = 'none';
+          btnUber.title = 'No disponible';
+        }
+        
+        // WhatsApp
+        if (btnWhats) {
+          if (data.whatsapp) {
+            btnWhats.href = data.whatsapp;
+          } else if (data.telefono) {
+            const telefono = String(data.telefono).replace(/\D/g, '');
+            btnWhats.href = `https://wa.me/${telefono}`;
+          } else {
+            btnWhats.style.display = 'none';
+          }
+        }
+        
+        // ===== MEJORA #2: Llamada con teléfono limpio =====
+        if (btnCall) {
+          if (data.telefono) {
+            const telefonoLimpio = String(data.telefono).replace(/\D/g, '');
+            btnCall.href = `tel:${telefonoLimpio}`;
+          } else {
+            btnCall.style.display = 'none';
+          }
+        }
+        
+        // Instagram
+        if (btnInstagram) {
+          if (data.instagram) {
+            btnInstagram.href = data.instagram;
+          } else {
+            btnInstagram.style.display = 'none';
+          }
+        }
+        
+        // Facebook
+        if (btnFacebook) {
+          if (data.facebook) {
+            btnFacebook.href = data.facebook;
+          } else {
+            btnFacebook.style.display = 'none';
+          }
+        }
+        
+        // TikTok
+        if (btnTikTok) {
+          if (data.tiktok) {
+            btnTikTok.href = data.tiktok;
+          } else {
+            btnTikTok.style.display = 'none';
+          }
+        }
+        
+        // Ocultar contenedor de redes si no hay ninguna
+        const redesContainer = document.getElementById('redes-container');
+        if (redesContainer) {
+          const redesVisibles = Array.from(redesContainer.children).some(
+            btn => btn.style.display !== 'none'
+          );
+          if (!redesVisibles) {
+            redesContainer.style.display = 'none';
+          }
+        }
+        
+      } catch (error) {
+        console.error('Error:', error);
+        
+        if (estadoDiv) {
+          estadoDiv.innerHTML = `
+            <div class="error-message">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>${error.message}</span>
+            </div>
+            <p style="color: #64748b; margin-top: 1rem;">
+              <i class="fas fa-rotate-left"></i>
+              Intenta nuevamente
+            </p>
+          `;
+        }
+      }
+    }
+    
+    // Ejecutar
+    cargarDireccion();
+    
+  });
 </script>
 
 </body>

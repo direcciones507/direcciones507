@@ -1,32 +1,10 @@
-name: Generate AD507 pages + sitemap
-
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 */6 * * *"
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Run actions/checkout@v4
-        uses: actions/checkout@v4
-
-      - name: Install tools
-        run: sudo apt-get update && sudo apt-get install -y jq curl
-
-      - name: Fetch codes from WebApp
-        run: |
-          curl -L -sS "${{ secrets.WEBAPP_URL }}?action=list" -o codes.json
-          echo "Contenido recibido del WebApp:"
-          cat codes.json
-
-     name: Generate AD507 Pages
+name: Generate AD507 Pages
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -37,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install jq
-        run: sudo apt-get install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Generate pages
         run: |
@@ -50,48 +28,37 @@ jobs:
             DIR="out/$SLUG"
 
             mkdir -p "$DIR"
-
             cp ad507.template.html "$DIR/index.html"
 
             sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
             sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
             sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
-            sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
+            sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá. Abre en Google Maps, Waze o Uber./g" "$DIR/index.html"
             sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG|g" "$DIR/index.html"
           done
 
-      - name: Generate sitemap.xml
+      - name: Copy root files
         run: |
-          {
-            echo '<?xml version="1.0" encoding="UTF-8"?>'
-            echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-            echo '  <url><loc>https://direcciones507.com/</loc></url>'
+          cp index.html out/index.html
+          cp sitemap.xml out/sitemap.xml || true
+          cp robots.txt out/robots.txt || true
 
-            for DIR in out/*; do
-              if [ -d "$DIR" ]; then
-                SLUG=$(basename "$DIR")
-                echo "  <url><loc>https://direcciones507.com/$SLUG</loc></url>"
-              fi
-            done
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
 
-            echo '</urlset>'
-          } > out/sitemap.xml
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
-      - name: Copy generated files to root
-        run: |
-          cp -r out/* .
-
-      - name: Commit changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add .
-
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Generate AD507 pages + sitemap"
-            git push
-          fi
-    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

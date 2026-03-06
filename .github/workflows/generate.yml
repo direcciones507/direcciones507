@@ -37,13 +37,7 @@ jobs:
             sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
           done
 
-      - name: Copy root files
-        run: |
-          cp index.html out/index.html
-          cp sitemap.xml out/sitemap.xml || true
-          cp robots.txt out/robots.txt || true
-
-       - name: Generate sitemap
+      - name: Generate sitemap
         run: |
           cat > out/sitemap.xml << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
@@ -60,7 +54,12 @@ jobs:
             echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
           done
 
-          echo '</urlset>' >> out/sitemap.xml    
+          echo '</urlset>' >> out/sitemap.xml
+
+      - name: Copy root files
+        run: |
+          cp index.html out/index.html
+          cp robots.txt out/robots.txt || true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -1475,6 +1475,14 @@ if(cached){
       if(uiNombre) uiNombre.textContent = data.nombre || "-";
       if(uiRef)    uiRef.textContent    = data.referencia || "-";
 
+            const heroCodigo = document.getElementById("heroCodigo");
+      const heroNombre = document.getElementById("heroNombre");
+      const heroRef = document.getElementById("heroRef");
+
+      if(heroCodigo) heroCodigo.textContent = CODIGO_ACTUAL;
+      if(heroNombre) heroNombre.textContent = data.nombre || "-";
+      if(heroRef) heroRef.textContent = data.referencia || "-";
+
       // URL share/verificación
       const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
       window.verificacionUrl = shareUrl;

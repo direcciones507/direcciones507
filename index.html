@@ -930,35 +930,64 @@
           <!-- SECCIÓN PASOS -->
           <div class="info-ventas-wrap">
 
-  <!-- COLUMNA IZQUIERDA: PASOS -->
-  <div id="seccionPasos">
-    <div class="divider"></div>
-    <h3 style="font-size:16px; margin-bottom:12px;">Pasos</h3>
-    <div class="steps">
-      <div class="step">
-        <span class="step-num">1</span>
-        <div><b>Comparte tu enlace</b><br><span class="text-muted">WhatsApp, redes, QR</span></div>
-      </div>
-      <div class="step">
-        <span class="step-num">2</span>
-        <div><b>Abre en Waze, Google o Uber</b><br><span class="text-muted">Un toque, sin confusiones</span></div>
-      </div>
-      <div class="step">
-        <span class="step-num">3</span>
-        <div><b>Aviso de llegada</b><br><span class="text-muted">Notifica cuando estés cerca</span></div>
+  <!-- FILA SUPERIOR -->
+  <div class="info-top">
+
+    <!-- PASOS -->
+    <div id="seccionPasos">
+      <div class="divider"></div>
+      <h3 style="font-size:16px; margin-bottom:12px;">Pasos</h3>
+
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">1</span>
+          <div><b>Comparte tu enlace</b><br><span class="text-muted">WhatsApp, redes, QR</span></div>
+        </div>
+
+        <div class="step">
+          <span class="step-num">2</span>
+          <div><b>Abre en Waze, Google o Uber</b><br><span class="text-muted">Un toque, sin confusiones</span></div>
+        </div>
+
+        <div class="step">
+          <span class="step-num">3</span>
+          <div><b>Aviso de llegada</b><br><span class="text-muted">Notifica cuando estés cerca</span></div>
+        </div>
       </div>
     </div>
+
+    <!-- QR -->
+    <div class="qr-panel-mini">
+
+      <div class="qr-box">
+        <div class="qr-title">
+          <i class="fa-solid fa-qrcode"></i> QR para compartir
+        </div>
+
+        <div class="qr-sub">
+          Escanea y abre la dirección
+        </div>
+
+        <img id="qrImg" class="qr-img" src="" alt="QR">
+
+        <div style="margin-top:10px;font-size:12px;color:#64748b;" id="uiLink">
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- COLUMNA DERECHA: PLANES -->
-  <div id="seccionPrecios" style="margin-top:0;">
-    <div class="divider"></div>
+  <!-- PLANES -->
+  <div id="seccionPrecios">
 
     <p style="text-align:center;color:#64748b;margin-bottom:18px;">
       Precios de introducción por lanzamiento del sistema en Panamá
     </p>
 
-    <h3 style="font-size:18px; margin-bottom:16px; text-align:center;">Planes Direcciones507</h3>
+    <h3 style="font-size:18px; margin-bottom:16px; text-align:center;">
+      Planes Direcciones507
+    </h3>
 
     <div class="planes-grid">
 

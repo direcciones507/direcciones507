@@ -221,7 +221,7 @@
 }
 
 .plan-price{
-  font-size:42px;
+  font-size:34px;
   font-weight:900;
   line-height:1;
   margin:8px 0 16px;
@@ -236,7 +236,7 @@
 
 .plan-features li{
   margin:8px 0;
-  font-size:15px;
+  font-size:14px;
   line-height:1.45;
   word-break:break-word;
 }
@@ -262,17 +262,29 @@
 .planes-grid > *{
   min-width:0;
 }
-    @media (max-width: 900px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
     @media (max-width: 900px){
-      .planes-grid{
-        grid-template-columns: 1fr !important;
-      }
-    }
+  .grid{
+    grid-template-columns: 1fr;
+  }
+
+  .info-ventas-wrap{
+    grid-template-columns:1fr;
+  }
+
+  .planes-grid{
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .plan-card.plan-estrella{
+    transform:none;
+  }
+}
+
+@media (max-width: 640px){
+  .planes-grid{
+    grid-template-columns: 1fr !important;
+  }
+}
 
     .hero-title {
       font-size: 44px;

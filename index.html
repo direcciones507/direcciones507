@@ -1043,6 +1043,37 @@
           w.document.close();
         };
 
+        const statsBtn = document.getElementById("btnStats");
+const statsPanel = document.getElementById("statsPanel");
+
+if (esNegocio) {
+  show(statsBtn, "flex");
+
+  statsBtn.onclick = async () => {
+    const visible = statsPanel && statsPanel.style.display === "block";
+    if (statsPanel) statsPanel.style.display = visible ? "none" : "block";
+
+    if (!visible) {
+      try {
+        const d = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
+
+        if (d.ok) {
+          document.getElementById("stGoogle").textContent = d.stats?.google || 0;
+          document.getElementById("stWaze").textContent = d.stats?.waze || 0;
+          document.getElementById("stUber").textContent = d.stats?.uber || 0;
+          document.getElementById("stShare").textContent = d.stats?.share || 0;
+          document.getElementById("stCopy").textContent = d.stats?.copy || 0;
+          document.getElementById("stUpdated").textContent = "Actualizado: " + (d.stats?.updated || "-");
+        }
+      } catch (e) {}
+    }
+  };
+
+} else {
+  hide(statsBtn);
+  hide(statsPanel);
+}
+
         // Mostrar panel
         showPanel();
         setMsg("✅ Listo");

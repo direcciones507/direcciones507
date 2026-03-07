@@ -944,7 +944,7 @@
         // Planes
         const planLower = String(data.plan || "").toLowerCase();
         const esPublico = planLower.includes("negocio") || planLower.includes("premium");
-        const esNegocio = planLower.includes("negocio");
+        const esNegocio = planLower.includes("negocio") || planLower.includes("premium");
 
         // Mostrar datos
         document.getElementById("uiNombre").textContent = data.nombre || "-";

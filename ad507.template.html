@@ -808,7 +808,20 @@
             redesContainer.style.display = 'none';
           }
         }
-        
+        // ===== QR para compartir la dirección =====
+const qrImg = document.getElementById("qrImg");
+const qrBox = document.getElementById("qrBox");
+
+if (qrImg && qrBox) {
+  const pageUrl = window.location.href;
+
+  const qrUrl =
+    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+    encodeURIComponent(pageUrl);
+
+  qrImg.src = qrUrl;
+  qrBox.style.display = "block";
+}
       } catch (error) {
         console.error('Error:', error);
         

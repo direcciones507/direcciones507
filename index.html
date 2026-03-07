@@ -946,6 +946,37 @@
         const esPublico = planLower.includes("negocio") || planLower.includes("premium");
         const esNegocio = planLower.includes("negocio") || planLower.includes("premium");
 
+        const codeFromUrl = new URLSearchParams(window.location.search).get("code");
+const vieneDeLink = codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase();
+
+if (!esPublico && !vieneDeLink) {
+  setMsg("Este código es privado. Usa el enlace directo.");
+
+  document.getElementById("uiCodigo").textContent = "-";
+  document.getElementById("uiNombre").textContent = "-";
+  document.getElementById("uiRef").textContent = "-";
+
+  hidePanelSections();
+  show(document.getElementById("homeHero"), "block");
+  show(document.getElementById("seccionPasos"), "block");
+  show(document.getElementById("seccionPrecios"), "block");
+  show(document.getElementById("seoLinksHome"), "flex");
+
+  const homeUrl = location.href.split("?")[0];
+  const qrImg = document.getElementById("qrImg");
+  const uiLink = document.getElementById("uiLink");
+
+  if (qrImg) {
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
+  }
+
+  if (uiLink) {
+    uiLink.textContent = homeUrl;
+  }
+
+  return;
+}
+
         // Mostrar datos
         document.getElementById("uiNombre").textContent = data.nombre || "-";
         document.getElementById("uiRef").textContent = data.referencia || "-";

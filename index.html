@@ -965,6 +965,12 @@
             const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
             btnAviso.href = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
           }
+
+        } else {
+          btnGoogle.href = "#";
+          btnWaze.href = "#";
+          btnUber.href = "#";
+          btnAviso.href = "#";
         }
 
         // Botones compartir/copiar

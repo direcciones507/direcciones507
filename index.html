@@ -169,11 +169,12 @@
       gap: 32px;
     }
 
-    .planes-grid{
+   .planes-grid{
   display:grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap:16px;
   margin-top:20px;
+  width:100%;
 }
 
 .plan-card{
@@ -183,15 +184,12 @@
   padding:22px 18px;
   box-sizing:border-box;
   min-width:0;
+  width:100%;
+  max-width:100%;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-
-.plan-card:hover{
-  transform:translateY(-3px);
-  box-shadow:0 12px 28px rgba(15,23,42,.08);
+  overflow:hidden;
 }
 
 .plan-card.destacado{
@@ -209,6 +207,7 @@
   margin:0 0 8px;
   font-size:20px;
   font-weight:800;
+  line-height:1.2;
 }
 
 .plan-sub{
@@ -222,10 +221,11 @@
 }
 
 .plan-price{
-  font-size:46px;
+  font-size:42px;
   font-weight:900;
   line-height:1;
   margin:8px 0 16px;
+  word-break:break-word;
 }
 
 .plan-features{
@@ -237,10 +237,13 @@
 .plan-features li{
   margin:8px 0;
   font-size:15px;
+  line-height:1.45;
+  word-break:break-word;
 }
 
 .plan-btn{
-  display:inline-block;
+  display:block;
+  width:100%;
   text-align:center;
   text-decoration:none;
   padding:12px 16px;
@@ -248,13 +251,17 @@
   font-weight:700;
   background:#2563eb;
   color:#fff;
+  box-sizing:border-box;
 }
 
 .plan-card.premium-pro .plan-btn{
-  background:#fff;
-  color:#0f172a;
+  background:#22c55e;
+  color:#fff;
 }
 
+.planes-grid > *{
+  min-width:0;
+}
     @media (max-width: 900px) {
       .hero-grid {
         grid-template-columns: 1fr;

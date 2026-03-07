@@ -524,6 +524,55 @@
       flex-shrink: 0;
     }
 
+    .info-ventas-wrap{
+  display:grid;
+  grid-template-columns: 0.95fr 1.35fr;
+  gap:24px;
+  align-items:start;
+  margin-top:10px;
+}
+
+#seccionPasos,
+#seccionPrecios{
+  min-width:0;
+}
+
+#seccionPrecios .divider,
+#seccionPasos .divider{
+  margin-top:0;
+}
+
+.plan-card.plan-estrella{
+  background:linear-gradient(180deg,#eff6ff 0%, #eef2ff 100%);
+  border:2px solid #6366f1;
+  position:relative;
+  transform:scale(1.03);
+  box-shadow:0 18px 40px rgba(99,102,241,.18);
+}
+
+.plan-badge{
+  position:absolute;
+  top:-12px;
+  right:18px;
+  background:#6366f1;
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  padding:7px 12px;
+  border-radius:999px;
+  box-shadow:0 8px 18px rgba(99,102,241,.25);
+}
+
+@media (max-width: 900px){
+  .info-ventas-wrap{
+    grid-template-columns:1fr;
+  }
+
+  .plan-card.plan-estrella{
+    transform:none;
+  }
+}
+
     /* ===== PRICE CARDS ===== */
     .price-grid {
       display: grid;

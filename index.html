@@ -659,6 +659,40 @@
       <div id="msgBusqueda" class="text-muted" style="margin-top: 8px; font-size: 13px;"></div>
     </div>
 
+    <div id="privacyCard" style="display:none; margin:18px 0 24px;">
+  <div style="
+    background:white;
+    border:1px solid #e9eef2;
+    border-radius:28px;
+    padding:28px;
+    text-align:center;
+    box-shadow:0 8px 24px rgba(0,0,0,0.02);
+  ">
+    <div style="
+      width:64px;
+      height:64px;
+      margin:0 auto 16px;
+      border-radius:20px;
+      background:linear-gradient(135deg,#111827,#374151);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      font-size:28px;
+    ">
+      <i class="fa-solid fa-lock"></i>
+    </div>
+
+    <h3 style="font-size:24px; color:#111827; margin-bottom:8px;">
+      Dirección privada
+    </h3>
+
+    <p style="color:#374151; font-size:15px; line-height:1.6; max-width:520px; margin:0 auto;">
+      Este código solo puede abrirse desde el enlace directo que fue compartido contigo.
+    </p>
+  </div>
+</div>
+
     <!-- GRID PRINCIPAL -->
     <div class="grid">
       <!-- LEFT CARD -->
@@ -904,6 +938,7 @@
       hide(document.getElementById("btnStats"));
       hide(document.getElementById("statsPanel"));
       hide(document.getElementById("printCardWrap"));
+      hide(document.getElementById("privacyCard"));
     }
 
     function extractLinkFromQr(qrUrl) {
@@ -963,6 +998,7 @@ if (!esPublico && !vieneDeLink) {
   show(document.getElementById("seccionPasos"), "block");
   show(document.getElementById("seccionPrecios"), "block");
   show(document.getElementById("seoLinksHome"), "flex");
+  show(document.getElementById("privacyCard"), "block");
 
   const homeUrl = location.href.split("?")[0];
   const qrImg = document.getElementById("qrImg");

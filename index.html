@@ -727,6 +727,279 @@
         display: none;
       }
     }
+    /* ===== LAYOUT LIMPIO HOME ===== */
+
+.info-top{
+  display:grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap:20px;
+  align-items:start;
+}
+
+.steps-container{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  width:100%;
+}
+
+.step-block{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  width:100%;
+  background:#f8fafc;
+  border:1px solid #e9eef2;
+  border-radius:18px;
+  padding:16px 18px;
+  transition:all .2s ease;
+}
+
+.step-block:hover{
+  background:#f1f5f9;
+  border-color:#dbeafe;
+}
+
+.step-number{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  background:#e0f2fe;
+  color:#0369a1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  flex-shrink:0;
+}
+
+.step-text{
+  flex:1;
+  font-size:15px;
+  line-height:1.4;
+  color:#0f172a;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.step-text strong{
+  color:#0f172a;
+}
+
+.qr-panel-mini{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.qr-box{
+  width:100%;
+  max-width:280px;
+  text-align:center;
+  background:#f8fafc;
+  border:1px solid #e9eef2;
+  border-radius:24px;
+  padding:20px;
+}
+
+.qr-panel-mini .qr-img{
+  width:190px;
+  max-width:100%;
+  margin:0 auto;
+  display:block;
+}
+
+.planes-title{
+  font-size:20px;
+  font-weight:700;
+  text-align:center;
+  margin:10px 0 22px;
+  color:#0f172a;
+}
+
+.planes-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:14px;
+  width:100%;
+}
+
+.plan-card{
+  background:#f8fafc;
+  border:1px solid #dbe4ff;
+  border-radius:22px;
+  padding:18px 16px;
+  box-sizing:border-box;
+  min-width:0;
+  width:100%;
+  max-width:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  overflow:hidden;
+}
+
+.plan-card.premium-pro{
+  background:#0f172a;
+  color:#fff;
+  border:1px solid #0f172a;
+}
+
+.plan-card.plan-estrella{
+  background:linear-gradient(180deg,#eff6ff 0%, #eef2ff 100%);
+  border:2px solid #6366f1;
+  position:relative;
+  transform:scale(1.03);
+  box-shadow:0 18px 40px rgba(99,102,241,.18);
+}
+
+.plan-badge{
+  position:absolute;
+  top:-12px;
+  right:18px;
+  background:#6366f1;
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+  padding:7px 12px;
+  border-radius:999px;
+  box-shadow:0 8px 18px rgba(99,102,241,.25);
+}
+
+.plan-sub{
+  margin:0 0 14px;
+  font-size:14px;
+  color:#64748b;
+}
+
+.plan-card.premium-pro .plan-sub{
+  color:#cbd5e1;
+}
+
+.plan-price{
+  font-size:34px;
+  font-weight:900;
+  line-height:1;
+  margin:8px 0 16px;
+  word-break:break-word;
+}
+
+.plan-features{
+  list-style:none;
+  padding:0;
+  margin:0 0 18px;
+}
+
+.plan-features li{
+  margin:8px 0;
+  font-size:14px;
+  line-height:1.45;
+  word-break:break-word;
+}
+
+.plan-btn{
+  display:block;
+  width:100%;
+  text-align:center;
+  text-decoration:none;
+  padding:12px 16px;
+  border-radius:14px;
+  font-weight:700;
+  background:#2563eb;
+  color:#fff;
+  box-sizing:border-box;
+}
+
+.plan-card.premium-pro .plan-btn{
+  background:#22c55e;
+  color:#fff;
+}
+
+/* ===== MÓVIL ===== */
+@media (max-width: 900px){
+  .hero-grid,
+  .grid,
+  .info-top{
+    grid-template-columns:1fr !important;
+  }
+
+  .planes-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .plan-card.plan-estrella{
+    transform:none;
+  }
+
+  .social-wrap{
+    flex-direction:column;
+  }
+
+  .btn-grid{
+    grid-template-columns:1fr;
+  }
+
+  .topbar{
+    border-radius:28px;
+    padding:16px;
+  }
+
+  .hero-section,
+  .card,
+  .footer{
+    border-radius:24px;
+  }
+
+  .step-text{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:unset;
+  }
+
+  .qr-box{
+    max-width:100%;
+  }
+
+  .qr-panel-mini .qr-img{
+    width:180px;
+  }
+}
+
+@media (max-width: 640px){
+  .container{
+    padding:16px;
+    margin:20px auto;
+  }
+
+  .hero-title{
+    font-size:34px;
+  }
+
+  .brand-text h1{
+    font-size:20px;
+  }
+
+  .brand-text p{
+    font-size:13px;
+  }
+
+  .btn-whatsapp,
+  .btn{
+    width:100%;
+    justify-content:center;
+  }
+
+  .social-wrap,
+  .info-blocks{
+    gap:10px;
+  }
+
+  input,
+  button{
+    min-width:0 !important;
+  }
+}
   </style>
 </head>
 

@@ -636,7 +636,7 @@
       </div>
     </div>
 
-    <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+    <div id="seoLinksHome" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
   <a href="/direccion-digital-panama.html" class="btn btn-google">
     Ver Dirección Digital en Panamá
   </a>
@@ -877,6 +877,7 @@
       hide(document.getElementById("homeHero"));
       hide(document.getElementById("seccionPasos"));
       hide(document.getElementById("seccionPrecios"));
+      hide(document.getElementById("seoLinksHome"));
       
       show(document.getElementById("fieldNombre"), "block");
       show(document.getElementById("fieldRef"), "block");
@@ -1088,6 +1089,7 @@
         show(document.getElementById("homeHero"), "block");
         show(document.getElementById("seccionPasos"), "block");
         show(document.getElementById("seccionPrecios"), "block");
+        show(document.getElementById("seoLinksHome"), "flex");
 
         // Generar QR para la home
         const homeUrl = location.href.split("?")[0];

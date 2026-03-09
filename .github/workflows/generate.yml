@@ -44,25 +44,25 @@ jobs:
         run: |
           mkdir -p out
 
-          CODES=$(jq -r '.codes[]' codes.json)
+          CODES=$(jq -r '.codes[].codigo' codes.json)
 
-          for CODE in $CODES; do
-            PLAN=$(jq -r ".items[] | select(.codigo==\"$CODE\") | .plan" data.json | tr '[:upper:]' '[:lower:]')
+       for CODE in $CODES; do
+       PLAN=$(jq -r ".codes[] | select(.codigo==\"$CODE\") | .plan" codes.json | tr '[:upper:]' '[:lower:]')
 
-            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
-              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-              DIR="out/$SLUG"
+       if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+       SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+       DIR="out/$SLUG"
 
-              mkdir -p "$DIR"
-              cp ad507.template.html "$DIR/index.html"
+       mkdir -p "$DIR"
+       cp ad507.template.html "$DIR/index.html"
 
-              sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
-              sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
-              sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
-              sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
-              sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
-            fi
-          done
+       sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
+       sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
+       sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
+       sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
+       sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
+       fi
+       done
 
       - name: Generate sitemap
         run: |

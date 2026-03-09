@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build:
@@ -71,7 +69,7 @@ jobs:
         with:
           path: out
 
-      deploy:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     permissions:

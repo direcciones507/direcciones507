@@ -1,5 +1,3 @@
-
-
       - name: Generate sitemap
         run: |
           cat > out/sitemap.xml << 'EOF'

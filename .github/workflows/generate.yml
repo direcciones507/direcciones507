@@ -21,30 +21,48 @@ jobs:
         run: |
           mkdir -p out
 
+       name: Generate AD507 Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Generate pages
+        run: |
+          mkdir -p out
+
           CODES=$(jq -r '.codes[]' codes.json)
 
-       for CODE in $CODES; do
+          for CODE in $CODES; do
+            PLAN=$(jq -r ".items[] | select(.codigo==\"$CODE\") | .plan" data.json | tr '[:upper:]' '[:lower:]')
 
-       PLAN=$(jq -r ".items[] | select(.codigo==\"$CODE\") | .plan" data.json | tr '[:upper:]' '[:lower:]')
+            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              DIR="out/$SLUG"
 
-       if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+              mkdir -p "$DIR"
+              cp ad507.template.html "$DIR/index.html"
 
-       SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-       DIR="out/$SLUG"
-
-       mkdir -p "$DIR"
-
-       cp ad507.template.html "$DIR/index.html"
-
-       sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
-       sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
-       sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
-       sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
-       sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG|g" "$DIR/index.html"
-
-       fi
-
-       done
+              sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
+              sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
+              sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
+              sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
+              sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
+            fi
+          done
 
       - name: Generate sitemap
         run: |
@@ -59,8 +77,12 @@ jobs:
           CODES=$(jq -r '.codes[]' codes.json)
 
           for CODE in $CODES; do
-            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-            echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+            PLAN=$(jq -r ".items[] | select(.codigo==\"$CODE\") | .plan" data.json | tr '[:upper:]' '[:lower:]')
+
+            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+            fi
           done
 
           echo '</urlset>' >> out/sitemap.xml

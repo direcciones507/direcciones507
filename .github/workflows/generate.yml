@@ -1,50 +1,4 @@
-name: Generate AD507 Pages
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Generate pages
-        run: |
-          mkdir -p out
-
-          CODES=$(jq -r '.codes[].codigo' codes.json)
-
-          for CODE in $CODES; do
-            PLAN=$(jq -r ".codes[] | select(.codigo==\"$CODE\") | .plan" codes.json | tr '[:upper:]' '[:lower:]' | xargs)
-
-            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
-              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-              DIR="out/$SLUG"
-
-              mkdir -p "$DIR"
-              cp ad507.template.html "$DIR/index.html"
-
-              sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
-              sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
-              sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
-              sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
-              sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
-            fi
-          done
 
       - name: Generate sitemap
         run: |
@@ -79,14 +33,14 @@ jobs:
         with:
           path: out
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+       deploy:
+       needs: build
+       runs-on: ubuntu-latest
+       environment:
+       name: github-pages
+       url: ${{ steps.deployment.outputs.page_url }}
 
-    steps:
+       steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

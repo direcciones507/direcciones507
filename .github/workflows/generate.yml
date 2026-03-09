@@ -1,0 +1,80 @@
+name: Generate AD507 Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Generate pages
+        run: |
+          mkdir -p out
+
+          CODES=$(jq -r '.codes[]' codes.json)
+
+          for CODE in $CODES; do
+            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+            DIR="out/$SLUG"
+
+            mkdir -p "$DIR"
+            cp ad507.template.html "$DIR/index.html"
+
+            sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
+            sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
+            sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
+            sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
+            sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
+          done
+
+      - name: Generate sitemap
+        run: |
+          cat > out/sitemap.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url>
+              <loc>https://direcciones507.com/</loc>
+            </url>
+          EOF
+
+          CODES=$(jq -r '.codes[]' codes.json)
+
+          for CODE in $CODES; do
+            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+            echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+          done
+
+          echo '</urlset>' >> out/sitemap.xml
+
+      - name: Copy root files
+        run: |
+          cp index.html out/index.html
+          cp robots.txt out/robots.txt || true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

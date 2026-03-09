@@ -20,24 +20,33 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
+      - name: Download codes
+        run: |
+          curl -L "https://script.google.com/macros/s/AKfycbydZzfVdT6PCLLzQSyy6TZs1zSPvlZS82JDvOuw-xnO9uwegvQMAdMWrjE8r1Uue3Q9Rg/exec?action=list" -o codes.json
+          cat codes.json
+
       - name: Generate pages
         run: |
           mkdir -p out
 
-          CODES=$(jq -r '.codes[]' codes.json)
+          CODES=$(jq -r '.codes[].codigo' codes.json)
 
           for CODE in $CODES; do
-            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-            DIR="out/$SLUG"
+            PLAN=$(jq -r ".codes[] | select(.codigo==\"$CODE\") | .plan" codes.json | tr '[:upper:]' '[:lower:]' | xargs)
 
-            mkdir -p "$DIR"
-            cp ad507.template.html "$DIR/index.html"
+            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              DIR="out/$SLUG"
 
-            sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
-            sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
-            sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
-            sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
-            sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
+              mkdir -p "$DIR"
+              cp ad507.template.html "$DIR/index.html"
+
+              sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
+              sed -i "s/{{CODE}}/$CODE/g" "$DIR/index.html"
+              sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
+              sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
+              sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
+            fi
           done
 
       - name: Generate sitemap
@@ -50,11 +59,15 @@ jobs:
             </url>
           EOF
 
-          CODES=$(jq -r '.codes[]' codes.json)
+          CODES=$(jq -r '.codes[].codigo' codes.json)
 
           for CODE in $CODES; do
-            SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-            echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+            PLAN=$(jq -r ".codes[] | select(.codigo==\"$CODE\") | .plan" codes.json | tr '[:upper:]' '[:lower:]' | xargs)
+
+            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+            fi
           done
 
           echo '</urlset>' >> out/sitemap.xml

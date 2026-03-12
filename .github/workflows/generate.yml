@@ -76,6 +76,7 @@ jobs:
         run: |
           cp index.html out/index.html
           cp robots.txt out/robots.txt || true
+          cp -R img out/img || true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

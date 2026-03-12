@@ -464,6 +464,143 @@
       .btn { width: 100%; }
       .plans-grid { grid-template-columns: 1fr; }
     }
+
+    .negocio-premium{
+  margin: 28px 0 0;
+  padding: 22px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(245,158,11,.18), transparent 28%),
+    linear-gradient(180deg, #111111 0%, #1a1a1a 100%);
+  color: #f8fafc;
+  box-shadow: 0 14px 40px rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.negocio-hero{
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.negocio-logo{
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 20px;
+  background: rgba(255,255,255,.96);
+  padding: 10px;
+  display: block;
+  margin: 0 auto;
+}
+
+.negocio-tag{
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 8px;
+}
+
+.negocio-titulo{
+  margin: 0 0 10px;
+  font-size: 28px;
+  line-height: 1.12;
+  color: #fff;
+}
+
+.negocio-texto{
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #e5e7eb;
+}
+
+.negocio-meta{
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #f3f4f6;
+}
+
+.negocio-botones{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.negocio-botones a{
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #f59e0b;
+  color: #111827;
+  font-weight: 800;
+  transition: transform .18s ease, opacity .18s ease;
+}
+
+.negocio-botones a:hover{
+  transform: translateY(-1px);
+  opacity: .95;
+}
+
+.negocio-galeria{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.negocio-galeria img{
+  width: 100%;
+  height: 230px;
+  object-fit: cover;
+  border-radius: 18px;
+  display: block;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+
+@media (max-width: 768px){
+  .negocio-premium{
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .negocio-hero{
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .negocio-logo{
+    width: 110px;
+    height: 110px;
+  }
+
+  .negocio-titulo{
+    font-size: 23px;
+  }
+
+  .negocio-texto,
+  .negocio-meta{
+    font-size: 14px;
+  }
+
+  .negocio-botones{
+    justify-content: center;
+  }
+
+  .negocio-galeria{
+    grid-template-columns: 1fr;
+  }
+
+  .negocio-galeria img{
+    height: 260px;
+  }
+}
   </style>
 </head>
 <body>

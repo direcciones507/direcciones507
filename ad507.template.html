@@ -813,6 +813,33 @@
     // Actualizar textos con el código
     codigoH1.textContent = CODE;
     if (codigoSeo) codigoSeo.textContent = CODE;
+
+    function cargarLogoNegocio(codigo){
+  if(!codigo) return;
+
+  const img = document.getElementById("logoNegocio");
+  const box = document.getElementById("logoBox");
+
+  if(!img || !box) return;
+
+  const base = "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/";
+  const urlJpg = base + codigo + ".jpg";
+  const urlPng = base + codigo + ".png";
+
+  img.onload = function(){
+    box.style.display = "block";
+  };
+
+  img.onerror = function(){
+    if(img.src === urlJpg){
+      img.src = urlPng;
+    } else {
+      box.style.display = "none";
+    }
+  };
+
+  img.src = urlJpg;
+}
     
     // Función principal
     async function cargarDireccion() {

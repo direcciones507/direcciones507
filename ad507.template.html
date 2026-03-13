@@ -831,6 +831,8 @@
         const data = await response.json();
         console.log('Respuesta:', data);
         
+        cargarLogoNegocio(CODE);
+        
         // ===== MEJORA #3: Mensaje de error robusto =====
         if (!data || !data.ok) {
           throw new Error(data?.mensaje || data?.message || 'Dirección no encontrada');

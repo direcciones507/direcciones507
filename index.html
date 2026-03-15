@@ -1130,6 +1130,58 @@
       </div>
     </div>
 
+    <!-- AURA -->
+<div style="margin:40px auto; max-width:600px; text-align:center; padding:20px; background:#111827; color:white; border-radius:20px;">
+
+<h2>AURA</h2>
+<p>Habla y te llevo al destino</p>
+
+<button onclick="iniciarAura()" 
+style="padding:15px 25px; font-size:16px; border-radius:30px; border:none; background:#7c3aed; color:white; cursor:pointer;">
+🎙️ Hablar con AURA
+</button>
+
+<p id="resultadoAura" style="margin-top:15px;"></p>
+
+</div>
+
+<script>
+function iniciarAura(){
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(!SpeechRecognition){
+alert("Tu navegador no soporta voz");
+return;
+}
+
+const recognition = new SpeechRecognition();
+recognition.lang = "es-PA";
+
+recognition.start();
+
+recognition.onresult = function(event){
+
+let texto = event.results[0][0].transcript.toLowerCase();
+
+document.getElementById("resultadoAura").innerText = "Escuché: " + texto;
+
+if(texto.includes("jedidias")){
+window.location.href="/ad507-transporte-jedidias/";
+}
+
+let match = texto.match(/ad507[- ]?\d+/);
+
+if(match){
+let codigo = match[0].replace(" ","-").toLowerCase();
+window.location.href="/" + codigo + "/";
+}
+
+}
+
+}
+</script>
+
     <div id="seoLinksHome" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
   <a href="/direccion-digital-panama" class="btn btn-google">
     Ver Dirección Digital en Panamá

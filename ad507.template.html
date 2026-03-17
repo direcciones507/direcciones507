@@ -868,6 +868,24 @@
         if (!data || !data.ok) {
           throw new Error(data?.mensaje || data?.message || 'Dirección no encontrada');
         }
+
+        // ===== LOGO =====
+if(data.logo){
+  document.getElementById("logoNegocio").src = data.logo;
+  document.getElementById("logoBox").style.display = "block";
+}
+
+// ===== WEB =====
+if(data.web){
+  let webUrl = data.web;
+
+  if(!webUrl.startsWith("http")){
+    webUrl = "https://" + webUrl;
+  }
+
+  document.getElementById("btnWeb").href = webUrl;
+  document.getElementById("btnWeb").style.display = "inline-block";
+}
         
         // Mostrar datos
         estadoDiv.style.display = 'none';

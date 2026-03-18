@@ -880,17 +880,22 @@ if(data.logo){
 }
 
 // ===== WEB =====
-if(data.web){
-  let webUrl = data.web;
+const btnWeb = document.getElementById("btnWeb");
 
-  if(!webUrl.startsWith("http")){
-    webUrl = "https://" + webUrl;
+if (btnWeb) {
+  if (data.web) {
+    let webUrl = String(data.web).trim();
+
+    if (!webUrl.startsWith("http://") && !webUrl.startsWith("https://")) {
+      webUrl = "https://" + webUrl;
+    }
+
+    btnWeb.href = webUrl;
+    btnWeb.style.display = "inline-flex";
+  } else {
+    btnWeb.style.display = "none";
   }
-
-  // ===== WEB =====
-if(data.web){
-  document.getElementById("btnWeb").href = data.web;
-  document.getElementById("btnWeb").style.display = "inline-flex";
+}
         
         // Mostrar datos
         estadoDiv.style.display = 'none';

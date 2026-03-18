@@ -887,8 +887,19 @@ if(data.web){
     webUrl = "https://" + webUrl;
   }
 
-  document.getElementById("btnWeb").href = webUrl;
-  document.getElementById("btnWeb").style.display = "inline-block";
+  // ===== WEB =====
+if(data.web){
+  document.getElementById("btnWeb").href = data.web;
+  document.getElementById("btnWeb").style.display = "inline-flex";
+
+  // 🎯 SOLO ESTE CLIENTE
+  if (CODE === "AD507-LABDIESELMONTERO") {
+    const btnWeb = document.getElementById("btnWeb");
+    if (btnWeb) {
+      btnWeb.style.background = "#facc15"; // amarillo logo
+      btnWeb.style.color = "#000"; // texto negro
+    }
+  }
 }
         
         // Mostrar datos

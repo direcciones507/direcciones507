@@ -1394,6 +1394,51 @@ body{
 .btn-primary:hover{
   background:#16a34a;
 }  
+
+  /* ===== MOBILE FIX 🔥 ===== */
+@media (max-width: 768px){
+
+  .header{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .header-left{
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .logo-main{
+    width: 90px; /* 👈 más pequeño en móvil */
+  }
+
+  .brand-text h1{
+    font-size: 16px;
+  }
+
+  .brand-text span{
+    font-size: 12px;
+  }
+
+  .header-right{
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-primary{
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .badge{
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+}  
+    
   </style>
 </head>
 

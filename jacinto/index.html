@@ -259,11 +259,10 @@
   </div>
 
   <script>
-    // URL para el QR (ajústala si tienes dominio propio)
-    const urlActual = "https://direcciones507.github.io/direcciones507/jacinto/";
-    // Si usas dominio personalizado: "https://direcciones507.com/jacinto/"
-    
-    document.getElementById('qr').src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(urlActual);
-  </script>
+  const urlActual = "https://direcciones507.com/jacinto/";
+  document.getElementById('qr').src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
+    encodeURIComponent(urlActual);
+</script>
 </body>
 </html>

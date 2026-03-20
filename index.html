@@ -1411,33 +1411,87 @@ body{
     font-size:28px;
   }
 }
+
+    .header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 22px;
+  background:rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  border-radius:20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.logo-main{
+  width:140px;
+  height:auto;
+}
+
+.brand-text h1{
+  font-size:16px;
+  margin:0;
+  font-weight:600;
+  color:#0f172a;
+}
+
+.brand-text span{
+  font-size:12px;
+  color:#64748b;
+}
+
+.header-right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.badge{
+  background:#eef2ff;
+  color:#3730a3;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+}
+
+.btn-primary{
+  background:#22c55e;
+  color:white;
+  padding:10px 18px;
+  border-radius:999px;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:500;
+}
+
+.btn-primary:hover{
+  background:#16a34a;
+}  
   </style>
 </head>
 
 <body>
-  <div class="container">
 
-    <div class="topbar">
-  <div class="brand-large">
-    <div class="logo-circle">
-      <img src="/jacinto/logo.png" alt="Logo Direcciones507" onerror="this.style.display='none'">
-    </div>
+<header class="header">
+  <div class="header-left">
+    <img src="/assets/logo-direcciones507.png" class="logo-main" alt="Direcciones507">
     <div class="brand-text">
       <h1>Direcciones507</h1>
-      <p>Sistema Digital de Direcciones · Panamá</p>
+      <span>Sistema Digital de Direcciones · Panamá</span>
     </div>
   </div>
 
-  <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-    <div class="badge">
-      <i class="fa-solid fa-shield-halved" style="color:#3b82f6;"></i> Enlace 100% seguro
-    </div>
-    <a id="btnComprarTop" class="btn-whatsapp" href="#" target="_blank">
-      <i class="fa-brands fa-whatsapp"></i> Comprar ahora
-    </a>
+  <div class="header-right">
+    <span class="badge">Enlace 100% seguro</span>
+    <a href="#" class="btn-primary">Comprar ahora</a>
   </div>
-</div>
-
+</header>
     <!-- BLOQUES INFORMATIVOS -->
     <div class="info-blocks">
       <div class="info-block">

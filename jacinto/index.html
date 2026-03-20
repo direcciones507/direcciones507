@@ -4,265 +4,846 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jacinto Salazar | Fundador · Direcciones507</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta name="description" content="Jacinto Salazar, fundador de Direcciones507. Direcciones digitales en Panamá para negocios, personas y proyectos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <style>
     :root{
-      --bg:#0b1020;
+      --bg:#07111f;
+      --bg-2:#0d1b2f;
       --card:rgba(255,255,255,.06);
+      --card-strong:rgba(255,255,255,.08);
       --border:rgba(255,255,255,.12);
-      --text:#e5e7eb;
-      --muted:rgba(229,231,235,.75);
+      --text:#f3f4f6;
+      --muted:rgba(243,244,246,.72);
       --green:#22c55e;
-      --blue:#1e3a8a;
+      --green-dark:#14532d;
+      --blue:#1d4ed8;
+      --blue-soft:#0f2d72;
+      --gold:#facc15;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --radius:22px;
     }
-    *{box-sizing:border-box}
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
     body{
       margin:0;
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:radial-gradient(1200px 700px at 20% 10%, rgba(34,197,94,.18), transparent 60%),
-                 radial-gradient(900px 600px at 80% 30%, rgba(30,58,138,.22), transparent 55%),
-                 var(--bg);
       color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(34,197,94,.16), transparent 60%),
+        radial-gradient(900px 600px at 85% 20%, rgba(29,78,216,.20), transparent 55%),
+        linear-gradient(180deg, #08111d 0%, #0a1628 45%, #07111f 100%);
       min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
       padding:24px;
     }
-    .wrap{width:min(600px,100%);}
-    .card{
-      background:var(--card);
+
+    a{
+      color:inherit;
+    }
+
+    .container{
+      width:min(920px,100%);
+      margin:0 auto;
+    }
+
+    .shell{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid var(--border);
-      border-radius:18px;
-      padding:22px;
-      box-shadow:0 20px 60px rgba(0,0,0,.35);
-      backdrop-filter: blur(10px);
-    }
-    .top{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      margin-bottom:14px;
-    }
-    .logo{
-      width:56px;height:56px;border-radius:16px;
-      background:linear-gradient(145deg, rgba(30,81,211,.9), rgba(11,42,111,.9));
-      display:flex;align-items:center;justify-content:center;
+      border-radius:28px;
       overflow:hidden;
-      border:1px solid rgba(255,255,255,.14);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
     }
-    .logo img{width:100%;height:100%;object-fit:cover}
-    .brand{line-height:1.1}
-    .brand .t1{font-weight:800;font-size:16px;letter-spacing:.2px}
-    .brand .t2{font-size:13px;color:var(--muted);margin-top:4px}
-    .name{font-size:24px;font-weight:800;margin:10px 0 4px}
-    .role{color:var(--green);font-weight:700;margin:0 0 10px}
-    .tagline{color:var(--muted);margin:0 0 16px}
-    .profile-image {
-      width: 100%;
-      max-height: 180px;
-      object-fit: cover;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      margin-bottom: 16px;
+
+    .hero{
+      position:relative;
+      padding:26px;
+      background:
+        linear-gradient(135deg, rgba(29,78,216,.18), rgba(34,197,94,.10)),
+        rgba(255,255,255,.02);
+      border-bottom:1px solid var(--border);
     }
-    .schedule {
-      background: rgba(0,0,0,0.2);
-      border-radius: 30px;
-      padding: 8px 16px;
-      margin: 10px 0;
-      display: inline-block;
-      font-size: 14px;
-      border: 1px solid var(--border);
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:auto -80px -80px auto;
+      width:240px;
+      height:240px;
+      background:radial-gradient(circle, rgba(250,204,21,.16), transparent 65%);
+      pointer-events:none;
+      filter:blur(10px);
     }
-    .badge-open {
-      color: var(--green);
-      font-weight: 700;
-      margin-right: 6px;
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:22px;
     }
-    .promo {
-      background: rgba(34, 197, 94, 0.15);
-      border-left: 4px solid var(--green);
-      padding: 12px 16px;
-      border-radius: 12px;
-      margin: 18px 0;
-      font-weight: 600;
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
     }
-    .promo p { margin: 0; }
-    .grid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:10px;
-      margin-top:10px;
-    }
-    .btn{
+
+    .logo{
+      width:60px;
+      height:60px;
+      border-radius:18px;
+      overflow:hidden;
       display:flex;
       align-items:center;
       justify-content:center;
+      background:linear-gradient(145deg, rgba(30,81,211,.95), rgba(11,42,111,.95));
+      border:1px solid rgba(255,255,255,.14);
+      flex-shrink:0;
+    }
+
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .brand-text{
+      min-width:0;
+    }
+
+    .brand-text .kicker{
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--gold);
+      margin-bottom:4px;
+    }
+
+    .brand-text .title{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.15;
+    }
+
+    .brand-text .sub{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(34,197,94,.14);
+      border:1px solid rgba(34,197,94,.30);
+      color:#d1fae5;
+      font-weight:700;
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:24px;
+      align-items:center;
+    }
+
+    .hero-copy h1{
+      margin:0 0 8px;
+      font-size:clamp(30px,4vw,46px);
+      line-height:1.02;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .hero-copy .role{
+      margin:0 0 14px;
+      font-size:16px;
+      font-weight:800;
+      color:var(--green);
+    }
+
+    .hero-copy .lead{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.7;
+      max-width:58ch;
+    }
+
+    .mini-points{
+      display:flex;
+      flex-wrap:wrap;
       gap:10px;
-      padding:14px 14px;
-      border-radius:14px;
+      margin-bottom:20px;
+    }
+
+    .mini-points span{
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:13px;
+      color:var(--text);
+    }
+
+    .cta-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height:50px;
+      padding:14px 18px;
+      border-radius:16px;
       text-decoration:none;
       font-weight:800;
       border:1px solid rgba(255,255,255,.14);
-      transition:transform .08s ease;
-      user-select:none;
+      transition:transform .08s ease, opacity .2s ease, background .2s ease;
     }
-    .btn:active{transform:scale(.99)}
-    .wa{background:rgba(34,197,94,.95); color:#04140a;}
-    .call{background:rgba(17,24,39,.92); color:var(--text);}
-    .web{background:rgba(30,58,138,.92); color:var(--text);}
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 18px 0;
+
+    .btn:hover{
+      opacity:.96;
     }
-    .gallery img {
-      width: 100%;
-      aspect-ratio: 1/1;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid var(--border);
+
+    .btn:active{
+      transform:scale(.99);
     }
-    .qrbox{
-      margin-top:16px;
-      display:grid;
-      grid-template-columns:1fr 220px;
-      gap:14px;
-      align-items:center;
+
+    .btn-primary{
+      background:linear-gradient(180deg, rgba(34,197,94,.98), rgba(20,83,45,.96));
+      color:#04140a;
+      border-color:rgba(34,197,94,.35);
     }
-    .qr{
+
+    .btn-secondary{
       background:rgba(255,255,255,.06);
+      color:var(--text);
+    }
+
+    .btn-ghost{
+      background:linear-gradient(180deg, rgba(29,78,216,.92), rgba(15,45,114,.96));
+      color:#eef4ff;
+      border-color:rgba(29,78,216,.32);
+    }
+
+    .hero-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
       border:1px solid rgba(255,255,255,.12);
-      border-radius:16px;
-      padding:10px;
-      display:flex;align-items:center;justify-content:center;
+      border-radius:24px;
+      padding:16px;
     }
-    .qr img{width:200px;height:200px;border-radius:10px}
-    .mini{
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.35;
+
+    .cover{
+      width:100%;
+      height:290px;
+      object-fit:cover;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#0f172a;
     }
-    .prices{
-      margin-top:14px;
-      padding:14px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-    }
-    .prices h3{margin:0 0 10px;font-size:14px;letter-spacing:.2px}
-    .row{display:flex;justify-content:space-between;gap:10px;margin:6px 0;color:var(--text)}
-    .row span{color:var(--muted)}
-    .footer{
-      margin-top:14px;
-      display:flex;
-      justify-content:space-between;
+
+    .hero-card-info{
+      display:grid;
+      grid-template-columns:1fr 1fr;
       gap:10px;
+      margin-top:12px;
+    }
+
+    .info-chip{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px;
+    }
+
+    .info-chip .label{
       font-size:12px;
       color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .info-chip .value{
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .section{
+      padding:24px;
+      border-top:1px solid var(--border);
+    }
+
+    .section:first-of-type{
+      border-top:none;
+    }
+
+    .section-title{
+      margin:0 0 6px;
+      font-size:22px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+
+    .section-sub{
+      margin:0 0 18px;
+      color:var(--muted);
+      line-height:1.65;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:14px;
+    }
+
+    .benefit{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:18px;
+    }
+
+    .benefit .icon{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(34,197,94,.14);
+      border:1px solid rgba(34,197,94,.22);
+      font-size:20px;
+      margin-bottom:12px;
+    }
+
+    .benefit h3{
+      margin:0 0 8px;
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .benefit p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .promo{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      background:linear-gradient(180deg, rgba(34,197,94,.14), rgba(34,197,94,.08));
+      border:1px solid rgba(34,197,94,.20);
+      border-left:4px solid var(--green);
+      border-radius:18px;
+      padding:16px;
+      margin-top:18px;
+    }
+
+    .promo-badge{
+      font-size:24px;
+      line-height:1;
+    }
+
+    .promo p{
+      margin:0;
+      line-height:1.6;
+      font-weight:600;
+    }
+
+    .plans{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:14px;
+    }
+
+    .plan{
+      position:relative;
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:22px;
+      padding:18px;
+      overflow:hidden;
+    }
+
+    .plan.featured{
+      border-color:rgba(250,204,21,.28);
+      box-shadow:0 10px 30px rgba(250,204,21,.06);
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(250,204,21,.14);
+      border:1px solid rgba(250,204,21,.24);
+      color:#fde68a;
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:14px;
+    }
+
+    .plan h3{
+      margin:0 0 8px;
+      font-size:19px;
+      font-weight:900;
+    }
+
+    .price{
+      font-size:30px;
+      font-weight:900;
+      margin-bottom:6px;
+      letter-spacing:-.03em;
+    }
+
+    .price small{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .plan p{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+      margin:0 0 14px;
+    }
+
+    .plan ul{
+      list-style:none;
+      padding:0;
+      margin:0 0 16px;
+      display:grid;
+      gap:10px;
+    }
+
+    .plan li{
+      color:var(--text);
+      font-size:14px;
+      line-height:1.5;
+      padding-left:24px;
+      position:relative;
+    }
+
+    .plan li::before{
+      content:"✓";
+      position:absolute;
+      left:0;
+      top:0;
+      color:var(--green);
+      font-weight:900;
+    }
+
+    .gallery{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .gallery img{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#0f172a;
+    }
+
+    .qrbox{
+      display:grid;
+      grid-template-columns:1fr 240px;
+      gap:18px;
+      align-items:center;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:22px;
+      padding:18px;
+    }
+
+    .qr-copy h3{
+      margin:0 0 10px;
+      font-size:20px;
+      font-weight:900;
+    }
+
+    .qr-copy p{
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .share-link{
+      display:inline-block;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:14px;
+      word-break:break-all;
+    }
+
+    .qr{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:18px;
+      padding:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .qr img{
+      width:210px;
+      height:210px;
+      border-radius:14px;
+      background:#fff;
+    }
+
+    .footer{
+      padding:20px 24px 24px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .footer a{
+      text-decoration:none;
+      color:var(--text);
+      border-bottom:1px dotted rgba(255,255,255,.25);
+    }
+
+    .social{
+      display:flex;
+      gap:12px;
       flex-wrap:wrap;
     }
-    .social a{color:var(--text);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.25)}
-    @media (max-width:520px){
-      .qrbox{grid-template-columns:1fr}
-      .qr img{width:220px;height:220px}
-      .gallery { grid-template-columns: 1fr 1fr; }
+
+    @media (max-width:860px){
+      .hero-grid,
+      .plans,
+      .grid-3,
+      .qrbox{
+        grid-template-columns:1fr;
+      }
+
+      .hero-card-info{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .gallery{
+        grid-template-columns:1fr 1fr 1fr;
+      }
+
+      .qr{
+        justify-content:flex-start;
+      }
+    }
+
+    @media (max-width:640px){
+      body{
+        padding:14px;
+      }
+
+      .hero,
+      .section,
+      .footer{
+        padding:18px;
+      }
+
+      .topbar{
+        margin-bottom:18px;
+      }
+
+      .hero-copy .lead{
+        font-size:15px;
+      }
+
+      .hero-card-info{
+        grid-template-columns:1fr;
+      }
+
+      .gallery{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .cta-row{
+        display:grid;
+        grid-template-columns:1fr;
+      }
+
+      .btn{
+        width:100%;
+      }
+
+      .qr img{
+        width:220px;
+        height:220px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <!-- Cabecera -->
-      <div class="top">
-        <div class="logo" title="Direcciones Digitales de Panamá">
-          <img src="../assets/logo.png" alt="AD507 Logo" onerror="this.style.display='none'">
+  <div class="container">
+    <div class="shell">
+
+      <!-- HERO -->
+      <section class="hero">
+        <div class="topbar">
+          <div class="brand">
+            <div class="logo" title="Direcciones507">
+              <img src="../assets/logo.png" alt="Logo Direcciones507" onerror="this.style.display='none'">
+            </div>
+            <div class="brand-text">
+              <div class="kicker">Premium Pro</div>
+              <div class="title">Direcciones507</div>
+              <div class="sub">Direcciones digitales modernas para Panamá</div>
+            </div>
+          </div>
+
+          <div class="status-pill">🟢 Disponible ahora · Lun-Vie 9am a 6pm</div>
         </div>
-        <div class="brand">
-          <div class="t1">Direcciones Digitales de Panamá</div>
-          <div class="t2">direcciones507.com</div>
+
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <h1>Jacinto Salazar</h1>
+            <p class="role">Fundador · Direcciones507</p>
+            <p class="lead">
+              Ayudo a negocios, emprendedores y personas en Panamá a tener una dirección digital
+              clara, moderna y fácil de compartir para que clientes, deliveries y visitas lleguen
+              sin vueltas ni enredos.
+            </p>
+
+            <div class="mini-points">
+              <span>📍 Ubicación clara</span>
+              <span>📲 Fácil de compartir</span>
+              <span>🚚 Menos errores en entregas</span>
+              <span>💼 Imagen más profesional</span>
+            </div>
+
+            <div class="cta-row">
+              <a class="btn btn-primary" href="https://wa.me/50765996532" target="_blank" rel="noopener">
+                📲 Escribirme por WhatsApp
+              </a>
+              <a class="btn btn-secondary" href="tel:+50765996532">
+                📞 Llamar ahora
+              </a>
+              <a class="btn btn-ghost" href="https://direcciones507.com" target="_blank" rel="noopener">
+                🌐 Ver sitio web
+              </a>
+            </div>
+
+            <div class="promo">
+              <div class="promo-badge">🔥</div>
+              <p>
+                <strong>Promoción de lanzamiento:</strong> 10% de descuento en el
+                <strong>Plan Negocio</strong> para emprendedores durante marzo 2026.
+              </p>
+            </div>
+          </div>
+
+          <div class="hero-card">
+            <img
+              src="https://via.placeholder.com/700x700/1e3a8a/ffffff?text=Jacinto+Salazar"
+              alt="Jacinto Salazar"
+              class="cover"
+              onerror="this.style.display='none'"
+            >
+
+            <div class="hero-card-info">
+              <div class="info-chip">
+                <div class="label">Especialidad</div>
+                <div class="value">Direcciones digitales</div>
+              </div>
+              <div class="info-chip">
+                <div class="label">Cobertura</div>
+                <div class="value">Panamá</div>
+              </div>
+              <div class="info-chip">
+                <div class="label">Canal rápido</div>
+                <div class="value">WhatsApp</div>
+              </div>
+              <div class="info-chip">
+                <div class="label">Sitio oficial</div>
+                <div class="value">direcciones507.com</div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Foto de portada -->
-      <img src="https://via.placeholder.com/600x180/1e3a8a/ffffff?text=Foto+de+Jacinto" 
-           alt="Jacinto Salazar" 
-           class="profile-image"
-           onerror="this.style.display='none'">
+      <!-- BENEFICIOS -->
+      <section class="section">
+        <h2 class="section-title">¿Qué hago con Direcciones507?</h2>
+        <p class="section-sub">
+          Transformo ubicaciones complicadas en direcciones digitales fáciles de entender,
+          fáciles de enviar y fáciles de usar. El resultado: menos confusión, mejor imagen y
+          más facilidad para que te encuentren.
+        </p>
 
-      <!-- Info principal -->
-      <div class="name">Jacinto Salazar</div>
-      <div class="role">Fundador · Direcciones507</div>
-      <p class="tagline">Ayudo a negocios panameños a ser encontrados fácilmente 🚀</p>
+        <div class="grid-3">
+          <div class="benefit">
+            <div class="icon">📍</div>
+            <h3>Ubicación más clara</h3>
+            <p>
+              Tus clientes, visitas o deliveries reciben una forma más simple y directa de llegar.
+            </p>
+          </div>
 
-      <!-- Horarios -->
-      <div class="schedule">
-        <span class="badge-open">🟢 Disponible ahora</span>
-        · Lun-Vie 9am a 6pm
-      </div>
+          <div class="benefit">
+            <div class="icon">📲</div>
+            <h3>Comparte en segundos</h3>
+            <p>
+              Tu dirección digital se puede enviar por WhatsApp, Instagram, QR y enlaces directos.
+            </p>
+          </div>
 
-      <!-- Promoción -->
-      <div class="promo">
-        <p>🔥 Promoción de lanzamiento: <strong>10% de descuento</strong> en Plan Negocios para emprendedores (Marzo 2026).</p>
-      </div>
-
-      <!-- Botones principales (SIN videollamada) -->
-      <div class="grid">
-        <a class="btn wa" href="https://wa.me/50765996532" target="_blank" rel="noopener">📲 Enviar WhatsApp</a>
-        <a class="btn call" href="tel:+50765996532">📞 Llamar ahora</a>
-        <a class="btn web" href="https://direcciones507.com" target="_blank" rel="noopener">🌐 Nuestro sitio web</a>
-      </div>
-
-      <!-- Galería -->
-      <div style="margin: 18px 0 8px;"><b>📸 Lo que hacemos</b></div>
-      <div class="gallery">
-        <img src="https://via.placeholder.com/200x200/22c55e/ffffff?text=Cliente+feliz" alt="Cliente feliz" onerror="this.style.display='none'">
-        <img src="https://via.placeholder.com/200x200/1e3a8a/ffffff?text=Entrega+exitosa" alt="Entrega" onerror="this.style.display='none'">
-        <img src="https://via.placeholder.com/200x200/22c55e/ffffff?text=Nuestro+equipo" alt="Equipo" onerror="this.style.display='none'">
-      </div>
-
-      <!-- Código QR -->
-      <div class="qrbox">
-        <div class="mini">
-          <b>📌 Comparte este perfil</b><br>
-          Escanea el QR o copia el enlace para que otros vean mi tarjeta digital.
-          <br><br>
-          <span style="word-break: break-all;">🔗 direcciones507.com/jacinto</span>
+          <div class="benefit">
+            <div class="icon">💼</div>
+            <h3>Imagen más profesional</h3>
+            <p>
+              Tu negocio se ve más ordenado, moderno y confiable desde el primer contacto.
+            </p>
+          </div>
         </div>
-        <div class="qr">
-          <img id="qr" alt="QR a este perfil">
-        </div>
-      </div>
+      </section>
 
-      <!-- Planes -->
-      <div class="prices">
-        <h3>Planes Direcciones507 · Pago único</h3>
-        <div class="row"><b>Persona</b> <span>$6.99</span></div>
-        <div class="row"><b>Negocio</b> <span>desde $10.99</span></div>
-        <div class="row"><b>PH / Edificio</b> <span>consultar</span></div>
-        <div style="text-align: center; margin-top: 12px;">
-          <a href="https://direcciones507.com" style="color: var(--green);">¡Quiero mi dirección digital! →</a>
-        </div>
-      </div>
+      <!-- PLANES -->
+      <section class="section">
+        <h2 class="section-title">Planes Direcciones507</h2>
+        <p class="section-sub">
+          Opciones pensadas para personas, negocios y proyectos que quieren ser encontrados con más facilidad.
+        </p>
 
-      <!-- Footer -->
-      <div class="footer">
-        <div>© Direcciones507 · 2026</div>
+        <div class="plans">
+          <div class="plan">
+            <div class="tag">Plan básico</div>
+            <h3>Persona</h3>
+            <div class="price">$6.99 <small>pago único</small></div>
+            <p>Ideal para casas, apartamentos o uso personal.</p>
+            <ul>
+              <li>Enlace directo para compartir</li>
+              <li>Botón de WhatsApp</li>
+              <li>Código QR</li>
+              <li>Presentación clara de tu dirección</li>
+            </ul>
+            <a class="btn btn-secondary" href="https://wa.me/50765996532?text=Hola%20Jacinto,%20quiero%20mi%20Plan%20Persona" target="_blank" rel="noopener">
+              Solicitar plan
+            </a>
+          </div>
+
+          <div class="plan featured">
+            <div class="tag">⭐ Más solicitado</div>
+            <h3>Negocio</h3>
+            <div class="price">$10.99 <small>desde</small></div>
+            <p>Perfecto para comercios, emprendimientos y servicios.</p>
+            <ul>
+              <li>Imagen de negocio o marca</li>
+              <li>WhatsApp, llamada y web</li>
+              <li>Galería básica</li>
+              <li>Mejor presencia para vender</li>
+            </ul>
+            <a class="btn btn-primary" href="https://wa.me/50765996532?text=Hola%20Jacinto,%20quiero%20informaci%C3%B3n%20del%20Plan%20Negocio" target="_blank" rel="noopener">
+              Quiero este plan
+            </a>
+          </div>
+
+          <div class="plan">
+            <div class="tag">Premium</div>
+            <h3>PH / Edificio</h3>
+            <div class="price">Consultar <small>según proyecto</small></div>
+            <p>Para residenciales, edificios o soluciones más completas.</p>
+            <ul>
+              <li>Estructura personalizada</li>
+              <li>Mayor capacidad de organización</li>
+              <li>Adaptado al proyecto</li>
+              <li>Atención directa para cotización</li>
+            </ul>
+            <a class="btn btn-secondary" href="https://wa.me/50765996532?text=Hola%20Jacinto,%20quiero%20cotizar%20un%20proyecto%20PH%20o%20Edificio" target="_blank" rel="noopener">
+              Cotizar proyecto
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- GALERIA -->
+      <section class="section">
+        <h2 class="section-title">Lo que hacemos</h2>
+        <p class="section-sub">
+          Soluciones pensadas para ayudar a que una ubicación deje de ser un rompecabezas y pase a ser algo simple de usar.
+        </p>
+
+        <div class="gallery">
+          <img src="https://via.placeholder.com/500x500/22c55e/ffffff?text=Cliente+feliz" alt="Cliente feliz" onerror="this.style.display='none'">
+          <img src="https://via.placeholder.com/500x500/1e3a8a/ffffff?text=Entrega+exitosa" alt="Entrega exitosa" onerror="this.style.display='none'">
+          <img src="https://via.placeholder.com/500x500/0f172a/ffffff?text=Direcci%C3%B3n+digital" alt="Dirección digital" onerror="this.style.display='none'">
+        </div>
+      </section>
+
+      <!-- QR -->
+      <section class="section">
+        <div class="qrbox">
+          <div class="qr-copy">
+            <h3>Comparte este perfil</h3>
+            <p>
+              Escanea el código QR o copia el enlace para enviar esta tarjeta digital por WhatsApp,
+              redes sociales o a cualquier cliente que quiera conocer más sobre Direcciones507.
+            </p>
+            <div class="share-link">🔗 https://direcciones507.com/jacinto/</div>
+          </div>
+
+          <div class="qr">
+            <img id="qr" alt="QR a este perfil">
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="footer">
+        <div>© Direcciones507 · 2026 · Hecho para compartir ubicaciones con más claridad</div>
         <div class="social">
-          <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener">Instagram</a> ·
+          <a href="https://direcciones507.com" target="_blank" rel="noopener">Sitio web</a>
+          <a href="https://www.instagram.com/direccionesdigitalespty" target="_blank" rel="noopener">Instagram</a>
           <a href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank" rel="noopener">Facebook</a>
         </div>
-      </div>
+      </footer>
+
     </div>
   </div>
 
   <script>
-  const urlActual = "https://direcciones507.com/jacinto/";
-  document.getElementById('qr').src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
-    encodeURIComponent(urlActual);
-</script>
+    const urlActual = "https://direcciones507.com/jacinto/";
+    document.getElementById("qr").src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
+      encodeURIComponent(urlActual);
+  </script>
 </body>
 </html>

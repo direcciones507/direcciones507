@@ -55,7 +55,7 @@ def excel_to_json():
         
         # Leer la hoja AD507
         print(f"📖 Leyendo archivo: {excel_file}")
-        df = pd.read_excel(excel_file, sheet_name='direcciones')
+        df = pd.read_excel(excel_file, sheet_name='direcciones', header=1)
         
         print(f"📊 Total filas en Excel: {len(df)}")
         print("✅ Columnas detectadas (primeras 10):")

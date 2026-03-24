@@ -70,7 +70,7 @@ def excel_to_json():
         clientes_con_coordenadas = 0
         clientes_sin_coordenadas = 0
         
-        for index, row in df.iterrows():
+for index, row in df.iterrows():
 
     # Obtener código (columna A)
     codigo = str(row['Código']).strip() if pd.notna(row['Código']) else ""

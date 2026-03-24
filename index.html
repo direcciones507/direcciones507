@@ -1713,7 +1713,7 @@
       if (uiNombre) uiNombre.textContent = data.nombre || "-";
       if (uiRef) uiRef.textContent = data.referencia || "-";
 
-      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
+      const shareUrl = `${window.location.origin}/?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
       window.verificacionUrl = shareUrl;
 
       const qrImg = document.getElementById("qrImg");

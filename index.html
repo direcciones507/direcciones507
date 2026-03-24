@@ -1826,54 +1826,58 @@ if (esNegocio) {
       buscarCodigo();
     };
 
-    // CAMBIO 3: Inicialización corregida
-    window.addEventListener("DOMContentLoaded", () => {
-      // Botones compra
-      const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
-      document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
-      document.getElementById("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-      document.getElementById("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
-      document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-      document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+    <script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
+    document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
+    document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+    document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
 
-      // Enter en input
-      const input = document.getElementById("inputCodigo");
-      if (input) {
-        input.addEventListener("keypress", e => { if (e.key === "Enter") buscarCodigo(); });
+    const input = document.getElementById("inputCodigo");
+    if (input) {
+      input.addEventListener("keypress", e => {
+        if (e.key === "Enter") buscarCodigo();
+      });
+    }
+
+    const urlParams = new URLSearchParams(location.search);
+    let urlCode = urlParams.get("code");
+
+    // NUEVO: leer también el path tipo /ad507-0004/
+    if (!urlCode) {
+      const path = window.location.pathname
+        .replace(/^\/+|\/+$/g, "")   // quita / al inicio y final
+        .toUpperCase();
+
+      if (path.startsWith("AD507-")) {
+        urlCode = path;
+      }
+    }
+
+    if (urlCode && input) {
+      input.value = urlCode;
+      buscarCodigo();
+    } else {
+      hidePanelSections();
+      show(document.getElementById("homeHero"), "block");
+      show(document.getElementById("seccionPrecios"), "block");
+      show(document.getElementById("seoLinksHome"), "flex");
+
+      const homeUrl = location.href.split("?")[0];
+      const qrImg = document.getElementById("qrImg");
+      const uiLink = document.getElementById("uiLink");
+
+      if (qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
       }
 
-      // Verificar si hay código en la URL
-      const urlParams = new URLSearchParams(location.search);
-      const urlCode = urlParams.get("code");
-
-      if (urlCode && input) {
-        // Si hay ?code=, cargar ese código
-        input.value = urlCode;
-        buscarCodigo();
-      } else {
-        // Si no hay código, mostrar la home
-        hidePanelSections();
-        show(document.getElementById("homeHero"), "block");
-        show(document.getElementById("seccionPasos"), "block");
-        show(document.getElementById("seccionPrecios"), "block");
-        show(document.getElementById("seoLinksHome"), "flex");
-
-        // Generar QR para la home
-        const homeUrl = location.href.split("?")[0];
-        const qrImg = document.getElementById("qrImg");
-        const uiLink = document.getElementById("uiLink");
-
-        if (qrImg) {
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
-        }
-
-        if (uiLink) {
-          uiLink.textContent = homeUrl;
-        }
+      if (uiLink) {
+        uiLink.textContent = homeUrl;
       }
-    });
+    }
+  });
 
-    window.buscarCodigo = buscarCodigo;
-  </script>
+  window.buscarCodigo = buscarCodigo;
+</script>
 </body>
 </html>

@@ -125,7 +125,7 @@ def excel_to_json():
             "total_clientes_json": len(clientes),
             "estructura_origen": {
                 "archivo": excel_file,
-                "hoja": "AD507",
+                "hoja": "direcciones",
                 "columnas_utilizadas": [
                     "Código", "Nombre", "Teléfono (cliente)", "Provincia",
                     "Referencia", "Coordenada (LAT,LNG)", "Fecha", "Validación"

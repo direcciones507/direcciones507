@@ -1639,7 +1639,7 @@
 
         if (!data.ok) throw new Error(data.message || "Código no encontrado.");
 
-        CODIGO_ACTUAL = data.codigo || data.code || codigo;
+        CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim();
 DATOS_CLIENTE = data;
 
 // UI - código

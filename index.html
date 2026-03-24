@@ -2346,37 +2346,38 @@ body{
     buscarCodigo();
   };
 
-  // Inicio
-  window.addEventListener("DOMContentLoaded", () => {
-    const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
+  <script>
+window.addEventListener("DOMContentLoaded", async () => {
+  const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
 
-    document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
-    document.getElementById("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-    document.getElementById("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
-    document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-    document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+  byId("btnComprarTop")?.setAttribute("href", baseWA);
+  byId("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+  byId("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+  byId("btnHeroPremium")?.setAttribute("href", baseWA + "%20Plan:%20Premium%20Pro");
 
-    const input = document.getElementById("inputCodigo");
-    if (input) {
-      input.addEventListener("keypress", e => {
-        if (e.key === "Enter") buscarCodigo();
-      });
-    }
-
-    hidePanelSections();
-    showHome();
-    generarQrHome();
-
-    const urlParams = new URLSearchParams(location.search);
-    const urlCode = urlParams.get("code");
-
-    if (urlCode && input) {
-      input.value = urlCode;
-      buscarCodigo();
-    }
+  byId("inputCodigo")?.addEventListener("keypress", function(e){
+    if(e.key === "Enter") buscarCodigo();
   });
 
-  window.buscarCodigo = buscarCodigo;
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCode = urlParams.get("code");
+
+  if (urlCode) {
+    hideHome();
+    hide(byId("privacyCard"));
+    hide(byId("clienteCard"));
+    setMsg("Cargando dirección...", "#334155");
+
+    if (byId("inputCodigo")) {
+      byId("inputCodigo").value = String(urlCode).trim().toUpperCase();
+    }
+
+    await cargarCodigo(String(urlCode).trim().toUpperCase());
+  } else {
+    showHome();
+    generarQrHome();
+  }
+});
 </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script para convertir Excel AD507 a JSON automáticamente
-VERSION ESPECÍFICA para estructura AD507 Panamá
+VERSION SIMPLE (sin filtros estrictos)
 """
 
 import pandas as pd
@@ -12,33 +12,25 @@ from datetime import datetime
 
 
 def limpiar_telefono(telefono):
-    """Limpia y formatea número de teléfono panameño"""
     if pd.isna(telefono):
         return ""
 
     tel_str = str(telefono)
     solo_numeros = re.sub(r"\D", "", tel_str)
 
-    # Para Panamá: 8 dígitos
-    if len(solo_numeros) == 8:
-        return solo_numeros
-    elif len(solo_numeros) > 8:
-        if solo_numeros.startswith("507"):
-            return solo_numeros[3:]
-        return solo_numeros[-8:]
+    if len(solo_numeros) > 8 and solo_numeros.startswith("507"):
+        return solo_numeros[3:]
 
     return solo_numeros
 
 
 def validar_coordenadas(coordenadas):
-    """Valida que las coordenadas tengan formato correcto"""
     if pd.isna(coordenadas):
         return ""
 
     coord_str = str(coordenadas).strip()
     coord_str = re.sub(r"\s+", "", coord_str)
 
-    # Formato básico: lat,lng
     if re.match(r"^-?\d+\.?\d*,-?\d+\.?\d*$", coord_str):
         return coord_str
 
@@ -49,62 +41,29 @@ def excel_to_json():
     print("🔄 Convirtiendo Excel AD507 Panamá a JSON...")
 
     try:
-        # Archivo Excel
         excel_file = "AD507_MASTER_FINAL_PANAMA_CORREGIDO_v2.xlsx"
 
-        # Leer Excel
         print(f"📖 Leyendo archivo: {excel_file}")
         df = pd.read_excel(excel_file, sheet_name="direcciones", header=1)
 
         print(f"📊 Total filas en Excel: {len(df)}")
-        print("✅ Columnas detectadas (primeras 10):")
-        for i, col in enumerate(df.columns[:10], 1):
-            print(f"  {i:2}. {col}")
 
-        if len(df.columns) > 10:
-            print(f"  ... y {len(df.columns) - 10} columnas más")
-
-        # Preparar lista
         clientes = []
-        clientes_con_coordenadas = 0
-        clientes_sin_coordenadas = 0
 
         for index, row in df.iterrows():
 
-            # Obtener código
             codigo = str(row["Código"]).strip() if pd.notna(row["Código"]) else ""
 
-            # Datos necesarios para validar
-            telefono = limpiar_telefono(row["Teléfono (cliente)"])
-            coordenadas = validar_coordenadas(row["Coordenada (LAT,LNG)"])
-
-            # Solo procesar códigos AD507 válidos
             if codigo and codigo.startswith("AD507-"):
 
-                # Evitar duplicados
-                if any(c["codigo"] == codigo for c in clientes):
-                    print(f"  ⛔ {codigo}: duplicado ignorado")
-                    continue
-
-                # Coordenadas obligatorias
-                if not coordenadas:
-                    print(f"  ⚠️ {codigo}: sin coordenadas válidas")
-                    clientes_sin_coordenadas += 1
-                    continue
-
-                # Validar teléfono
-                if telefono and len(telefono) != 8:
-                    print(f"  ⚠️ {codigo}: teléfono inválido")
-                    continue
-
-                # Obtener otros datos
                 nombre = str(row["Nombre"]).strip() if pd.notna(row["Nombre"]) else ""
+                telefono = limpiar_telefono(row["Teléfono (cliente)"])
                 provincia = str(row["Provincia"]).strip() if pd.notna(row["Provincia"]) else "Panamá"
                 referencia = str(row["Referencia"]).strip() if pd.notna(row["Referencia"]) else ""
+                coordenadas = validar_coordenadas(row["Coordenada (LAT,LNG)"])
                 fecha = str(row["Fecha"]).strip() if pd.notna(row["Fecha"]) else datetime.now().strftime("%Y-%m-%d")
                 validacion = str(row["Validación"]).strip() if pd.notna(row["Validación"]) else ""
 
-                # Crear objeto cliente
                 cliente = {
                     "codigo": codigo,
                     "nombre": nombre if nombre else f"Cliente {codigo}",
@@ -113,24 +72,23 @@ def excel_to_json():
                     "referencia": referencia,
                     "coordenadas": coordenadas,
                     "fecha_creacion": fecha,
-                    "valido": validacion.upper() in ["OK", "VÁLIDO", "VALIDO", "SI", "YES", "TRUE", "VERIFICADO"],
+                    "valido": validacion.upper() in [
+                        "OK",
+                        "VÁLIDO",
+                        "VALIDO",
+                        "SI",
+                        "YES",
+                        "TRUE",
+                        "VERIFICADO",
+                    ],
                     "notas": ""
                 }
 
-                clientes_con_coordenadas += 1
                 clientes.append(cliente)
-                print(f"  ✅ {codigo}: {nombre[:20]:20} | 📍 {coordenadas}")
+                print(f"  ✅ {codigo}: {nombre[:20]:20}")
 
-        # Ordenar por código
         clientes.sort(key=lambda x: x["codigo"])
 
-        print("\n📈 ESTADÍSTICAS:")
-        print(f"   Total filas procesadas: {len(df)}")
-        print(f"   Clientes con coordenadas: {clientes_con_coordenadas}")
-        print(f"   Clientes sin coordenadas: {clientes_sin_coordenadas}")
-        print(f"   Clientes válidos para JSON: {len(clientes)}")
-
-        # Crear estructura final
         data = {
             "version": "3.0",
             "ultima_actualizacion": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -139,61 +97,27 @@ def excel_to_json():
             "estructura_origen": {
                 "archivo": excel_file,
                 "hoja": "direcciones",
-                "columnas_utilizadas": [
-                    "Código",
-                    "Nombre",
-                    "Teléfono (cliente)",
-                    "Provincia",
-                    "Referencia",
-                    "Coordenada (LAT,LNG)",
-                    "Fecha",
-                    "Validación"
-                ]
             },
-            "clientes": clientes
+            "clientes": clientes,
         }
 
-        # Guardar JSON
         json_file = "datos/clientes.json"
         os.makedirs(os.path.dirname(json_file), exist_ok=True)
 
         with open(json_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
-        print("\n🎉 CONVERSIÓN EXITOSA!")
+        print("\n🎉 CONVERSIÓN EXITOSA")
         print(f"📁 JSON guardado en: {json_file}")
         print(f"👥 Clientes exportados: {len(clientes)}")
-        print(f"🕐 Actualizado: {data['ultima_actualizacion']}")
-
-        # Mostrar muestra
-        print("\n📋 MUESTRA DE CLIENTES EXPORTADOS:")
-        for i, cliente in enumerate(clientes[:5], 1):
-            print(f"{i}. {cliente['codigo']} - {cliente['nombre']}")
-            print(f"   📞 {cliente['telefono']} | 📍 {cliente['coordenadas']}")
-
-        if len(clientes) > 5:
-            print(f"... y {len(clientes) - 5} clientes más")
 
         return True
 
     except Exception as e:
         print(f"❌ ERROR CRÍTICO: {str(e)}")
-        import traceback
-        traceback.print_exc()
-
-        print("\n🔧 INFORMACIÓN PARA DEPURACIÓN:")
-        try:
-            print(f"Archivo existe: {os.path.exists(excel_file)}")
-            if os.path.exists(excel_file):
-                xl = pd.ExcelFile(excel_file)
-                print(f"Hojas disponibles: {xl.sheet_names}")
-        except Exception:
-            pass
-
         return False
 
 
 if __name__ == "__main__":
     success = excel_to_json()
     exit(0 if success else 1)
-

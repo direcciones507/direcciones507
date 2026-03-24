@@ -1659,7 +1659,7 @@
         throw new Error(data.message || "Código no encontrado.");
       }
 
-      CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim();
+      CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
       DATOS_CLIENTE = data;
 
       const uiCodigo = document.getElementById("uiCodigo");

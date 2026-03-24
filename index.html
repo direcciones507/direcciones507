@@ -49,7 +49,87 @@
   padding: 24px;
 }
 
-   
+    /* ===== TOPBAR LIMPIA ===== */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 24px;
+      background: white;
+      border-radius: 60px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      border: 1px solid #e9eef2;
+    }
+
+    .brand-large {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-circle {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      box-shadow: 0 8px 16px -4px rgba(59, 130, 246, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 2px;
+    }
+
+    .brand-text p {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #f8fafc;
+      border-radius: 40px;
+      color: #475569;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid #e9eef2;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-whatsapp:hover {
+      background: #20BA5C;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px -4px rgba(37, 211, 102, 0.3);
+    }
+
     /* ===== BLOQUES INFORMATIVOS ===== */
     .info-blocks {
       display: flex;
@@ -884,16 +964,9 @@
   }
 
   .topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  padding:14px 20px;
-  background:rgba(255,255,255,.75);
-  border-radius:20px;
-  border:1px solid #e9eef2;
-  box-shadow:0 8px 20px rgba(15,23,42,.05);
-}
+    border-radius:28px;
+    padding:16px;
+  }
 
   .hero-section,
   .card,
@@ -927,7 +1000,7 @@
   }
 
   .brand-text h1{
-    font-size:22px;
+    font-size:20px;
   }
 
   .brand-text p{
@@ -950,543 +1023,34 @@
     min-width:0 !important;
   }
 }
-    /* ===== PREMIUM PRO V2 ===== */
-:root{
-  --pp-bg-1:#4338ca;
-  --pp-bg-2:#6366f1;
-  --pp-bg-3:#7c3aed;
-  --pp-dark:#0f172a;
-  --pp-text:#0f172a;
-  --pp-muted:#64748b;
-  --pp-line:#e9eef2;
-  --pp-soft:#f8fafc;
-  --pp-green:#22c55e;
-  --pp-blue:#2563eb;
-  --pp-gold:#f59e0b;
-}
-
-body{
-  background:
-    radial-gradient(900px 500px at 10% 0%, rgba(255,255,255,.10), transparent 60%),
-    radial-gradient(900px 500px at 100% 10%, rgba(255,255,255,.08), transparent 55%),
-    linear-gradient(135deg, var(--pp-bg-1) 0%, var(--pp-bg-2) 45%, var(--pp-bg-3) 100%);
-}
-
-.container{
-  max-width: 1180px;
-}
-
-.topbar{
-  background: rgba(255,255,255,.96);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 30px rgba(15,23,42,.08);
-}
-
-.logo-circle{
-  background: white;
-  overflow: hidden;
-  padding: 6px;
-  border: 1px solid #dbe4ff;
-  box-shadow: 0 10px 24px rgba(37,99,235,.16);
-}
-
-.logo {
-  width: 140px;       /* 🔥 tamaño ideal */
-  max-width: 100%;
-  height: auto;
-}
-.hero-section{
-  position: relative;
-  overflow: hidden;
-  border-radius: 36px;
-  padding: 38px;
-  box-shadow: 0 18px 48px rgba(15,23,42,.10);
-}
-
-.hero-section::before{
-  content:"";
-  position:absolute;
-  inset:-120px auto auto -120px;
-  width:260px;
-  height:260px;
-  background: radial-gradient(circle, rgba(37,99,235,.14), transparent 65%);
-  pointer-events:none;
-}
-
-.hero-section::after{
-  content:"";
-  position:absolute;
-  inset:auto -100px -100px auto;
-  width:260px;
-  height:260px;
-  background: radial-gradient(circle, rgba(34,197,94,.12), transparent 65%);
-  pointer-events:none;
-}
-
-.hero-grid{
-  align-items: center;
-}
-
-.hero-kicker{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 14px;
-  background:#eef2ff;
-  border:1px solid #dbe4ff;
-  border-radius:999px;
-  color:#4338ca;
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:16px;
-}
-
-.hero-title{
-  font-size: 52px;
-  line-height: 1.02;
-  letter-spacing: -.03em;
-  margin-bottom: 18px;
-}
-
-.hero-title span{
-  color: var(--pp-blue);
-}
-
-.hero-text{
-  font-size: 19px;
-  line-height: 1.7;
-  color: #475569;
-  max-width: 680px;
-}
-
-.hero-proof{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin: 22px 0 12px;
-}
-
-.hero-proof .pill{
-  background:white;
-  box-shadow:0 4px 14px rgba(15,23,42,.04);
-}
-
-.hero-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  margin-top:18px;
-}
-
-.btn-primary-hero{
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color:white;
-  border:none;
-  box-shadow: 0 14px 30px rgba(34,197,94,.28);
-}
-
-.btn-primary-hero:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 18px 36px rgba(34,197,94,.34);
-}
-
-.btn-dark-hero{
-  background:#0f172a;
-  color:white;
-  border:1px solid #0f172a;
-}
-
-.btn-dark-hero:hover{
-  transform: translateY(-2px);
-  background:#111827;
-}
-
-.hero-side-stack{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-
-.premium-box{
-  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-  color:white;
-  border-radius: 28px;
-  border: 1px solid rgba(255,255,255,.06);
-  padding: 22px;
-  box-shadow: 0 16px 38px rgba(15,23,42,.18);
-}
-
-.premium-box h3{
-  font-size: 20px;
-  margin-bottom: 6px;
-}
-
-.premium-box p{
-  color: #cbd5e1;
-  margin-bottom: 16px;
-}
-
-.premium-list{
-  display:grid;
-  gap:10px;
-}
-
-.premium-item{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  background: rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:18px;
-  padding:12px 14px;
-  color:#e5e7eb;
-  font-size:14px;
-}
-
-.stat-mini{
-  background:white;
-  border:1px solid var(--pp-line);
-  border-radius:24px;
-  padding:18px;
-}
-
-.stat-mini-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-
-.stat-mini-card{
-  background:#f8fafc;
-  border:1px solid #e9eef2;
-  border-radius:18px;
-  padding:14px;
-  text-align:center;
-}
-
-.stat-mini-card b{
-  display:block;
-  font-size:22px;
-  color:#0f172a;
-  margin-bottom:4px;
-}
-
-.section-premium{
-  background:white;
-  border:1px solid #e9eef2;
-  border-radius:32px;
-  box-shadow: 0 10px 30px rgba(15,23,42,.06);
-  padding: 28px;
-  margin-top: 24px;
-}
-
-.section-premium h2{
-  font-size:28px;
-  color:#0f172a;
-  margin-bottom:10px;
-}
-
-.section-premium p.lead{
-  color:#64748b;
-  font-size:16px;
-  margin-bottom:24px;
-}
-
-.benefits-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
-}
-
-.benefit-card{
-  background:#f8fafc;
-  border:1px solid #e9eef2;
-  border-radius:24px;
-  padding:18px;
-}
-
-.benefit-icon{
-  width:46px;
-  height:46px;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#e0f2fe;
-  color:#0369a1;
-  margin-bottom:12px;
-  font-size:18px;
-}
-
-.benefit-card h3{
-  font-size:18px;
-  margin-bottom:8px;
-  color:#0f172a;
-}
-
-.benefit-card p{
-  color:#64748b;
-  font-size:14px;
-}
-
-.plan-card{
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-
-.plan-card:hover{
-  transform: translateY(-4px);
-  box-shadow: 0 14px 30px rgba(15,23,42,.08);
-}
-
-.plan-card.premium-pro{
-  background: linear-gradient(180deg,#0f172a 0%, #111827 100%);
-  border: 1px solid #111827;
-  box-shadow: 0 20px 40px rgba(15,23,42,.22);
-}
-
-.plan-card.premium-pro .plan-price{
-  color: white;
-}
-
-.plan-card.premium-pro h4{
-  color:white;
-}
-
-.plan-card.premium-pro .plan-btn{
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  box-shadow: 0 12px 24px rgba(34,197,94,.22);
-}
-
-.plan-card.premium-pro::before{
-  content:"Premium Pro";
-  display:inline-block;
-  align-self:flex-start;
-  margin-bottom:12px;
-  padding:7px 12px;
-  border-radius:999px;
-  background: rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.10);
-  color:#f8fafc;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:.02em;
-}
-
-.cta-final{
-  margin-top: 28px;
-  padding: 34px 28px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border-radius: 32px;
-  color: white;
-  text-align: center;
-  box-shadow: 0 20px 42px rgba(15,23,42,.20);
-}
-
-.cta-final h2{
-  font-size: 34px;
-  margin-bottom: 10px;
-}
-
-.cta-final p{
-  color:#cbd5e1;
-  max-width:700px;
-  margin:0 auto 20px;
-  font-size:16px;
-}
-
-.cta-final .btn-whatsapp{
-  box-shadow: 0 14px 26px rgba(34,197,94,.25);
-}
-
-@media (max-width: 900px){
-  .hero-title{
-    font-size: 40px;
-  }
-
-  .benefits-grid{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .stat-mini-grid{
-    grid-template-columns:1fr;
-  }
-}
-
-@media (max-width: 640px){
-  .hero-section{
-    padding:24px;
-  }
-
-  .hero-title{
-    font-size:34px;
-  }
-
-  .hero-text{
-    font-size:16px;
-  }
-
-  .hero-actions{
-    display:grid;
-    grid-template-columns:1fr;
-  }
-
-  .benefits-grid{
-    grid-template-columns:1fr;
-  }
-
-  .cta-final h2{
-    font-size:28px;
-  }
-}
-
-    .header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:16px 22px;
-  background:rgba(255,255,255,0.7);
-  backdrop-filter: blur(12px);
-  border-radius:20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
-}
-
-.header-left{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-.logo-main{
-  width:84px;
-  height:84px;
-  border-radius:50%;
-  object-fit:contain;
-  padding:6px;
-  display:block;
-  border:2px solid #fff;
-  box-shadow:0 10px 26px rgba(37,99,235,.18);
-  background:#fff;
-  flex-shrink:0;
-}
-
-.brand-text h1{
-  font-size:16px;
-  margin:0;
-  font-weight:600;
-  color:#0f172a;
-}
-
-.brand-text span{
-  font-size:12px;
-  color:#64748b;
-}
-
-.header-right{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.badge{
-  background:#eef2ff;
-  color:#3730a3;
-  padding:6px 12px;
-  border-radius:999px;
-  font-size:12px;
-}
-
-.btn-primary{
-  background:#22c55e;
-  color:white;
-  padding:10px 18px;
-  border-radius:999px;
-  text-decoration:none;
-  font-size:14px;
-  font-weight:500;
-}
-
-.btn-primary:hover{
-  background:#16a34a;
-}  
-
-  /* ===== MOBILE FIX 🔥 ===== */
-@media (max-width: 768px){
-
-  .header{
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
-  }
-
-  .header-left{
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .logo-main{
-    width: 90px; /* 👈 más pequeño en móvil */
-  }
-
-  .brand-text h1{
-    font-size: 16px;
-  }
-
-  .brand-text span{
-    font-size: 12px;
-  }
-
-  .header-right{
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .btn-primary{
-    padding: 10px 14px;
-    font-size: 13px;
-  }
-
-  .badge{
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-
-}  
-
-.hidden{
-  display:none !important;
-}    
-
-@media (max-width:768px){
-  .logo-main{
-    width:52px;
-    height:52px;
-  }
-
-  .brand-text p{
-    display:none;
-  }
-}   
   </style>
 </head>
 
 <body>
+  <div class="container">
 
-<div class="header" id="mainHeader">
-  <div class="header-left">
-    <img src="logo.png" class="logo-main" alt="Direcciones507" onerror="this.src='https://direcciones507.com/logo.png';this.onerror=null;">
-    <div class="brand-text">
-      <h1>Direcciones507</h1>
-      <p>Sistema Digital de Direcciones · Panamá</p>
+    <!-- TOPBAR LIMPIA -->
+    <div class="topbar">
+      <div class="brand-large">
+        <div class="logo-circle">
+          <i class="fa-solid fa-map-location-dot"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Direcciones507</h1>
+          <p>Sistema Digital de Direcciones · Panamá</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+        <div class="badge">
+          <i class="fa-solid fa-shield-halved" style="color: #3b82f6;"></i> Enlace 100% seguro
+        </div>
+        <a id="btnComprarTop" class="btn-whatsapp" href="#" target="_blank">
+          <i class="fa-brands fa-whatsapp"></i> Comprar ahora
+        </a>
+      </div>
     </div>
-  </div>
 
-  <div class="header-right">
-    <span class="badge">Enlace 100% seguro</span>
-    <a href="#" class="btn-primary" id="btnComprarTop">Comprar ahora</a>
-  </div>
-</div>
-  
     <!-- BLOQUES INFORMATIVOS -->
     <div class="info-blocks">
       <div class="info-block">
@@ -1499,100 +1063,73 @@ body{
       </div>
     </div>
 
-    <div class="hero-section">
-  <div class="hero-grid">
-    <div>
-      <div class="hero-kicker">
-        <i class="fa-solid fa-star"></i> Premium Pro · Sistema original en Panamá
-      </div>
+    <!-- HERO SECTION -->
+    <div id="homeHero">
+      <div class="hero-section">
+        <div class="hero-grid">
+          <div>
+            <h1 class="hero-title">
+              Dirección Digital<br><span>con QR y ubicación exacta</span>
+            </h1>
+            <p class="hero-text">
+              Comparte tu ubicación exacta en 1 solo enlace. Compatible con Google Maps, Waze y Uber.
+              Ideal para negocios, delivery y hogar en todo Panamá.
+            </p>
 
-      <h1 class="hero-title">
-        Tu dirección digital en Panamá,<br><span>clara, moderna y lista para compartir</span>
-      </h1>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0;">
+              <span class="pill"><i class="fa-solid fa-bolt" style="color:#22c55e;"></i> 1 toque</span>
+              <span class="pill"><i class="fa-brands fa-waze" style="color:#4ad9e4;"></i> Waze</span>
+              <span class="pill"><i class="fa-brands fa-google" style="color:#3b82f6;"></i> Google Maps</span>
+              <span class="pill"><i class="fa-brands fa-uber"></i> Uber</span>
+              <span class="pill"><i class="fa-solid fa-qrcode"></i> QR</span>
+            </div>
 
-      <p class="hero-text">
-        Comparte tu ubicación exacta en un solo enlace con QR, Google Maps, Waze y Uber.
-        Ideal para negocios, delivery, hogares, PH y marcas que quieren verse más profesionales
-        y ser encontrados sin vueltas.
-      </p>
+            <a href="https://wa.me/50765996532" class="btn-whatsapp" style="display: inline-flex; margin-top: 8px;">
+              <i class="fa-brands fa-whatsapp"></i> Solicitar mi Dirección Digital ahora
+            </a>
+           </div>
 
-      <div class="hero-proof">
-        <span class="pill"><i class="fa-solid fa-bolt" style="color:#22c55e;"></i> Activación rápida</span>
-        <span class="pill"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> Ubicación exacta</span>
-        <span class="pill"><i class="fa-solid fa-qrcode" style="color:#2563eb;"></i> QR para compartir</span>
-        <span class="pill"><i class="fa-solid fa-briefcase" style="color:#7c3aed;"></i> Imagen más profesional</span>
-      </div>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="card" style="padding: 20px;">
+              <h3 style="font-size: 18px; margin-bottom: 4px;">Comprar ahora</h3>
+              <p class="text-muted" style="margin-bottom: 14px;">Te activamos por WhatsApp</p>
+              <a id="btnHeroPersonal" class="btn btn-google" href="#" target="_blank">
+                <i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> Personal $6.99
+              </a>
+              <a id="btnHeroNegocios" class="btn btn-google" href="#" target="_blank" style="margin-top: 10px;">
+                <i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> Negocios $10.99
+              </a>
+            </div>
 
-      <div class="hero-actions">
-        <a href="https://wa.me/50765996532" class="btn btn-primary-hero">
-          <i class="fa-brands fa-whatsapp"></i> Solicitar mi Dirección Digital ahora
-        </a>
-
-        <button class="btn btn-dark-hero" type="button" onclick="verEjemplo()">
-          <i class="fa-solid fa-play"></i> Ver ejemplo real
-        </button>
-      </div>
-    </div>
-
-    <div class="hero-side-stack">
-      <div class="premium-box">
-        <h3>Haz que te encuentren más fácil</h3>
-        <p>Un sistema pensado para Panamá, fácil de enviar, fácil de abrir y fácil de usar.</p>
-
-        <div class="premium-list">
-          <div class="premium-item">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e; margin-top:2px;"></i>
-            <span>Compatible con Google Maps, Waze y Uber</span>
-          </div>
-          <div class="premium-item">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e; margin-top:2px;"></i>
-            <span>QR listo para imprimir o mandar por WhatsApp</span>
-          </div>
-          <div class="premium-item">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e; margin-top:2px;"></i>
-            <span>Ideal para negocios, delivery, residencias y proyectos</span>
+            <div class="card" style="padding: 20px;">
+              <button class="btn btn-google" type="button" onclick="verEjemplo()" style="width: 100%;">
+                <i class="fa-solid fa-play"></i> Ver ejemplo real
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="stat-mini">
-        <div style="font-weight:700; color:#0f172a; margin-bottom:12px;">¿Por qué funciona tan bien?</div>
-        <div class="stat-mini-grid">
-          <div class="stat-mini-card">
-            <b>1 link</b>
-            <span style="color:#64748b; font-size:13px;">todo en un solo lugar</span>
-          </div>
-          <div class="stat-mini-card">
-            <b>3 apps</b>
-            <span style="color:#64748b; font-size:13px;">Maps, Waze y Uber</span>
-          </div>
-          <div class="stat-mini-card">
-            <b>QR</b>
-            <span style="color:#64748b; font-size:13px;">listo para compartir</span>
+        <!-- Testimonios -->
+        <div style="margin-top: 32px;">
+          <p style="font-weight: 600; margin-bottom: 14px; color: #0f172a;">Lo que dicen los clientes</p>
+          <div class="testimonios-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+            <div class="card" style="padding: 18px;">
+              <b>Delivery Panamá</b>
+              <p class="text-muted" style="margin-top: 6px;">“1 link y llegan sin llamar. Ahorro tiempo.”</p>
+            </div>
+            <div class="card" style="padding: 18px;">
+              <b>Negocio Chiriquí</b>
+              <p class="text-muted" style="margin-top: 6px;">“Se acabó el ‘no lo encuentro’.”</p>
+            </div>
+            <div class="card" style="padding: 18px;">
+              <b>Residencia</b>
+              <p class="text-muted" style="margin-top: 6px;">“Familia llega sin perderse.”</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div style="margin-top:32px;">
-    <p style="font-weight:700; margin-bottom:14px; color:#0f172a;">Lo que dicen los clientes</p>
-    <div class="testimonios-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
-      <div class="card" style="padding:18px;">
-        <b>Delivery Panamá</b>
-        <p class="text-muted" style="margin-top:6px;">“Un solo link y llegan sin llamar tanto. Ahorra tiempo.”</p>
-      </div>
-      <div class="card" style="padding:18px;">
-        <b>Negocio Chiriquí</b>
-        <p class="text-muted" style="margin-top:6px;">“Se acabó el clásico ‘no lo encuentro’.”</p>
-      </div>
-      <div class="card" style="padding:18px;">
-        <b>Residencia</b>
-        <p class="text-muted" style="margin-top:6px;">“Familia, visitas y deliveries llegan más fácil.”</p>
-      </div>
-    </div>
-  </div>
-</div>
 </script>
    
     <div id="seoLinksHome" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
@@ -1653,9 +1190,9 @@ body{
 
     <!-- GRID PRINCIPAL -->
     <div class="grid">
-  <!-- LEFT CARD -->
-  <div class="card hidden" id="clienteCard" style="display:none;">        
-    <div class="card-header">
+      <!-- LEFT CARD -->
+      <div class="card">
+        <div class="card-header">
           <h2>Datos del cliente</h2>
           <div class="sub">Aquí solo aparece lo esencial: Nombre, referencia y código.</div>
           <div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
@@ -1887,51 +1424,6 @@ body{
       </div>
     </div>
 
-    <div class="section-premium">
-  <h2>¿Qué hace diferente a Direcciones507?</h2>
-  <p class="lead">
-    Convertimos direcciones confusas en enlaces claros, modernos y fáciles de compartir.
-    Menos llamadas, menos pérdida de tiempo y mejor imagen para tu negocio o tu hogar.
-  </p>
-
-  <div class="benefits-grid">
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-location-dot"></i></div>
-      <h3>Ubicación más clara</h3>
-      <p>Tus clientes, visitas o deliveries reciben una forma simple y directa de llegar.</p>
-    </div>
-
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-share-nodes"></i></div>
-      <h3>Fácil de compartir</h3>
-      <p>Envía tu dirección por WhatsApp, redes sociales, link directo o código QR.</p>
-    </div>
-
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-briefcase"></i></div>
-      <h3>Más profesional</h3>
-      <p>Tu marca o negocio se ve más moderno, ordenado y confiable desde el primer contacto.</p>
-    </div>
-
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
-      <h3>Listo para usar</h3>
-      <p>Compatible con Google Maps, Waze, Uber y QR para una experiencia simple.</p>
-    </div>
-  </div>
-</div>
-
-<div class="cta-final">
-  <h2>Haz que te encuentren más fácil</h2>
-  <p>
-    Solicita tu Dirección Digital AD507 y comparte tu ubicación con un enlace moderno,
-    claro y listo para Panamá.
-  </p>
-  <a href="https://wa.me/50765996532?text=Hola,%20quiero%20mi%20Direcci%C3%B3n%20Digital%20AD507" class="btn-whatsapp">
-    <i class="fa-brands fa-whatsapp"></i> Crear mi dirección ahora
-  </a>
-</div>
-
     <!-- FOOTER -->
     <div class="footer">
       <b>Direcciones507® y AD507® son sistemas digitales exclusivos desarrollados en Panamá.</b><br>
@@ -1955,428 +1447,321 @@ body{
   </div> <!-- fin container -->
 
   <script>
-  // Configuración
-  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
-  const WA_NUMBER = "50765996532";
-  const EJEMPLO_CODE = "AD507-THE1920";
+    // Configuración
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
+    const WA_NUMBER = "50765996532";
+    const EJEMPLO_CODE = "AD507-THE1920";
 
-  let CODIGO_ACTUAL = "";
-  let DATOS_CLIENTE = null;
+    let CODIGO_ACTUAL = "";
+    let DATOS_CLIENTE = null;
 
-  // Helpers
-  function setMsg(t) {
-    const el = document.getElementById("msgBusqueda");
-    if (el) el.textContent = t || "";
-  }
-
-  function show(el, mode = "block") {
-    if (el) el.style.display = mode;
-  }
-
-  function hide(el) {
-    if (el) el.style.display = "none";
-  }
-
-  function showHome() {
-    show(document.getElementById("mainHeader"), "flex");
-    show(document.getElementById("homeHero"), "block");
-    show(document.getElementById("heroPromo"), "block");
-    show(document.getElementById("searchWrap"), "block");
-    show(document.getElementById("seccionPasos"), "block");
-    show(document.getElementById("seccionPrecios"), "block");
-    show(document.getElementById("seoLinksHome"), "flex");
-    show(document.getElementById("sectionBenefits"), "block");
-    show(document.getElementById("ctaFinal"), "block");
-    show(document.getElementById("mainFooter"), "block");
-    hide(document.getElementById("privacyCard"));
-    hide(document.getElementById("clienteCard"));
-  }
-
-  function hideHome() {
-    hide(document.getElementById("mainHeader"));
-    hide(document.getElementById("homeHero"));
-    hide(document.getElementById("heroPromo"));
-    hide(document.getElementById("searchWrap"));
-    hide(document.getElementById("seccionPasos"));
-    hide(document.getElementById("seccionPrecios"));
-    hide(document.getElementById("seoLinksHome"));
-    hide(document.getElementById("sectionBenefits"));
-    hide(document.getElementById("ctaFinal"));
-    hide(document.getElementById("mainFooter"));
-    hide(document.getElementById("privacyCard"));
-  }
-
-  function hidePanelSections() {
-    hide(document.getElementById("clienteCard"));
-    hide(document.getElementById("fieldNombre"));
-    hide(document.getElementById("fieldRef"));
-    hide(document.getElementById("tituloUbicacion"));
-    hide(document.getElementById("gridUbicacion"));
-    hide(document.getElementById("divAfterUbic"));
-    hide(document.getElementById("tituloCompartir"));
-    hide(document.getElementById("gridCompartir"));
-    hide(document.getElementById("notaVerificacion"));
-    hide(document.getElementById("divAfterVerif"));
-    hide(document.getElementById("btnStats"));
-    hide(document.getElementById("statsPanel"));
-    hide(document.getElementById("printCardWrap"));
-  }
-
-  function showPanel() {
-    hideHome();
-
-    show(document.getElementById("clienteCard"), "block");
-    show(document.getElementById("fieldNombre"), "block");
-    show(document.getElementById("fieldRef"), "block");
-    show(document.getElementById("tituloUbicacion"), "block");
-    show(document.getElementById("gridUbicacion"), "grid");
-    show(document.getElementById("divAfterUbic"), "block");
-    show(document.getElementById("tituloCompartir"), "block");
-    show(document.getElementById("gridCompartir"), "grid");
-    show(document.getElementById("notaVerificacion"), "block");
-    show(document.getElementById("divAfterVerif"), "block");
-  }
-
-  function extractLinkFromQr(qrUrl) {
-    try {
-      const u = new URL(qrUrl);
-      const data = u.searchParams.get("data");
-      return data ? decodeURIComponent(data) : "";
-    } catch (e) {
-      return "";
-    }
-  }
-
-  async function fetchJsonSafe(url) {
-    const r = await fetch(url, { method: "GET", cache: "no-store", redirect: "follow" });
-    if (!r.ok) throw new Error("Error de red: " + r.status);
-    const text = await r.text();
-    try {
-      return JSON.parse(text);
-    } catch (e) {
-      throw new Error("Respuesta inválida del servidor");
-    }
-  }
-
-  function generarQrHome() {
-    const homeUrl = location.href.split("?")[0];
-    const qrImg = document.getElementById("qrImg");
-    const uiLink = document.getElementById("uiLink");
-
-    if (qrImg) {
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
+    // Funciones helper
+    function setMsg(t) {
+      const el = document.getElementById("msgBusqueda");
+      if (el) el.textContent = t || "";
     }
 
-    if (uiLink) {
-      uiLink.textContent = homeUrl;
+    function show(el, mode) { if (el) el.style.display = mode || "block"; }
+    function hide(el) { if (el) el.style.display = "none"; }
+
+    function showPanel() {
+      hide(document.getElementById("homeHero"));
+      hide(document.getElementById("seccionPasos"));
+      hide(document.getElementById("seccionPrecios"));
+      hide(document.getElementById("seoLinksHome"));
+      
+      show(document.getElementById("fieldNombre"), "block");
+      show(document.getElementById("fieldRef"), "block");
+      show(document.getElementById("tituloUbicacion"), "block");
+      show(document.getElementById("gridUbicacion"), "grid");
+      show(document.getElementById("divAfterUbic"), "block");
+      show(document.getElementById("tituloCompartir"), "block");
+      show(document.getElementById("gridCompartir"), "grid");
+      show(document.getElementById("notaVerificacion"), "block");
+      show(document.getElementById("divAfterVerif"), "block");
     }
+
+    function hidePanelSections() {
+      hide(document.getElementById("fieldNombre"));
+      hide(document.getElementById("fieldRef"));
+      hide(document.getElementById("tituloUbicacion"));
+      hide(document.getElementById("gridUbicacion"));
+      hide(document.getElementById("divAfterUbic"));
+      hide(document.getElementById("tituloCompartir"));
+      hide(document.getElementById("gridCompartir"));
+      hide(document.getElementById("notaVerificacion"));
+      hide(document.getElementById("divAfterVerif"));
+      hide(document.getElementById("btnStats"));
+      hide(document.getElementById("statsPanel"));
+      hide(document.getElementById("printCardWrap"));
+      hide(document.getElementById("privacyCard"));
+    }
+
+    function extractLinkFromQr(qrUrl) {
+      try {
+        const u = new URL(qrUrl);
+        const data = u.searchParams.get("data");
+        return data ? decodeURIComponent(data) : "";
+      } catch (e) { return ""; }
+    }
+
+    async function fetchJsonSafe(url) {
+      const r = await fetch(url, { method: "GET", cache: "no-store", redirect: "follow" });
+      if (!r.ok) throw new Error("Error de red: " + r.status);
+      const text = await r.text();
+      try { return JSON.parse(text); } catch (e) { throw new Error("Respuesta inválida del servidor"); }
+    }
+
+    // Función principal de búsqueda
+    async function buscarCodigo() {
+      const input = document.getElementById("inputCodigo");
+      if (!input) return;
+
+      const codigo = (input?.value || "").trim();
+      if (!codigo) { setMsg("Ingresa un código"); return; }
+
+      setMsg("Buscando...");
+
+      try {
+        const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+
+        if (!data.ok) throw new Error(data.message || "Código no encontrado.");
+
+        CODIGO_ACTUAL = data.codigo || data.code || codigo;
+DATOS_CLIENTE = data;
+
+// UI - código
+document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL;
+
+// Planes
+const planLower = String(data.plan || "").toLowerCase();
+const esPublico = planLower.includes("negocio") || planLower.includes("premium");
+const esNegocio = planLower.includes("negocio") || planLower.includes("premium");
+
+// Privacidad: personales solo abren por enlace directo
+const codeFromUrl = new URLSearchParams(window.location.search).get("code");
+const vieneDeLink = !!(codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase());
+
+if (!esPublico && !vieneDeLink) {
+  setMsg("Este código es privado. Usa el enlace directo.");
+
+  document.getElementById("uiCodigo").textContent = "-";
+  document.getElementById("uiNombre").textContent = "-";
+  document.getElementById("uiRef").textContent = "-";
+
+  hidePanelSections();
+  show(document.getElementById("homeHero"), "block");
+  show(document.getElementById("seccionPasos"), "block");
+  show(document.getElementById("seccionPrecios"), "block");
+  show(document.getElementById("seoLinksHome"), "flex");
+  show(document.getElementById("privacyCard"), "block");
+
+  const homeUrl = location.href.split("?")[0];
+  const qrImg = document.getElementById("qrImg");
+  const uiLink = document.getElementById("uiLink");
+
+  if (qrImg) {
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
   }
 
-  // Función principal de búsqueda
-  async function buscarCodigo() {
-    const input = document.getElementById("inputCodigo");
-    if (!input) return;
+  if (uiLink) {
+    uiLink.textContent = homeUrl;
+  }
 
-    const codigo = (input.value || "").trim();
-    if (!codigo) {
-      setMsg("Ingresa un código");
-      return;
-    }
+  return;
+}
 
-    setMsg("Buscando...");
+// Mostrar datos
+document.getElementById("uiNombre").textContent = data.nombre || "-";
+document.getElementById("uiRef").textContent = data.referencia || "-";
+        // URL para compartir
+        const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
+        window.verificacionUrl = shareUrl;
 
-    try {
-      const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+        // Generar QR
+        document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+        document.getElementById("uiLink").textContent = shareUrl;
 
-      if (!data.ok) throw new Error(data.message || "Código no encontrado.");
-
-      CODIGO_ACTUAL = (data.codigo || data.code || codigo).trim();
-      DATOS_CLIENTE = data;
-
-      const uiCodigo = document.getElementById("uiCodigo");
-      const uiNombre = document.getElementById("uiNombre");
-      const uiRef = document.getElementById("uiRef");
-
-      if (uiCodigo) uiCodigo.textContent = CODIGO_ACTUAL;
-
-      const planLower = String(data.plan || "").toLowerCase();
-      const esPublico = planLower.includes("negocio") || planLower.includes("premium");
-      const esNegocio = planLower.includes("negocio") || planLower.includes("premium");
-
-      const codeFromUrl = new URLSearchParams(window.location.search).get("code");
-      const vieneDeLink = !!(codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase());
-
-      // Privacidad: personales solo abren por enlace directo
-      if (!esPublico && !vieneDeLink) {
-        setMsg("Este código es privado. Usa el enlace directo.");
-
-        if (uiCodigo) uiCodigo.textContent = "-";
-        if (uiNombre) uiNombre.textContent = "-";
-        if (uiRef) uiRef.textContent = "-";
-
-        hidePanelSections();
-        showHome();
-        show(document.getElementById("privacyCard"), "block");
-        generarQrHome();
-        return;
-      }
-
-      // Mostrar datos
-      if (uiNombre) uiNombre.textContent = data.nombre || "-";
-      if (uiRef) uiRef.textContent = data.referencia || "-";
-
-      // URL para compartir
-      const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
-      window.verificacionUrl = shareUrl;
-
-      // Generar QR del cliente
-      const qrImg = document.getElementById("qrImg");
-      const uiLink = document.getElementById("uiLink");
-
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
-      }
-
-      if (uiLink) {
-        uiLink.textContent = shareUrl;
-      }
-
-      // Extraer coordenadas
-      let lat = "", lng = "";
-
-      if (data.qr) {
-        const link = extractLinkFromQr(data.qr);
-        const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
-        if (match) {
-          lat = match[1];
-          lng = match[2];
+        // Extraer coordenadas
+        let lat = "", lng = "";
+        if (data.qr) {
+          const link = extractLinkFromQr(data.qr);
+          const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
+          if (match) { lat = match[1]; lng = match[2]; }
         }
-      }
 
-      // Fallback si no salen del QR
-      if ((!lat || !lng) && data.google) {
-        const matchGoogle = String(data.google).match(/query=([0-9.-]+),\s*([0-9.-]+)/) ||
-                            String(data.google).match(/([0-9.-]+),\s*([0-9.-]+)/);
-        if (matchGoogle) {
-          lat = matchGoogle[1];
-          lng = matchGoogle[2];
-        }
-      }
+        // Configurar botones de navegación
+        const btnGoogle = document.getElementById("btnGoogle");
+        const btnWaze = document.getElementById("btnWaze");
+        const btnUber = document.getElementById("btnUber");
+        const btnAviso = document.getElementById("btnAviso");
 
-      // Botones
-      const btnGoogle = document.getElementById("btnGoogle");
-      const btnWaze = document.getElementById("btnWaze");
-      const btnUber = document.getElementById("btnUber");
-      const btnAviso = document.getElementById("btnAviso");
+        if (lat && lng) {
+          btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+          btnWaze.href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+          btnUber.href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
 
-      if (lat && lng) {
-        if (btnGoogle) btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-        if (btnWaze) btnWaze.href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-        if (btnUber) btnUber.href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
-
-        let tel = String(data.telefono || "").replace(/\D/g, "");
-        if (tel.length === 8) tel = "507" + tel;
-
-        if (btnAviso) {
+          // WhatsApp aviso
+          let tel = String(data.telefono || "").replace(/\D/g, "");
+          if (tel.length === 8) tel = "507" + tel;
           if (tel.length >= 10) {
             const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
             btnAviso.href = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
-          } else {
-            btnAviso.href = "#";
           }
+
+        } else {
+          btnGoogle.href = "#";
+          btnWaze.href = "#";
+          btnUber.href = "#";
+          btnAviso.href = "#";
         }
-      } else {
-        if (btnGoogle) btnGoogle.href = "#";
-        if (btnWaze) btnWaze.href = "#";
-        if (btnUber) btnUber.href = "#";
-        if (btnAviso) btnAviso.href = "#";
-      }
 
-      // Compartir / copiar
-      const btnCompartir = document.getElementById("btnCompartir");
-      const btnCopiar = document.getElementById("btnCopiar");
+        // Botones compartir/copiar
+        const btnCompartir = document.getElementById("btnCompartir");
+        const btnCopiar = document.getElementById("btnCopiar");
 
-      if (btnCompartir) {
-        btnCompartir.onclick = async () => {
-          if (navigator.share) {
-            try {
-              await navigator.share({
-                title: "Dirección Digital",
-                text: `Mi código ${CODIGO_ACTUAL}`,
-                url: shareUrl
-              });
-            } catch {
-              try {
-                await navigator.clipboard.writeText(shareUrl);
-                alert("✅ Link copiado");
-              } catch {}
-            }
-          } else {
-            try {
-              await navigator.clipboard.writeText(shareUrl);
-              alert("✅ Link copiado");
-            } catch {}
-          }
-        };
-      }
-
-      if (btnCopiar) {
-        btnCopiar.onclick = async () => {
-          try {
-            await navigator.clipboard.writeText(shareUrl);
-            alert("✅ Link copiado");
-          } catch {}
-        };
-      }
-
-      // QR imprimir
-      const linkVer = document.getElementById("linkVerificacion");
-      const wrap = document.getElementById("printCardWrap");
-      const qrVerif = document.getElementById("qrVerificacion");
-      const printCodigo = document.getElementById("printCodigo");
-
-      if (linkVer) {
-        linkVer.onclick = (e) => {
-          e.preventDefault();
-          if (printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
-          if (qrVerif) {
-            qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
-          }
-          show(wrap, "block");
-        };
-      }
-
-      const btnOcultarQR = document.getElementById("btnOcultarQR");
-      const btnImprimirQR = document.getElementById("btnImprimirQR");
-
-      if (btnOcultarQR) {
-        btnOcultarQR.onclick = () => hide(wrap);
-      }
-
-      if (btnImprimirQR) {
-        btnImprimirQR.onclick = () => {
-          const card = document.getElementById("printCard");
-          if (!card) return;
-
-          const w = window.open("", "_blank");
-          if (!w) return;
-
-          w.document.write(`
-            <html>
-              <head>
-                <meta charset="UTF-8">
-                <title>Imprimir QR</title>
-                <style>
-                  body{
-                    padding:24px;
-                    font-family:Arial,sans-serif;
-                    display:flex;
-                    justify-content:center;
-                    align-items:center;
-                  }
-                </style>
-              </head>
-              <body>
-                ${card.outerHTML}
-                <script>
-                  window.onload = () => window.print();
-                <\/script>
-              </body>
-            </html>
-          `);
-          w.document.close();
-        };
-      }
-
-      // Estadísticas
-      const statsBtn = document.getElementById("btnStats");
-      const statsPanel = document.getElementById("statsPanel");
-
-      if (esNegocio) {
-        show(statsBtn, "flex");
-
-        if (statsBtn) {
-          statsBtn.onclick = async () => {
-            const visible = statsPanel && statsPanel.style.display === "block";
-            if (statsPanel) statsPanel.style.display = visible ? "none" : "block";
-
-            if (!visible) {
-              try {
-                const d = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-
-                if (d.ok) {
-                  const stGoogle = document.getElementById("stGoogle");
-                  const stWaze = document.getElementById("stWaze");
-                  const stUber = document.getElementById("stUber");
-                  const stShare = document.getElementById("stShare");
-                  const stCopy = document.getElementById("stCopy");
-                  const stUpdated = document.getElementById("stUpdated");
-
-                  if (stGoogle) stGoogle.textContent = d.stats?.google || 0;
-                  if (stWaze) stWaze.textContent = d.stats?.waze || 0;
-                  if (stUber) stUber.textContent = d.stats?.uber || 0;
-                  if (stShare) stShare.textContent = d.stats?.share || 0;
-                  if (stCopy) stCopy.textContent = d.stats?.copy || 0;
-                  if (stUpdated) stUpdated.textContent = "Actualizado: " + (d.stats?.updated || "-");
-                }
-              } catch {}
+        if (btnCompartir) {
+          btnCompartir.onclick = async () => {
+            if (navigator.share) {
+              try { await navigator.share({ title: "Dirección Digital", text: `Mi código ${CODIGO_ACTUAL}`, url: shareUrl }); }
+              catch { try { await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); } catch { } }
+            } else {
+              try { await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); } catch { }
             }
           };
         }
-      } else {
-        hide(statsBtn);
-        hide(statsPanel);
-      }
 
-      showPanel();
-      setMsg("✅ Listo");
+        if (btnCopiar) {
+          btnCopiar.onclick = async () => {
+            try { await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); } catch { }
+          };
+        }
 
-    } catch (e) {
-      hidePanelSections();
-      showHome();
-      generarQrHome();
-      setMsg("Error: " + (e?.message || "No se pudo buscar"));
+        // QR para imprimir
+        const linkVer = document.getElementById("linkVerificacion");
+        const wrap = document.getElementById("printCardWrap");
+        const qrVerif = document.getElementById("qrVerificacion");
+        const printCodigo = document.getElementById("printCodigo");
+
+        if (linkVer) {
+          linkVer.onclick = (e) => {
+            e.preventDefault();
+            if (printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
+            if (qrVerif) qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
+            show(wrap, "block");
+          };
+        }
+
+        document.getElementById("btnOcultarQR").onclick = () => hide(wrap);
+
+        document.getElementById("btnImprimirQR").onclick = () => {
+          const card = document.getElementById("printCard");
+          if (!card) return;
+          const w = window.open("", "_blank");
+          if (!w) return;
+          w.document.write(`
+            <html><head><meta charset="UTF-8"><title>Imprimir QR</title>
+            <style>body{padding:24px;font-family:Arial;display:flex;justify-content:center;align-items:center;}</style>
+            </head><body>${card.outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>
+          `);
+          w.document.close();
+        };
+
+        const statsBtn = document.getElementById("btnStats");
+const statsPanel = document.getElementById("statsPanel");
+
+if (esNegocio) {
+  show(statsBtn, "flex");
+
+  statsBtn.onclick = async () => {
+    const visible = statsPanel && statsPanel.style.display === "block";
+    if (statsPanel) statsPanel.style.display = visible ? "none" : "block";
+
+    if (!visible) {
+      try {
+        const d = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
+
+        if (d.ok) {
+          document.getElementById("stGoogle").textContent = d.stats?.google || 0;
+          document.getElementById("stWaze").textContent = d.stats?.waze || 0;
+          document.getElementById("stUber").textContent = d.stats?.uber || 0;
+          document.getElementById("stShare").textContent = d.stats?.share || 0;
+          document.getElementById("stCopy").textContent = d.stats?.copy || 0;
+          document.getElementById("stUpdated").textContent = "Actualizado: " + (d.stats?.updated || "-");
+        }
+      } catch (e) {}
     }
-  }
-
-  // Ver ejemplo
-  window.verEjemplo = function () {
-    const input = document.getElementById("inputCodigo");
-    if (input) input.value = EJEMPLO_CODE;
-    buscarCodigo();
   };
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
+} else {
+  hide(statsBtn);
+  hide(statsPanel);
+}
 
-  byId("btnComprarTop")?.setAttribute("href", baseWA);
-  byId("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-  byId("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
-  byId("btnHeroPremium")?.setAttribute("href", baseWA + "%20Plan:%20Premium%20Pro");
+        // Mostrar panel
+        showPanel();
+        setMsg("✅ Listo");
 
-  byId("inputCodigo")?.addEventListener("keypress", function(e){
-    if(e.key === "Enter") buscarCodigo();
-  });
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlCode = urlParams.get("code");
-
-  if (urlCode) {
-    hideHome();
-    hide(byId("privacyCard"));
-    hide(byId("clienteCard"));
-    setMsg("Cargando dirección...", "#334155");
-
-    if (byId("inputCodigo")) {
-      byId("inputCodigo").value = String(urlCode).trim().toUpperCase();
+      } catch (e) {
+        setMsg("Error: " + (e?.message || "No se pudo buscar"));
+      }
     }
 
-    await cargarCodigo(String(urlCode).trim().toUpperCase());
-  } else {
-    showHome();
-    generarQrHome();
-  }
-});
-</script>
+    // Ver ejemplo
+    window.verEjemplo = function () {
+      const input = document.getElementById("inputCodigo");
+      if (input) input.value = EJEMPLO_CODE;
+      buscarCodigo();
+    };
+
+    // CAMBIO 3: Inicialización corregida
+    window.addEventListener("DOMContentLoaded", () => {
+      // Botones compra
+      const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
+      document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
+      document.getElementById("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+      document.getElementById("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+      document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+      document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+
+      // Enter en input
+      const input = document.getElementById("inputCodigo");
+      if (input) {
+        input.addEventListener("keypress", e => { if (e.key === "Enter") buscarCodigo(); });
+      }
+
+      // Verificar si hay código en la URL
+      const urlParams = new URLSearchParams(location.search);
+      const urlCode = urlParams.get("code");
+
+      if (urlCode && input) {
+        // Si hay ?code=, cargar ese código
+        input.value = urlCode;
+        buscarCodigo();
+      } else {
+        // Si no hay código, mostrar la home
+        hidePanelSections();
+        show(document.getElementById("homeHero"), "block");
+        show(document.getElementById("seccionPasos"), "block");
+        show(document.getElementById("seccionPrecios"), "block");
+        show(document.getElementById("seoLinksHome"), "flex");
+
+        // Generar QR para la home
+        const homeUrl = location.href.split("?")[0];
+        const qrImg = document.getElementById("qrImg");
+        const uiLink = document.getElementById("uiLink");
+
+        if (qrImg) {
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
+        }
+
+        if (uiLink) {
+          uiLink.textContent = homeUrl;
+        }
+      }
+    });
+
+    window.buscarCodigo = buscarCodigo;
+  </script>
 </body>
 </html>

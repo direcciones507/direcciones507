@@ -70,57 +70,57 @@ def excel_to_json():
         clientes_con_coordenadas = 0
         clientes_sin_coordenadas = 0
         
-for index, row in df.iterrows():
+        for index, row in df.iterrows():
 
-    # Obtener código (columna A)
-    codigo = str(row['Código']).strip() if pd.notna(row['Código']) else ""
+            # Obtener código (columna A)
+            codigo = str(row['Código']).strip() if pd.notna(row['Código']) else ""
 
-    # Obtener datos necesarios antes de validar
-    telefono = limpiar_telefono(row['Teléfono (cliente)'])
-    coordenadas = validar_coordenadas(row['Coordenada (LAT,LNG)'])
+            # Obtener datos necesarios antes de validar
+            telefono = limpiar_telefono(row['Teléfono (cliente)'])
+            coordenadas = validar_coordenadas(row['Coordenada (LAT,LNG)'])
 
-    # Solo procesar filas con código AD507 válido
-    if codigo and codigo.startswith('AD507-'):
+            # Solo procesar filas con código AD507 válido
+            if codigo and codigo.startswith('AD507-'):
 
-        # ❌ Evitar códigos duplicados
-        if any(c["codigo"] == codigo for c in clientes):
-            print(f"  ⛔ {codigo}: duplicado ignorado")
-            continue
+                # ❌ Evitar códigos duplicados
+                if any(c["codigo"] == codigo for c in clientes):
+                    print(f"  ⛔ {codigo}: duplicado ignorado")
+                    continue
 
-        # ❌ Validar coordenadas obligatorias
-        if not coordenadas:
-            print(f"  ⚠️ {codigo}: sin coordenadas válidas")
-            clientes_sin_coordenadas += 1
-            continue
+                # ❌ Validar coordenadas obligatorias
+                if not coordenadas:
+                    print(f"  ⚠️ {codigo}: sin coordenadas válidas")
+                    clientes_sin_coordenadas += 1
+                    continue
 
-        # ❌ Validar teléfono
-        if telefono and len(telefono) != 8:
-            print(f"  ⚠️ {codigo}: teléfono inválido")
-            continue
+                # ❌ Validar teléfono
+                if telefono and len(telefono) != 8:
+                    print(f"  ⚠️ {codigo}: teléfono inválido")
+                    continue
 
-        # Obtener otros datos
-        nombre = str(row['Nombre']).strip() if pd.notna(row['Nombre']) else ""
-        provincia = str(row['Provincia']).strip() if pd.notna(row['Provincia']) else "Panamá"
-        referencia = str(row['Referencia']).strip() if pd.notna(row['Referencia']) else ""
-        fecha = str(row['Fecha']).strip() if pd.notna(row['Fecha']) else datetime.now().strftime('%Y-%m-%d')
-        validacion = str(row['Validación']).strip() if pd.notna(row['Validación']) else ""
+                # Obtener otros datos
+                nombre = str(row['Nombre']).strip() if pd.notna(row['Nombre']) else ""
+                provincia = str(row['Provincia']).strip() if pd.notna(row['Provincia']) else "Panamá"
+                referencia = str(row['Referencia']).strip() if pd.notna(row['Referencia']) else ""
+                fecha = str(row['Fecha']).strip() if pd.notna(row['Fecha']) else datetime.now().strftime('%Y-%m-%d')
+                validacion = str(row['Validación']).strip() if pd.notna(row['Validación']) else ""
 
-        # Crear objeto cliente
-        cliente = {
-            "codigo": codigo,
-            "nombre": nombre if nombre else f"Cliente {codigo}",
-            "telefono": telefono,
-            "provincia": provincia,
-            "referencia": referencia,
-            "coordenadas": coordenadas,
-            "fecha_creacion": fecha,
-            "valido": validacion.upper() in ['OK','VÁLIDO','VALIDO','SI','YES','TRUE','VERIFICADO'],
-            "notas": ""
-        }
+                # Crear objeto cliente
+                cliente = {
+                    "codigo": codigo,
+                    "nombre": nombre if nombre else f"Cliente {codigo}",
+                    "telefono": telefono,
+                    "provincia": provincia,
+                    "referencia": referencia,
+                    "coordenadas": coordenadas,
+                    "fecha_creacion": fecha,
+                    "valido": validacion.upper() in ['OK','VÁLIDO','VALIDO','SI','YES','TRUE','VERIFICADO'],
+                    "notas": ""
+                }
 
-        clientes_con_coordenadas += 1
-        clientes.append(cliente)
-        print(f"  ✅ {codigo}: {nombre[:20]:20} | 📍 {coordenadas}")
+                clientes_con_coordenadas += 1
+                clientes.append(cliente)
+                print(f"  ✅ {codigo}: {nombre[:20]:20} | 📍 {coordenadas}")
         
         # Ordenar por código
         clientes.sort(key=lambda x: x['codigo'])

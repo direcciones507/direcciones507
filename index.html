@@ -1675,12 +1675,15 @@
       const codeFromUrl = (new URLSearchParams(window.location.search).get("code") || "").trim();
       const pathFromUrl = window.location.pathname.replace(/^\/+|\/+$/g, "").trim();
 
-      const normalizar = (v) => String(v || "").trim().toUpperCase();
+      const normalizar = (v) => String(v || "")
+        .trim()
+        .toUpperCase()
+        .replace(/\.HTML$/i, "");
 
       const vienePorQuery = normalizar(codeFromUrl) === normalizar(CODIGO_ACTUAL);
       const vienePorPath = normalizar(pathFromUrl) === normalizar(CODIGO_ACTUAL);
       const vieneDeLink = vienePorQuery || vienePorPath;
-
+      
       if (!esPublico && !vieneDeLink) {
         setMsg("Este código es privado. Usa el enlace directo.");
 

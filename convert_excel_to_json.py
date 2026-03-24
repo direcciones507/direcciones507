@@ -51,7 +51,7 @@ def excel_to_json():
     
     try:
         # Leer el archivo Excel
-        excel_file = 'AD507_MASTER_FINAL_PANAMA.xlsx'
+        excel_file = "AD507_MASTER_FINAL_PANAMA_CORREGIDO_v2.xlsx"
         
         # Leer la hoja AD507
         print(f"📖 Leyendo archivo: {excel_file}")

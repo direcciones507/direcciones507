@@ -1974,37 +1974,33 @@ body{
     function hide(el) { if (el) el.style.display = "none"; }
 
     function showPanel() {
-      hide(document.getElementById("homeHero"));
-      hide(document.getElementById("seccionPasos"));
-      hide(document.getElementById("seccionPrecios"));
-      hide(document.getElementById("seoLinksHome"));
-      
-      show(document.getElementById("fieldNombre"), "block");
-      show(document.getElementById("fieldRef"), "block");
-      show(document.getElementById("tituloUbicacion"), "block");
-      show(document.getElementById("gridUbicacion"), "grid");
-      show(document.getElementById("divAfterUbic"), "block");
-      show(document.getElementById("tituloCompartir"), "block");
-      show(document.getElementById("gridCompartir"), "grid");
-      show(document.getElementById("notaVerificacion"), "block");
-      show(document.getElementById("divAfterVerif"), "block");
-    }
+  // Ocultar toda la home
+  hide(document.getElementById("mainHeader"));
+  hide(document.getElementById("homeHero"));
+  hide(document.getElementById("heroPromo"));
+  hide(document.getElementById("searchWrap"));
+  hide(document.getElementById("seccionPasos"));
+  hide(document.getElementById("seccionPrecios"));
+  hide(document.getElementById("seoLinksHome"));
+  hide(document.getElementById("sectionBenefits"));
+  hide(document.getElementById("ctaFinal"));
+  hide(document.getElementById("mainFooter"));
+  hide(document.getElementById("privacyCard"));
 
-    function hidePanelSections() {
-      hide(document.getElementById("fieldNombre"));
-      hide(document.getElementById("fieldRef"));
-      hide(document.getElementById("tituloUbicacion"));
-      hide(document.getElementById("gridUbicacion"));
-      hide(document.getElementById("divAfterUbic"));
-      hide(document.getElementById("tituloCompartir"));
-      hide(document.getElementById("gridCompartir"));
-      hide(document.getElementById("notaVerificacion"));
-      hide(document.getElementById("divAfterVerif"));
-      hide(document.getElementById("btnStats"));
-      hide(document.getElementById("statsPanel"));
-      hide(document.getElementById("printCardWrap"));
-      hide(document.getElementById("privacyCard"));
-    }
+  // Mostrar tarjeta del cliente
+  show(document.getElementById("clienteCard"), "block");
+
+  // Mostrar contenido del cliente
+  show(document.getElementById("fieldNombre"), "block");
+  show(document.getElementById("fieldRef"), "block");
+  show(document.getElementById("tituloUbicacion"), "block");
+  show(document.getElementById("gridUbicacion"), "grid");
+  show(document.getElementById("divAfterUbic"), "block");
+  show(document.getElementById("tituloCompartir"), "block");
+  show(document.getElementById("gridCompartir"), "grid");
+  show(document.getElementById("notaVerificacion"), "block");
+  show(document.getElementById("divAfterVerif"), "block");
+}
 
     function extractLinkFromQr(qrUrl) {
       try {

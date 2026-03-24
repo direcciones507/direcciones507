@@ -2244,16 +2244,19 @@ if (esNegocio) {
   input.value = urlCode;
 
   // Ocultar home para mostrar solo datos del cliente
-  hide(document.getElementById("homeHero"));
-  hide(document.getElementById("seccionPasos"));
-  hide(document.getElementById("seccionPrecios"));
-  hide(document.getElementById("seoLinksHome"));
-  hide(document.getElementById("mainHeader"));
-  hide(document.getElementById("mainFooter"));
-  hide(document.getElementById("heroPromo"));
-  hide(document.getElementById("searchWrap"));
-  hide(document.getElementById("sectionBenefits"));
-  hide(document.getElementById("ctaFinal"));
+hide(document.getElementById("homeHero"));
+hide(document.getElementById("seccionPasos"));
+hide(document.getElementById("seccionPrecios"));
+hide(document.getElementById("seoLinksHome"));
+hide(document.getElementById("mainHeader"));
+hide(document.getElementById("mainFooter"));
+hide(document.getElementById("heroPromo"));
+hide(document.getElementById("searchWrap"));
+hide(document.getElementById("sectionBenefits"));
+hide(document.getElementById("ctaFinal"));
+
+// Mostrar panel del cliente
+show(document.getElementById("clienteCard"), "block");
 
   buscarCodigo();
 } else {

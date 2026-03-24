@@ -1828,54 +1828,62 @@ if (esNegocio) {
 
     <script>
   window.addEventListener("DOMContentLoaded", () => {
-    const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
-    document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
-    document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-    document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+  const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
+  document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
+  document.getElementById("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+  document.getElementById("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+  document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+  document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
 
-    const input = document.getElementById("inputCodigo");
-    if (input) {
-      input.addEventListener("keypress", e => {
-        if (e.key === "Enter") buscarCodigo();
-      });
+  const input = document.getElementById("inputCodigo");
+  if (input) {
+    input.addEventListener("keypress", e => {
+      if (e.key === "Enter") buscarCodigo();
+    });
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  let codigoInicial = (urlParams.get("code") || "").trim();
+
+  // Si no viene por ?code=, intentar leerlo desde la ruta
+  if (!codigoInicial) {
+    const path = window.location.pathname
+      .replace(/^\/+|\/+$/g, "")
+      .trim();
+
+    // Si la ruta ya viene como AD507-ALGO
+    if (path.toUpperCase().startsWith("AD507-")) {
+      codigoInicial = path.toUpperCase();
+    }
+    // Si usas carpetas tipo /ad507-jedidias/
+    else if (path.toLowerCase().startsWith("ad507-")) {
+      codigoInicial = path.toUpperCase();
+    }
+  }
+
+  if (codigoInicial && input) {
+    input.value = codigoInicial;
+    buscarCodigo();
+  } else {
+    hidePanelSections();
+    show(document.getElementById("homeHero"), "block");
+    show(document.getElementById("seccionPasos"), "block");
+    show(document.getElementById("seccionPrecios"), "block");
+    show(document.getElementById("seoLinksHome"), "flex");
+
+    const homeUrl = window.location.origin + window.location.pathname;
+    const qrImg = document.getElementById("qrImg");
+    const uiLink = document.getElementById("uiLink");
+
+    if (qrImg) {
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
     }
 
-    const urlParams = new URLSearchParams(location.search);
-    let urlCode = urlParams.get("code");
-
-    // NUEVO: leer también el path tipo /ad507-0004/
-    if (!urlCode) {
-      const path = window.location.pathname
-        .replace(/^\/+|\/+$/g, "")   // quita / al inicio y final
-        .toUpperCase();
-
-      if (path.startsWith("AD507-")) {
-        urlCode = path;
-      }
+    if (uiLink) {
+      uiLink.textContent = homeUrl;
     }
-
-    if (urlCode && input) {
-      input.value = urlCode;
-      buscarCodigo();
-    } else {
-      hidePanelSections();
-      show(document.getElementById("homeHero"), "block");
-      show(document.getElementById("seccionPrecios"), "block");
-      show(document.getElementById("seoLinksHome"), "flex");
-
-      const homeUrl = location.href.split("?")[0];
-      const qrImg = document.getElementById("qrImg");
-      const uiLink = document.getElementById("uiLink");
-
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
-      }
-
-      if (uiLink) {
-        uiLink.textContent = homeUrl;
-      }
-    }
-  });
+  }
+});
 
   window.buscarCodigo = buscarCodigo;
 </script>

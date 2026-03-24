@@ -2237,10 +2237,23 @@ if (esNegocio) {
       const urlCode = urlParams.get("code");
 
       if (urlCode && input) {
-        // Si hay ?code=, cargar ese código
-        input.value = urlCode;
-        buscarCodigo();
-      } else {
+  // Si hay ?code=, cargar ese código
+  input.value = urlCode;
+
+  // Ocultar home para mostrar solo datos del cliente
+  hide(document.getElementById("homeHero"));
+  hide(document.getElementById("seccionPasos"));
+  hide(document.getElementById("seccionPrecios"));
+  hide(document.getElementById("seoLinksHome"));
+  hide(document.getElementById("mainHeader"));
+  hide(document.getElementById("mainFooter"));
+  hide(document.getElementById("heroPromo"));
+  hide(document.getElementById("searchWrap"));
+  hide(document.getElementById("sectionBenefits"));
+  hide(document.getElementById("ctaFinal"));
+
+  buscarCodigo();
+} else {
         // Si no hay código, mostrar la home
         hidePanelSections();
         show(document.getElementById("homeHero"), "block");

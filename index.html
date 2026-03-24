@@ -1932,15 +1932,15 @@
     let codigoInicial = (urlParams.get("code") || "").trim();
 
     if (!codigoInicial) {
-      const path = window.location.pathname.replace(/^\/+|\/+$/g, "").trim();
+    const path = window.location.pathname
+      .replace(/^\/+|\/+$/g, "")
+      .trim()
+      .toUpperCase();
 
-      if (path.toUpperCase().startsWith("AD507-")) {
-        codigoInicial = path.toUpperCase();
-      } else if (path.toLowerCase().startsWith("ad507-")) {
-        codigoInicial = path.toUpperCase();
+    if (path.startsWith("AD507-")) {
+    codigoInicial = path;
       }
     }
-
     if (codigoInicial && input) {
       input.value = codigoInicial;
       buscarCodigo();

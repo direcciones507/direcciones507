@@ -121,9 +121,6 @@ def excel_to_json():
         clientes_con_coordenadas += 1
         clientes.append(cliente)
         print(f"  ✅ {codigo}: {nombre[:20]:20} | 📍 {coordenadas}")
-                else:
-                    clientes_sin_coordenadas += 1
-                    print(f"  ⚠️ {codigo}: {nombre[:20]:20} | SIN coordenadas")
         
         # Ordenar por código
         clientes.sort(key=lambda x: x['codigo'])

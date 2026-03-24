@@ -100,10 +100,8 @@ def excel_to_json():
                 
                 # Obtener otros datos
                 nombre = str(row['Nombre']).strip() if pd.notna(row['Nombre']) else ""
-                telefono = limpiar_telefono(row['Teléfono (cliente)'])
                 provincia = str(row['Provincia']).strip() if pd.notna(row['Provincia']) else "Panamá"
                 referencia = str(row['Referencia']).strip() if pd.notna(row['Referencia']) else ""
-                coordenadas = validar_coordenadas(row['Coordenada (LAT,LNG)'])
                 fecha = str(row['Fecha']).strip() if pd.notna(row['Fecha']) else datetime.now().strftime('%Y-%m-%d')
                 validacion = str(row['Validación']).strip() if pd.notna(row['Validación']) else ""
                 

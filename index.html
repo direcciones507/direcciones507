@@ -2,15 +2,30 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 
-  <!-- CAMBIO 1: Título y descripción para la home general -->
   <title>Direcciones507 | Sistema de Dirección Digital en Panamá</title>
   <meta name="description" content="Direcciones507 es el sistema de dirección digital en Panamá. Comparte tu ubicación exacta con un código AD507 y abre en Google Maps, Waze o Uber.">
   <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#4f46e5">
 
-  <!-- Font Awesome 6 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Direcciones507 | Dirección Digital en Panamá">
+  <meta property="og:description" content="Comparte tu ubicación exacta con un código AD507. Abre en Google Maps, Waze o Uber.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://direcciones507.com/">
+  <meta property="og:image" content="https://direcciones507.com/logo.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Direcciones507 | Dirección Digital en Panamá">
+  <meta name="twitter:description" content="Comparte tu ubicación exacta con un código AD507.">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://direcciones507.com/">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,2238 +36,1459 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
     }
 
-    body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-
-  background: linear-gradient(
-    135deg,
-    #4f46e5 0%,
-    #6366f1 40%,
-    #7c3aed 100%
-  );
-
-  color: #1e293b;
-  line-height: 1.5;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-    .container {
-  max-width: 1100px;
-  margin: 40px auto;
-  padding: 24px;
-}
-
-   
-    /* ===== BLOQUES INFORMATIVOS ===== */
-    .info-blocks {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 28px;
+    html{
+      scroll-behavior:smooth;
     }
 
-    .info-block {
-      padding: 12px 22px;
-      background: white;
-      color: #1e293b;
-      border-radius: 40px;
-      font-weight: 500;
-      border: 1px solid #e9eef2;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    body{
+      font-family:"Inter",system-ui,-apple-system,sans-serif;
+      background:linear-gradient(135deg,#4f46e5 0%,#6366f1 40%,#7c3aed 100%);
+      color:#1e293b;
+      line-height:1.5;
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
     }
 
-    .info-block i {
-      color: #3b82f6;
-      margin-right: 8px;
+    .container{
+      max-width:1100px;
+      margin:0 auto;
+      padding:16px;
     }
 
-    /* ===== HERO SECTION ===== */
-    .hero-section {
-      background: white;
-      border-radius: 32px;
-      padding: 32px;
-      margin-bottom: 24px;
-      border: 1px solid #e9eef2;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.02);
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 32px;
-    }
-
-   .planes-grid{
-  display:grid;
-  grid-template-columns: repeat(4, minmax(140px, 1fr));
-  gap:14px;
-  margin-top:20px;
-  width:100%;
-}
-
-.plan-card{
-  background:#f8fafc;
-  border:1px solid #dbe4ff;
-  border-radius:22px;
-  padding:18px 16px;
-  box-sizing:border-box;
-  min-width:0;
-  width:100%;
-  max-width:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  overflow:hidden;
-}
-
-.plan-card.destacado{
-  background:linear-gradient(180deg,#eef4ff 0%,#f8fbff 100%);
-  border:2px solid #7c8cff;
-}
-
-.plan-card.premium-pro{
-  background:#0f172a;
-  color:#fff;
-  border:1px solid #0f172a;
-}
-
-.plan-card h3{
-  margin:0 0 8px;
-  font-size:18px;
-  font-weight:800;
-  line-height:1.2;
-}
-
-.plan-sub{
-  margin:0 0 14px;
-  font-size:14px;
-  color:#64748b;
-}
-
-.plan-card.premium-pro .plan-sub{
-  color:#cbd5e1;
-}
-
-.plan-price{
-  font-size:34px;
-  font-weight:900;
-  line-height:1;
-  margin:8px 0 16px;
-  word-break:break-word;
-}
-
-.plan-features{
-  list-style:none;
-  padding:0;
-  margin:0 0 18px;
-}
-
-.plan-features li{
-  margin:8px 0;
-  font-size:14px;
-  line-height:1.45;
-  word-break:break-word;
-}
-
-.plan-btn{
-  display:block;
-  width:100%;
-  text-align:center;
-  text-decoration:none;
-  padding:12px 16px;
-  border-radius:14px;
-  font-weight:700;
-  background:#2563eb;
-  color:#fff;
-  box-sizing:border-box;
-}
-
-.plan-card.premium-pro .plan-btn{
-  background:#22c55e;
-  color:#fff;
-}
-
-.planes-grid > *{
-  min-width:0;
-}
-    @media (max-width: 900px){
-  .info-ventas-wrap{
-    grid-template-columns:1fr;
-  }
-
-  .plan-card.plan-estrella{
-    transform:none;
-  }
-}
-
-@media (max-width: 640px){
-  .planes-grid{
-    grid-template-columns: 1fr !important;
-  }
-}
-
-    .hero-title {
-      font-size: 44px;
-      font-weight: 700;
-      line-height: 1.1;
-      margin-bottom: 16px;
-      color: #0f172a;
-    }
-
-    .hero-title span {
-      color: #3b82f6;
-    }
-
-    .hero-text {
-      font-size: 18px;
-      color: #475569;
-      margin-bottom: 24px;
-    }
-
-    /* ===== CARDS ===== */
-    .card { background: white; 
-           border-radius: 28px; 
-           border: 1px solid #e9eef2; 
-           box-shadow: 0 8px 24px rgba(0,0,0,0.02); 
-           overflow: hidden; 
-          }
-
-    .card-header {
-      padding: 22px 24px 14px;
-      border-bottom: 1px solid #e9eef2;
-    }
-
-    .card-header h2 {
-      font-size: 16px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: #64748b;
-      margin-bottom: 4px;
-    }
-
-    .card-header .sub {
-      font-size: 13px;
-      color: #94a3b8;
-    }
-
-    .card-body {
-      padding: 20px 24px 24px;
-    }
-
-    /* ===== PILLS ===== */
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      background: #f8fafc;
-      border: 1px solid #e9eef2;
-      border-radius: 40px;
-      font-size: 13px;
-      color: #475569;
-    }
-
-    .pill i {
-      color: #3b82f6;
-    }
-
-    .pill b {
-      color: #0f172a;
-      font-weight: 600;
-    }
-
-    /* ===== CAMPOS DE INFORMACIÓN ===== */
-    .info-field {
-      margin-bottom: 16px;
-    }
-
-    .field-label {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: #64748b;
-      margin-bottom: 4px;
-    }
-
-    .field-value {
-      font-size: 18px;
-      font-weight: 600;
-      color: #0f172a;
-      padding: 12px 16px;
-      background: #f8fafc;
-      border-radius: 16px;
-      border: 1px solid #e9eef2;
-    }
-
-    /* ===== BOTONES ===== */
-    .btn-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin: 18px 0;
-    }
-
-    @media (max-width: 520px) {
-      .btn-grid {
-        grid-template-columns: 1fr;
+    @media (max-width:768px){
+      body{
+        background:#f1f5f9;
+        padding:12px 0;
+      }
+      .container{
+        max-width:450px;
+        margin:0 auto;
+        padding:0 12px;
+      }
+      .hero-section,.card,.footer,.section-premium,.cta-final,.info-blocks,.header,.search-wrap,.privacy-inner{
+        border-radius:28px !important;
       }
     }
 
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 60px;
-      font-weight: 600;
-      font-size: 15px;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      border: 1px solid transparent;
-      cursor: pointer;
+    .hidden{
+      display:none !important;
     }
-
-    .btn-google {
-      background: white;
-      color: #1e293b;
-      border-color: #e9eef2;
-    }
-
-    .btn-google:hover {
-      border-color: #3b82f6;
-      background: #f8fafc;
-    }
-
-    .btn-waze {
-      background: #33ccff;
-      color: #1e293b;
-    }
-
-    .btn-waze:hover {
-      background: #2db8e6;
-    }
-
-    .btn-uber {
-      background: #000000;
-      color: white;
-    }
-
-    .btn-uber:hover {
-      background: #1a1a1a;
-    }
-
-    .btn-whatsapp-green {
-      background: #25D366;
-      color: white;
-    }
-
-    .btn-whatsapp-green:hover {
-      background: #20BA5C;
-    }
-
-    .btn-call {
-      background: white;
-      color: #1e293b;
-      border-color: #e9eef2;
-    }
-
-    .btn-call:hover {
-      border-color: #3b82f6;
-    }
-
-    /* ===== QR SECTION ===== */
-    .qr-panel {
-      padding: 24px;
-      text-align: center;
-    }
-
-    .qr-box {
-      background: #f8fafc;
-      border-radius: 24px;
-      padding: 24px 16px;
-      border: 1px solid #e9eef2;
-    }
-
-    .qr-title {
-      font-weight: 600;
-      font-size: 16px;
-      color: #0f172a;
-      margin-bottom: 6px;
-    }
-
-    .qr-title i {
-      color: #3b82f6;
-      margin-right: 6px;
-    }
-
-    .qr-sub {
-      color: #64748b;
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-
-    .qr-img {
-      width: 200px;
-      max-width: 100%;
-      border-radius: 16px;
-      background: white;
-      padding: 8px;
-      border: 1px solid #e9eef2;
-      margin: 0 auto;
-    }
-
-    /* ===== DIVISOR ===== */
-    .divider {
-      height: 1px;
-      background: #e9eef2;
-      margin: 24px 0;
-    }
-
-    .steps-container{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  width:100%;
-}
-
-.step-block{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  width:100%;
-  background:#f8fafc;
-  border:1px solid #e9eef2;
-  border-radius:18px;
-  padding:16px 18px;
-  transition:all .2s ease;
-}
-
-.step-block:hover{
-  background:#f1f5f9;
-  border-color:#dbeafe;
-}
-
-.step-number{
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  background:#e0f2fe;
-  color:#0369a1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:700;
-  flex-shrink:0;
-}
-
-.step-text{
-  flex:1;
-  font-size:15px;
-  line-height:1.4;
-  color:#0f172a;
-  white-space:nowrap;
-}
-
-.step-text strong{
-  color:#0f172a;
-}
-
-    .info-ventas-wrap{
-  display:flex;
-  flex-direction:column;
-  gap:26px;
-  margin-top:10px;
-}
-
-    .info-top{
-  display:grid;
-  grid-template-columns: 0.9fr 320px;
-  gap:24px;
-  align-items:start;
-}
-
-    .qr-panel-mini .qr-img{
-  width:200px;
-}
-
-    .qr-panel-mini{
-  display:flex;
-  justify-content:center;
-  align-items:center;    
-}
-
-.qr-panel-mini .qr-box{
-  padding:22px;
-}
- .qr-box{
-  text-align:center;
-}   
-
-#seccionPasos,
-#seccionPrecios{
-  min-width:0;
-}
-
-#seccionPrecios .divider,
-#seccionPasos .divider{
-  margin-top:0;
-}
-
-.plan-card.plan-estrella{
-  background:linear-gradient(180deg,#eff6ff 0%, #eef2ff 100%);
-  border:2px solid #6366f1;
-  position:relative;
-  transform:scale(1.03);
-  box-shadow:0 18px 40px rgba(99,102,241,.18);
-}
-
-.plan-badge{
-  position:absolute;
-  top:-12px;
-  right:18px;
-  background:#6366f1;
-  color:#fff;
-  font-size:12px;
-  font-weight:800;
-  padding:7px 12px;
-  border-radius:999px;
-  box-shadow:0 8px 18px rgba(99,102,241,.25);
-}
-
-@media (max-width: 900px){
-  .info-ventas-wrap{
-    grid-template-columns:1fr;
-  }
-
-  .info-top{
-  grid-template-columns:1fr;
-}
-
-  .plan-card.plan-estrella{
-    transform:none;
-  }
-}
-
-    /* ===== PRICE CARDS ===== */
-    .price-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 860px) {
-      .price-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .price-card {
-      background: #f8fafc;
-      border: 1px solid #e9eef2;
-      border-radius: 24px;
-      padding: 18px;
-    }
-
-    .price-tag {
-      display: inline-block;
-      padding: 6px 14px;
-      background: white;
-      border: 1px solid #e9eef2;
-      border-radius: 40px;
-      font-weight: 600;
-      font-size: 13px;
-    }
-
-    .price-amount {
-      font-size: 34px;
-      font-weight: 700;
-      margin: 12px 0 8px;
-      color: #0f172a;
-    }
-
-    /* ===== PRINT CARD ===== */
-    #printCard {
-      background: white;
-      border-radius: 28px;
-      padding: 24px;
-      max-width: 380px;
-      color: #1e293b;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      border: 1px solid #e9eef2;
-    }
-
-    /* ===== FOOTER ===== */
-    .footer {
-      margin-top: 32px;
-      padding: 24px;
-      background: white;
-      border: 1px solid #e9eef2;
-      border-radius: 38px;
-      color: #64748b;
-      font-size: 13px;
-      text-align: center;
-    }
-
-    /* ===== SOCIAL WRAP ===== */
-    .social-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-      justify-content: center;
-    }
-
-    @media (max-width: 900px) {
-      .social-wrap {
-        flex-direction: column;
-      }
-    }
-
-    /* ===== UTILITIES ===== */
-    .text-muted {
-      color: #111827;
-      font-weight: 600;
-    }
- 
-     .grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-    @media (max-width: 900px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 900px) {
-  .testimonios-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-    /* Ocultar en móvil si es necesario */
-    @media (max-width: 768px) {
-      .info-blocks {
-        display: none;
-      }
-    }
-
-    /* OCULTAR SOLO LOS PASOS EN TELEFONO */
-@media (max-width: 600px){
-  .steps-container{
-    display:none !important;
-  }
-}
-    
-    /* REDES EN TELEFONO */
-@media (max-width: 600px){
-
-  .social-wrap{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:10px;
-  }
-
-  .social-wrap a{
-    width:100%;
-    text-align:center;
-  }
-
-}
-    /* ===== LAYOUT LIMPIO HOME ===== */
-
-.info-top{
-  display:grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap:20px;
-  align-items:start;
-}
-
-.steps-container{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  width:100%;
-}
-
-.step-block{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  width:100%;
-  background:#f8fafc;
-  border:1px solid #e9eef2;
-  border-radius:18px;
-  padding:16px 18px;
-  transition:all .2s ease;
-}
-
-.step-block:hover{
-  background:#f1f5f9;
-  border-color:#dbeafe;
-}
-
-.step-number{
-  width:36px;
-  height:36px;
-  border-radius:12px;
-  background:#e0f2fe;
-  color:#0369a1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:700;
-  flex-shrink:0;
-}
-
-.step-text{
-  flex:1;
-  font-size:15px;
-  line-height:1.4;
-  color:#0f172a;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.step-text strong{
-  color:#0f172a;
-}
-
-.qr-panel-mini{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-.qr-box{
-  width:100%;
-  max-width:280px;
-  text-align:center;
-  background:#f8fafc;
-  border:1px solid #e9eef2;
-  border-radius:24px;
-  padding:20px;
-}
-
-.qr-panel-mini .qr-img{
-  width:190px;
-  max-width:100%;
-  margin:0 auto;
-  display:block;
-}
-
-.planes-title{
-  font-size:20px;
-  font-weight:700;
-  text-align:center;
-  margin:10px 0 22px;
-  color:#0f172a;
-}
-
-.planes-grid{
-  display:grid;
-  grid-template-columns:repeat(4, minmax(0, 1fr));
-  gap:14px;
-  width:100%;
-}
-
-.plan-card{
-  background:#f8fafc;
-  border:1px solid #dbe4ff;
-  border-radius:22px;
-  padding:18px 16px;
-  box-sizing:border-box;
-  min-width:0;
-  width:100%;
-  max-width:100%;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  overflow:hidden;
-}
-
-.plan-card.premium-pro{
-  background:#0f172a;
-  color:#fff;
-  border:1px solid #0f172a;
-}
-
-.plan-card.plan-estrella{
-  background:linear-gradient(180deg,#eff6ff 0%, #eef2ff 100%);
-  border:2px solid #6366f1;
-  position:relative;
-  transform:scale(1.03);
-  box-shadow:0 18px 40px rgba(99,102,241,.18);
-}
-
-.plan-badge{
-  position:absolute;
-  top:-12px;
-  right:18px;
-  background:#6366f1;
-  color:#fff;
-  font-size:12px;
-  font-weight:800;
-  padding:7px 12px;
-  border-radius:999px;
-  box-shadow:0 8px 18px rgba(99,102,241,.25);
-}
-
-.plan-sub{
-  margin:0 0 14px;
-  font-size:14px;
-  color:#64748b;
-}
-
-.plan-card.premium-pro .plan-sub{
-  color:#cbd5e1;
-}
-
-.plan-price{
-  font-size:34px;
-  font-weight:900;
-  line-height:1;
-  margin:8px 0 16px;
-  word-break:break-word;
-}
-
-.plan-features{
-  list-style:none;
-  padding:0;
-  margin:0 0 18px;
-}
-
-.plan-features li{
-  margin:8px 0;
-  font-size:14px;
-  line-height:1.45;
-  word-break:break-word;
-}
-
-.plan-btn{
-  display:block;
-  width:100%;
-  text-align:center;
-  text-decoration:none;
-  padding:12px 16px;
-  border-radius:14px;
-  font-weight:700;
-  background:#2563eb;
-  color:#fff;
-  box-sizing:border-box;
-}
-
-.plan-card.premium-pro .plan-btn{
-  background:#22c55e;
-  color:#fff;
-}
-
-/* ===== MÓVIL ===== */
-@media (max-width: 900px){
-  .hero-grid,
-  .grid,
-  .info-top{
-    grid-template-columns:1fr !important;
-  }
-
-  .planes-grid{
-    grid-template-columns:1fr !important;
-  }
-
-  .plan-card.plan-estrella{
-    transform:none;
-  }
-
-  .social-wrap{
-    flex-direction:column;
-  }
-
-  .btn-grid{
-    grid-template-columns:1fr;
-  }
-
-  .topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  padding:14px 20px;
-  background:rgba(255,255,255,.75);
-  border-radius:20px;
-  border:1px solid #e9eef2;
-  box-shadow:0 8px 20px rgba(15,23,42,.05);
-}
-
-  .hero-section,
-  .card,
-  .footer{
-    border-radius:24px;
-  }
-
-  .step-text{
-    white-space:normal;
-    overflow:visible;
-    text-overflow:unset;
-  }
-
-  .qr-box{
-    max-width:100%;
-  }
-
-  .qr-panel-mini .qr-img{
-    width:180px;
-  }
-}
-
-@media (max-width: 640px){
-  .container{
-    padding:16px;
-    margin:20px auto;
-  }
-
-  .hero-title{
-    font-size:34px;
-  }
-
-  .brand-text h1{
-    font-size:22px;
-  }
-
-  .brand-text p{
-    font-size:13px;
-  }
-
-  .btn-whatsapp,
-  .btn{
-    width:100%;
-    justify-content:center;
-  }
-
-  .social-wrap,
-  .info-blocks{
-    gap:10px;
-  }
-
-  input,
-  button{
-    min-width:0 !important;
-  }
-}
-    /* ===== PREMIUM PRO V2 ===== */
-:root{
-  --pp-bg-1:#4338ca;
-  --pp-bg-2:#6366f1;
-  --pp-bg-3:#7c3aed;
-  --pp-dark:#0f172a;
-  --pp-text:#0f172a;
-  --pp-muted:#64748b;
-  --pp-line:#e9eef2;
-  --pp-soft:#f8fafc;
-  --pp-green:#22c55e;
-  --pp-blue:#2563eb;
-  --pp-gold:#f59e0b;
-}
-
-body{
-  background:
-    radial-gradient(900px 500px at 10% 0%, rgba(255,255,255,.10), transparent 60%),
-    radial-gradient(900px 500px at 100% 10%, rgba(255,255,255,.08), transparent 55%),
-    linear-gradient(135deg, var(--pp-bg-1) 0%, var(--pp-bg-2) 45%, var(--pp-bg-3) 100%);
-}
-
-.container{
-  max-width: 1180px;
-}
-
-.topbar{
-  background: rgba(255,255,255,.96);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 30px rgba(15,23,42,.08);
-}
-
-.logo-circle{
-  background: white;
-  overflow: hidden;
-  padding: 6px;
-  border: 1px solid #dbe4ff;
-  box-shadow: 0 10px 24px rgba(37,99,235,.16);
-}
-
-.logo {
-  width: 140px;       /* 🔥 tamaño ideal */
-  max-width: 100%;
-  height: auto;
-}
-.hero-section{
-  position: relative;
-  overflow: hidden;
-  border-radius: 36px;
-  padding: 38px;
-  box-shadow: 0 18px 48px rgba(15,23,42,.10);
-}
-
-.hero-section::before{
-  content:"";
-  position:absolute;
-  inset:-120px auto auto -120px;
-  width:260px;
-  height:260px;
-  background: radial-gradient(circle, rgba(37,99,235,.14), transparent 65%);
-  pointer-events:none;
-}
-
-.hero-section::after{
-  content:"";
-  position:absolute;
-  inset:auto -100px -100px auto;
-  width:260px;
-  height:260px;
-  background: radial-gradient(circle, rgba(34,197,94,.12), transparent 65%);
-  pointer-events:none;
-}
-
-.hero-grid{
-  align-items: center;
-}
-
-.hero-kicker{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 14px;
-  background:#eef2ff;
-  border:1px solid #dbe4ff;
-  border-radius:999px;
-  color:#4338ca;
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:16px;
-}
-
-.hero-title{
-  font-size: 52px;
-  line-height: 1.02;
-  letter-spacing: -.03em;
-  margin-bottom: 18px;
-}
-
-.hero-title span{
-  color: var(--pp-blue);
-}
-
-.hero-text{
-  font-size: 19px;
-  line-height: 1.7;
-  color: #475569;
-  max-width: 680px;
-}
-
-.hero-proof{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin: 22px 0 12px;
-}
-
-.hero-proof .pill{
-  background:white;
-  box-shadow:0 4px 14px rgba(15,23,42,.04);
-}
-
-.hero-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  margin-top:18px;
-}
-
-.btn-primary-hero{
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color:white;
-  border:none;
-  box-shadow: 0 14px 30px rgba(34,197,94,.28);
-}
-
-.btn-primary-hero:hover{
-  transform: translateY(-2px);
-  box-shadow: 0 18px 36px rgba(34,197,94,.34);
-}
-
-.btn-dark-hero{
-  background:#0f172a;
-  color:white;
-  border:1px solid #0f172a;
-}
-
-.btn-dark-hero:hover{
-  transform: translateY(-2px);
-  background:#111827;
-}
-
-.hero-side-stack{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-
-.premium-box{
-  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-  color:white;
-  border-radius: 28px;
-  border: 1px solid rgba(255,255,255,.06);
-  padding: 22px;
-  box-shadow: 0 16px 38px rgba(15,23,42,.18);
-}
-
-.premium-box h3{
-  font-size: 20px;
-  margin-bottom: 6px;
-}
-
-.premium-box p{
-  color: #cbd5e1;
-  margin-bottom: 16px;
-}
-
-.premium-list{
-  display:grid;
-  gap:10px;
-}
-
-.premium-item{
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
-  background: rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:18px;
-  padding:12px 14px;
-  color:#e5e7eb;
-  font-size:14px;
-}
-
-.stat-mini{
-  background:white;
-  border:1px solid var(--pp-line);
-  border-radius:24px;
-  padding:18px;
-}
-
-.stat-mini-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-
-.stat-mini-card{
-  background:#f8fafc;
-  border:1px solid #e9eef2;
-  border-radius:18px;
-  padding:14px;
-  text-align:center;
-}
-
-.stat-mini-card b{
-  display:block;
-  font-size:22px;
-  color:#0f172a;
-  margin-bottom:4px;
-}
-
-.section-premium{
-  background:white;
-  border:1px solid #e9eef2;
-  border-radius:32px;
-  box-shadow: 0 10px 30px rgba(15,23,42,.06);
-  padding: 28px;
-  margin-top: 24px;
-}
-
-.section-premium h2{
-  font-size:28px;
-  color:#0f172a;
-  margin-bottom:10px;
-}
-
-.section-premium p.lead{
-  color:#64748b;
-  font-size:16px;
-  margin-bottom:24px;
-}
-
-.benefits-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
-}
-
-.benefit-card{
-  background:#f8fafc;
-  border:1px solid #e9eef2;
-  border-radius:24px;
-  padding:18px;
-}
-
-.benefit-icon{
-  width:46px;
-  height:46px;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#e0f2fe;
-  color:#0369a1;
-  margin-bottom:12px;
-  font-size:18px;
-}
-
-.benefit-card h3{
-  font-size:18px;
-  margin-bottom:8px;
-  color:#0f172a;
-}
-
-.benefit-card p{
-  color:#64748b;
-  font-size:14px;
-}
-
-.plan-card{
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-
-.plan-card:hover{
-  transform: translateY(-4px);
-  box-shadow: 0 14px 30px rgba(15,23,42,.08);
-}
-
-.plan-card.premium-pro{
-  background: linear-gradient(180deg,#0f172a 0%, #111827 100%);
-  border: 1px solid #111827;
-  box-shadow: 0 20px 40px rgba(15,23,42,.22);
-}
-
-.plan-card.premium-pro .plan-price{
-  color: white;
-}
-
-.plan-card.premium-pro h4{
-  color:white;
-}
-
-.plan-card.premium-pro .plan-btn{
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  box-shadow: 0 12px 24px rgba(34,197,94,.22);
-}
-
-.plan-card.premium-pro::before{
-  content:"Premium Pro";
-  display:inline-block;
-  align-self:flex-start;
-  margin-bottom:12px;
-  padding:7px 12px;
-  border-radius:999px;
-  background: rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.10);
-  color:#f8fafc;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:.02em;
-}
-
-.cta-final{
-  margin-top: 28px;
-  padding: 34px 28px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border-radius: 32px;
-  color: white;
-  text-align: center;
-  box-shadow: 0 20px 42px rgba(15,23,42,.20);
-}
-
-.cta-final h2{
-  font-size: 34px;
-  margin-bottom: 10px;
-}
-
-.cta-final p{
-  color:#cbd5e1;
-  max-width:700px;
-  margin:0 auto 20px;
-  font-size:16px;
-}
-
-.cta-final .btn-whatsapp{
-  box-shadow: 0 14px 26px rgba(34,197,94,.25);
-}
-
-@media (max-width: 900px){
-  .hero-title{
-    font-size: 40px;
-  }
-
-  .benefits-grid{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .stat-mini-grid{
-    grid-template-columns:1fr;
-  }
-}
-
-@media (max-width: 640px){
-  .hero-section{
-    padding:24px;
-  }
-
-  .hero-title{
-    font-size:34px;
-  }
-
-  .hero-text{
-    font-size:16px;
-  }
-
-  .hero-actions{
-    display:grid;
-    grid-template-columns:1fr;
-  }
-
-  .benefits-grid{
-    grid-template-columns:1fr;
-  }
-
-  .cta-final h2{
-    font-size:28px;
-  }
-}
 
     .header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:16px 22px;
-  background:rgba(255,255,255,0.7);
-  backdrop-filter: blur(12px);
-  border-radius:20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
-}
-
-.header-left{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-.logo-main{
-  width:140px;
-  height:auto;
-  display: block;
-}
-
-.brand-text h1{
-  font-size:16px;
-  margin:0;
-  font-weight:600;
-  color:#0f172a;
-}
-
-.brand-text span{
-  font-size:12px;
-  color:#64748b;
-}
-
-.header-right{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.badge{
-  background:#eef2ff;
-  color:#3730a3;
-  padding:6px 12px;
-  border-radius:999px;
-  font-size:12px;
-}
-
-.btn-primary{
-  background:#22c55e;
-  color:white;
-  padding:10px 18px;
-  border-radius:999px;
-  text-decoration:none;
-  font-size:14px;
-  font-weight:500;
-}
-
-.btn-primary:hover{
-  background:#16a34a;
-}  
-
-  /* ===== MOBILE FIX 🔥 ===== */
-@media (max-width: 768px){
-
-  .header{
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
-  }
-
-  .header-left{
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .logo-main{
-    width: 90px; /* 👈 más pequeño en móvil */
-  }
-
-  .brand-text h1{
-    font-size: 16px;
-  }
-
-  .brand-text span{
-    font-size: 12px;
-  }
-
-  .header-right{
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .btn-primary{
-    padding: 10px 14px;
-    font-size: 13px;
-  }
-
-  .badge{
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-
-}  
-
-@media (max-width: 768px){
-  .brand-text span{
-    display: none; /* 👈 quita el texto largo */
-  }
-}    
-    
-  </style>
-</head>
-
-<body>
-
-<div class="header-left">
-  <img src="logo.png" class="logo-main" alt="Direcciones507">
-  <div class="brand-text">
-    <h1>Direcciones507</h1>
-    <p>Sistema Digital de Direcciones · Panamá</p>
-  </div>
-</div>
-
-  <div class="header-right">
-    <span class="badge">Enlace 100% seguro</span>
-    <a href="#" class="btn-primary">Comprar ahora</a>
-  </div>
-</header>
-    <!-- BLOQUES INFORMATIVOS -->
-    <div class="info-blocks">
-      <div class="info-block">
-        <i class="fa-regular fa-circle-check" style="color: #22c55e;"></i>
-        Direcciones507 es el sistema original de Dirección Digital en Panamá.
-      </div>
-      <div class="info-block">
-        <i class="fa-regular fa-registered"></i>
-        AD507 es un código exclusivo del sistema Direcciones507.
-      </div>
-    </div>
-
-    <div class="hero-section">
-  <div class="hero-grid">
-    <div>
-      <div class="hero-kicker">
-        <i class="fa-solid fa-star"></i> Premium Pro · Sistema original en Panamá
-      </div>
-
-      <h1 class="hero-title">
-        Tu dirección digital en Panamá,<br><span>clara, moderna y lista para compartir</span>
-      </h1>
-
-      <p class="hero-text">
-        Comparte tu ubicación exacta en un solo enlace con QR, Google Maps, Waze y Uber.
-        Ideal para negocios, delivery, hogares, PH y marcas que quieren verse más profesionales
-        y ser encontrados sin vueltas.
-      </p>
-
-      <div class="hero-proof">
-        <span class="pill"><i class="fa-solid fa-bolt" style="color:#22c55e;"></i> Activación rápida</span>
-        <span class="pill"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> Ubicación exacta</span>
-        <span class="pill"><i class="fa-solid fa-qrcode" style="color:#2563eb;"></i> QR para compartir</span>
-        <span class="pill"><i class="fa-solid fa-briefcase" style="color:#7c3aed;"></i> Imagen más profesional</span>
-      </div>
-
-      <div class="hero-actions">
-        <a href="https://wa.me/50765996532" class="btn btn-primary-hero">
-          <i class="fa-brands fa-whatsapp"></i> Solicitar mi Dirección Digital ahora
-        </a>
-
-        <button class="btn btn-dark-hero" type="button" onclick="verEjemplo()">
-          <i class="fa-solid fa-play"></i> Ver ejemplo real
-        </button>
-      </div>
-    </div>
-
-    <div class="hero-side-stack">
-      <div class="premium-box">
-        <h3>Haz que te encuentren más fácil</h3>
-        <p>Un sistema pensado para Panamá, fácil de enviar, fácil de abrir y fácil de usar.</p>
-
-        <div class="premium-list">
-          <div class="premium-item">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e; margin-top:2px;"></i>
-            <span>Compatible con Google Maps, Waze y Uber</span>
-          </div>
-          <div class="premium-item">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e; margin-top:2px;"></i>
-            <span>QR listo para imprimir o mandar por WhatsApp</span>
-          </div>
-          <div class="premium-item">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e; margin-top:2px;"></i>
-            <span>Ideal para negocios, delivery, residencias y proyectos</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-mini">
-        <div style="font-weight:700; color:#0f172a; margin-bottom:12px;">¿Por qué funciona tan bien?</div>
-        <div class="stat-mini-grid">
-          <div class="stat-mini-card">
-            <b>1 link</b>
-            <span style="color:#64748b; font-size:13px;">todo en un solo lugar</span>
-          </div>
-          <div class="stat-mini-card">
-            <b>3 apps</b>
-            <span style="color:#64748b; font-size:13px;">Maps, Waze y Uber</span>
-          </div>
-          <div class="stat-mini-card">
-            <b>QR</b>
-            <span style="color:#64748b; font-size:13px;">listo para compartir</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:32px;">
-    <p style="font-weight:700; margin-bottom:14px; color:#0f172a;">Lo que dicen los clientes</p>
-    <div class="testimonios-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
-      <div class="card" style="padding:18px;">
-        <b>Delivery Panamá</b>
-        <p class="text-muted" style="margin-top:6px;">“Un solo link y llegan sin llamar tanto. Ahorra tiempo.”</p>
-      </div>
-      <div class="card" style="padding:18px;">
-        <b>Negocio Chiriquí</b>
-        <p class="text-muted" style="margin-top:6px;">“Se acabó el clásico ‘no lo encuentro’.”</p>
-      </div>
-      <div class="card" style="padding:18px;">
-        <b>Residencia</b>
-        <p class="text-muted" style="margin-top:6px;">“Familia, visitas y deliveries llegan más fácil.”</p>
-      </div>
-    </div>
-  </div>
-</div>
-</script>
-   
-    <div id="seoLinksHome" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-  <a href="/direccion-digital-panama" class="btn btn-google">
-    Ver Dirección Digital en Panamá
-  </a>
-  <a href="/ubicacion-exacta-panama" class="btn btn-google">
-    Ver Ubicación Exacta en Panamá
-  </a>
-</div>
-
-    <!-- BUSCADOR - CAMBIO 2: Quitado el value="AD507-THE1920" -->
-    <div style="margin: 28px 0 20px;">
-      <div class="social-wrap">
-        <input type="text" id="inputCodigo" placeholder="Ingresa tu código AD507 (ej: AD507-0001)"
-          style="flex: 1; min-width: 240px; padding: 16px 22px; background: white; border: 1px solid #e9eef2; border-radius: 60px; color: #1e293b; font-size: 16px; outline: none;">
-        <button type="button" onclick="buscarCodigo()"
-          style="padding: 0 32px; background: #3b82f6; border: none; border-radius: 60px; color: white; font-weight: 600; font-size: 16px; cursor: pointer; height: 56px;">
-          Buscar
-        </button>
-      </div>
-      <div id="msgBusqueda" class="text-muted" style="margin-top: 8px; font-size: 13px;"></div>
-    </div>
-
-    <div id="privacyCard" style="display:none; margin:18px 0 24px;">
-  <div style="
-    background:white;
-    border:1px solid #e9eef2;
-    border-radius:28px;
-    padding:28px;
-    text-align:center;
-    box-shadow:0 8px 24px rgba(0,0,0,0.02);
-  ">
-    <div style="
-      width:64px;
-      height:64px;
-      margin:0 auto 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:16px 22px;
+      background:rgba(255,255,255,.95);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
       border-radius:20px;
-      background:linear-gradient(135deg,#111827,#374151);
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      margin-bottom:20px;
+      border:1px solid rgba(233,238,242,.8);
+    }
+
+    .header-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .logo-main{
+      width:58px;
+      height:58px;
+      border-radius:50%;
+      object-fit:cover;
+      display:block;
+      border:2px solid #fff;
+      box-shadow:0 4px 10px rgba(0,0,0,.1);
+      background:#fff;
+      flex-shrink:0;
+    }
+
+    .brand-text h1{
+      font-size:18px;
+      margin:0;
+      font-weight:800;
+      color:#0f172a;
+    }
+
+    .brand-text p{
+      font-size:11px;
+      color:#64748b;
+      margin:0;
+    }
+
+    .header-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .badge{
+      background:#eef2ff;
+      color:#3730a3;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .btn-primary{
+      background:#22c55e;
+      color:#fff;
+      padding:10px 18px;
+      border-radius:999px;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:none;
+    }
+
+    .btn-primary:hover{
+      background:#16a34a;
+    }
+
+    .info-blocks{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:28px;
+    }
+
+    .info-block{
+      padding:12px 22px;
+      background:#fff;
+      color:#1e293b;
+      border-radius:40px;
+      font-weight:500;
+      border:1px solid #e9eef2;
+      box-shadow:0 2px 8px rgba(0,0,0,.02);
+    }
+
+    .info-block i{
+      color:#3b82f6;
+      margin-right:8px;
+    }
+
+    .hero-section{
+      background:#fff;
+      border-radius:32px;
+      padding:32px;
+      margin-bottom:24px;
+      border:1px solid #e9eef2;
+      box-shadow:0 8px 24px rgba(0,0,0,.02);
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:32px;
+      align-items:center;
+    }
+
+    .hero-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:#eef2ff;
+      color:#4338ca;
+      padding:8px 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:16px;
+    }
+
+    .hero-title{
+      font-size:44px;
+      font-weight:800;
+      line-height:1.08;
+      margin-bottom:16px;
+      color:#0f172a;
+      letter-spacing:-.02em;
+    }
+
+    .hero-title span{
+      color:#3b82f6;
+    }
+
+    .hero-text{
+      font-size:18px;
+      color:#475569;
+      margin-bottom:24px;
+      max-width:700px;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+
+    .premium-box{
+      background:#0f172a;
+      border-radius:28px;
+      padding:24px;
+      color:#fff;
+      box-shadow:0 10px 25px rgba(15,23,42,.18);
+    }
+
+    .premium-box h3{
+      font-size:22px;
+      margin-bottom:10px;
+    }
+
+    .premium-box p{
+      color:#cbd5e1;
+      font-size:15px;
+    }
+
+    .search-wrap{
+      margin:28px 0 20px;
+      background:rgba(255,255,255,.65);
+      border:1px solid rgba(255,255,255,.35);
+      padding:14px;
+      border-radius:24px;
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+
+    .social-wrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+    }
+
+    .search-input{
+      flex:1;
+      min-width:220px;
+      padding:16px 22px;
+      background:#fff;
+      border:1px solid #e9eef2;
+      border-radius:60px;
+      font-size:16px;
+      outline:none;
+    }
+
+    .search-input:focus{
+      border-color:#3b82f6;
+      box-shadow:0 0 0 4px rgba(59,130,246,.12);
+    }
+
+    .search-btn{
+      padding:0 32px;
+      background:#3b82f6;
+      border:none;
+      border-radius:60px;
+      color:#fff;
+      font-weight:700;
+      height:56px;
+      cursor:pointer;
+      min-width:140px;
+    }
+
+    .search-btn:hover{
+      background:#2563eb;
+    }
+
+    #msgBusqueda{
+      margin-top:10px;
+      font-size:13px;
+      color:#334155;
+      padding-left:8px;
+      min-height:20px;
+    }
+
+    #privacyCard{
+      display:none;
+      margin:18px 0 24px;
+    }
+
+    .privacy-inner{
+      background:#fff;
+      border-radius:28px;
+      padding:28px;
+      text-align:center;
+      border:1px solid #e9eef2;
+      box-shadow:0 8px 24px rgba(0,0,0,.02);
+    }
+
+    .card{
+      background:#fff;
+      border-radius:28px;
+      border:1px solid #e9eef2;
+      box-shadow:0 8px 24px rgba(0,0,0,.02);
+      overflow:hidden;
+    }
+
+    .card-header{
+      padding:22px 24px 14px;
+      border-bottom:1px solid #e9eef2;
+      background:linear-gradient(180deg,#ffffff 0%,#fcfdff 100%);
+    }
+
+    .card-header h2{
+      font-size:16px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+      color:#64748b;
+      margin-bottom:4px;
+    }
+
+    .card-header .sub{
+      font-size:13px;
+      color:#94a3b8;
+    }
+
+    .card-body{
+      padding:20px 24px 24px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 14px;
+      background:#f8fafc;
+      border:1px solid #e9eef2;
+      border-radius:40px;
+      font-size:13px;
+      color:#475569;
+    }
+
+    .pill i{
+      color:#3b82f6;
+    }
+
+    .pill b{
+      color:#0f172a;
+      font-weight:700;
+    }
+
+    .client-brand{
+      display:none;
+      align-items:center;
+      gap:14px;
+      padding:18px;
+      margin-bottom:18px;
+      background:#f8fafc;
+      border:1px solid #e9eef2;
+      border-radius:22px;
+    }
+
+    .client-brand-logo{
+      width:70px;
+      height:70px;
+      border-radius:50%;
+      object-fit:cover;
+      border:3px solid #fff;
+      box-shadow:0 8px 16px rgba(0,0,0,.08);
+      background:#fff;
+      flex-shrink:0;
+    }
+
+    .client-brand-text{
+      min-width:0;
+    }
+
+    .client-brand-text h3{
+      margin:0;
+      font-size:20px;
+      color:#0f172a;
+      line-height:1.2;
+      word-break:break-word;
+    }
+
+    .client-brand-text p{
+      margin:6px 0 0;
+      color:#64748b;
+      font-size:14px;
+    }
+
+    .info-field{
+      margin-bottom:16px;
+    }
+
+    .field-label{
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+      color:#64748b;
+      margin-bottom:4px;
+    }
+
+    .field-value{
+      font-size:18px;
+      font-weight:700;
+      color:#0f172a;
+      padding:12px 16px;
+      background:#f8fafc;
+      border-radius:16px;
+      border:1px solid #e9eef2;
+      word-break:break-word;
+    }
+
+    .btn-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin:18px 0;
+    }
+
+    .btn{
       display:flex;
       align-items:center;
       justify-content:center;
-      color:white;
+      gap:10px;
+      padding:14px;
+      border-radius:60px;
+      font-weight:700;
+      font-size:15px;
+      text-decoration:none;
+      transition:all .2s ease;
+      border:1px solid transparent;
+      cursor:pointer;
+      min-height:52px;
+    }
+
+    .btn-google{
+      background:#fff;
+      color:#1e293b;
+      border-color:#e9eef2;
+    }
+
+    .btn-google:hover{
+      border-color:#3b82f6;
+      background:#f8fafc;
+    }
+
+    .btn-waze{
+      background:#33ccff;
+      color:#1e293b;
+    }
+
+    .btn-waze:hover{
+      background:#2db8e6;
+    }
+
+    .btn-uber{
+      background:#000;
+      color:#fff;
+    }
+
+    .btn-uber:hover{
+      background:#1a1a1a;
+    }
+
+    .btn-whatsapp-green{
+      background:#25D366;
+      color:#fff;
+    }
+
+    .btn-whatsapp-green:hover{
+      background:#20BA5C;
+    }
+
+    .btn-disabled{
+      opacity:.45 !important;
+      pointer-events:none !important;
+      filter:grayscale(.1);
+    }
+
+    .divider{
+      height:1px;
+      background:#e9eef2;
+      margin:24px 0;
+    }
+
+    .steps-container{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      width:100%;
+    }
+
+    .step-block{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      width:100%;
+      background:#f8fafc;
+      border:1px solid #e9eef2;
+      border-radius:18px;
+      padding:16px 18px;
+      transition:all .2s ease;
+    }
+
+    .step-number{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      background:#e0f2fe;
+      color:#0369a1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      flex-shrink:0;
+    }
+
+    .step-text{
+      flex:1;
+      font-size:15px;
+      line-height:1.4;
+      color:#0f172a;
+    }
+
+    .step-text strong{
+      color:#0f172a;
+    }
+
+    .info-top{
+      display:grid;
+      grid-template-columns:.9fr 320px;
+      gap:24px;
+      align-items:start;
+      margin-top:20px;
+    }
+
+    .qr-panel-mini{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .qr-box{
+      width:100%;
+      background:#f8fafc;
+      border-radius:24px;
+      padding:22px;
+      border:1px solid #e9eef2;
+      text-align:center;
+    }
+
+    .qr-title{
+      font-weight:700;
+      font-size:16px;
+      color:#0f172a;
+      margin-bottom:6px;
+    }
+
+    .qr-title i{
+      color:#3b82f6;
+      margin-right:6px;
+    }
+
+    .qr-sub{
+      color:#64748b;
+      font-size:13px;
+      margin-bottom:16px;
+    }
+
+    .qr-img{
+      width:200px;
+      max-width:100%;
+      border-radius:16px;
+      background:#fff;
+      padding:8px;
+      border:1px solid #e9eef2;
+      margin:0 auto;
+      display:block;
+    }
+
+    .planes-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(140px,1fr));
+      gap:14px;
+      margin-top:20px;
+      width:100%;
+    }
+
+    .plan-card{
+      background:#f8fafc;
+      border:1px solid #dbe4ff;
+      border-radius:22px;
+      padding:18px 16px;
+      min-width:0;
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      overflow:hidden;
+    }
+
+    .plan-card h4{
+      margin:0 0 8px;
+      font-size:18px;
+      font-weight:800;
+      line-height:1.2;
+    }
+
+    .plan-price{
+      font-size:34px;
+      font-weight:900;
+      line-height:1;
+      margin:8px 0 16px;
+      word-break:break-word;
+      color:#0f172a;
+    }
+
+    .plan-btn{
+      display:block;
+      width:100%;
+      text-align:center;
+      text-decoration:none;
+      padding:12px 16px;
+      border-radius:14px;
+      font-weight:800;
+      background:#2563eb;
+      color:#fff;
+      box-sizing:border-box;
+    }
+
+    .plan-card.plan-estrella{
+      background:linear-gradient(180deg,#eff6ff 0%,#eef2ff 100%);
+      border:2px solid #6366f1;
+      position:relative;
+      transform:scale(1.03);
+      box-shadow:0 18px 40px rgba(99,102,241,.18);
+    }
+
+    .plan-badge{
+      position:absolute;
+      top:-12px;
+      right:18px;
+      background:#6366f1;
+      color:#fff;
+      font-size:12px;
+      font-weight:800;
+      padding:7px 12px;
+      border-radius:999px;
+      box-shadow:0 8px 18px rgba(99,102,241,.25);
+    }
+
+    .plan-card.premium-pro{
+      background:#0f172a;
+      color:#fff;
+      border:1px solid #0f172a;
+    }
+
+    .plan-card.premium-pro .plan-price{
+      color:#fff;
+    }
+
+    .section-premium{
+      background:#fff;
+      border:1px solid #e9eef2;
+      border-radius:32px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+      padding:28px;
+      margin-top:24px;
+    }
+
+    .section-premium h2{
       font-size:28px;
-    ">
-      <i class="fa-solid fa-lock"></i>
-    </div>
+      color:#0f172a;
+      margin-bottom:18px;
+      text-align:center;
+    }
 
-    <h3 style="font-size:24px; color:#111827; margin-bottom:8px;">
-      Dirección privada
-    </h3>
+    .benefits-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+    }
 
-    <p style="color:#374151; font-size:15px; line-height:1.6; max-width:520px; margin:0 auto;">
-      Este código solo puede abrirse desde el enlace directo.
-    </p>
-  </div>
-</div>
+    .benefit-card{
+      background:#f8fafc;
+      border:1px solid #e9eef2;
+      border-radius:24px;
+      padding:18px;
+    }
 
-    <!-- GRID PRINCIPAL -->
-    <div class="grid">
-      <!-- LEFT CARD -->
-      <div class="card">
-        <div class="card-header">
-          <h2>Datos del cliente</h2>
-          <div class="sub">Aquí solo aparece lo esencial: Nombre, referencia y código.</div>
-          <div style="display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;">
-            <span class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></span>
-            <span class="pill"><i class="fa-solid fa-circle-check" style="color:#22c55e;"></i> Estado: <b id="uiEstado">Activo</b></span>
-          </div>
-        </div>
+    .benefit-card h3{
+      font-size:18px;
+      color:#0f172a;
+      margin:10px 0 8px;
+    }
 
-        <div class="card-body" id="panelClienteBody">
-          <!-- Campos que se muestran cuando hay datos -->
-          <div class="info-field" id="fieldNombre" style="display: none;">
-            <div class="field-label">NOMBRE DEL LUGAR</div>
-            <div class="field-value" id="uiNombre">-</div>
-          </div>
-          
-          <div class="info-field" id="fieldRef" style="display: none;">
-            <div class="field-label">PUNTO DE REFERENCIA</div>
-            <div class="field-value" id="uiRef">-</div>
-          </div>
+    .benefit-card p{
+      color:#64748b;
+      font-size:14px;
+    }
 
-          <div class="divider" id="divAfterUbic" style="display: none;"></div>
+    .benefit-icon{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      background:#eef2ff;
+      color:#4338ca;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+    }
 
-          <h3 style="font-size: 16px; margin: 12px 0 10px; display: none;" id="tituloUbicacion">Abrir ubicación</h3>
-          <div class="btn-grid" id="gridUbicacion" style="display: none;">
-            <a class="btn btn-google" id="btnGoogle" href="#" target="_blank"><i class="fa-brands fa-google"></i> Google Maps</a>
-            <a class="btn btn-waze" id="btnWaze" href="#" target="_blank"><i class="fa-brands fa-waze"></i> Waze</a>
-            <a class="btn btn-uber" id="btnUber" href="#" target="_blank"><i class="fa-brands fa-uber"></i> Uber</a>
-            <a class="btn btn-whatsapp-green" id="btnAviso" href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i> Aviso llegada</a>
-          </div>
+    .cta-final{
+      margin-top:28px;
+      padding:34px 28px;
+      background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+      border-radius:32px;
+      color:#fff;
+      text-align:center;
+      box-shadow:0 20px 40px rgba(15,23,42,.16);
+    }
 
-          <div class="divider" id="divAfterVerif" style="display: none;"></div>
+    .cta-final h2{
+      font-size:30px;
+      margin-bottom:16px;
+    }
 
-          <h3 style="font-size: 16px; display: none;" id="tituloCompartir">Compartir</h3>
-          <div class="btn-grid" id="gridCompartir" style="display: none;">
-            <button class="btn btn-google" type="button" id="btnCompartir"><i class="fa-solid fa-share-nodes"></i> Compartir</button>
-            <button class="btn btn-google" type="button" id="btnCopiar"><i class="fa-solid fa-copy"></i> Copiar link</button>
-          </div>
+    .footer{
+      margin-top:32px;
+      padding:24px;
+      background:#fff;
+      border:1px solid #e9eef2;
+      border-radius:38px;
+      color:#64748b;
+      font-size:13px;
+      text-align:center;
+    }
 
-          <div style="margin-top: 12px; display: none;" id="notaVerificacion">
-            <span class="pill" style="cursor: pointer;" id="linkVerificacion">
-              <i class="fa-regular fa-eye"></i> Ver QR para imprimir
-            </span>
-          </div>
+    .text-muted{
+      color:#475569;
+    }
 
-          <!-- TARJETA IMPRIMIR -->
-          <div id="printCardWrap" style="display: none; margin-top: 24px;">
-            <div id="printCard">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900;">
-                  AD
-                </div>
-                <div>
-                  <b style="font-size: 18px;">Dirección Digital AD507</b>
-                  <div style="color: #64748b;">Escanea para verificar</div>
-                </div>
-              </div>
+    @media (max-width:768px){
+      .header{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .header-left{
+        width:100%;
+      }
+      .header-right{
+        width:100%;
+        justify-content:flex-start;
+      }
+      .brand-text p{
+        display:none;
+      }
+      .hero-grid{
+        grid-template-columns:1fr;
+      }
+      .hero-title{
+        font-size:34px;
+      }
+      .benefits-grid{
+        grid-template-columns:1fr;
+      }
+      .info-top{
+        grid-template-columns:1fr;
+      }
+      .planes-grid{
+        grid-template-columns:1fr !important;
+      }
+      .plan-card.plan-estrella{
+        transform:none;
+      }
+      .btn-grid{
+        grid-template-columns:1fr;
+      }
+      .search-btn{
+        width:100%;
+      }
+      .client-brand{
+        align-items:flex-start;
+      }
+      .client-brand-logo{
+        width:62px;
+        height:62px;
+      }
+    }
+  </style>
+</head>
+<body>
 
-              <div style="margin: 12px 0;">Código: <b id="printCodigo">-</b></div>
+<div class="container">
 
-              <div style="display: flex; justify-content: center; margin: 12px 0;">
-                <img id="qrVerificacion" style="width: 260px; height: 260px; border-radius: 18px; border: 8px solid #f8fafc;" alt="QR Verificación">
-              </div>
-
-              <div style="color: #475569; font-size: 12px; text-align: center;">
-                Escanea este QR para abrir la verificación en <b>direcciones507.com</b>
-              </div>
-
-              <div style="margin-top: 14px; display: flex; gap: 8px;">
-                <button id="btnImprimirQR" type="button" style="background: #0f172a; color: white; border: none; border-radius: 14px; padding: 12px; flex: 1; font-weight: 600; cursor: pointer;">Imprimir</button>
-                <button id="btnOcultarQR" type="button" style="background: #f1f5f9; color: #1e293b; border: none; border-radius: 14px; padding: 12px; flex: 1; font-weight: 600; cursor: pointer;">Ocultar</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECCIÓN PASOS -->
-          <div class="info-top">
-
-  <div class="steps-container">
-
-    <div class="step-block">
-        <div class="step-number">1</div>
-        <div class="step-text">
-            <strong>Comparte tu enlace</strong> – WhatsApp, redes, QR
-        </div>
-    </div>
-
-    <div class="step-block">
-        <div class="step-number">2</div>
-        <div class="step-text">
-            <strong>Abre en Waze, Google o Uber</strong> – Un toque, sin confusiones
-        </div>
-    </div>
-
-    <div class="step-block">
-        <div class="step-number">3</div>
-        <div class="step-text">
-            <strong>Aviso de llegada</strong> – Notifica cuando estés cerca
-        </div>
-    </div>
-
-</div>
-
-  <div class="qr-panel-mini">
-    <div class="qr-box">
-      <div class="qr-title">
-        <i class="fa-solid fa-qrcode"></i> QR para compartir
+  <!-- HEADER HOME -->
+  <div class="header" id="mainHeader">
+    <div class="header-left">
+      <img
+        src="logo.png"
+        class="logo-main"
+        alt="Direcciones507"
+        onerror="this.src='https://direcciones507.com/logo.png';this.onerror=null;"
+      >
+      <div class="brand-text">
+        <h1>Direcciones507</h1>
+        <p>Sistema Digital de Direcciones · Panamá</p>
       </div>
-      <div class="qr-sub">Escanea y abre la dirección</div>
-      <img id="qrImg" class="qr-img" src="" alt="QR">
-      <div style="margin-top:10px;font-size:12px;color:#64748b;" id="uiLink"></div>
     </div>
-  </div>
-
-</div>
-
-  <!-- PLANES -->
-  <div id="seccionPrecios">
-
-    <p style="text-align:center;color:#64748b;margin-bottom:18px;">
-      Precios de introducción por lanzamiento del sistema en Panamá
-    </p>
-
-    <h3 style="font-size:18px; margin-bottom:16px; text-align:center;">
-      Planes Direcciones507
-    </h3>
-
-    <div class="planes-grid">
-
-      <!-- PERSONAL -->
-      <div class="plan-card">
-        <h4 style="font-size:18px;">Personal</h4>
-        <p class="plan-sub">Precio de introducción</p>
-        <div class="plan-price">$6.99</div>
-        <ul class="plan-features">
-          <li>Código AD507</li>
-          <li>QR para compartir</li>
-          <li>Google Maps</li>
-          <li>Waze</li>
-          <li>Uber</li>
-          <li>Aviso de llegada</li>
-        </ul>
-        <a href="https://wa.me/50765996532?text=Hola,%20quiero%20el%20plan%20Personal%20de%20%246.99" class="plan-btn" style="margin-top:12px;">Solicitar</a>
-      </div>
-
-      <!-- NEGOCIO -->
-      <div class="plan-card">
-        <h4 style="font-size:18px;">Negocio</h4>
-        <p class="plan-sub">Precio de introducción</p>
-        <div class="plan-price">$10.99</div>
-        <ul class="plan-features">
-          <li>Todo Personal +</li>
-          <li>Contador de visitas</li>
-          <li>QR para clientes</li>
-          <li>Buscable en sistema</li>
-        </ul>
-        <a href="https://wa.me/50765996532?text=Hola,%20quiero%20el%20plan%20Negocio%20de%20%2410.99" class="plan-btn" style="margin-top:12px;">Solicitar</a>
-      </div>
-
-      <!-- PREMIUM DESTACADO -->
-      <div class="plan-card plan-estrella">
-        <div class="plan-badge">Más vendido</div>
-        <h4 style="font-size:18px;">Premium</h4>
-        <p class="plan-sub">Página del negocio</p>
-        <div class="plan-price">$19.99</div>
-        <ul class="plan-features">
-          <li>Todo Negocio +</li>
-          <li>Redes sociales</li>
-          <li>Horario</li>
-          <li>Promociones</li>
-          <li>Plantilla profesional</li>
-        </ul>
-        <a href="https://wa.me/50765996532?text=Hola,%20quiero%20el%20plan%20Premium%20de%20%2419.99" class="plan-btn" style="margin-top:12px;">Quiero este plan</a>
-      </div>
-
-      <!-- PREMIUM PRO -->
-      <div class="plan-card premium-pro">
-        <h4 style="font-size:18px;">Premium Pro</h4>
-        <p class="plan-sub">Página personalizada</p>
-        <div class="plan-price">$39.99</div>
-        <ul class="plan-features">
-          <li>Todo Premium +</li>
-          <li>Diseño personalizado</li>
-          <li>Galería de fotos</li>
-          <li>Branding del negocio</li>
-          <li>Secciones extra</li>
-        </ul>
-        <a href="https://wa.me/50765996532?text=Hola,%20quiero%20el%20plan%20Premium%20Pro%20de%20%2439.99" class="plan-btn" style="margin-top:12px;">Solicitar</a>
-      </div>
-
+    <div class="header-right">
+      <span class="badge">Enlace 100% seguro</span>
+      <a href="#" class="btn-primary" id="btnComprarTop">
+        <i class="fa-brands fa-whatsapp"></i> Comprar ahora
+      </a>
     </div>
   </div>
 
-</div>
+  <!-- HOME INFO -->
+  <div id="homeHero" class="info-blocks">
+    <div class="info-block"><i class="fa-regular fa-circle-check" style="color:#22c55e;"></i> Direcciones507 es el sistema original de Dirección Digital en Panamá.</div>
+    <div class="info-block"><i class="fa-regular fa-registered"></i> AD507 es un código exclusivo del sistema Direcciones507.</div>
+  </div>
 
-        <!-- Estadísticas (solo negocios) -->
-        <div style="margin-top: 18px;">
-          <div class="stats-trigger pill" id="btnStats" style="display: none; width: 100%; justify-content: space-between; cursor: pointer;">
-            <span>📊 Actividad del cliente</span>
-            <span>▾</span>
-          </div>
-          <div id="statsPanel" class="stats-panel" style="display: none; margin-top: 12px; padding: 18px; background: #f8fafc; border-radius: 20px; border: 1px solid #e9eef2;">
-            <div class="stat-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e9eef2;">
-              <span>Google Maps</span> <b id="stGoogle">0</b>
-            </div>
-            <div class="stat-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e9eef2;">
-              <span>Waze</span> <b id="stWaze">0</b>
-            </div>
-            <div class="stat-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e9eef2;">
-              <span>Uber</span> <b id="stUber">0</b>
-            </div>
-            <div class="stat-row" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e9eef2;">
-              <span>Compartido</span> <b id="stShare">0</b>
-            </div>
-            <div class="stat-row" style="display: flex; justify-content: space-between; padding: 10px 0;">
-              <span>Copió link</span> <b id="stCopy">0</b>
-            </div>
-            <div class="updated" id="stUpdated" style="margin-top: 10px; color: #64748b;">Actualizado: -</div>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-        <h3 style="font-size: 16px;">Redes</h3>
-        <div class="social-wrap">
-          <a class="pill" href="https://www.instagram.com/direccionesdigitalespty" target="_blank"><i class="fa-brands fa-instagram" style="color: #d62976;"></i> Instagram</a>
-          <a class="pill" href="https://www.tiktok.com/@direcciones507" target="_blank"><i class="fa-brands fa-tiktok"></i> TikTok</a>
-          <a class="pill" href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank"><i class="fa-brands fa-facebook" style="color: #1877f2;"></i> Facebook</a>
-          <a class="pill" href="https://wa.me/50765996532" target="_blank"><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp</a>
+  <!-- HOME HERO -->
+  <div id="heroPromo" class="hero-section">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-kicker"><i class="fa-solid fa-star"></i> Premium Pro · Sistema original en Panamá</div>
+        <h1 class="hero-title">Tu dirección digital en Panamá,<br><span>clara, moderna y lista para compartir</span></h1>
+        <p class="hero-text">Comparte tu ubicación exacta en un solo enlace con QR, Google Maps, Waze y Uber. Ideal para negocios, delivery, hogares, PH y marcas.</p>
+        <div class="hero-actions">
+          <a href="https://wa.me/50765996532" class="btn-primary" style="padding:14px 24px;">
+            <i class="fa-brands fa-whatsapp"></i> Solicitar mi Dirección Digital ahora
+          </a>
+          <button class="btn" type="button" onclick="verEjemplo()" style="background:#0f172a;color:#fff;border:none;padding:14px 24px;">
+            Ver ejemplo real
+          </button>
         </div>
       </div>
-    </div>
-
-    <div class="section-premium">
-  <h2>¿Qué hace diferente a Direcciones507?</h2>
-  <p class="lead">
-    Convertimos direcciones confusas en enlaces claros, modernos y fáciles de compartir.
-    Menos llamadas, menos pérdida de tiempo y mejor imagen para tu negocio o tu hogar.
-  </p>
-
-  <div class="benefits-grid">
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-location-dot"></i></div>
-      <h3>Ubicación más clara</h3>
-      <p>Tus clientes, visitas o deliveries reciben una forma simple y directa de llegar.</p>
-    </div>
-
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-share-nodes"></i></div>
-      <h3>Fácil de compartir</h3>
-      <p>Envía tu dirección por WhatsApp, redes sociales, link directo o código QR.</p>
-    </div>
-
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-briefcase"></i></div>
-      <h3>Más profesional</h3>
-      <p>Tu marca o negocio se ve más moderno, ordenado y confiable desde el primer contacto.</p>
-    </div>
-
-    <div class="benefit-card">
-      <div class="benefit-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
-      <h3>Listo para usar</h3>
-      <p>Compatible con Google Maps, Waze, Uber y QR para una experiencia simple.</p>
+      <div>
+        <div class="premium-box">
+          <h3>Haz que te encuentren más fácil</h3>
+          <p>Un sistema pensado para Panamá, fácil de enviar, fácil de abrir y elegante en cualquier teléfono.</p>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="cta-final">
-  <h2>Haz que te encuentren más fácil</h2>
-  <p>
-    Solicita tu Dirección Digital AD507 y comparte tu ubicación con un enlace moderno,
-    claro y listo para Panamá.
-  </p>
-  <a href="https://wa.me/50765996532?text=Hola,%20quiero%20mi%20Direcci%C3%B3n%20Digital%20AD507" class="btn-whatsapp">
-    <i class="fa-brands fa-whatsapp"></i> Crear mi dirección ahora
-  </a>
-</div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-      <b>Direcciones507® y AD507® son sistemas digitales exclusivos desarrollados en Panamá.</b><br>
-      Queda estrictamente prohibida su reproducción, imitación o uso comercial sin autorización expresa del titular.
+  <!-- BUSCADOR -->
+  <div class="search-wrap" id="searchWrap">
+    <div class="social-wrap">
+      <input type="text" id="inputCodigo" class="search-input" placeholder="Ingresa tu código AD507 (ej: AD507-0001)" autocomplete="off">
+      <button type="button" class="search-btn" onclick="buscarCodigo()">Buscar</button>
     </div>
+    <div id="msgBusqueda"></div>
+  </div>
 
-    <!-- ENLACES AD507 PARA GOOGLE -->
-    <div style="max-width: 900px; margin: 60px auto; text-align: center; font-size: 14px; color: #111827;">
-      <h2 style="color: #111827; margin-bottom: 12px;">Direcciones AD507</h2>
-      <p>Direcciones digitales del sistema Direcciones507 en Panamá.</p>
-      <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;">
-        <a href="/ad507-0001/" style="color: #111827;">AD507-0001</a>
-        <a href="/ad507-0002/" style="color: #111827;">AD507-0002</a>
-        <a href="/ad507-0003/" style="color: #111827;">AD507-0003</a>
-        <a href="/ad507-0004/" style="color: #111827;">AD507-0004</a>
-        <a href="/ad507-0005/" style="color: #111827;">AD507-0005</a>
-        <a href="/ad507-the1920/" style="color: #111827;">AD507-THE1920</a>
+  <!-- PRIVACIDAD -->
+  <div id="privacyCard">
+    <div class="privacy-inner">
+      <div style="width:64px;height:64px;margin:0 auto 16px;background:#111827;border-radius:20px;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h3 style="font-size:24px; margin-bottom:8px;">Dirección privada</h3>
+      <p class="text-muted">Este código solo puede abrirse desde el enlace directo.</p>
+    </div>
+  </div>
+
+  <!-- CARD CLIENTE -->
+  <div class="card hidden" id="clienteCard">
+    <div class="card-header">
+      <h2>Datos del cliente</h2>
+      <div class="sub">Nombre, referencia y código.</div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <span class="pill"><i class="fa-solid fa-hashtag"></i> Código: <b id="uiCodigo">-</b></span>
+        <span class="pill"><i class="fa-solid fa-circle-check"></i> Estado: <b id="uiEstado">Activo</b></span>
       </div>
     </div>
 
-  </div> <!-- fin container -->
+    <div class="card-body" id="panelClienteBody">
 
-  <script>
-    // Configuración
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
-    const WA_NUMBER = "50765996532";
-    const EJEMPLO_CODE = "AD507-THE1920";
+      <!-- LOGO CLIENTE -->
+      <div class="client-brand" id="clientBrand">
+        <img id="clientLogo" class="client-brand-logo" src="" alt="Logo del cliente">
+        <div class="client-brand-text">
+          <h3 id="clientBrandName">Cliente</h3>
+          <p>Dirección Digital AD507</p>
+        </div>
+      </div>
 
-    let CODIGO_ACTUAL = "";
-    let DATOS_CLIENTE = null;
+      <div class="info-field" id="fieldNombre" style="display:none;">
+        <div class="field-label">Nombre del lugar</div>
+        <div class="field-value" id="uiNombre">-</div>
+      </div>
 
-    // Funciones helper
-    function setMsg(t) {
-      const el = document.getElementById("msgBusqueda");
-      if (el) el.textContent = t || "";
-    }
+      <div class="info-field" id="fieldRef" style="display:none;">
+        <div class="field-label">Punto de referencia</div>
+        <div class="field-value" id="uiRef">-</div>
+      </div>
 
-    function show(el, mode) { if (el) el.style.display = mode || "block"; }
-    function hide(el) { if (el) el.style.display = "none"; }
+      <div class="divider" id="divAfterUbic" style="display:none;"></div>
 
-    function showPanel() {
-      hide(document.getElementById("homeHero"));
-      hide(document.getElementById("seccionPasos"));
-      hide(document.getElementById("seccionPrecios"));
-      hide(document.getElementById("seoLinksHome"));
-      
-      show(document.getElementById("fieldNombre"), "block");
-      show(document.getElementById("fieldRef"), "block");
-      show(document.getElementById("tituloUbicacion"), "block");
-      show(document.getElementById("gridUbicacion"), "grid");
-      show(document.getElementById("divAfterUbic"), "block");
-      show(document.getElementById("tituloCompartir"), "block");
-      show(document.getElementById("gridCompartir"), "grid");
-      show(document.getElementById("notaVerificacion"), "block");
-      show(document.getElementById("divAfterVerif"), "block");
-    }
+      <h3 style="font-size:16px;margin:12px 0 10px;display:none;" id="tituloUbicacion">Abrir ubicación</h3>
+      <div class="btn-grid" id="gridUbicacion" style="display:none;">
+        <a class="btn btn-google" id="btnGoogle" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google"></i> Google Maps</a>
+        <a class="btn btn-waze" id="btnWaze" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-waze"></i> Waze</a>
+        <a class="btn btn-uber" id="btnUber" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-uber"></i> Uber</a>
+        <a class="btn btn-whatsapp-green" id="btnAviso" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Aviso llegada</a>
+      </div>
 
-    function hidePanelSections() {
-      hide(document.getElementById("fieldNombre"));
-      hide(document.getElementById("fieldRef"));
-      hide(document.getElementById("tituloUbicacion"));
-      hide(document.getElementById("gridUbicacion"));
-      hide(document.getElementById("divAfterUbic"));
-      hide(document.getElementById("tituloCompartir"));
-      hide(document.getElementById("gridCompartir"));
-      hide(document.getElementById("notaVerificacion"));
-      hide(document.getElementById("divAfterVerif"));
-      hide(document.getElementById("btnStats"));
-      hide(document.getElementById("statsPanel"));
-      hide(document.getElementById("printCardWrap"));
-      hide(document.getElementById("privacyCard"));
-    }
+      <div class="divider" id="divAfterVerif" style="display:none;"></div>
 
-    function extractLinkFromQr(qrUrl) {
-      try {
-        const u = new URL(qrUrl);
-        const data = u.searchParams.get("data");
-        return data ? decodeURIComponent(data) : "";
-      } catch (e) { return ""; }
-    }
+      <h3 style="font-size:16px;display:none;" id="tituloCompartir">Compartir</h3>
+      <div class="btn-grid" id="gridCompartir" style="display:none;">
+        <button class="btn btn-google" id="btnCompartir" type="button"><i class="fa-solid fa-share-nodes"></i> Compartir</button>
+        <button class="btn btn-google" id="btnCopiar" type="button"><i class="fa-solid fa-copy"></i> Copiar link</button>
+      </div>
 
-    async function fetchJsonSafe(url) {
-      const r = await fetch(url, { method: "GET", cache: "no-store", redirect: "follow" });
-      if (!r.ok) throw new Error("Error de red: " + r.status);
-      const text = await r.text();
-      try { return JSON.parse(text); } catch (e) { throw new Error("Respuesta inválida del servidor"); }
-    }
+      <div style="margin-top:12px;display:none;" id="notaVerificacion">
+        <span class="pill" style="cursor:pointer;" id="linkVerificacion"><i class="fa-regular fa-eye"></i> Ver QR para imprimir</span>
+      </div>
 
-    // Función principal de búsqueda
-    async function buscarCodigo() {
-      const input = document.getElementById("inputCodigo");
-      if (!input) return;
+      <div id="printCardWrap" style="display:none;margin-top:24px;">
+        <div id="printCard" style="background:white;border-radius:28px;padding:24px;border:1px solid #e9eef2;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:48px;height:48px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-radius:14px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;">AD</div>
+            <div>
+              <b>Dirección Digital AD507</b>
+              <div style="color:#64748b;">Escanea para verificar</div>
+            </div>
+          </div>
+          <div style="margin:12px 0;">Código: <b id="printCodigo">-</b></div>
+          <div style="display:flex;justify-content:center;margin:12px 0;">
+            <img id="qrVerificacion" style="width:260px;max-width:100%;border-radius:18px;border:1px solid #e9eef2;" alt="QR de verificación">
+          </div>
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="btnImprimirQR" type="button" style="background:#0f172a;color:white;border:none;border-radius:14px;padding:12px;flex:1;min-width:140px;cursor:pointer;">Imprimir</button>
+            <button id="btnOcultarQR" type="button" style="background:#f1f5f9;color:#1e293b;border:none;border-radius:14px;padding:12px;flex:1;min-width:140px;cursor:pointer;">Ocultar</button>
+          </div>
+        </div>
+      </div>
 
-      const codigo = (input?.value || "").trim();
-      if (!codigo) { setMsg("Ingresa un código"); return; }
+      <!-- HOME: PASOS + QR -->
+      <div id="homePasosQr" class="info-top">
+        <div class="steps-container">
+          <div class="step-block">
+            <div class="step-number">1</div>
+            <div class="step-text"><strong>Comparte tu enlace</strong> · WhatsApp, redes o QR</div>
+          </div>
+          <div class="step-block">
+            <div class="step-number">2</div>
+            <div class="step-text"><strong>Abre en Waze, Google o Uber</strong> · Un solo toque</div>
+          </div>
+          <div class="step-block">
+            <div class="step-number">3</div>
+            <div class="step-text"><strong>Aviso de llegada</strong> · Notifica cuando estés cerca</div>
+          </div>
+        </div>
+        <div class="qr-panel-mini">
+          <div class="qr-box">
+            <div class="qr-title"><i class="fa-solid fa-qrcode"></i> QR para compartir</div>
+            <div class="qr-sub">Escanea y abre la dirección</div>
+            <img id="qrImgHome" class="qr-img" src="" alt="QR">
+            <div id="uiLinkHome" style="margin-top:10px;font-size:12px;word-break:break-all;color:#475569;"></div>
+          </div>
+        </div>
+      </div>
 
-      setMsg("Buscando...");
+      <!-- PLANES -->
+      <div id="seccionPreciosHome" style="margin-top:30px;">
+        <h3 style="text-align:center;font-size:28px;color:#0f172a;">Planes Direcciones507</h3>
+        <div class="planes-grid">
+          <div class="plan-card">
+            <h4>Personal</h4>
+            <div class="plan-price">$6.99</div>
+            <a href="https://wa.me/50765996532?text=Hola,%20quiero%20el%20plan%20Personal" class="plan-btn">Solicitar</a>
+          </div>
+          <div class="plan-card">
+            <h4>Negocio</h4>
+            <div class="plan-price">$10.99</div>
+            <a href="https://wa.me/50765996532?text=Hola,%20quiero%20el%20plan%20Negocio" class="plan-btn">Solicitar</a>
+          </div>
+          <div class="plan-card plan-estrella">
+            <div class="plan-badge">Más vendido</div>
+            <h4>Premium</h4>
+            <div class="plan-price">$19.99</div>
+            <a href="https://wa.me/50765996532?text=Hola,%20quiero%20Premium" class="plan-btn">Quiero este plan</a>
+          </div>
+          <div class="plan-card premium-pro">
+            <h4>Premium Pro</h4>
+            <div class="plan-price">$39.99</div>
+            <a href="https://wa.me/50765996532?text=Hola,%20quiero%20Premium%20Pro" class="plan-btn">Solicitar</a>
+          </div>
+        </div>
+      </div>
 
-      try {
-        const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+    </div>
+  </div>
 
-        if (!data.ok) throw new Error(data.message || "Código no encontrado.");
+  <!-- BENEFICIOS -->
+  <div class="section-premium" id="sectionBenefits">
+    <h2>¿Qué hace diferente a Direcciones507?</h2>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fa-solid fa-location-dot"></i></div>
+        <h3>Ubicación más clara</h3>
+        <p>Tus clientes llegan sin vueltas y sin perder tiempo.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fa-solid fa-share-nodes"></i></div>
+        <h3>Fácil de compartir</h3>
+        <p>Enlace, QR o WhatsApp. Todo listo para enviar.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fa-solid fa-briefcase"></i></div>
+        <h3>Más profesional</h3>
+        <p>Imagen moderna y confiable para negocios y marcas.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+        <h3>Listo para usar</h3>
+        <p>Compatible con Google Maps, Waze y Uber.</p>
+      </div>
+    </div>
+  </div>
 
-        CODIGO_ACTUAL = data.codigo || data.code || codigo;
-DATOS_CLIENTE = data;
+  <!-- CTA -->
+  <div class="cta-final" id="ctaFinal">
+    <h2>Haz que te encuentren más fácil</h2>
+    <a href="https://wa.me/50765996532" class="btn-primary" style="padding:12px 28px;">
+      <i class="fa-brands fa-whatsapp"></i> Crear mi dirección ahora
+    </a>
+  </div>
 
-// UI - código
-document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL;
+  <!-- FOOTER -->
+  <div class="footer" id="mainFooter">
+    <b>Direcciones507® y AD507® son sistemas digitales exclusivos desarrollados en Panamá.</b><br>
+    Queda estrictamente prohibida su reproducción, imitación o uso comercial sin autorización expresa del titular.
+  </div>
 
-// Planes
-const planLower = String(data.plan || "").toLowerCase();
-const esPublico = planLower.includes("negocio") || planLower.includes("premium");
-const esNegocio = planLower.includes("negocio") || planLower.includes("premium");
+</div>
 
-// Privacidad: personales solo abren por enlace directo
-const codeFromUrl = new URLSearchParams(window.location.search).get("code");
-const vieneDeLink = !!(codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase());
+<script>
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
+  const EJEMPLO_CODE = "AD507-THE1920";
+  const BASE_WA = "https://wa.me/50765996532?text=Hola,%20quiero%20mi%20Direcci%C3%B3n%20Digital%20AD507.";
+  let CODIGO_ACTUAL = "";
 
-if (!esPublico && !vieneDeLink) {
-  setMsg("Este código es privado. Usa el enlace directo.");
-
-  document.getElementById("uiCodigo").textContent = "-";
-  document.getElementById("uiNombre").textContent = "-";
-  document.getElementById("uiRef").textContent = "-";
-
-  hidePanelSections();
-  show(document.getElementById("homeHero"), "block");
-  show(document.getElementById("seccionPasos"), "block");
-  show(document.getElementById("seccionPrecios"), "block");
-  show(document.getElementById("seoLinksHome"), "flex");
-  show(document.getElementById("privacyCard"), "block");
-
-  const homeUrl = location.href.split("?")[0];
-  const qrImg = document.getElementById("qrImg");
-  const uiLink = document.getElementById("uiLink");
-
-  if (qrImg) {
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
+  function byId(id){
+    return document.getElementById(id);
   }
 
-  if (uiLink) {
-    uiLink.textContent = homeUrl;
+  function hide(el){
+    if(el) el.style.display = "none";
   }
 
-  return;
-}
+  function show(el, displayType = "block"){
+    if(el) el.style.display = displayType;
+  }
 
-// Mostrar datos
-document.getElementById("uiNombre").textContent = data.nombre || "-";
-document.getElementById("uiRef").textContent = data.referencia || "-";
-        // URL para compartir
-        const shareUrl = `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
-        window.verificacionUrl = shareUrl;
+  function setMsg(texto, color = "#334155"){
+    const el = byId("msgBusqueda");
+    if(!el) return;
+    el.textContent = texto || "";
+    el.style.color = color;
+  }
 
-        // Generar QR
-        document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
-        document.getElementById("uiLink").textContent = shareUrl;
-
-        // Extraer coordenadas
-        let lat = "", lng = "";
-        if (data.qr) {
-          const link = extractLinkFromQr(data.qr);
-          const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
-          if (match) { lat = match[1]; lng = match[2]; }
-        }
-
-        // Configurar botones de navegación
-        const btnGoogle = document.getElementById("btnGoogle");
-        const btnWaze = document.getElementById("btnWaze");
-        const btnUber = document.getElementById("btnUber");
-        const btnAviso = document.getElementById("btnAviso");
-
-        if (lat && lng) {
-          btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-          btnWaze.href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-          btnUber.href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
-
-          // WhatsApp aviso
-          let tel = String(data.telefono || "").replace(/\D/g, "");
-          if (tel.length === 8) tel = "507" + tel;
-          if (tel.length >= 10) {
-            const msg = `Hola 👋, ya llegué. Código: ${CODIGO_ACTUAL}`;
-            btnAviso.href = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
-          }
-
-        } else {
-          btnGoogle.href = "#";
-          btnWaze.href = "#";
-          btnUber.href = "#";
-          btnAviso.href = "#";
-        }
-
-        // Botones compartir/copiar
-        const btnCompartir = document.getElementById("btnCompartir");
-        const btnCopiar = document.getElementById("btnCopiar");
-
-        if (btnCompartir) {
-          btnCompartir.onclick = async () => {
-            if (navigator.share) {
-              try { await navigator.share({ title: "Dirección Digital", text: `Mi código ${CODIGO_ACTUAL}`, url: shareUrl }); }
-              catch { try { await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); } catch { } }
-            } else {
-              try { await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); } catch { }
-            }
-          };
-        }
-
-        if (btnCopiar) {
-          btnCopiar.onclick = async () => {
-            try { await navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); } catch { }
-          };
-        }
-
-        // QR para imprimir
-        const linkVer = document.getElementById("linkVerificacion");
-        const wrap = document.getElementById("printCardWrap");
-        const qrVerif = document.getElementById("qrVerificacion");
-        const printCodigo = document.getElementById("printCodigo");
-
-        if (linkVer) {
-          linkVer.onclick = (e) => {
-            e.preventDefault();
-            if (printCodigo) printCodigo.textContent = CODIGO_ACTUAL;
-            if (qrVerif) qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.verificacionUrl)}`;
-            show(wrap, "block");
-          };
-        }
-
-        document.getElementById("btnOcultarQR").onclick = () => hide(wrap);
-
-        document.getElementById("btnImprimirQR").onclick = () => {
-          const card = document.getElementById("printCard");
-          if (!card) return;
-          const w = window.open("", "_blank");
-          if (!w) return;
-          w.document.write(`
-            <html><head><meta charset="UTF-8"><title>Imprimir QR</title>
-            <style>body{padding:24px;font-family:Arial;display:flex;justify-content:center;align-items:center;}</style>
-            </head><body>${card.outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>
-          `);
-          w.document.close();
-        };
-
-        const statsBtn = document.getElementById("btnStats");
-const statsPanel = document.getElementById("statsPanel");
-
-if (esNegocio) {
-  show(statsBtn, "flex");
-
-  statsBtn.onclick = async () => {
-    const visible = statsPanel && statsPanel.style.display === "block";
-    if (statsPanel) statsPanel.style.display = visible ? "none" : "block";
-
-    if (!visible) {
-      try {
-        const d = await fetchJsonSafe(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODIGO_ACTUAL)}`);
-
-        if (d.ok) {
-          document.getElementById("stGoogle").textContent = d.stats?.google || 0;
-          document.getElementById("stWaze").textContent = d.stats?.waze || 0;
-          document.getElementById("stUber").textContent = d.stats?.uber || 0;
-          document.getElementById("stShare").textContent = d.stats?.share || 0;
-          document.getElementById("stCopy").textContent = d.stats?.copy || 0;
-          document.getElementById("stUpdated").textContent = "Actualizado: " + (d.stats?.updated || "-");
-        }
-      } catch (e) {}
+  function setDisabledButton(el, disabled){
+    if(!el) return;
+    if(disabled){
+      el.classList.add("btn-disabled");
+      el.setAttribute("aria-disabled", "true");
+      el.setAttribute("tabindex", "-1");
+      if(el.tagName === "A") el.removeAttribute("href");
+    }else{
+      el.classList.remove("btn-disabled");
+      el.removeAttribute("aria-disabled");
+      el.removeAttribute("tabindex");
     }
-  };
+  }
 
-} else {
-  hide(statsBtn);
-  hide(statsPanel);
-}
+  function resetClientCard(){
+    byId("uiCodigo").textContent = "-";
+    byId("uiNombre").textContent = "-";
+    byId("uiRef").textContent = "-";
+    byId("uiEstado").textContent = "Activo";
 
-        // Mostrar panel
-        showPanel();
-        setMsg("✅ Listo");
+    hide(byId("fieldNombre"));
+    hide(byId("fieldRef"));
+    hide(byId("tituloUbicacion"));
+    hide(byId("gridUbicacion"));
+    hide(byId("divAfterUbic"));
+    hide(byId("tituloCompartir"));
+    hide(byId("gridCompartir"));
+    hide(byId("notaVerificacion"));
+    hide(byId("divAfterVerif"));
+    hide(byId("printCardWrap"));
+    hide(byId("clientBrand"));
 
-      } catch (e) {
-        setMsg("Error: " + (e?.message || "No se pudo buscar"));
+    byId("clientLogo").src = "";
+    byId("clientBrandName").textContent = "Cliente";
+
+    const btnGoogle = byId("btnGoogle");
+    const btnWaze = byId("btnWaze");
+    const btnUber = byId("btnUber");
+    const btnAviso = byId("btnAviso");
+
+    [btnGoogle, btnWaze, btnUber, btnAviso].forEach(btn => {
+      if(btn){
+        btn.href = "#";
+        setDisabledButton(btn, true);
+      }
+    });
+  }
+
+  function showClientPanel(){
+    show(byId("clienteCard"));
+    show(byId("fieldNombre"));
+    show(byId("fieldRef"));
+    show(byId("tituloUbicacion"));
+    show(byId("gridUbicacion"), "grid");
+    show(byId("divAfterUbic"));
+    show(byId("tituloCompartir"));
+    show(byId("gridCompartir"), "grid");
+    show(byId("notaVerificacion"));
+    show(byId("divAfterVerif"));
+  }
+
+  function showHomeSections(){
+    show(byId("mainHeader"));
+    show(byId("homeHero"), "flex");
+    show(byId("heroPromo"));
+    show(byId("searchWrap"));
+    show(byId("sectionBenefits"));
+    show(byId("ctaFinal"));
+    show(byId("mainFooter"));
+    hide(byId("privacyCard"));
+    hide(byId("clienteCard"));
+
+    const homeUrl = window.location.origin + window.location.pathname;
+    byId("qrImgHome").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
+    byId("uiLinkHome").textContent = homeUrl;
+  }
+
+  function hideHomeSectionsForClient(){
+    hide(byId("mainHeader"));
+    hide(byId("homeHero"));
+    hide(byId("heroPromo"));
+    hide(byId("searchWrap"));
+    hide(byId("sectionBenefits"));
+    hide(byId("ctaFinal"));
+    hide(byId("mainFooter"));
+    hide(byId("privacyCard"));
+    hide(byId("homePasosQr"));
+    hide(byId("seccionPreciosHome"));
+  }
+
+  function showPrivacyCard(){
+    showHomeSections();
+    show(byId("privacyCard"));
+    hide(byId("clienteCard"));
+  }
+
+  function normalizePhone(phone){
+    let tel = String(phone || "").replace(/\D/g, "");
+    if(tel.length === 8) tel = "507" + tel;
+    return tel;
+  }
+
+  function getShareUrl(code){
+    return `${window.location.origin}${window.location.pathname}?code=${encodeURIComponent(code)}`;
+  }
+
+  function getCoordinates(data){
+    let lat = "";
+    let lng = "";
+
+    if(data.lat && data.lng){
+      lat = String(data.lat).trim();
+      lng = String(data.lng).trim();
+      return { lat, lng };
+    }
+
+    if(data.coordenadas){
+      const raw = String(data.coordenadas).trim();
+      const match = raw.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+      if(match){
+        return { lat: match[1], lng: match[2] };
       }
     }
 
-    // Ver ejemplo
-    window.verEjemplo = function () {
-      const input = document.getElementById("inputCodigo");
-      if (input) input.value = EJEMPLO_CODE;
-      buscarCodigo();
+    if(data.qr){
+      const qrStr = String(data.qr);
+      const matchQuery = qrStr.match(/query=([0-9.-]+),\s*([0-9.-]+)/i);
+      if(matchQuery){
+        return { lat: matchQuery[1], lng: matchQuery[2] };
+      }
+      const matchAt = qrStr.match(/@([0-9.-]+),\s*([0-9.-]+)/i);
+      if(matchAt){
+        return { lat: matchAt[1], lng: matchAt[2] };
+      }
+      const matchPlain = qrStr.match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+      if(matchPlain){
+        return { lat: matchPlain[1], lng: matchPlain[2] };
+      }
+    }
+
+    return { lat, lng };
+  }
+
+  async function fetchJsonSafe(url){
+    const res = await fetch(url, { cache: "no-store" });
+    if(!res.ok) throw new Error("Error de red");
+    const text = await res.text();
+    try{
+      return JSON.parse(text);
+    }catch(e){
+      throw new Error("Respuesta inválida del servidor");
+    }
+  }
+
+  function configurarClienteVisual(data){
+    const nombre = data.nombre || data.name || "-";
+    const referencia = data.referencia || data.ref || "-";
+    const codigo = data.codigo || data.code || CODIGO_ACTUAL;
+    const logo = data.logo || data.foto || data.imagen || "";
+
+    byId("uiCodigo").textContent = codigo;
+    byId("uiNombre").textContent = nombre;
+    byId("uiRef").textContent = referencia;
+
+    if(logo){
+      byId("clientLogo").src = logo;
+      byId("clientLogo").onerror = function(){
+        this.src = "https://direcciones507.com/logo.png";
+        this.onerror = null;
+      };
+      byId("clientBrandName").textContent = nombre;
+      show(byId("clientBrand"), "flex");
+    } else {
+      hide(byId("clientBrand"));
+    }
+  }
+
+  function configurarBotonesUbicacion(data, codigoActual){
+    const { lat, lng } = getCoordinates(data);
+
+    const btnGoogle = byId("btnGoogle");
+    const btnWaze = byId("btnWaze");
+    const btnUber = byId("btnUber");
+    const btnAviso = byId("btnAviso");
+
+    if(lat && lng){
+      btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      btnWaze.href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+      btnUber.href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+
+      setDisabledButton(btnGoogle, false);
+      setDisabledButton(btnWaze, false);
+      setDisabledButton(btnUber, false);
+    } else {
+      setDisabledButton(btnGoogle, true);
+      setDisabledButton(btnWaze, true);
+      setDisabledButton(btnUber, true);
+    }
+
+    const tel = normalizePhone(data.telefono || data.phone || "");
+    if(tel.length >= 10){
+      btnAviso.href = `https://wa.me/${tel}?text=${encodeURIComponent("Hola 👋, ya llegué. Código: " + codigoActual)}`;
+      setDisabledButton(btnAviso, false);
+    } else {
+      setDisabledButton(btnAviso, true);
+    }
+  }
+
+  function configurarCompartir(shareUrl){
+    byId("btnCompartir").onclick = async () => {
+      try{
+        if(navigator.share){
+          await navigator.share({
+            title: "Dirección Digital AD507",
+            text: "Te comparto esta dirección digital:",
+            url: shareUrl
+          });
+        } else {
+          await navigator.clipboard.writeText(shareUrl);
+          alert("✅ Link copiado");
+        }
+      } catch(e){
+        try{
+          await navigator.clipboard.writeText(shareUrl);
+          alert("✅ Link copiado");
+        } catch(err){
+          alert("No se pudo compartir ni copiar el link");
+        }
+      }
     };
 
-    // CAMBIO 3: Inicialización corregida
-    window.addEventListener("DOMContentLoaded", () => {
-      // Botones compra
-      const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
-      document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
-      document.getElementById("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-      document.getElementById("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
-      document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-      document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+    byId("btnCopiar").onclick = async () => {
+      try{
+        await navigator.clipboard.writeText(shareUrl);
+        alert("✅ Link copiado");
+      } catch(e){
+        alert("No se pudo copiar el link");
+      }
+    };
+  }
 
-      // Enter en input
-      const input = document.getElementById("inputCodigo");
-      if (input) {
-        input.addEventListener("keypress", e => { if (e.key === "Enter") buscarCodigo(); });
+  function configurarQRImpresion(shareUrl, codigoActual){
+    const wrap = byId("printCardWrap");
+    const qrVerif = byId("qrVerificacion");
+    const printCod = byId("printCodigo");
+
+    byId("linkVerificacion").onclick = (e) => {
+      e.preventDefault();
+      printCod.textContent = codigoActual;
+      qrVerif.src = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(shareUrl)}`;
+      show(wrap);
+    };
+
+    byId("btnOcultarQR").onclick = () => hide(wrap);
+
+    byId("btnImprimirQR").onclick = () => {
+      const card = byId("printCard");
+      const w = window.open("", "_blank");
+      if(!w){
+        alert("No se pudo abrir la ventana para imprimir");
+        return;
+      }
+      w.document.write(`
+        <html>
+          <head>
+            <title>Imprimir QR</title>
+            <meta charset="UTF-8">
+            <style>
+              body{
+                font-family:Arial,sans-serif;
+                display:flex;
+                justify-content:center;
+                padding:20px;
+              }
+              img{
+                max-width:100%;
+              }
+            </style>
+          </head>
+          <body>
+            ${card.outerHTML}
+            <script>
+              window.onload = function(){ window.print(); };
+            <\/script>
+          </body>
+        </html>
+      `);
+      w.document.close();
+    };
+  }
+
+  async function cargarCodigo(codigo){
+    if(!codigo){
+      setMsg("Ingresa un código", "#b91c1c");
+      return;
+    }
+
+    resetClientCard();
+    setMsg("Buscando...", "#334155");
+
+    try{
+      const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);
+
+      if(!data.ok){
+        throw new Error(data.message || "No encontrado");
       }
 
-      // Verificar si hay código en la URL
-      const urlParams = new URLSearchParams(location.search);
-      const urlCode = urlParams.get("code");
+      CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
 
-      if (urlCode && input) {
-        // Si hay ?code=, cargar ese código
-        input.value = urlCode;
+      const plan = String(data.plan || "").toLowerCase();
+      const esPublico = plan.includes("negocio") || plan.includes("premium");
+
+      const codeFromUrl = new URLSearchParams(window.location.search).get("code");
+      const vieneDeLink = !!(codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL);
+
+      if(!esPublico && !vieneDeLink){
+        setMsg("Código privado. Usa el enlace directo.", "#b45309");
+        showPrivacyCard();
+        return;
+      }
+
+      const shareUrl = getShareUrl(CODIGO_ACTUAL);
+
+      configurarClienteVisual(data);
+      configurarBotonesUbicacion(data, CODIGO_ACTUAL);
+      configurarCompartir(shareUrl);
+      configurarQRImpresion(shareUrl, CODIGO_ACTUAL);
+
+      hideHomeSectionsForClient();
+      showClientPanel();
+      setMsg("✅ Listo", "#15803d");
+
+      // Actualizar QR e info interna
+      byId("qrImgHome").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+      byId("uiLinkHome").textContent = shareUrl;
+
+      // SEO dinámico simple
+      document.title = `${CODIGO_ACTUAL} | Direcciones507`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if(metaDesc){
+        metaDesc.setAttribute("content", `Dirección digital ${CODIGO_ACTUAL} en Panamá. Abre en Google Maps, Waze o Uber.`);
+      }
+
+    } catch(error){
+      showHomeSections();
+      hide(byId("clienteCard"));
+      setMsg("Error: " + (error.message || "No se pudo buscar"), "#b91c1c");
+    }
+  }
+
+  async function buscarCodigo(){
+    const input = byId("inputCodigo");
+    const codigo = String(input?.value || "").trim().toUpperCase();
+    await cargarCodigo(codigo);
+  }
+
+  function verEjemplo(){
+    const input = byId("inputCodigo");
+    if(input) input.value = EJEMPLO_CODE;
+    buscarCodigo();
+  }
+
+  window.buscarCodigo = buscarCodigo;
+  window.verEjemplo = verEjemplo;
+
+  window.addEventListener("DOMContentLoaded", () => {
+    byId("btnComprarTop")?.setAttribute("href", BASE_WA);
+
+    byId("inputCodigo")?.addEventListener("keypress", function(e){
+      if(e.key === "Enter"){
         buscarCodigo();
-      } else {
-        // Si no hay código, mostrar la home
-        hidePanelSections();
-        show(document.getElementById("homeHero"), "block");
-        show(document.getElementById("seccionPasos"), "block");
-        show(document.getElementById("seccionPrecios"), "block");
-        show(document.getElementById("seoLinksHome"), "flex");
-
-        // Generar QR para la home
-        const homeUrl = location.href.split("?")[0];
-        const qrImg = document.getElementById("qrImg");
-        const uiLink = document.getElementById("uiLink");
-
-        if (qrImg) {
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
-        }
-
-        if (uiLink) {
-          uiLink.textContent = homeUrl;
-        }
       }
     });
 
-    window.buscarCodigo = buscarCodigo;
-  </script>
+    showHomeSections();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCode = urlParams.get("code");
+
+    if(urlCode){
+      byId("inputCodigo").value = urlCode;
+      cargarCodigo(String(urlCode).trim().toUpperCase());
+    }
+  });
+</script>
+
 </body>
 </html>

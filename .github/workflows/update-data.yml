@@ -3,7 +3,7 @@ name: 🚀 Actualizar datos desde Excel
 on:
   push:
     paths:
-      - 'AD507_MASTER_FINAL_PANAMA.xlsx'
+      - 'AD507_MASTER_FINAL_PANAMA_CORREGIDO_v2.xlsx'
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
@@ -29,21 +29,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas openpyxl
 
-      - name: 📂 Verificar archivos
-        run: |
-          echo "Archivos en el repo:"
-          ls -la
-          echo "Archivos en datos:"
-          ls -la datos || true
-
       - name: 🔄 Convertir Excel a JSON
         run: |
           python convert_excel_to_json.py
-
-      - name: 📂 Verificar JSON generado
-        run: |
-          ls -la datos || true
-          test -f datos/clientes.json && echo "✅ clientes.json existe" || (echo "❌ No se generó datos/clientes.json" && exit 1)
 
       - name: 📤 Subir cambios automáticamente
         run: |

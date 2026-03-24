@@ -1651,8 +1651,15 @@ const esPublico = planLower.includes("negocio") || planLower.includes("premium")
 const esNegocio = planLower.includes("negocio") || planLower.includes("premium");
 
 // Privacidad: personales solo abren por enlace directo
-const codeFromUrl = new URLSearchParams(window.location.search).get("code");
-const vieneDeLink = !!(codeFromUrl && codeFromUrl.trim().toUpperCase() === CODIGO_ACTUAL.toUpperCase());
+const codeFromUrl = (new URLSearchParams(window.location.search).get("code") || "").trim();
+const pathFromUrl = window.location.pathname.replace(/^\/+|\/+$/g, "").trim();
+
+const normalizar = v => String(v || "").trim().toUpperCase();
+
+const vienePorQuery = normalizar(codeFromUrl) === normalizar(CODIGO_ACTUAL);
+const vienePorPath = normalizar(pathFromUrl) === normalizar(CODIGO_ACTUAL);
+
+const vieneDeLink = vienePorQuery || vienePorPath;
 
 if (!esPublico && !vieneDeLink) {
   setMsg("Este código es privado. Usa el enlace directo.");

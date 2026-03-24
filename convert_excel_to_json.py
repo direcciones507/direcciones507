@@ -72,27 +72,31 @@ def excel_to_json():
         
         for index, row in df.iterrows():
 
-    # Obtener código (columna A)
-    codigo = str(row['Código']).strip() if pd.notna(row['Código']) else ""
+            # Obtener código (columna A)
+        codigo = str(row['Código']).strip() if pd.notna(row['Código']) else ""
 
-    # Solo procesar filas con código AD507 válido
-    if codigo and codigo.startswith('AD507-'):
+        # Obtener datos necesarios antes de validar
+        telefono = limpiar_telefono(row['Teléfono (cliente)'])
+        coordenadas = validar_coordenadas(row['Coordenada (LAT,LNG)'])
 
-        # ❌ Evitar códigos duplicados
-        if any(c["codigo"] == codigo for c in clientes):
-            print(f"  ⛔ {codigo}: duplicado ignorado")
-            continue
+        # Solo procesar filas con código AD507 válido
+        if codigo and codigo.startswith('AD507-'):
 
-        # ❌ Validar coordenadas obligatorias
-        if not coordenadas:
-            print(f"  ⚠️ {codigo}: sin coordenadas válidas")
-            clientes_sin_coordenadas += 1
-            continue
+            # ❌ Evitar códigos duplicados
+            if any(c["codigo"] == codigo for c in clientes):
+                print(f"  ⛔ {codigo}: duplicado ignorado")
+                continue
 
-        # ❌ Validar teléfono (opcional pero recomendado)
-        if telefono and len(telefono) != 8:
-            print(f"  ⚠️ {codigo}: teléfono inválido")
-            continue
+            # ❌ Validar coordenadas obligatorias
+            if not coordenadas:
+                print(f"  ⚠️ {codigo}: sin coordenadas válidas")
+                clientes_sin_coordenadas += 1
+                continue
+
+            # ❌ Validar teléfono
+            if telefono and len(telefono) != 8:
+                print(f"  ⚠️ {codigo}: teléfono inválido")
+                continue
                 
                 # Obtener otros datos
                 nombre = str(row['Nombre']).strip() if pd.notna(row['Nombre']) else ""

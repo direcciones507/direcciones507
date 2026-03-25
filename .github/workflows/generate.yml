@@ -75,6 +75,7 @@ jobs:
       - name: Copy root files
         run: |
           cp index.html out/index.html
+          cp logo.png out/logo.png || true
           cp robots.txt out/robots.txt || true
           cp -R img out/img || true
           cp -R jacinto out/jacinto || true

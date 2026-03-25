@@ -30,12 +30,12 @@ jobs:
           mkdir -p out
 
           jq -c '.codes[]' codes.json | while read -r item; do
-            CODE=$(echo "$item" | jq -r '.codigo' | xargs)
+            CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
             echo "Procesando: CODE=$CODE | PLAN=$PLAN"
 
-            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+            if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ) ]]; then
               SLUG_UPPER="$CODE"
               SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
 
@@ -65,10 +65,10 @@ jobs:
           EOF
 
           jq -c '.codes[]' codes.json | while read -r item; do
-            CODE=$(echo "$item" | jq -r '.codigo' | xargs)
+            CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
-            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+            if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ) ]]; then
               SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
               echo "  <url><loc>https://direcciones507.com/$SLUG_LOWER/</loc></url>" >> out/sitemap.xml
             fi

@@ -46,7 +46,7 @@ jobs:
 
                 sed -i "s|AD507-CODE|$CODE|g" "$DIR/index.html"
                 sed -i "s|{{CODE}}|$CODE|g" "$DIR/index.html"
-                sed -i "s|{{TITLE}}|Dirección $CODE | Direcciones507 Panamá|g" "$DIR/index.html"
+                sed -i "s|{{TITLE}}|Dirección $CODE \| Direcciones507 Panamá|g" "$DIR/index.html"
                 sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
                 sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
                 sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"

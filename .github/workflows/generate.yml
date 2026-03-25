@@ -29,23 +29,28 @@ jobs:
         run: |
           mkdir -p out
 
-          CODES=$(jq -r '.codes[].codigo' codes.json)
+          jq -c '.codes[]' codes.json | while read -r item; do
+            CODE=$(echo "$item" | jq -r '.codigo' | xargs)
+            PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
-          for CODE in $CODES; do
-            PLAN=$(jq -r ".codes[] | select(.codigo==\"$CODE\") | .plan" codes.json | tr '[:upper:]' '[:lower:]' | xargs)
+            echo "Procesando: CODE=$CODE | PLAN=$PLAN"
 
             if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
-              SLUG=$(echo "$CODE" | xargs)
-              DIR="out/$SLUG"
+              SLUG_UPPER="$CODE"
+              SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
 
-              mkdir -p "$DIR"
-              cp ad507.template.html "$DIR/index.html"
+              for SLUG in "$SLUG_UPPER" "$SLUG_LOWER"; do
+                DIR="out/$SLUG"
+                mkdir -p "$DIR"
+                cp ad507.template.html "$DIR/index.html"
 
-              sed -i "s/AD507-CODE/$CODE/g" "$DIR/index.html"
-              sed -i "s|AD507-CODE|$CODE|g" "$DIR/index.html"
-              sed -i "s/{{TITLE}}/Dirección $CODE | Direcciones507 Panamá/g" "$DIR/index.html"
-              sed -i "s/{{DESC}}/Dirección digital $CODE en Panamá/g" "$DIR/index.html"
-              sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG/|g" "$DIR/index.html"
+                sed -i "s|AD507-CODE|$CODE|g" "$DIR/index.html"
+                sed -i "s|{{CODE}}|$CODE|g" "$DIR/index.html"
+                sed -i "s|{{TITLE}}|Dirección $CODE | Direcciones507 Panamá|g" "$DIR/index.html"
+                sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
+                sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
+                sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"
+              done
             fi
           done
 
@@ -59,14 +64,13 @@ jobs:
             </url>
           EOF
 
-          CODES=$(jq -r '.codes[].codigo' codes.json)
-
-          for CODE in $CODES; do
-            PLAN=$(jq -r ".codes[] | select(.codigo==\"$CODE\") | .plan" codes.json | tr '[:upper:]' '[:lower:]' | xargs)
+          jq -c '.codes[]' codes.json | while read -r item; do
+            CODE=$(echo "$item" | jq -r '.codigo' | xargs)
+            PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
             if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
-              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-              echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+              SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              echo "  <url><loc>https://direcciones507.com/$SLUG_LOWER/</loc></url>" >> out/sitemap.xml
             fi
           done
 
@@ -79,6 +83,11 @@ jobs:
           cp robots.txt out/robots.txt || true
           cp -R img out/img || true
           cp -R jacinto out/jacinto || true
+
+      - name: Debug generated files
+        run: |
+          echo "=== ARCHIVOS GENERADOS ==="
+          find out -maxdepth 3 -type f | sort
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -35,7 +35,7 @@ jobs:
             PLAN=$(jq -r ".codes[] | select(.codigo==\"$CODE\") | .plan" codes.json | tr '[:upper:]' '[:lower:]' | xargs)
 
             if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
-              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              SLUG=$(echo "$CODE" | xargs)
               DIR="out/$SLUG"
 
               mkdir -p "$DIR"

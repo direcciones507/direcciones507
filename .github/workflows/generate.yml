@@ -118,4 +118,4 @@ jobs:
       - name: Debug generated files
         run: |
           echo "=== ARCHIVOS GENERADOS ==="
-          find out -maxd
+          find out -maxdepth

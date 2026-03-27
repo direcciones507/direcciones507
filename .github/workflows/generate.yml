@@ -29,52 +29,15 @@ jobs:
           echo "=== TOTAL DE CODIGOS ==="
           jq '.codes | length' codes.json
 
-      name: Generate AD507 Pages
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Download codes
-        run: |
-          curl -L "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec?action=list" -o codes.json
-          echo "=== JSON DESCARGADO ==="
-          cat codes.json
-          echo ""
-          echo "=== TOTAL DE CODIGOS ==="
-          jq '.codes | length' codes.json
-
       - name: Generate pages
         run: |
           mkdir -p out
 
-          echo "=== INICIO GENERACION ==="
-
           jq -c '.codes[]' codes.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
-            PLAN_RAW=$(echo "$item" | jq -r '.plan // ""' | xargs)
-            PLAN=$(echo "$PLAN_RAW" | tr '[:upper:]' '[:lower:]')
-
-            echo "Procesando: CODE=$CODE | PLAN=$PLAN"
+            PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
             if [[ -z "$CODE" ]]; then
-              echo "Saltado: codigo vacio"
               continue
             fi
 
@@ -93,16 +56,7 @@ jobs:
                 sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
                 sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
                 sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"
-
-                if [[ -f "$DIR/index.html" ]]; then
-                  echo "OK: creada $DIR/index.html"
-                else
-                  echo "ERROR: no se creo $DIR/index.html"
-                  exit 1
-                fi
               done
-            else
-              echo "Saltado por plan: CODE=$CODE | PLAN=$PLAN_RAW"
             fi
           done
 
@@ -121,114 +75,12 @@ jobs:
             PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
             if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ) ]]; then
-              SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-              echo "  <url><loc>https://direcciones507.com/$SLUG_LOWER/</loc></url>" >> out/sitemap.xml
+              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
             fi
           done
 
           echo '</urlset>' >> out/sitemap.xml
-
-          echo "=== SITEMAP GENERADO ==="
-          cat out/sitemap.xml
-
-      - name: Copy root files
-        run: |
-          cp index.html out/index.html
-          cp logo.png out/logo.png || true
-          cp robots.txt out/robots.txt || true
-          cp -R img out/img || true
-          cp -R jacinto out/jacinto || true
-
-      - name: Debug generated files
-        run: |
-          echo "=== ARCHIVOS GENERADOS ==="
-          find out -maxdepth 3 -type f | sort || true
-
-      - name: Verify sample page content
-        run: |
-          SAMPLE=$(find out -mindepth 2 -maxdepth 2 -name index.html | head -n 1)
-
-          if [[ -n "$SAMPLE" ]]; then
-            echo "=== MUESTRA DE PAGINA ==="
-            echo "Archivo: $SAMPLE"
-            grep -n "AD507-CODE\|{{CODE}}\|{{TITLE}}\|{{DESC}}\|{{SLUG}}\|{{CANONICAL}}" "$SAMPLE" || echo "OK: sin placeholders pendientes"
-          else
-            echo "ERROR: no se encontro ninguna pagina generada"
-            exit 1
-          fi
-
-      - name: Generate pages
-        run: |
-          mkdir -p out
-          GENERATED=0
-          SKIPPED=0
-
-          echo "=== INICIO GENERACION ==="
-
-          jq -c '.codes[]' codes.json | while read -r item; do
-            CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
-            PLAN_RAW=$(echo "$item" | jq -r '.plan // ""' | xargs)
-            PLAN=$(echo "$PLAN_RAW" | tr '[:upper:]' '[:lower:]')
-
-            echo "Procesando: CODE=$CODE | PLAN=$PLAN"
-
-            if [[ -z "$CODE" ]]; then
-              echo "Saltado: codigo vacio"
-              continue
-            fi
-
-            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
-              SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-              SLUG_UPPER="$CODE"
-
-              for SLUG in "$SLUG_UPPER" "$SLUG_LOWER"; do
-                DIR="out/$SLUG"
-                mkdir -p "$DIR"
-                cp ad507.template.html "$DIR/index.html"
-
-                sed -i "s|AD507-CODE|$CODE|g" "$DIR/index.html"
-                sed -i "s|{{CODE}}|$CODE|g" "$DIR/index.html"
-                sed -i "s|{{TITLE}}|Dirección $CODE - Direcciones507 Panamá|g" "$DIR/index.html"
-                sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
-                sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
-                sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"
-
-                if [[ -f "$DIR/index.html" ]]; then
-                  echo "OK: creada $DIR/index.html"
-                else
-                  echo "ERROR: no se creo $DIR/index.html"
-                  exit 1
-                fi
-              done
-            else
-              echo "Saltado por plan: CODE=$CODE | PLAN=$PLAN_RAW"
-            fi
-          done
-
-      - name: Generate sitemap
-        run: |
-          cat > out/sitemap.xml << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            <url>
-              <loc>https://direcciones507.com/</loc>
-            </url>
-          EOF
-
-          jq -c '.codes[]' codes.json | while read -r item; do
-            CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
-            PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
-
-            if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ) ]]; then
-              SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-              echo "  <url><loc>https://direcciones507.com/$SLUG_LOWER/</loc></url>" >> out/sitemap.xml
-            fi
-          done
-
-          echo '</urlset>' >> out/sitemap.xml
-
-          echo "=== SITEMAP GENERADO ==="
-          cat out/sitemap.xml
 
       - name: Copy root files
         run: |

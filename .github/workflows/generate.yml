@@ -23,19 +23,40 @@ jobs:
       - name: Download codes
         run: |
           curl -L "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec?action=list" -o codes.json
+          echo "=== JSON DESCARGADO ==="
           cat codes.json
+          echo ""
+          echo "=== TOTAL DE CODIGOS ==="
+          jq '.codes | length' codes.json
+
+      - name: Verify required files
+        run: |
+          echo "=== VERIFICANDO ARCHIVOS ==="
+          ls -la
+          test -f ad507.template.html || (echo "FALTA ad507.template.html" && exit 1)
+          test -f index.html || (echo "FALTA index.html" && exit 1)
 
       - name: Generate pages
         run: |
           mkdir -p out
+          GENERATED=0
+          SKIPPED=0
+
+          echo "=== INICIO GENERACION ==="
 
           jq -c '.codes[]' codes.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
-            PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
+            PLAN_RAW=$(echo "$item" | jq -r '.plan // ""' | xargs)
+            PLAN=$(echo "$PLAN_RAW" | tr '[:upper:]' '[:lower:]')
 
             echo "Procesando: CODE=$CODE | PLAN=$PLAN"
 
-            if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ) ]]; then
+            if [[ -z "$CODE" ]]; then
+              echo "Saltado: codigo vacio"
+              continue
+            fi
+
+            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
               SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
               SLUG_UPPER="$CODE"
 
@@ -50,7 +71,16 @@ jobs:
                 sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
                 sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
                 sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"
+
+                if [[ -f "$DIR/index.html" ]]; then
+                  echo "OK: creada $DIR/index.html"
+                else
+                  echo "ERROR: no se creo $DIR/index.html"
+                  exit 1
+                fi
               done
+            else
+              echo "Saltado por plan: CODE=$CODE | PLAN=$PLAN_RAW"
             fi
           done
 
@@ -76,6 +106,9 @@ jobs:
 
           echo '</urlset>' >> out/sitemap.xml
 
+          echo "=== SITEMAP GENERADO ==="
+          cat out/sitemap.xml
+
       - name: Copy root files
         run: |
           cp index.html out/index.html
@@ -87,22 +120,4 @@ jobs:
       - name: Debug generated files
         run: |
           echo "=== ARCHIVOS GENERADOS ==="
-          find out -maxdepth 3 -type f | sort
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: out
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+          find out -maxd

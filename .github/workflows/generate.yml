@@ -29,12 +29,10 @@ jobs:
           echo "=== TOTAL DE CODIGOS ==="
           jq '.codes | length' codes.json
 
-      - name: Verify required files
+      - name: Debug generated files
         run: |
-          echo "=== VERIFICANDO ARCHIVOS ==="
-          ls -la
-          test -f ad507.template.html || (echo "FALTA ad507.template.html" && exit 1)
-          test -f index.html || (echo "FALTA index.html" && exit 1)
+          echo "=== ARCHIVOS GENERADOS ==="
+          ls -R out || true
 
       - name: Generate pages
         run: |

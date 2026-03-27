@@ -26,13 +26,17 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
+      - name: Verify template exists
+        run: |
+          if [ ! -f ad507.template.html ]; then
+            echo "ERROR: ad507.template.html no existe"
+            exit 1
+          fi
+
       - name: Download codes
         run: |
           curl -L "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec?action=list" -o codes.json
-          echo "=== JSON DESCARGADO ==="
-          cat codes.json
-          echo ""
-          echo "=== TOTAL DE CODIGOS ==="
+          echo "TOTAL CODIGOS:"
           jq '.codes | length' codes.json
 
       - name: Generate pages
@@ -40,6 +44,7 @@ jobs:
           mkdir -p out
 
           jq -c '.codes[]' codes.json | while read -r item; do
+
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
@@ -48,12 +53,15 @@ jobs:
             fi
 
             if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+
               SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
               SLUG_UPPER="$CODE"
 
               for SLUG in "$SLUG_UPPER" "$SLUG_LOWER"; do
+
                 DIR="out/$SLUG"
                 mkdir -p "$DIR"
+
                 cp ad507.template.html "$DIR/index.html"
 
                 sed -i "s|AD507-CODE|$CODE|g" "$DIR/index.html"
@@ -62,8 +70,11 @@ jobs:
                 sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
                 sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
                 sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"
+
               done
+
             fi
+
           done
 
       - name: Generate sitemap
@@ -77,13 +88,21 @@ jobs:
           EOF
 
           jq -c '.codes[]' codes.json | while read -r item; do
+
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
             if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ) ]]; then
+
               SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
-              echo "  <url><loc>https://direcciones507.com/$SLUG/</loc></url>" >> out/sitemap.xml
+
+              echo "  <url>" >> out/sitemap.xml
+              echo "    <loc>https://direcciones507.com/$SLUG/</loc>" >> out/sitemap.xml
+              echo "    <lastmod>$(date +%Y-%m-%d)</lastmod>" >> out/sitemap.xml
+              echo "  </url>" >> out/sitemap.xml
+
             fi
+
           done
 
           echo '</urlset>' >> out/sitemap.xml
@@ -93,35 +112,29 @@ jobs:
           cp index.html out/index.html
           cp logo.png out/logo.png || true
           cp robots.txt out/robots.txt || true
+          cp 404.html out/404.html || true
+          cp CNAME out/CNAME || true
           cp -R img out/img || true
           cp -R jacinto out/jacinto || true
-          cp 404.html out/404.html || true
 
       - name: Debug generated files
         run: |
-          echo "=== ARCHIVOS GENERADOS ==="
+          echo "ARCHIVOS GENERADOS:"
           find out -maxdepth 3 -type f | sort || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload Pages artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
 
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
-        uses: actions/configure-pages@v5
-        uses: actions/upload-pages-artifact@v3
         uses: actions/deploy-pages@v4
-
-        

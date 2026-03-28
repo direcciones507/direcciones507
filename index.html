@@ -1786,7 +1786,7 @@
     }
   }
 
-  async function buscarCodigo() {
+  async function buscarCodigo(modo = "busqueda") {
     const input = document.getElementById("inputCodigo");
     if (!input) return;
 
@@ -1817,11 +1817,17 @@
 
       const planLower = String(data.plan || "").toLowerCase();
 
-      // SOLO negocios pueden buscarse desde la home
-      const esNegocio = planLower.includes("negocio");
+      // SOLO persona/personal es privado
+      const esPersona =
+        planLower.includes("persona") ||
+        planLower.includes("personal");
 
-      // Público solo si es negocio
-      const esPublico = esNegocio;
+      // Negocio y premium son públicos
+      const esNegocio =
+        planLower.includes("negocio") ||
+        planLower.includes("premium");
+
+      const esPublico = !esPersona;
 
       const codeFromUrl = (new URLSearchParams(window.location.search).get("code") || "").trim();
       const pathFromUrl = window.location.pathname.replace(/^\/+|\/+$/g, "").trim();
@@ -1836,12 +1842,13 @@
       const queryNormalizado = normalizar(codeFromUrl);
       const pathNormalizado = normalizar(pathFromUrl);
 
+      const vienePorQuery = !!queryNormalizado && queryNormalizado === codigoActualNormalizado;
       const vienePorPath = !!pathNormalizado && pathNormalizado === codigoActualNormalizado;
 
-      // SOLO el enlace directo real cuenta como privado válido
-      const vieneDeLink = vienePorPath;
+      // Solo cuenta como enlace directo si abrió automáticamente desde URL
+      const vieneDeLink = (modo === "directo") && (vienePorQuery || vienePorPath);
 
-      if (!esPublico && !vieneDeLink) {
+      if (esPersona && !vieneDeLink) {
         setMsg("Este código es privado. Usa el enlace directo.");
 
         if (uiCodigo) uiCodigo.textContent = "-";
@@ -2108,7 +2115,7 @@
   window.verEjemplo = function () {
     const input = document.getElementById("inputCodigo");
     if (input) input.value = EJEMPLO_CODE;
-    buscarCodigo();
+    buscarCodigo("busqueda");
   };
 
   window.addEventListener("DOMContentLoaded", () => {
@@ -2128,7 +2135,7 @@
     const input = document.getElementById("inputCodigo");
     if (input) {
       input.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") buscarCodigo();
+        if (e.key === "Enter") buscarCodigo("busqueda");
       });
     }
 
@@ -2140,13 +2147,13 @@
 
     if (codeFromUrl && input) {
       input.value = codeFromUrl;
-      buscarCodigo();
+      buscarCodigo("directo");
       return;
     }
 
     if (pathFromUrl && /^AD507-/i.test(pathFromUrl) && input) {
       input.value = pathFromUrl;
-      buscarCodigo();
+      buscarCodigo("directo");
       return;
     }
 

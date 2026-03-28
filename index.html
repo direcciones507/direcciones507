@@ -2040,15 +2040,16 @@ ocultarValidacionVisual();
     let codigoInicial = (urlParams.get("code") || "").trim();
 
     if (!codigoInicial) {
-    const path = window.location.pathname
-      .replace(/^\/+|\/+$/g, "")
-      .trim()
-      .toUpperCase();
+  const path = window.location.pathname
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/\.html$/i, "")
+    .trim()
+    .toUpperCase();
 
-    if (path.startsWith("AD507-")) {
+  if (path.startsWith("AD507-")) {
     codigoInicial = path;
-      }
-    }
+  }
+}
     if (codigoInicial && input) {
       input.value = codigoInicial;
       buscarCodigo();

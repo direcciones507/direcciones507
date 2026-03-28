@@ -1137,10 +1137,105 @@
   transform:translateY(-2px);
   box-shadow:0 14px 28px rgba(37,99,235,.32);
 }
+.code-loading-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(10,16,30,.82);
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+  transition:.35s ease;
+}
+
+.code-loading-overlay.hidden{
+  opacity:0;
+  visibility:hidden;
+}
+
+.code-loading-box{
+  width:100%;
+  max-width:420px;
+  background:#fff;
+  border-radius:28px;
+  padding:28px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+.code-loading-badge{
+  display:inline-block;
+  background:#eaf2ff;
+  color:#1d4ed8;
+  padding:8px 14px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:13px;
+  margin-bottom:18px;
+}
+
+.code-loading-spinner{
+  width:58px;
+  height:58px;
+  margin:0 auto 18px;
+  border-radius:50%;
+  border:5px solid #dbeafe;
+  border-top-color:#2563eb;
+  animation:spinAD507 1s linear infinite;
+}
+
+@keyframes spinAD507{
+  to{ transform:rotate(360deg); }
+}
+
+.code-loading-steps{
+  margin-top:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.code-loading-steps .step{
+  background:#f1f5f9;
+  padding:12px;
+  border-radius:14px;
+  font-weight:600;
+  color:#64748b;
+}
+
+.code-loading-steps .step.active{
+  background:#e0ecff;
+  color:#1d4ed8;
+}
   </style>
 </head>
 
 <body>
+  <!-- OVERLAY VALIDACIÓN AD507 -->
+<div id="codeLoadingOverlay" class="code-loading-overlay">
+  <div class="code-loading-box">
+
+    <div class="code-loading-badge">
+      Código Oficial AD507
+    </div>
+
+    <div class="code-loading-spinner"></div>
+
+    <h3>Validando código oficial AD507...</h3>
+
+    <p>
+      Estamos verificando la información del destino.
+    </p>
+
+    <div class="code-loading-steps">
+      <div class="step active" id="step1">Verificando código</div>
+      <div class="step" id="step2">Cargando ubicación</div>
+      <div class="step" id="step3">Preparando accesos</div>
+    </div>
+
+  </div>
+</div>
   <div class="container">
 
     <!-- TOPBAR LIMPIA -->
@@ -1972,6 +2067,26 @@
   });
 
   window.buscarCodigo = buscarCodigo;
+    function iniciarValidacionVisual(){
+
+  const overlay = document.getElementById("codeLoadingOverlay");
+
+  if(!overlay) return;
+
+  setTimeout(()=>step2.classList.add("active"),600);
+  setTimeout(()=>step3.classList.add("active"),1200);
+
+}
+
+function ocultarValidacionVisual(){
+
+  const overlay = document.getElementById("codeLoadingOverlay");
+
+  if(!overlay) return;
+
+  overlay.classList.add("hidden");
+
+}
 </script>
 </body>
 </html>

@@ -1686,6 +1686,7 @@
     hide(document.getElementById("seccionPasos"));
     hide(document.getElementById("seccionPrecios"));
     hide(document.getElementById("seoLinksHome"));
+    hide(document.getElementById("privacyCard"));
 
     show(document.getElementById("fieldNombre"), "block");
     show(document.getElementById("fieldRef"), "block");
@@ -1742,6 +1743,49 @@
     }
   }
 
+  function iniciarValidacionVisual() {
+    const overlay = document.getElementById("codeLoadingOverlay");
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const step3 = document.getElementById("step3");
+
+    if (!overlay) return;
+
+    overlay.classList.add("show");
+
+    if (step1) step1.classList.add("active");
+    if (step2) step2.classList.remove("active");
+    if (step3) step3.classList.remove("active");
+
+    setTimeout(() => {
+      if (step2) step2.classList.add("active");
+    }, 500);
+
+    setTimeout(() => {
+      if (step3) step3.classList.add("active");
+    }, 1000);
+  }
+
+  function ocultarValidacionVisual() {
+    const overlay = document.getElementById("codeLoadingOverlay");
+    if (!overlay) return;
+    overlay.classList.remove("show");
+  }
+
+  function cargarQrHome() {
+    const homeUrl = window.location.origin + window.location.pathname;
+    const qrImg = document.getElementById("qrImg");
+    const uiLink = document.getElementById("uiLink");
+
+    if (qrImg) {
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
+    }
+
+    if (uiLink) {
+      uiLink.textContent = homeUrl;
+    }
+  }
+
   async function buscarCodigo() {
     const input = document.getElementById("inputCodigo");
     if (!input) return;
@@ -1791,7 +1835,7 @@
       const vienePorQuery = !!queryNormalizado && queryNormalizado === codigoActualNormalizado;
       const vienePorPath = !!pathNormalizado && pathNormalizado === codigoActualNormalizado;
       const vieneDeLink = vienePorQuery || vienePorPath;
-      
+
       if (!esPublico && !vieneDeLink && !queryNormalizado) {
         setMsg("Este código es privado. Usa el enlace directo.");
 
@@ -1818,6 +1862,7 @@
           uiLink.textContent = homeUrl;
         }
 
+        ocultarValidacionVisual();
         return;
       }
 
@@ -1841,9 +1886,40 @@
       let lat = "";
       let lng = "";
 
-      if (data.qr) {
+      // 1) Intentar campos directos
+      lat = String(
+        data.lat ||
+        data.latitude ||
+        data.Lat ||
+        data.LAT ||
+        ""
+      ).trim();
+
+      lng = String(
+        data.lng ||
+        data.longitude ||
+        data.Lng ||
+        data.LNG ||
+        ""
+      ).trim();
+
+      // 2) Intentar desde coordenadas si existen
+      if ((!lat || !lng) && data.coordenadas) {
+        const coordMatch = String(data.coordenadas).match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
+        if (coordMatch) {
+          lat = coordMatch[1];
+          lng = coordMatch[2];
+        }
+      }
+
+      // 3) Intentar desde el QR
+      if ((!lat || !lng) && data.qr) {
         const link = extractLinkFromQr(data.qr);
-        const match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/);
+
+        let match = String(link).match(/query=([0-9.-]+),\s*([0-9.-]+)/i);
+        if (!match) match = String(link).match(/ll=([0-9.-]+),\s*([0-9.-]+)/i);
+        if (!match) match = String(link).match(/destination=([0-9.-]+),\s*([0-9.-]+)/i);
+
         if (match) {
           lat = match[1];
           lng = match[2];
@@ -1857,7 +1933,7 @@
 
       if (lat && lng) {
         if (btnGoogle) btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-        if (btnWaze) btnWaze.href = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+        if (btnWaze) btnWaze.href = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=yes`;
         if (btnUber) btnUber.href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
 
         let tel = String(data.telefono || "").replace(/\D/g, "");
@@ -2009,14 +2085,20 @@
       }
 
       showPanel();
-setMsg("✅ Listo");
-ocultarValidacionVisual();
+      setMsg("✅ Listo");
+      ocultarValidacionVisual();
 
-} catch (e) {
-  ocultarValidacionVisual();
-  setMsg("Error: " + (e?.message || "No se pudo buscar"));
-}
-}
+    } catch (e) {
+      ocultarValidacionVisual();
+      hidePanelSections();
+      show(document.getElementById("homeHero"), "block");
+      show(document.getElementById("seccionPasos"), "block");
+      show(document.getElementById("seccionPrecios"), "block");
+      show(document.getElementById("seoLinksHome"), "flex");
+      cargarQrHome();
+      setMsg("Error: " + (e?.message || "No se pudo buscar"));
+    }
+  }
 
   window.verEjemplo = function () {
     const input = document.getElementById("inputCodigo");
@@ -2025,98 +2107,52 @@ ocultarValidacionVisual();
   };
 
   window.addEventListener("DOMContentLoaded", () => {
-  ocultarValidacionVisual();
-  hidePanelSections();
+    ocultarValidacionVisual();
+    hidePanelSections();
 
-  const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
+    const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
 
-  const btnComprarTop = document.getElementById("btnComprarTop");
-  const btnHeroPersonal = document.getElementById("btnHeroPersonal");
-  const btnHeroNegocios = document.getElementById("btnHeroNegocios");
+    const btnComprarTop = document.getElementById("btnComprarTop");
+    const btnHeroPersonal = document.getElementById("btnHeroPersonal");
+    const btnHeroNegocios = document.getElementById("btnHeroNegocios");
 
-  if (btnComprarTop) btnComprarTop.setAttribute("href", baseWA);
-  if (btnHeroPersonal) btnHeroPersonal.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-  if (btnHeroNegocios) btnHeroNegocios.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+    if (btnComprarTop) btnComprarTop.setAttribute("href", baseWA);
+    if (btnHeroPersonal) btnHeroPersonal.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+    if (btnHeroNegocios) btnHeroNegocios.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
 
-  const input = document.getElementById("inputCodigo");
-  if (input) {
-    input.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") buscarCodigo();
-    });
-  }
-
-  const codeFromUrl = (new URLSearchParams(window.location.search).get("code") || "").trim();
-  const pathFromUrl = window.location.pathname
-    .replace(/^\/+|\/+$/g, "")
-    .replace(/\.html$/i, "")
-    .trim();
-
-  if (codeFromUrl && input) {
-    input.value = codeFromUrl;
-    buscarCodigo();
-    return;
-  }
-
-  if (pathFromUrl && /^AD507-/i.test(pathFromUrl) && input) {
-    input.value = pathFromUrl;
-    buscarCodigo();
-    return;
-  }
-
-  show(document.getElementById("homeHero"), "block");
-  show(document.getElementById("seccionPrecios"), "block");
-  show(document.getElementById("seoLinksHome"), "flex");
-});
-
-      hidePanelSections();
-      show(document.getElementById("homeHero"), "block");
-      show(document.getElementById("seccionPasos"), "block");
-      show(document.getElementById("seccionPrecios"), "block");
-      show(document.getElementById("seoLinksHome"), "flex");
-
-      const homeUrl = window.location.origin + window.location.pathname;
-      const qrImg = document.getElementById("qrImg");
-      const uiLink = document.getElementById("uiLink");
-
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(homeUrl)}`;
-      }
-
-      if (uiLink) {
-        uiLink.textContent = homeUrl;
-      }
+    const input = document.getElementById("inputCodigo");
+    if (input) {
+      input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") buscarCodigo();
+      });
     }
+
+    const codeFromUrl = (new URLSearchParams(window.location.search).get("code") || "").trim();
+    const pathFromUrl = window.location.pathname
+      .replace(/^\/+|\/+$/g, "")
+      .replace(/\.html$/i, "")
+      .trim();
+
+    if (codeFromUrl && input) {
+      input.value = codeFromUrl;
+      buscarCodigo();
+      return;
+    }
+
+    if (pathFromUrl && /^AD507-/i.test(pathFromUrl) && input) {
+      input.value = pathFromUrl;
+      buscarCodigo();
+      return;
+    }
+
+    show(document.getElementById("homeHero"), "block");
+    show(document.getElementById("seccionPasos"), "block");
+    show(document.getElementById("seccionPrecios"), "block");
+    show(document.getElementById("seoLinksHome"), "flex");
+    cargarQrHome();
   });
 
   window.buscarCodigo = buscarCodigo;
-    function iniciarValidacionVisual(){
-  const overlay = document.getElementById("codeLoadingOverlay");
-  const step1 = document.getElementById("step1");
-  const step2 = document.getElementById("step2");
-  const step3 = document.getElementById("step3");
-
-  if (!overlay) return;
-
-  overlay.classList.add("show");
-
-  if (step1) step1.classList.add("active");
-  if (step2) step2.classList.remove("active");
-  if (step3) step3.classList.remove("active");
-
-  setTimeout(() => {
-    if (step2) step2.classList.add("active");
-  }, 500);
-
-  setTimeout(() => {
-    if (step3) step3.classList.add("active");
-  }, 1000);
-}
-
-function ocultarValidacionVisual(){
-  const overlay = document.getElementById("codeLoadingOverlay");
-  if (!overlay) return;
-  overlay.classList.remove("show");
-}
 </script>
 </body>
 </html>

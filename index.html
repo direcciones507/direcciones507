@@ -1786,6 +1786,33 @@
     }
   }
 
+  function actualizarBotonesViaje(data, codigo, lat, lng) {
+    const btnGoogle = document.getElementById("btnGoogle");
+    const btnWaze = document.getElementById("btnWaze");
+    const btnUber = document.getElementById("btnUber");
+
+    if (!lat || !lng) {
+      if (btnGoogle) btnGoogle.href = "#";
+      if (btnWaze) btnWaze.href = "#";
+      if (btnUber) btnUber.href = "#";
+      return;
+    }
+
+    const codigoVisible = String(
+      codigo || data?.codigo || data?.code || data?.Codigo || data?.["Código"] || ""
+    ).trim();
+
+    const codigoSeguro = encodeURIComponent(codigoVisible);
+
+    const urlGoogle = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    const urlWaze = `https://www.waze.com/ul?ll=${lat},${lng}&q=${codigoSeguro}&navigate=yes`;
+    const urlUber = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}&dropoff[nickname]=${codigoSeguro}`;
+
+    if (btnGoogle) btnGoogle.href = urlGoogle;
+    if (btnWaze) btnWaze.href = urlWaze;
+    if (btnUber) btnUber.href = urlUber;
+  }
+
   async function buscarCodigo(modo = "busqueda") {
     const input = document.getElementById("inputCodigo");
     if (!input) return;
@@ -1938,16 +1965,11 @@
         }
       }
 
-      const btnGoogle = document.getElementById("btnGoogle");
-      const btnWaze = document.getElementById("btnWaze");
-      const btnUber = document.getElementById("btnUber");
       const btnAviso = document.getElementById("btnAviso");
 
-      if (lat && lng) {
-        if (btnGoogle) btnGoogle.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-        if (btnWaze) btnWaze.href = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-        if (btnUber) btnUber.href = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+      actualizarBotonesViaje(data, CODIGO_ACTUAL, lat, lng);
 
+      if (lat && lng) {
         let tel = String(data.telefono || "").replace(/\D/g, "");
         if (tel.length === 8) tel = "507" + tel;
 
@@ -1960,9 +1982,6 @@
           }
         }
       } else {
-        if (btnGoogle) btnGoogle.href = "#";
-        if (btnWaze) btnWaze.href = "#";
-        if (btnUber) btnUber.href = "#";
         if (btnAviso) btnAviso.href = "#";
       }
 

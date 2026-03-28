@@ -2024,21 +2024,48 @@ ocultarValidacionVisual();
   };
 
   window.addEventListener("DOMContentLoaded", () => {
-    const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
+  ocultarValidacionVisual();
+  hidePanelSections();
 
-    document.getElementById("btnComprarTop")?.setAttribute("href", baseWA);
-    document.getElementById("btnComprarPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-    document.getElementById("btnComprarNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
-    document.getElementById("btnHeroPersonal")?.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
-    document.getElementById("btnHeroNegocios")?.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+  const baseWA = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hola, quiero comprar mi Dirección Digital AD507.")}`;
 
-    const input = document.getElementById("inputCodigo");
+  const btnComprarTop = document.getElementById("btnComprarTop");
+  const btnHeroPersonal = document.getElementById("btnHeroPersonal");
+  const btnHeroNegocios = document.getElementById("btnHeroNegocios");
 
-    if (input) {
-      input.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") buscarCodigo();
-      });
-    }
+  if (btnComprarTop) btnComprarTop.setAttribute("href", baseWA);
+  if (btnHeroPersonal) btnHeroPersonal.setAttribute("href", baseWA + "%20Plan:%20Personal%20($6.99)");
+  if (btnHeroNegocios) btnHeroNegocios.setAttribute("href", baseWA + "%20Plan:%20Negocios%20($10.99)");
+
+  const input = document.getElementById("inputCodigo");
+  if (input) {
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") buscarCodigo();
+    });
+  }
+
+  const codeFromUrl = (new URLSearchParams(window.location.search).get("code") || "").trim();
+  const pathFromUrl = window.location.pathname
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/\.html$/i, "")
+    .trim();
+
+  if (codeFromUrl && input) {
+    input.value = codeFromUrl;
+    buscarCodigo();
+    return;
+  }
+
+  if (pathFromUrl && /^AD507-/i.test(pathFromUrl) && input) {
+    input.value = pathFromUrl;
+    buscarCodigo();
+    return;
+  }
+
+  show(document.getElementById("homeHero"), "block");
+  show(document.getElementById("seccionPrecios"), "block");
+  show(document.getElementById("seoLinksHome"), "flex");
+});
 
     const urlParams = new URLSearchParams(window.location.search);
     let codigoInicial = (urlParams.get("code") || "").trim();

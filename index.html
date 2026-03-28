@@ -1759,6 +1759,7 @@
 
       CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
       DATOS_CLIENTE = data;
+      ocultarValidacionVisual();
 
       const uiCodigo = document.getElementById("uiCodigo");
       const uiNombre = document.getElementById("uiNombre");

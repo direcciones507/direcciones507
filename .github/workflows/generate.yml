@@ -26,25 +26,49 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Verify template exists
+      - name: Verify required files exist
         run: |
           if [ ! -f ad507.template.html ]; then
             echo "ERROR: ad507.template.html no existe"
             exit 1
           fi
 
+          if [ ! -f index.html ]; then
+            echo "ERROR: index.html no existe"
+            exit 1
+          fi
+
       - name: Download codes
         run: |
           curl -L "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec?action=list" -o codes.json
-          echo "TOTAL CODIGOS:"
+
+          echo "=== TOTAL CODIGOS ==="
           jq '.codes | length' codes.json
+
+          echo "=== PRIMEROS CODIGOS ==="
+          jq -r '.codes[] | "\(.codigo // "") | \(.plan // "")"' codes.json | head -30
+
+      - name: Validate codes.json
+        run: |
+          TOTAL=$(jq '.codes | length' codes.json)
+
+          if [ -z "$TOTAL" ] || [ "$TOTAL" = "null" ]; then
+            echo "ERROR: No se pudo leer codes.json"
+            exit 1
+          fi
+
+          if [ "$TOTAL" -lt 20 ]; then
+            echo "ERROR: codes.json vino incompleto. Cancelando deploy."
+            exit 1
+          fi
 
       - name: Generate pages
         run: |
           mkdir -p out
 
-          jq -c '.codes[]' codes.json | while read -r item; do
+          echo "=== CODIGOS NEGOCIO/PREMIUM GENERADOS ==="
 
+          jq -c '.codes[]' codes.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
@@ -52,13 +76,13 @@ jobs:
               continue
             fi
 
-            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ]]; then
+            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* ]]; then
+              echo "GENERANDO: $CODE | PLAN: $PLAN"
 
               SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
               SLUG_UPPER="$CODE"
 
               for SLUG in "$SLUG_UPPER" "$SLUG_LOWER"; do
-
                 DIR="out/$SLUG"
                 mkdir -p "$DIR"
 
@@ -70,11 +94,8 @@ jobs:
                 sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
                 sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
                 sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"
-
               done
-
             fi
-
           done
 
       - name: Generate sitemap
@@ -84,25 +105,24 @@ jobs:
           <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
             <url>
               <loc>https://direcciones507.com/</loc>
+              <lastmod>__DATE__</lastmod>
             </url>
           EOF
 
-          jq -c '.codes[]' codes.json | while read -r item; do
+          sed -i "s|__DATE__|$(date +%Y-%m-%d)|g" out/sitemap.xml
 
+          jq -c '.codes[]' codes.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
 
-            if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* ) ]]; then
-
+            if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* ) ]]; then
               SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
 
               echo "  <url>" >> out/sitemap.xml
               echo "    <loc>https://direcciones507.com/$SLUG/</loc>" >> out/sitemap.xml
               echo "    <lastmod>$(date +%Y-%m-%d)</lastmod>" >> out/sitemap.xml
               echo "  </url>" >> out/sitemap.xml
-
             fi
-
           done
 
           echo '</urlset>' >> out/sitemap.xml
@@ -110,17 +130,46 @@ jobs:
       - name: Copy root files
         run: |
           cp index.html out/index.html
-          cp logo.png out/logo.png || true
-          cp robots.txt out/robots.txt || true
-          cp 404.html out/404.html || true
-          cp CNAME out/CNAME || true
-          cp -R img out/img || true
-          cp -R jacinto out/jacinto || true
 
-      - name: Debug generated files
+          if [ -f logo.png ]; then cp logo.png out/logo.png; fi
+          if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi
+          if [ -f 404.html ]; then cp 404.html out/404.html; fi
+          if [ -f CNAME ]; then cp CNAME out/CNAME; fi
+          if [ -d img ]; then cp -R img out/img; fi
+          if [ -d jacinto ]; then cp -R jacinto out/jacinto; fi
+
+          touch out/.nojekyll
+
+      - name: Verify generated site
         run: |
-          echo "ARCHIVOS GENERADOS:"
+          echo "=== ARCHIVOS GENERADOS ==="
           find out -maxdepth 3 -type f | sort || true
+
+          if [ ! -f out/index.html ]; then
+            echo "ERROR: out/index.html no fue generado"
+            exit 1
+          fi
+
+          echo "=== VERIFICAR PAGINAS CLAVE ==="
+          if [ -d out/ad507-0012 ] || [ -d out/AD507-0012 ]; then
+            echo "OK: AD507-0012 existe"
+          else
+            echo "AVISO: AD507-0012 no existe en este build"
+          fi
+
+          if [ -d out/ad507-transportesdevida ] || [ -d out/AD507-TRANSPORTESDEVIDA ]; then
+            echo "OK: AD507-TRANSPORTESDEVIDA existe"
+          else
+            echo "AVISO: AD507-TRANSPORTESDEVIDA no existe en este build"
+          fi
+
+          echo "=== PRIMERAS LINEAS DE out/index.html ==="
+          head -20 out/index.html || true
+
+          if [ -f out/CNAME ]; then
+            echo "=== CNAME ==="
+            cat out/CNAME
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

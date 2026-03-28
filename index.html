@@ -2068,24 +2068,6 @@ ocultarValidacionVisual();
   show(document.getElementById("seoLinksHome"), "flex");
 });
 
-    const urlParams = new URLSearchParams(window.location.search);
-    let codigoInicial = (urlParams.get("code") || "").trim();
-
-    if (!codigoInicial) {
-  const path = window.location.pathname
-    .replace(/^\/+|\/+$/g, "")
-    .replace(/\.html$/i, "")
-    .trim()
-    .toUpperCase();
-
-  if (path.startsWith("AD507-")) {
-    codigoInicial = path;
-  }
-}
-    if (codigoInicial && input) {
-      input.value = codigoInicial;
-      buscarCodigo();
-    } else {
       hidePanelSections();
       show(document.getElementById("homeHero"), "block");
       show(document.getElementById("seccionPasos"), "block");

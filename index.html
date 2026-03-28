@@ -2005,12 +2005,13 @@
       }
 
       showPanel();
-      setMsg("✅ Listo");
+setMsg("✅ Listo");
+ocultarValidacionVisual();
 
-    } catch (e) {
-      setMsg("Error: " + (e?.message || "No se pudo buscar"));
-    }
-  }
+} catch (e) {
+  ocultarValidacionVisual();
+  setMsg("Error: " + (e?.message || "No se pudo buscar"));
+}
 
   window.verEjemplo = function () {
     const input = document.getElementById("inputCodigo");

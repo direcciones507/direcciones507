@@ -1781,10 +1781,15 @@
       const normalizar = (v) => String(v || "")
         .trim()
         .toUpperCase()
-        .replace(/\.HTML$/i, "");
+        .replace(/\.HTML$/i, "")
+        .replace(/^\/+|\/+$/g, "");
 
-      const vienePorQuery = normalizar(codeFromUrl) === normalizar(CODIGO_ACTUAL);
-      const vienePorPath = normalizar(pathFromUrl) === normalizar(CODIGO_ACTUAL);
+      const codigoActualNormalizado = normalizar(CODIGO_ACTUAL);
+      const queryNormalizado = normalizar(codeFromUrl);
+      const pathNormalizado = normalizar(pathFromUrl);
+
+      const vienePorQuery = !!queryNormalizado && queryNormalizado === codigoActualNormalizado;
+      const vienePorPath = !!pathNormalizado && pathNormalizado === codigoActualNormalizado;
       const vieneDeLink = vienePorQuery || vienePorPath;
       
       if (!esPublico && !vieneDeLink) {

@@ -1836,9 +1836,10 @@
       const queryNormalizado = normalizar(codeFromUrl);
       const pathNormalizado = normalizar(pathFromUrl);
 
-      const vienePorQuery = !!queryNormalizado && queryNormalizado === codigoActualNormalizado;
       const vienePorPath = !!pathNormalizado && pathNormalizado === codigoActualNormalizado;
-      const vieneDeLink = vienePorQuery || vienePorPath;
+
+      // SOLO el enlace directo real cuenta como privado válido
+      const vieneDeLink = vienePorPath;
 
       if (!esPublico && !vieneDeLink) {
         setMsg("Este código es privado. Usa el enlace directo.");

@@ -2073,24 +2073,32 @@
 
   window.buscarCodigo = buscarCodigo;
     function iniciarValidacionVisual(){
-
   const overlay = document.getElementById("codeLoadingOverlay");
+  const step1 = document.getElementById("step1");
+  const step2 = document.getElementById("step2");
+  const step3 = document.getElementById("step3");
 
-  if(!overlay) return;
+  if (!overlay) return;
 
-  setTimeout(()=>step2.classList.add("active"),600);
-  setTimeout(()=>step3.classList.add("active"),1200);
+  overlay.classList.add("show");
 
+  if (step1) step1.classList.add("active");
+  if (step2) step2.classList.remove("active");
+  if (step3) step3.classList.remove("active");
+
+  setTimeout(() => {
+    if (step2) step2.classList.add("active");
+  }, 500);
+
+  setTimeout(() => {
+    if (step3) step3.classList.add("active");
+  }, 1000);
 }
 
 function ocultarValidacionVisual(){
-
   const overlay = document.getElementById("codeLoadingOverlay");
-
-  if(!overlay) return;
-
-  overlay.classList.add("hidden");
-
+  if (!overlay) return;
+  overlay.classList.remove("show");
 }
 </script>
 </body>

@@ -1753,6 +1753,7 @@
     }
 
     setMsg("Buscando...");
+    iniciarValidacionVisual();
 
     try {
       const data = await fetchJsonSafe(`${WEBAPP_URL}?code=${encodeURIComponent(codigo)}`);

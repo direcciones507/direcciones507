@@ -1816,8 +1816,12 @@
       if (uiCodigo) uiCodigo.textContent = CODIGO_ACTUAL;
 
       const planLower = String(data.plan || "").toLowerCase();
-      const esPublico = planLower.includes("negocio") || planLower.includes("premium");
-      const esNegocio = planLower.includes("negocio") || planLower.includes("premium");
+
+      // SOLO negocios pueden buscarse desde la home
+      const esNegocio = planLower.includes("negocio");
+
+      // Público solo si es negocio
+      const esPublico = esNegocio;
 
       const codeFromUrl = (new URLSearchParams(window.location.search).get("code") || "").trim();
       const pathFromUrl = window.location.pathname.replace(/^\/+|\/+$/g, "").trim();

@@ -1792,7 +1792,7 @@
       const vienePorPath = !!pathNormalizado && pathNormalizado === codigoActualNormalizado;
       const vieneDeLink = vienePorQuery || vienePorPath;
       
-      if (!esPublico && !vieneDeLink) {
+      if (!esPublico && !vieneDeLink && !queryNormalizado) {
         setMsg("Este código es privado. Usa el enlace directo.");
 
         if (uiCodigo) uiCodigo.textContent = "-";

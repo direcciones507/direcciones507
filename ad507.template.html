@@ -631,18 +631,10 @@
   </div>
 </div>
 
-<div id="heroImageBox" style="text-align:center;margin:14px 0;display:none;">
-  <img id="heroImage"
-       alt="Imagen principal"
-       style="
-         width:130px;
-         height:130px;
-         object-fit:cover;
-         border-radius:50%;
-         border:4px solid #ffffff;
-         box-shadow:0 10px 25px rgba(0,0,0,.18);
-         background:#fff;
-       " />
+<div id="logoBox" style="text-align:center;margin:14px 0;display:none;">
+  <img id="logoNegocio"
+       alt="Logo del negocio"
+       style="max-width:120px;max-height:120px;object-fit:contain;border-radius:12px;" />
 </div>
 
   <!-- Estado de carga -->
@@ -844,37 +836,31 @@
     codigoH1.textContent = CODE;
     if (codigoSeo) codigoSeo.textContent = CODE;
 
-    function cargarImagenPrincipal(data){
-  const img = document.getElementById("heroImage");
-  const box = document.getElementById("heroImageBox");
+    function cargarLogoNegocio(codigo){
+  if(!codigo) return;
 
-  if (!img || !box || !data) return;
+  const img = document.getElementById("logoNegocio");
+  const box = document.getElementById("logoBox");
 
-  const tipo = String(data.tipo || data.plan || data.categoria || "").toLowerCase().trim();
-  const logo = String(data.logo || "").trim();
-  const imagen1 = String(data.imagen1 || data["imagen 1"] || "").trim();
+  if(!img || !box) return;
 
-  let imagenFinal = "";
+  const base = "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/";
+  const urlJpg = base + codigo + ".jpg";
+  const urlPng = base + codigo + ".png";
 
-  if (tipo === "persona") {
-    imagenFinal = imagen1;
-  } else {
-    imagenFinal = logo || imagen1;
-  }
+  img.onload = function(){
+    box.style.display = "block";
+  };
 
-  if (imagenFinal) {
-    img.onload = function () {
-      box.style.display = "block";
-    };
-
-    img.onerror = function () {
+  img.onerror = function(){
+    if(img.src === urlJpg){
+      img.src = urlPng;
+    } else {
       box.style.display = "none";
-    };
+    }
+  };
 
-    img.src = imagenFinal;
-  } else {
-    box.style.display = "none";
-  }
+  img.src = urlJpg;
 }
     
     // Función principal
@@ -894,16 +880,18 @@
         const data = await response.json();
         console.log('Respuesta:', data);
         
-        if (!data || !data.ok) {
-          throw new Error(data?.mensaje || data?.message || 'Dirección no encontrada');
-        }
-
-        cargarImagenPrincipal(data);
+        cargarLogoNegocio(CODE);
         
         // ===== MEJORA #3: Mensaje de error robusto =====
         if (!data || !data.ok) {
           throw new Error(data?.mensaje || data?.message || 'Dirección no encontrada');
         }
+
+        // ===== LOGO =====
+if(data.logo){
+  document.getElementById("logoNegocio").src = data.logo;
+  document.getElementById("logoBox").style.display = "block";
+}
 
 // ===== WEB =====
 const btnWeb = document.getElementById("btnWeb");

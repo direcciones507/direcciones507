@@ -1065,9 +1065,32 @@ if (codigoPremium !== "AD507-THE1920") {
 
   async function activarPremium(){
 
-    const ok1 = await probarImagen(img1, base + "interior.jpg");
-    const ok2 = await probarImagen(img2, base + "martini.jpg");
-    const ok3 = await probarImagen(img3, base + "mojito.jpg");
+    const posiblesImagenes = [
+  "fachada.jpg",
+  "interior.jpg",
+  "interior1.jpg",
+  "maquinas.jpg",
+  "entrada.jpg",
+  "local.jpg"
+];
+
+let imagenesCargadas = 0;
+
+for (let nombre of posiblesImagenes) {
+
+  if (imagenesCargadas === 0)
+    if (await probarImagen(img1, base + nombre))
+      imagenesCargadas++;
+
+  if (imagenesCargadas === 1)
+    if (await probarImagen(img2, base + nombre))
+      imagenesCargadas++;
+
+  if (imagenesCargadas === 2)
+    if (await probarImagen(img3, base + nombre))
+      imagenesCargadas++;
+
+}
 
     if(!(ok1 || ok2 || ok3)) return;
 

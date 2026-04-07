@@ -1029,15 +1029,152 @@ if (qrImg && qrBox) {
   qrImg.src = qrUrl;
   qrBox.style.display = "block";
 }
-        // ===== BLOQUE PREMIUM THE 1920 =====
-      const codigoActual = (data.codigo || data.code || "").toUpperCase().trim();
+        // ===== BLOQUE PREMIUM AUTOMÁTICO POR IMÁGENES =====
+const tienePremiumVisual = !!(data.imagen1 || data.imagen2 || data.imagen3);
 
-      if (codigoActual === "AD507-THE1920") {
-        const bloque1920 = document.getElementById("negocioPremium1920");
-        if (bloque1920) {
-          bloque1920.style.display = "block";
-        }
-      }      
+const bloquePremium = document.getElementById("negocioPremiumGenerico");
+const premiumLogo = document.getElementById("premiumLogo");
+const premiumTitulo = document.getElementById("premiumTitulo");
+const premiumDescripcion = document.getElementById("premiumDescripcion");
+
+const premiumInstagram = document.getElementById("premiumInstagram");
+const premiumFacebook = document.getElementById("premiumFacebook");
+const premiumTikTok = document.getElementById("premiumTikTok");
+const premiumWhatsapp = document.getElementById("premiumWhatsapp");
+const premiumWeb = document.getElementById("premiumWeb");
+
+const premiumImg1 = document.getElementById("premiumImg1");
+const premiumImg2 = document.getElementById("premiumImg2");
+const premiumImg3 = document.getElementById("premiumImg3");
+
+if (bloquePremium) {
+  bloquePremium.style.display = tienePremiumVisual ? "block" : "none";
+}
+
+if (tienePremiumVisual) {
+  // LOGO
+  if (premiumLogo) {
+    if (data.logo) {
+      premiumLogo.src = data.logo;
+      premiumLogo.style.display = "block";
+    } else {
+      premiumLogo.removeAttribute("src");
+      premiumLogo.style.display = "none";
+    }
+  }
+
+  // TÍTULO
+  if (premiumTitulo) {
+    premiumTitulo.textContent = data.nombre || "";
+  }
+
+  // DESCRIPCIÓN
+  if (premiumDescripcion) {
+    if (data.descripcion) {
+      premiumDescripcion.textContent = data.descripcion;
+      premiumDescripcion.style.display = "block";
+    } else {
+      premiumDescripcion.textContent = "";
+      premiumDescripcion.style.display = "none";
+    }
+  }
+
+  // INSTAGRAM
+  if (premiumInstagram) {
+    if (data.instagram) {
+      premiumInstagram.href = data.instagram;
+      premiumInstagram.style.display = "inline-flex";
+    } else {
+      premiumInstagram.removeAttribute("href");
+      premiumInstagram.style.display = "none";
+    }
+  }
+
+  // FACEBOOK
+  if (premiumFacebook) {
+    if (data.facebook) {
+      premiumFacebook.href = data.facebook;
+      premiumFacebook.style.display = "inline-flex";
+    } else {
+      premiumFacebook.removeAttribute("href");
+      premiumFacebook.style.display = "none";
+    }
+  }
+
+  // TIKTOK
+  if (premiumTikTok) {
+    if (data.tiktok) {
+      premiumTikTok.href = data.tiktok;
+      premiumTikTok.style.display = "inline-flex";
+    } else {
+      premiumTikTok.removeAttribute("href");
+      premiumTikTok.style.display = "none";
+    }
+  }
+
+  // WEB
+  if (premiumWeb) {
+    if (data.web) {
+      let webUrl = String(data.web).trim();
+      if (!webUrl.startsWith("http://") && !webUrl.startsWith("https://")) {
+        webUrl = "https://" + webUrl;
+      }
+      premiumWeb.href = webUrl;
+      premiumWeb.style.display = "inline-flex";
+    } else {
+      premiumWeb.removeAttribute("href");
+      premiumWeb.style.display = "none";
+    }
+  }
+
+  // WHATSAPP
+  if (premiumWhatsapp) {
+    if (data.whatsapp) {
+      premiumWhatsapp.href = data.whatsapp;
+      premiumWhatsapp.style.display = "inline-flex";
+    } else if (data.telefono) {
+      const telefono = String(data.telefono).replace(/\D/g, "");
+      premiumWhatsapp.href = `https://wa.me/507${telefono}`;
+      premiumWhatsapp.style.display = "inline-flex";
+    } else {
+      premiumWhatsapp.removeAttribute("href");
+      premiumWhatsapp.style.display = "none";
+    }
+  }
+
+  // IMAGEN 1
+  if (premiumImg1) {
+    if (data.imagen1) {
+      premiumImg1.src = data.imagen1;
+      premiumImg1.style.display = "block";
+    } else {
+      premiumImg1.removeAttribute("src");
+      premiumImg1.style.display = "none";
+    }
+  }
+
+  // IMAGEN 2
+  if (premiumImg2) {
+    if (data.imagen2) {
+      premiumImg2.src = data.imagen2;
+      premiumImg2.style.display = "block";
+    } else {
+      premiumImg2.removeAttribute("src");
+      premiumImg2.style.display = "none";
+    }
+  }
+
+  // IMAGEN 3
+  if (premiumImg3) {
+    if (data.imagen3) {
+      premiumImg3.src = data.imagen3;
+      premiumImg3.style.display = "block";
+    } else {
+      premiumImg3.removeAttribute("src");
+      premiumImg3.style.display = "none";
+    }
+  }
+}    
       } catch (error) {
         console.error('Error:', error);
         

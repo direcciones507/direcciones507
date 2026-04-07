@@ -1038,6 +1038,94 @@ if (qrImg && qrBox) {
           bloque1920.style.display = "block";
         }
       }
+        // ===== BLOQUE PREMIUM AUTOMÁTICO POR CARPETA GITHUB =====
+
+const codigoPremium = (data.codigo || data.code || "").toUpperCase().trim();
+
+if (codigoPremium !== "AD507-THE1920") {
+
+  const slug = codigoPremium.replace("AD507-","").toLowerCase();
+
+  const base =
+  "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/" + slug + "/";
+
+  const img1 = document.getElementById("premiumImg1");
+  const img2 = document.getElementById("premiumImg2");
+  const img3 = document.getElementById("premiumImg3");
+
+  const bloquePremium = document.getElementById("negocioPremiumGenerico");
+
+  function probarImagen(img,url){
+    return new Promise(resolve=>{
+      img.onload = ()=>resolve(true);
+      img.onerror = ()=>resolve(false);
+      img.src = url;
+    });
+  }
+
+  async function activarPremium(){
+
+    const ok1 = await probarImagen(img1, base + "interior.jpg");
+    const ok2 = await probarImagen(img2, base + "martini.jpg");
+    const ok3 = await probarImagen(img3, base + "mojito.jpg");
+
+    if(!(ok1 || ok2 || ok3)) return;
+
+    bloquePremium.style.display = "block";
+
+    if(data.logo){
+      document.getElementById("premiumLogo").src = data.logo;
+      document.getElementById("premiumLogo").style.display = "block";
+    }
+
+    document.getElementById("premiumTitulo").textContent = data.nombre || "";
+
+    if(data.horario){
+      document.getElementById("premiumHorario").innerHTML =
+      "<b>Horario:</b> " + data.horario;
+    }
+
+    if(data.instagram){
+      const el = document.getElementById("premiumInstagram");
+      el.href = data.instagram;
+      el.style.display = "inline-flex";
+    }
+
+    if(data.facebook){
+      const el = document.getElementById("premiumFacebook");
+      el.href = data.facebook;
+      el.style.display = "inline-flex";
+    }
+
+    if(data.tiktok){
+      const el = document.getElementById("premiumTikTok");
+      el.href = data.tiktok;
+      el.style.display = "inline-flex";
+    }
+
+    if(data.whatsapp){
+      const el = document.getElementById("premiumWhatsapp");
+      el.href = data.whatsapp;
+      el.style.display = "inline-flex";
+    }
+
+    if(data.web){
+      let webUrl = data.web.trim();
+
+      if(!webUrl.startsWith("http")){
+        webUrl = "https://" + webUrl;
+      }
+
+      const el = document.getElementById("premiumWeb");
+      el.href = webUrl;
+      el.style.display = "inline-flex";
+    }
+
+  }
+
+  activarPremium();
+
+}
       } catch (error) {
         console.error('Error:', error);
         

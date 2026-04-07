@@ -1123,8 +1123,10 @@ if (codigoPremium !== "AD507-THE1920") {
       premiumTitulo.textContent = data.nombre || "";
     }
 
-    if (premiumDescripcion && data.horario) {
-      premiumDescripcion.textContent = "Horario: " + data.horario;
+    if (premiumDescripcion) {
+      premiumDescripcion.textContent =
+      data.descripcion ||
+      "Entrenamiento, salud y disciplina en un solo espacio.";
       premiumDescripcion.style.display = "block";
     }
 

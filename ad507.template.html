@@ -1057,6 +1057,16 @@ if (qrImg && qrBox) {
   qrImg.src = qrUrl;
   qrBox.style.display = "block";
 }
+
+        // ===== BLOQUE PREMIUM THE 1920 =====
+      const codigoActual = (data.codigo || data.code || "").toUpperCase().trim();
+
+      if (codigoActual === "AD507-THE1920") {
+        const bloque1920 = document.getElementById("negocioPremium1920");
+        if (bloque1920) {
+          bloque1920.style.display = "block";
+        }
+      }
         
        // ===== BLOQUE PREMIUM AUTOMÁTICO POR CARPETA GITHUB =====
 const codigoPremium = (data.codigo || data.code || CODE || "").toUpperCase().trim();

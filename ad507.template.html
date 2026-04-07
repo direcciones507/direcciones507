@@ -1014,125 +1014,112 @@ if (qrImg && qrBox) {
   qrImg.src = qrUrl;
   qrBox.style.display = "block";
 }
-        // ===== BLOQUE PREMIUM THE 1920 =====
-      const codigoActual = (data.codigo || data.code || "").toUpperCase().trim();
-
-      if (codigoActual === "AD507-THE1920") {
-        const bloque1920 = document.getElementById("negocioPremium1920");
-        if (bloque1920) {
-          bloque1920.style.display = "block";
-        }
-      }
-        // ===== BLOQUE PREMIUM AUTOMÁTICO POR CARPETA GITHUB =====
-
-const codigoPremium = (data.codigo || data.code || "").toUpperCase().trim();
+        
+       // ===== BLOQUE PREMIUM AUTOMÁTICO POR CARPETA GITHUB =====
+const codigoPremium = (data.codigo || data.code || CODE || "").toUpperCase().trim();
 
 if (codigoPremium !== "AD507-THE1920") {
 
-  const slug = codigoPremium.replace("AD507-","").toLowerCase();
-
-  const base =
-  "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/" + slug + "/";
-
-  const img1 = document.getElementById("premiumImg1");
-  const img2 = document.getElementById("premiumImg2");
-  const img3 = document.getElementById("premiumImg3");
+  const slug = codigoPremium.replace("AD507-", "").toLowerCase();
+  const base = "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/" + slug + "/";
 
   const bloquePremium = document.getElementById("negocioPremiumGenerico");
+  const premiumLogo = document.getElementById("premiumLogo");
+  const premiumTitulo = document.getElementById("premiumTitulo");
+  const premiumDescripcion = document.getElementById("premiumDescripcion");
+  const premiumInstagram = document.getElementById("premiumInstagram");
+  const premiumTikTok = document.getElementById("premiumTikTok");
+  const premiumWhatsapp = document.getElementById("premiumWhatsapp");
+  const premiumImg1 = document.getElementById("premiumImg1");
+  const premiumImg2 = document.getElementById("premiumImg2");
+  const premiumImg3 = document.getElementById("premiumImg3");
 
-  function probarImagen(img,url){
-    return new Promise(resolve=>{
-      img.onload = ()=>resolve(true);
-      img.onerror = ()=>resolve(false);
-      img.src = url;
+  function existeImagen(url) {
+    return new Promise((resolve) => {
+      const testImg = new Image();
+      testImg.onload = () => resolve(true);
+      testImg.onerror = () => resolve(false);
+      testImg.src = url;
     });
   }
 
-  async function activarPremium(){
-
+  async function activarPremium() {
     const posiblesImagenes = [
-  "fachada.jpg",
-  "interior.jpg",
-  "interior1.jpg",
-  "maquinas.jpg",
-  "entrada.jpg",
-  "local.jpg"
-];
+      "fachada.jpg",
+      "interior.jpg",
+      "interior1.jpg",
+      "maquinas.jpg",
+      "entrada.jpg",
+      "local.jpg"
+    ];
 
-let imagenesCargadas = 0;
+    const encontradas = [];
 
-for (let nombre of posiblesImagenes) {
+    for (const nombre of posiblesImagenes) {
+      const url = base + nombre;
+      const ok = await existeImagen(url);
+      if (ok) {
+        encontradas.push(url);
+      }
+      if (encontradas.length === 3) break;
+    }
 
-  if (imagenesCargadas === 0)
-    if (await probarImagen(img1, base + nombre))
-      imagenesCargadas++;
-
-  if (imagenesCargadas === 1)
-    if (await probarImagen(img2, base + nombre))
-      imagenesCargadas++;
-
-  if (imagenesCargadas === 2)
-    if (await probarImagen(img3, base + nombre))
-      imagenesCargadas++;
-
-}
-
-    if(!(ok1 || ok2 || ok3)) return;
+    if (encontradas.length === 0) return;
 
     bloquePremium.style.display = "block";
 
-    if(data.logo){
-      document.getElementById("premiumLogo").src = data.logo;
-      document.getElementById("premiumLogo").style.display = "block";
+    if (data.logo && premiumLogo) {
+      premiumLogo.src = data.logo;
+      premiumLogo.style.display = "block";
     }
 
-    document.getElementById("premiumTitulo").textContent = data.nombre || "";
-
-    if(data.horario){
-      document.getElementById("premiumHorario").innerHTML =
-      "<b>Horario:</b> " + data.horario;
+    if (premiumTitulo) {
+      premiumTitulo.textContent = data.nombre || "";
     }
 
-    if(data.instagram){
-      const el = document.getElementById("premiumInstagram");
-      el.href = data.instagram;
-      el.style.display = "inline-flex";
+    if (premiumDescripcion && data.horario) {
+      premiumDescripcion.textContent = "Horario: " + data.horario;
+      premiumDescripcion.style.display = "block";
     }
 
-    if(data.facebook){
-      const el = document.getElementById("premiumFacebook");
-      el.href = data.facebook;
-      el.style.display = "inline-flex";
+    if (premiumInstagram && data.instagram) {
+      premiumInstagram.href = data.instagram;
+      premiumInstagram.style.display = "inline-flex";
     }
 
-    if(data.tiktok){
-      const el = document.getElementById("premiumTikTok");
-      el.href = data.tiktok;
-      el.style.display = "inline-flex";
+    if (premiumTikTok && data.tiktok) {
+      premiumTikTok.href = data.tiktok;
+      premiumTikTok.style.display = "inline-flex";
     }
 
-    if(data.whatsapp){
-      const el = document.getElementById("premiumWhatsapp");
-      el.href = data.whatsapp;
-      el.style.display = "inline-flex";
-    }
-
-    if(data.web){
-      let webUrl = data.web.trim();
-
-      if(!webUrl.startsWith("http")){
-        webUrl = "https://" + webUrl;
+    if (premiumWhatsapp) {
+      if (data.whatsapp) {
+        premiumWhatsapp.href = data.whatsapp;
+        premiumWhatsapp.style.display = "inline-flex";
+      } else if (data.telefono) {
+        const telefono = String(data.telefono).replace(/\D/g, "");
+        premiumWhatsapp.href = `https://wa.me/${telefono}`;
+        premiumWhatsapp.style.display = "inline-flex";
       }
-
-      const el = document.getElementById("premiumWeb");
-      el.href = webUrl;
-      el.style.display = "inline-flex";
     }
 
+    if (premiumImg1 && encontradas[0]) {
+      premiumImg1.src = encontradas[0];
+      premiumImg1.style.display = "block";
+    }
+
+    if (premiumImg2 && encontradas[1]) {
+      premiumImg2.src = encontradas[1];
+      premiumImg2.style.display = "block";
+    }
+
+    if (premiumImg3 && encontradas[2]) {
+      premiumImg3.src = encontradas[2];
+      premiumImg3.style.display = "block";
+    }
   }
 
   activarPremium();
-
 }
       } catch (error) {
         console.error('Error:', error);

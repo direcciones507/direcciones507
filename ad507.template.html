@@ -564,14 +564,27 @@
 
 .negocio-galeria{
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
   gap: 14px;
   margin-top: 22px;
 }
 
+/* imagen principal arriba */
+.negocio-galeria img:first-child{
+  grid-column: 1 / -1;
+  height: 420px;
+}
+
+/* imágenes inferiores lado a lado */
+.negocio-galeria img:nth-child(2),
+.negocio-galeria img:nth-child(3){
+  height: 260px;
+}
+
+/* estilo general */
 .negocio-galeria img{
   width: 100%;
-  height: 280px;
   object-fit: cover;
   border-radius: 18px;
   display: block;
@@ -584,13 +597,12 @@
 }
 
 @media (max-width: 768px){
-  .negocio-galeria{
-    grid-template-columns: 1fr;
-  }
-
-  .negocio-galeria img,
-  .negocio-galeria img:first-child{
-    height: 260px;
+  .negocio-premium{
+    padding: 18px;
+    border-radius: 20px;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
   }
 }
 

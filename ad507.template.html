@@ -565,35 +565,31 @@
 .negocio-galeria{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-areas:
-    "foto1 foto1"
-    "foto2 foto3";
+  grid-template-rows: auto auto;
   gap: 14px;
   margin-top: 22px;
 }
 
+/* imagen principal arriba */
+.negocio-galeria img:first-child{
+  grid-column: 1 / -1;
+  height: 420px;
+}
+
+/* imágenes inferiores lado a lado */
+.negocio-galeria img:nth-child(2),
+.negocio-galeria img:nth-child(3){
+  height: 260px;
+}
+
+/* estilo general */
 .negocio-galeria img{
   width: 100%;
   object-fit: cover;
   border-radius: 18px;
   display: block;
   box-shadow: 0 10px 24px rgba(0,0,0,.18);
-}
-
-.negocio-galeria img:first-child{
-  grid-area: foto1;
-  height: 360px;
-}
-
-.negocio-galeria img:nth-child(2){
-  grid-area: foto2;
-  height: 220px;
-}
-
-.negocio-galeria img:nth-child(3){
-  grid-area: foto3;
-  height: 220px;
-}
+} 
     
 @media (max-width: 768px){
   .negocio-premium{

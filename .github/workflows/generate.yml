@@ -127,26 +127,26 @@ jobs:
 
           echo '</urlset>' >> out/sitemap.xml
 
-          - name: Copy root files
-               run: |
-               cp index.html out/index.html
+      - name: Copy root files
+        run: |
+            cp index.html out/index.html
 
-               if [ -f direccion-digital-panama.html ]; then
-               cp direccion-digital-panama.html out/direccion-digital-panama.html
-               fi
+            if [ -f direccion-digital-panama.html ]; then
+            cp direccion-digital-panama.html out/direccion-digital-panama.html
+            fi
 
-               if [ -f ubicacion-exacta-panama.html ]; then
-               cp ubicacion-exacta-panama.html out/ubicacion-exacta-panama.html
-               fi
+            if [ -f ubicacion-exacta-panama.html ]; then
+            cp ubicacion-exacta-panama.html out/ubicacion-exacta-panama.html
+            fi
 
-               if [ -f logo.png ]; then cp logo.png out/logo.png; fi
-               if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi
-               if [ -f 404.html ]; then cp 404.html out/404.html; fi
-               if [ -f CNAME ]; then cp CNAME out/CNAME; fi
-               if [ -d img ]; then cp -R img out/img; fi
-               if [ -d jacinto ]; then cp -R jacinto out/jacinto; fi
+            if [ -f logo.png ]; then cp logo.png out/logo.png; fi
+            if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi
+            if [ -f 404.html ]; then cp 404.html out/404.html; fi
+            if [ -f CNAME ]; then cp CNAME out/CNAME; fi
+            if [ -d img ]; then cp -R img out/img; fi
+            if [ -d jacinto ]; then cp -R jacinto out/jacinto; fi
 
-               touch out/.nojekyll
+            touch out/.nojekyll
 
       - name: Verify generated site
         run: |

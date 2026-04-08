@@ -140,6 +140,7 @@ jobs:
             if [ -f CNAME ]; then cp CNAME out/CNAME; fi
             if [ -d img ]; then cp -R img out/img; fi
             if [ -d jacinto ]; then cp -R jacinto out/jacinto; fi
+            if [ -d liliana ]; then cp -R liliana out/liliana; fi
 
             touch out/.nojekyll
 

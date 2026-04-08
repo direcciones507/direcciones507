@@ -131,13 +131,8 @@ jobs:
         run: |
             cp index.html out/index.html
 
-            if [ -f direccion-digital-panama.html ]; then
-            cp direccion-digital-panama.html out/direccion-digital-panama.html
-            fi
-
-            if [ -f ubicacion-exacta-panama.html ]; then
-            cp ubicacion-exacta-panama.html out/ubicacion-exacta-panama.html
-            fi
+            echo "=== COPIANDO PAGINAS HTML SEO ==="
+            find . -maxdepth 1 -name "*.html" ! -name "index.html" -exec cp {} out/ \;
 
             if [ -f logo.png ]; then cp logo.png out/logo.png; fi
             if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi

@@ -135,9 +135,6 @@ jobs:
             find . -maxdepth 1 -name "*.html" \
             ! -name "index.html" \
             ! -name "ad507.template.html" \
-            ! -name "ubicacion-exacta-panama.html" \
-            ! -name "direccion-digital-panama.html" \
-            ! -name "politicas-planes-direcciones507.html" \
             -exec cp {} out/ \;
 
             if [ -f logo.png ]; then cp logo.png out/logo.png; fi

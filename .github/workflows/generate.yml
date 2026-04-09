@@ -132,7 +132,14 @@ jobs:
             cp index.html out/index.html
 
             echo "=== COPIANDO PAGINAS HTML SEO ==="
-            find . -maxdepth 1 -name "*.html" ! -name "index.html" -exec cp {} out/ \;
+            echo "=== COPIANDO PAGINAS HTML SEO ==="
+            find . -maxdepth 1 -name "*.html" \
+            ! -name "index.html" \
+            ! -name "ad507.template.html" \
+            ! -name "ubicacion-exacta-panama.html" \
+            ! -name "direccion-digital-panama.html" \
+            ! -name "politicas-planes-direcciones507.html" \
+            -exec cp {} out/ \;
 
             if [ -f logo.png ]; then cp logo.png out/logo.png; fi
             if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi

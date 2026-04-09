@@ -130,8 +130,7 @@ jobs:
       - name: Copy root files
         run: |
             cp index.html out/index.html
-
-            echo "=== COPIANDO PAGINAS HTML SEO ==="
+          
             echo "=== COPIANDO PAGINAS HTML SEO ==="
             find . -maxdepth 1 -name "*.html" \
             ! -name "index.html" \

@@ -565,7 +565,6 @@
 .negocio-galeria{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
   gap: 14px;
   margin-top: 22px;
 }
@@ -592,12 +591,19 @@
 } 
     
 @media (max-width: 768px){
-  .negocio-premium{
-    padding: 18px;
-    border-radius: 20px;
-    margin-left: -1.5rem;
-    margin-right: -1.5rem;
+  .negocio-galeria{
+    grid-template-columns: 1fr;
   }
+
+  .negocio-galeria img{
+    height: 260px;
+  }
+
+  .negocio-galeria img:first-child{
+    grid-column: auto;
+    height: 260px;
+  }
+}
 
   .negocio-hero{
     grid-template-columns: 1fr;

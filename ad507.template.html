@@ -572,8 +572,9 @@
 
 .negocio-galeria img{
   width: 100%;
-  height: auto;
-  object-fit: contain;
+  height: 300px;
+  object-fit: cover;
+  object-position: center;
   border-radius: 18px;
   display: block;
   box-shadow: 0 10px 24px rgba(0,0,0,.18);
@@ -581,6 +582,7 @@
 
 .negocio-galeria img:first-child{
   grid-column: 1 / -1;
+  height: 360px;
 }
 
 @media (max-width: 768px){
@@ -590,6 +592,16 @@
     margin-left: -1.5rem;
     margin-right: -1.5rem;
   }
+
+  .negocio-galeria img{
+  height: auto;
+  object-fit: contain;
+}
+
+.negocio-galeria img:first-child{
+  grid-column: auto;
+  height: auto;
+}
 
   .negocio-hero{
     grid-template-columns: 1fr;

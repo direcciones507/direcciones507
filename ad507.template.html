@@ -454,6 +454,144 @@ body{
     gap:6px;
   }
 }
+
+    /* ===== AJUSTE FINAL PREMIUM PRO ===== */
+
+.seo-text{
+  margin:18px 28px;
+  padding:18px 22px;
+  border-radius:22px;
+  background:#ffffff;
+  line-height:1.45;
+}
+
+.btn{
+  min-height:72px !important;
+  font-size:18px !important;
+  border-radius:20px !important;
+}
+
+.btn i{
+  font-size:26px !important;
+}
+
+.btn-instagram{
+  background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4) !important;
+  color:#fff !important;
+}
+
+.footer-note{
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  gap:22px !important;
+  flex-wrap:wrap !important;
+  text-align:center !important;
+}
+
+.footer-note::before,
+.footer-note::after{
+  margin:0 !important;
+}
+
+/* Premium genérico oculto si no hay imágenes */
+#negocioPremiumGenerico:empty{
+  display:none !important;
+}
+
+/* Botones pequeños QR y contador */
+.extra-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin:12px 28px 20px;
+}
+
+.extra-actions .btn{
+  min-height:58px !important;
+  font-size:16px !important;
+}
+
+/* TELÉFONO */
+@media(max-width:768px){
+
+  .code-header{
+    min-height:360px !important;
+  }
+
+  .code-header::before{
+    top:16px !important;
+    left:16px !important;
+    font-size:14px !important;
+    max-width:170px !important;
+    line-height:1.05 !important;
+  }
+
+  .code-header::after{
+    top:16px !important;
+    right:10px !important;
+    font-size:10px !important;
+    padding:8px 10px !important;
+    max-width:135px !important;
+  }
+
+  #logoBox{
+    top:95px !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
+  }
+
+  #logoNegocio{
+    width:135px !important;
+    height:135px !important;
+  }
+
+  .code-title{
+    top:245px !important;
+    left:18px !important;
+    right:18px !important;
+    text-align:center !important;
+  }
+
+  #codigo{
+    font-size:31px !important;
+    line-height:1.02 !important;
+  }
+
+  .seo-text{
+    margin:16px 18px !important;
+    padding:16px !important;
+    font-size:16px !important;
+  }
+
+  .btn{
+    min-height:62px !important;
+    font-size:16px !important;
+  }
+
+  .actions{
+    gap:12px !important;
+    margin:14px 18px !important;
+  }
+
+  .extra-actions{
+    grid-template-columns:1fr 1fr;
+    margin:10px 18px 18px;
+    gap:10px;
+  }
+
+  .extra-actions .btn{
+    min-height:54px !important;
+    font-size:14px !important;
+  }
+
+  .footer-note{
+    gap:6px !important;
+    flex-direction:column !important;
+    font-size:14px !important;
+    padding:18px !important;
+  }
+}
 </style>
 
   

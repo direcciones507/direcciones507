@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>{{TITLE}}</title>
   <meta name="description" content="{{DESC}}">
   <link rel="canonical" href="{{CANONICAL}}">
@@ -11,126 +10,89 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #eef6ff; color: #06122f; min-height: 100vh; }
+    /* MANTENEMOS TU ESTRUCTURA BASE */
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    body{ font-family:'Inter',system-ui,sans-serif; background:#eef6ff; color:#06122f; min-height:100vh; }
+    .card{ width:100%; max-width:1180px; margin:0 auto; background:#ffffff; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; }
 
-    .card { width: 100%; max-width: 1180px; margin: 0 auto; background: #ffffff; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.18); position: relative; }
-
-    /* HERO AREA */
-    .code-header {
-      min-height: 380px;
-      position: relative;
-      overflow: hidden;
-      display: block;
-      padding: 34px;
+    /* HERO */
+    .code-header{
+      min-height:380px; position:relative; overflow:hidden; display:block; padding:34px;
       background: linear-gradient(90deg,rgba(2,8,23,.88),rgba(2,8,23,.38)), url("img/the1920/interior.jpg");
-      background-size: cover;
-      background-position: center;
+      background-size:cover; background-position:center;
+    }
+    .code-header::before{
+      content:"📍 DIRECCIONES507\AEncuentra. Llega. Conecta."; white-space:pre; position:absolute; top:24px; left:34px;
+      font-size:24px; font-weight:900; line-height:1.12; color:#ffffff; letter-spacing:-.8px; z-index:8;
+    }
+    .code-header::after{
+      content:"✅ VERIFICADO\ANegocio Verificado"; white-space:pre; position:absolute; top:24px; right:28px;
+      background:#ffffff; color:#06122f; padding:14px 20px; border-radius:18px; font-size:15px; font-weight:900; z-index:8;
     }
 
-    /* MARCA DIRECCIONES507 */
-    .code-header::before {
-      content: "📍 DIRECCIONES507\AEncuentra. Llega. Conecta.";
-      white-space: pre;
-      position: absolute;
-      top: 24px;
-      left: 34px;
-      font-size: 24px;
-      font-weight: 900;
-      line-height: 1.12;
-      color: #ffffff;
-      z-index: 8;
-    }
+    #logoBox{ position:absolute !important; top:120px !important; left:50px !important; z-index:20; }
+    #logoNegocio{ width:210px !important; height:210px !important; object-fit:contain !important; background:#ffffff !important; border-radius:28px !important; padding:14px !important; box-shadow:0 18px 40px rgba(0,0,0,.25); }
 
-    /* VERIFICADO */
-    .code-header::after {
-      content: "✅ VERIFICADO\ANegocio Verificado";
-      white-space: pre;
-      position: absolute;
-      top: 24px;
-      right: 28px;
-      background: #ffffff;
-      color: #06122f;
-      padding: 14px 20px;
-      border-radius: 18px;
-      font-size: 15px;
-      font-weight: 900;
-      line-height: 1.2;
-      z-index: 8;
-    }
+    .code-title{ position:absolute !important; left:310px !important; right:40px !important; top:165px !important; z-index:5; }
+    #codigo{ font-size:58px !important; font-weight:900; color:#ffffff; text-shadow:0 10px 24px rgba(0,0,0,.35); }
 
-    /* LOGO DEL COMERCIO */
-    #logoBox { position: absolute !important; top: 120px !important; left: 50px !important; z-index: 20; }
-    #logoNegocio { width: 210px; height: 210px; object-fit: contain; background: #ffffff; border-radius: 28px; padding: 14px; box-shadow: 0 18px 40px rgba(0,0,0,0.25); }
+    /* GRID DE INFO Y PREMIUM */
+    .info-grid{ padding:28px; display:grid; gap:18px; background:#ffffff; }
+    .negocio-premium{ display:block !important; background:transparent; border:none; padding:0; margin:0; }
+    .negocio-hero{ display:block !important; background:#fff7ed; border-radius:22px; padding:22px; box-shadow:0 8px 18px rgba(15,23,42,.08); }
+    .negocio-texto{ display:block !important; color:#06122f !important; font-size:17px; line-height:1.5; margin:0 0 10px; }
+    .negocio-galeria{ display:grid !important; grid-template-columns:repeat(3,1fr); gap:14px; margin:8px 0 10px; }
+    .negocio-galeria img{ width:100%; height:220px; object-fit:cover; border-radius:20px; box-shadow:0 10px 24px rgba(0,0,0,.14); }
 
-    /* TITULO */
-    .code-title { position: absolute !important; left: 310px !important; right: 40px !important; top: 165px !important; z-index: 5; }
-    #codigo { font-size: 58px; font-weight: 900; color: #ffffff; text-shadow: 0 10px 24px rgba(0,0,0,0.35); }
-
-    /* GRID DE INFORMACIÓN */
-    .info-grid { padding: 28px; display: grid; gap: 18px; background: #ffffff; }
-
-    /* SISTEMA DE BOTONES REORGANIZADO */
-    .actions-main { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; padding: 0 28px 18px; }
-    .actions-secondary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 0 28px 28px; }
-
-    .btn {
-      min-height: 88px;
-      border-radius: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      font-size: 21px;
-      font-weight: 900;
-      text-decoration: none;
-      transition: .25s ease;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
-    }
-
-    .btn:hover { transform: translateY(-3px); }
-    .btn i { font-size: 32px; }
-
-    /* ESTILOS ESPECÍFICOS DE BOTONES */
-    .btn-google { background: #ffffff; color: #06122f; border: 1px solid #e2e8f0; }
-    .btn-google i { color: #4285F4; } /* Icono azul por defecto, el JS puede cambiarlo a multicolor */
+    /* REORGANIZACIÓN DE BOTONES */
+    .actions { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; padding: 14px 28px; }
     
-    .btn-waze { background: #49d6ff; color: #ffffff; }
-    .btn-uber { background: #000000; color: #ffffff; }
-    .btn-whatsapp { background: #00c853; color: #ffffff; }
-    .btn-call { background: #005eff; color: #ffffff; }
-    .btn-share { background: #ff7a00; color: #ffffff; }
-
-    /* REDES SOCIALES */
-    .social-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 0 28px 28px; }
-    .btn-social { min-height: 60px; font-size: 16px; background: #ffffff; color: #06122f; border: 1px solid #e5eaf2; border-radius: 18px; text-decoration: none; display: flex; align-items: center; justify-content: center; }
-    .btn-instagram { background: linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4) !important; color: #fff !important; }
-
-    /* FOOTER LIMPIO */
-    .footer-note {
-      background: linear-gradient(135deg,#dbeeff,#ffffff);
-      padding: 30px;
-      text-align: center;
-      font-weight: 800;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      border-radius: 34px 34px 0 0;
+    /* BOTÓN GOOGLE MAPS BLANCO */
+    .btn-google { 
+        background: #ffffff !important; 
+        color: #06122f !important; 
+        border: 1px solid #e5eaf2 !important; 
+    }
+    .btn-google i { 
+        background: linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
-    /* MOBILE ADJUSTMENTS */
-    @media (max-width: 768px) {
-      .actions-main, .actions-secondary { grid-template-columns: 1fr; }
-      #logoBox { top: 102px !important; left: 50% !important; transform: translateX(-50%) !important; }
-      .code-title { top: 260px !important; left: 18px !important; text-align: center !important; }
-      #codigo { font-size: 34px !important; }
-      #logoNegocio { width: 145px; height: 145px; }
-      .social-grid { grid-template-columns: 1fr 1fr; }
+    .btn{
+      min-height:72px; border:none; border-radius:20px; display:flex; align-items:center; justify-content:center;
+      gap:14px; font-size:18px; font-weight:900; text-decoration:none; color:white; transition:.25s ease;
+      box-shadow:0 10px 24px rgba(0,0,0,.12);
+    }
+    .btn-waze{ background:linear-gradient(135deg,#49d6ff,#1ab7f0); }
+    .btn-uber{ background:#000000; }
+    .btn-whatsapp{ background:linear-gradient(135deg,#00c853,#00a844); }
+    .btn-call{ background:linear-gradient(135deg,#005eff,#2f8cff); }
+    .btn-share{ background:linear-gradient(135deg,#ff7a00,#ff5e00); }
+    .btn-instagram{ background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4) !important; color:#fff; }
+    .btn-facebook, .btn-tiktok, .btn-web{ background:#ffffff; color:#06122f; border:1px solid #e5eaf2; min-height:72px; }
+
+    /* FOOTER LIGERO */
+    .footer-note{
+      background:linear-gradient(135deg,#dbeeff,#ffffff); padding:28px; border-radius:34px 34px 0 0;
+      color:#06122f; font-weight:800; display:flex; justify-content:center; align-items:center; gap:22px;
+    }
+
+    .info-item{ background:#fff7ed; border-radius:22px; padding:24px; display:flex; align-items:center; gap:18px; }
+    .info-icon{ width:58px; height:58px; border-radius:50%; background:#ff7a00; color:white; display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
+
+    @media (max-width:768px){
+      .code-header{ min-height:360px !important; }
+      #logoBox{ top:95px !important; left:50% !important; transform:translateX(-50%) !important; }
+      #logoNegocio{ width:135px !important; height:135px !important; }
+      .code-title{ top:245px !important; left:18px !important; right:18px !important; text-align:center !important; }
+      #codigo{ font-size:31px !important; }
+      .actions{ grid-template-columns:1fr; padding:10px 18px; }
+      .negocio-galeria{ grid-template-columns:1fr; }
     }
   </style>
 </head>
@@ -144,94 +106,86 @@
   </div>
 
   <div id="logoBox" style="display:none;">
-    <img id="logoNegocio" src="" alt="Logo">
+    <img id="logoNegocio" src="" alt="Logo" />
   </div>
 
-  <div id="datos">
+  <div id="estado" class="status-message" style="text-align:center; padding:20px;">
+    <p>Cargando dirección...</p>
+  </div>
+
+  <div id="datos" style="display: none;">
     <div class="info-grid">
-      <div style="background:#fff7ed; padding:24px; border-radius:22px; display:flex; align-items:center; gap:18px;">
-        <div style="width:58px; height:58px; border-radius:50%; background:#ff7a00; color:white; display:flex; align-items:center; justify-content:center; font-size:28px;"><i class="fas fa-location-dot"></i></div>
+      <div class="info-item">
+        <div class="info-icon"><i class="fas fa-tag"></i></div>
         <div>
-          <div style="font-size:14px; font-weight:900; color:#06122f; text-transform:uppercase;">Ubicación</div>
-          <div id="nombre" style="font-size:18px; font-weight:700;">—</div>
+          <div style="font-size:15px; font-weight:900;">Nombre del lugar</div>
+          <div id="nombre">—</div>
+        </div>
+      </div>
+
+      <div id="negocioPremium1920" class="negocio-premium" style="display:none;">
+        <div class="negocio-hero">
+          <p class="negocio-texto">Un rincón con alma vintage en Casco Antiguo.</p>
+        </div>
+        <div class="negocio-galeria">
+          <img src="/img/the1920/interior.jpg"><img src="/img/the1920/mojito.jpg"><img src="/img/the1920/martini.jpg">
+        </div>
+      </div>
+
+      <div id="negocioPremiumGenerico" class="negocio-premium" style="display:none;">
+        <div class="negocio-hero">
+          <h2 id="premiumTitulo" class="negocio-titulo"></h2>
+          <p id="premiumDescripcion" class="negocio-texto"></p>
+        </div>
+        <div class="negocio-galeria">
+          <img id="premiumImg1" style="display:none;"><img id="premiumImg2" style="display:none;"><img id="premiumImg3" style="display:none;">
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-icon"><i class="fas fa-location-dot"></i></div>
+        <div>
+          <div style="font-size:15px; font-weight:900;">Punto de referencia</div>
+          <div id="ref">—</div>
+        </div>
+      </div>
+
+      <div class="info-item" id="horario-container" style="display: none;">
+        <div class="info-icon"><i class="fas fa-clock"></i></div>
+        <div>
+          <div style="font-size:15px; font-weight:900;">Horario de atención</div>
+          <div id="horario">—</div>
         </div>
       </div>
     </div>
 
-    <div class="actions-main">
-      <a id="btnGoogle" class="btn btn-google" target="_blank">
-        <i class="fab fa-google"></i> Google Maps
-      </a>
-      <a id="btnWaze" class="btn btn-waze" target="_blank">
-        <i class="fab fa-waze"></i> Waze
-      </a>
-      <a id="btnUber" class="btn btn-uber" target="_blank">
-        <i class="fab fa-uber"></i> Uber
-      </a>
-      <a id="btnWhats" class="btn btn-whatsapp" target="_blank">
-        <i class="fab fa-whatsapp"></i> WhatsApp
-      </a>
+    <div class="actions">
+      <a id="btnGoogle" class="btn btn-google" target="_blank"><i class="fab fa-google"></i> Google Maps</a>
+      <a id="btnWaze" class="btn btn-waze" target="_blank"><i class="fab fa-waze"></i> Waze</a>
+      <a id="btnUber" class="btn btn-uber" target="_blank"><i class="fab fa-uber"></i> Uber</a>
     </div>
 
-    <div class="actions-secondary">
-      <a id="btnCall" class="btn btn-call">
-        <i class="fas fa-phone"></i> Llamar
-      </a>
-      <a id="btnShare" class="btn btn-share" href="javascript:void(0)">
-        <i class="fas fa-share-nodes"></i> Compartir
-      </a>
+    <div class="actions">
+      <a id="btnWhats" class="btn btn-whatsapp" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+      <a id="btnCall" class="btn btn-call"><i class="fas fa-phone"></i> Llamar</a>
+      <a id="btnShare" class="btn btn-share" href="javascript:void(0)"><i class="fas fa-share-nodes"></i> Compartir</a>
     </div>
 
-    <div class="social-grid">
-      <a id="btnInstagram" class="btn-social btn-instagram" target="_blank"><i class="fab fa-instagram"></i></a>
-      <a id="btnFacebook" class="btn-social" target="_blank"><i class="fab fa-facebook-f"></i></a>
-      <a id="btnTikTok" class="btn-social" target="_blank"><i class="fab fa-tiktok"></i></a>
-      <a id="btnWeb" class="btn-social" target="_blank"><i class="fas fa-globe"></i></a>
+    <div class="actions" id="redes-container">
+      <a id="btnInstagram" class="btn btn-instagram" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
+      <a id="btnFacebook" class="btn btn-facebook" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
+      <a id="btnTikTok" class="btn btn-tiktok" target="_blank"><i class="fab fa-tiktok"></i> TikTok</a>
+      <a id="btnWeb" class="btn btn-web" target="_blank" style="display:none;">🌐 Web</a>
     </div>
 
     <div class="footer-note">
-      <span>🛡 Seguro y Confiable</span>
-      <span>📍 Direcciones507 Panamá</span>
+      <i class="fas fa-shield-alt"></i> Ubicación verificada · <i class="fas fa-map-pin"></i> Direcciones507 Panamá
     </div>
   </div>
 </div>
 
 <script>
-  // El script mantiene tu lógica de carga de datos, pero limpia las funciones de estrellas/reseñas.
-  document.addEventListener('DOMContentLoaded', function() {
-    const CODE = "AD507-CODE"; 
-    const WEBAPP_URL = "TU_URL_DE_APPS_SCRIPT";
-    
-    async function cargarDireccion() {
-      try {
-        const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
-        const data = await response.json();
-        
-        if (data.ok) {
-          document.getElementById('nombre').textContent = data.nombre;
-          document.getElementById('codigo').textContent = CODE;
-          
-          if(data.logo) {
-            document.getElementById('logoNegocio').src = data.logo;
-            document.getElementById('logoBox').style.display = 'block';
-          }
-
-          // Asignación de enlaces
-          document.getElementById('btnGoogle').href = data.google;
-          document.getElementById('btnWaze').href = data.waze;
-          document.getElementById('btnUber').href = data.uber;
-          document.getElementById('btnWhats').href = `https://wa.me/${data.telefono}`;
-          document.getElementById('btnCall').href = `tel:${data.telefono}`;
-          
-          // Redes
-          if(data.instagram) document.getElementById('btnInstagram').href = data.instagram;
-          // ... resto de tu lógica de redes ...
-        }
-      } catch (e) { console.error(e); }
-    }
-    cargarDireccion();
-  });
+ 
 </script>
-
 </body>
 </html>

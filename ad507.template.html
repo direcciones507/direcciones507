@@ -185,7 +185,383 @@
 </div>
 
 <script>
- 
+   // ===== CÓDIGO FINAL CON TODAS LAS MEJORAS =====
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    
+    // Configuración
+    const CODE = "AD507-CODE"; // Placeholder para reemplazar
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
+    
+    // Referencias a elementos
+    const estadoDiv = document.getElementById('estado');
+    const datosDiv = document.getElementById('datos');
+    const codigoH1 = document.getElementById('codigo');
+    const codigoSeo = document.getElementById('codigo-seo');
+    const nombreSpan = document.getElementById('nombre');
+    const refSpan = document.getElementById('ref');
+    
+    // Botones de navegación
+    const btnGoogle = document.getElementById('btnGoogle');
+    const btnWaze = document.getElementById('btnWaze');
+    const btnUber = document.getElementById('btnUber');
+    
+    // Botones de contacto
+    const btnWhats = document.getElementById('btnWhats');
+    const btnCall = document.getElementById('btnCall');
+    
+    // Redes sociales
+    const btnInstagram = document.getElementById('btnInstagram');
+    const btnFacebook = document.getElementById('btnFacebook');
+    const btnTikTok = document.getElementById('btnTikTok');
+    
+    // Horario
+    const horarioContainer = document.getElementById('horario-container');
+    const horarioSpan = document.getElementById('horario');
+    
+    // Verificar elementos críticos
+    if (!estadoDiv || !datosDiv || !codigoH1) {
+      console.error('Error: Elementos críticos no encontrados');
+      return;
+    }
+    
+    // Actualizar textos con el código
+    codigoH1.textContent = CODE;
+    if (codigoSeo) codigoSeo.textContent = CODE;
+
+    function cargarLogoNegocio(codigo){
+  if(!codigo) return;
+
+  const img = document.getElementById("logoNegocio");
+  const box = document.getElementById("logoBox");
+
+  if(!img || !box) return;
+
+  const base = "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/";
+  const urlJpg = base + codigo + ".jpg";
+  const urlPng = base + codigo + ".png";
+
+  img.onload = function(){
+    box.style.display = "block";
+  };
+
+  img.onerror = function(){
+    if(img.src === urlJpg){
+      img.src = urlPng;
+    } else {
+      box.style.display = "none";
+    }
+  };
+
+  img.src = urlJpg;
+}
+    
+    // Función principal
+    async function cargarDireccion() {
+      try {
+        // Mostrar carga
+        estadoDiv.style.display = 'block';
+        datosDiv.style.display = 'none';
+        
+        console.log('Fetching data for code:', CODE);
+        const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
+        
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Respuesta:', data);
+        
+        cargarLogoNegocio(CODE);
+        
+        // ===== MEJORA #3: Mensaje de error robusto =====
+        if (!data || !data.ok) {
+          throw new Error(data?.mensaje || data?.message || 'Dirección no encontrada');
+        }
+
+        // ===== LOGO =====
+if(data.logo){
+  document.getElementById("logoNegocio").src = data.logo;
+  document.getElementById("logoBox").style.display = "block";
+}
+
+// ===== WEB =====
+const btnWeb = document.getElementById("btnWeb");
+
+if (btnWeb) {
+  if (data.web) {
+    let webUrl = String(data.web).trim();
+
+    if (!webUrl.startsWith("http://") && !webUrl.startsWith("https://")) {
+      webUrl = "https://" + webUrl;
+    }
+
+    btnWeb.href = webUrl;
+    btnWeb.style.display = "inline-flex";
+  } else {
+    btnWeb.style.display = "none";
+  }
+}
+        
+        // Mostrar datos
+        estadoDiv.style.display = 'none';
+        datosDiv.style.display = 'block';
+        
+        // Información básica
+        if (nombreSpan) nombreSpan.textContent = data.nombre || '—';
+        if (refSpan) refSpan.textContent = data.referencia || '—';
+        
+        // Horario
+        if (data.horario && horarioContainer && horarioSpan) {
+          horarioSpan.textContent = data.horario;
+          horarioContainer.style.display = 'flex';
+        } else if (horarioContainer) {
+          horarioContainer.style.display = 'none';
+        }
+        
+        // Google Maps
+        if (btnGoogle && data.google) {
+          btnGoogle.href = data.google;
+        } else if (btnGoogle) {
+          btnGoogle.style.opacity = '0.5';
+          btnGoogle.style.pointerEvents = 'none';
+          btnGoogle.title = 'No disponible';
+        }
+        
+        // Waze
+        if (btnWaze && data.waze) {
+          btnWaze.href = data.waze;
+        } else if (btnWaze) {
+          btnWaze.style.opacity = '0.5';
+          btnWaze.style.pointerEvents = 'none';
+          btnWaze.title = 'No disponible';
+        }
+        
+        // Uber
+        if (btnUber && data.uber) {
+          btnUber.href = data.uber;
+        } else if (btnUber) {
+          btnUber.style.opacity = '0.5';
+          btnUber.style.pointerEvents = 'none';
+          btnUber.title = 'No disponible';
+        }
+        
+        // WhatsApp
+        if (btnWhats) {
+          if (data.whatsapp) {
+            btnWhats.href = data.whatsapp;
+          } else if (data.telefono) {
+            const telefono = String(data.telefono).replace(/\D/g, '');
+            btnWhats.href = `https://wa.me/${telefono}`;
+          } else {
+            btnWhats.style.display = 'none';
+          }
+        }
+        
+        // ===== MEJORA #2: Llamada con teléfono limpio =====
+        if (btnCall) {
+          if (data.telefono) {
+            const telefonoLimpio = String(data.telefono).replace(/\D/g, '');
+            btnCall.href = `tel:${telefonoLimpio}`;
+          } else {
+            btnCall.style.display = 'none';
+          }
+        }
+        
+        // Instagram
+        if (btnInstagram) {
+          if (data.instagram) {
+            btnInstagram.href = data.instagram;
+          } else {
+            btnInstagram.style.display = 'none';
+          }
+        }
+        
+        // Facebook
+        if (btnFacebook) {
+          if (data.facebook) {
+            btnFacebook.href = data.facebook;
+          } else {
+            btnFacebook.style.display = 'none';
+          }
+        }
+        
+        // TikTok
+        if (btnTikTok) {
+          if (data.tiktok) {
+            btnTikTok.href = data.tiktok;
+          } else {
+            btnTikTok.style.display = 'none';
+          }
+        }
+        
+        // Ocultar contenedor de redes si no hay ninguna
+        const redesContainer = document.getElementById('redes-container');
+        if (redesContainer) {
+          const redesVisibles = Array.from(redesContainer.children).some(
+            btn => btn.style.display !== 'none'
+          );
+          if (!redesVisibles) {
+            redesContainer.style.display = 'none';
+          }
+        }
+        // ===== QR para compartir la dirección =====
+const qrImg = document.getElementById("qrImg");
+const qrBox = document.getElementById("qrBox");
+
+if (qrImg && qrBox) {
+  const pageUrl = window.location.href;
+
+  const qrUrl =
+    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+    encodeURIComponent(pageUrl);
+
+  qrImg.src = qrUrl;
+  qrBox.style.display = "block";
+}
+
+        // ===== BLOQUE PREMIUM THE 1920 =====
+      const codigoActual = (data.codigo || data.code || "").toUpperCase().trim();
+
+      if (codigoActual === "AD507-THE1920") {
+        const bloque1920 = document.getElementById("negocioPremium1920");
+        if (bloque1920) {
+          bloque1920.style.display = "block";
+        }
+      }
+        
+       // ===== BLOQUE PREMIUM AUTOMÁTICO POR CARPETA GITHUB =====
+const codigoPremium = (data.codigo || data.code || CODE || "").toUpperCase().trim();
+
+if (codigoPremium !== "AD507-THE1920") {
+
+  const slug = codigoPremium.replace("AD507-", "").toLowerCase();
+  const base = "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/" + slug + "/";
+
+  const bloquePremium = document.getElementById("negocioPremiumGenerico");
+  const premiumLogo = document.getElementById("premiumLogo");
+  const premiumTitulo = document.getElementById("premiumTitulo");
+  const premiumDescripcion = document.getElementById("premiumDescripcion");
+  const premiumInstagram = document.getElementById("premiumInstagram");
+  const premiumTikTok = document.getElementById("premiumTikTok");
+  const premiumWhatsapp = document.getElementById("premiumWhatsapp");
+  const premiumImg1 = document.getElementById("premiumImg1");
+  const premiumImg2 = document.getElementById("premiumImg2");
+  const premiumImg3 = document.getElementById("premiumImg3");
+
+  function existeImagen(url) {
+    return new Promise((resolve) => {
+      const testImg = new Image();
+      testImg.onload = () => resolve(true);
+      testImg.onerror = () => resolve(false);
+      testImg.src = url;
+    });
+  }
+
+  async function activarPremium() {
+    const posiblesImagenes = [
+      "fachada.jpg",
+      "interior.jpg",
+      "interior1.jpg",
+      "maquinas.jpg",
+      "entrada.jpg",
+      "local.jpg"
+    ];
+
+    const encontradas = [];
+
+    for (const nombre of posiblesImagenes) {
+      const url = base + nombre;
+      const ok = await existeImagen(url);
+      if (ok) {
+        encontradas.push(url);
+      }
+      if (encontradas.length === 3) break;
+    }
+
+    if (encontradas.length === 0) return;
+
+    bloquePremium.style.display = "block";
+
+    if (data.logo && premiumLogo) {
+      premiumLogo.src = data.logo;
+      premiumLogo.style.display = "block";
+    }
+
+    if (premiumTitulo) {
+      premiumTitulo.textContent = data.nombre || "";
+    }
+
+    if (premiumDescripcion) {
+      premiumDescripcion.textContent =
+      data.descripcion ||
+      "Entrenamiento, salud y disciplina en un solo espacio.";
+      premiumDescripcion.style.display = "block";
+    }
+
+    if (premiumInstagram && data.instagram) {
+      premiumInstagram.href = data.instagram;
+      premiumInstagram.style.display = "inline-flex";
+    }
+
+    if (premiumTikTok && data.tiktok) {
+      premiumTikTok.href = data.tiktok;
+      premiumTikTok.style.display = "inline-flex";
+    }
+
+    if (premiumWhatsapp) {
+      if (data.whatsapp) {
+        premiumWhatsapp.href = data.whatsapp;
+        premiumWhatsapp.style.display = "inline-flex";
+      } else if (data.telefono) {
+        const telefono = String(data.telefono).replace(/\D/g, "");
+        premiumWhatsapp.href = `https://wa.me/${telefono}`;
+        premiumWhatsapp.style.display = "inline-flex";
+      }
+    }
+
+    if (premiumImg1 && encontradas[0]) {
+      premiumImg1.src = encontradas[0];
+      premiumImg1.style.display = "block";
+    }
+
+    if (premiumImg2 && encontradas[1]) {
+      premiumImg2.src = encontradas[1];
+      premiumImg2.style.display = "block";
+    }
+
+    if (premiumImg3 && encontradas[2]) {
+      premiumImg3.src = encontradas[2];
+      premiumImg3.style.display = "block";
+    }
+  }
+
+  activarPremium();
+}
+      } catch (error) {
+        console.error('Error:', error);
+        
+        if (estadoDiv) {
+          estadoDiv.innerHTML = `
+            <div class="error-message">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>${error.message}</span>
+            </div>
+            <p style="color: #64748b; margin-top: 1rem;">
+              <i class="fas fa-rotate-left"></i>
+              Intenta nuevamente
+            </p>
+          `;
+        }
+      }
+    }
+    
+    // Ejecutar
+    cargarDireccion();
+    
+  });
+
 </script>
 </body>
 </html>

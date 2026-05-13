@@ -478,6 +478,131 @@ body{
     align-items:flex-start;
   }
 }
+
+    /* ===== CORRECCIÓN HERO PREMIUM PRO ===== */
+
+.card{
+  position:relative;
+}
+
+.code-header{
+  min-height:430px !important;
+  display:block !important;
+  position:relative !important;
+}
+
+/* Marca arriba izquierda */
+.code-header::before{
+  content:"📍 DIRECCIONES507\A   Encuentra. Llega. Conecta." !important;
+  white-space:pre !important;
+  top:24px !important;
+  left:34px !important;
+  font-size:24px !important;
+  line-height:1.18 !important;
+  max-width:360px !important;
+}
+
+/* Verificado arriba derecha */
+.code-header::after{
+  top:24px !important;
+  right:28px !important;
+  font-size:15px !important;
+  padding:14px 20px !important;
+}
+
+/* Logo del comercio dentro del hero */
+#logoBox{
+  position:absolute !important;
+  top:135px !important;
+  left:50px !important;
+  margin:0 !important;
+  z-index:20 !important;
+  display:block !important;
+}
+
+#logoNegocio{
+  width:220px !important;
+  height:220px !important;
+  max-width:220px !important;
+  max-height:220px !important;
+  object-fit:contain !important;
+  background:#ffffff !important;
+  border-radius:28px !important;
+  padding:14px !important;
+}
+
+/* Título del código, horizontal */
+.code-title{
+  position:absolute !important;
+  left:320px !important;
+  right:40px !important;
+  top:185px !important;
+  margin:0 !important;
+  text-align:left !important;
+}
+
+#codigo{
+  font-size:64px !important;
+  line-height:1.05 !important;
+  word-break:normal !important;
+  overflow-wrap:normal !important;
+  white-space:normal !important;
+}
+
+/* Quitar bloque antiguo de nombre del lugar */
+.info-grid > .info-item:first-of-type{
+  display:none !important;
+}
+
+/* ===== TELÉFONO ===== */
+@media (max-width:768px){
+
+  .code-header{
+    min-height:420px !important;
+    padding:18px !important;
+  }
+
+  .code-header::before{
+    top:18px !important;
+    left:18px !important;
+    font-size:17px !important;
+    line-height:1.15 !important;
+    max-width:220px !important;
+  }
+
+  .code-header::after{
+    top:18px !important;
+    right:12px !important;
+    font-size:11px !important;
+    padding:9px 12px !important;
+    border-radius:14px !important;
+  }
+
+  #logoBox{
+    top:125px !important;
+    left:32px !important;
+  }
+
+  #logoNegocio{
+    width:150px !important;
+    height:150px !important;
+  }
+
+  .code-title{
+    left:24px !important;
+    right:24px !important;
+    top:295px !important;
+    text-align:center !important;
+  }
+
+  #codigo{
+    font-size:38px !important;
+    line-height:1.05 !important;
+    letter-spacing:-1px !important;
+    word-break:break-word !important;
+    overflow-wrap:break-word !important;
+  }
+}
 </style>
   
 </head>

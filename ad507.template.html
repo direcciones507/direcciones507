@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>{{TITLE}}</title>
   <meta name="description" content="{{DESC}}">
   <link rel="canonical" href="{{CANONICAL}}">
@@ -14,554 +15,717 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
   <style>
-    /* MANTENEMOS TU ESTRUCTURA BASE */
-    *{ margin:0; padding:0; box-sizing:border-box; }
-    body{ font-family:'Inter',system-ui,sans-serif; background:#eef6ff; color:#06122f; min-height:100vh; }
-    .card{ width:100%; max-width:1180px; margin:0 auto; background:#ffffff; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.18); position:relative; }
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
 
-    /* HERO */
+    body{
+      font-family:'Inter',system-ui,sans-serif;
+      background:#eef6ff;
+      color:#06122f;
+      min-height:100vh;
+    }
+
+    .card{
+      width:100%;
+      max-width:1180px;
+      margin:0 auto;
+      background:#ffffff;
+      overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.18);
+      position:relative;
+    }
+
     .code-header{
-      min-height:380px; position:relative; overflow:hidden; display:block; padding:34px;
-      background: linear-gradient(90deg,rgba(2,8,23,.88),rgba(2,8,23,.38)), url("img/the1920/interior.jpg");
-      background-size:cover; background-position:center;
+      min-height:350px;
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(90deg,rgba(2,8,23,.88),rgba(2,8,23,.38)),
+        url("img/the1920/interior.jpg");
+      background-size:cover;
+      background-position:center;
     }
+
     .code-header::before{
-      content:"📍 DIRECCIONES507\AEncuentra. Llega. Conecta."; white-space:pre; position:absolute; top:24px; left:34px;
-      font-size:24px; font-weight:900; line-height:1.12; color:#ffffff; letter-spacing:-.8px; z-index:8;
+      content:"📍 DIRECCIONES507\AEncuentra. Llega. Conecta.";
+      white-space:pre;
+      position:absolute;
+      top:24px;
+      left:34px;
+      font-size:23px;
+      font-weight:900;
+      line-height:1.08;
+      color:#ffffff;
+      letter-spacing:-.9px;
+      text-shadow:0 6px 18px rgba(0,0,0,.35);
+      z-index:8;
     }
+
     .code-header::after{
-      content:"✅ VERIFICADO\ANegocio Verificado"; white-space:pre; position:absolute; top:24px; right:28px;
-      background:#ffffff; color:#06122f; padding:14px 20px; border-radius:18px; font-size:15px; font-weight:900; z-index:8;
+      content:"✅ VERIFICADO\ANegocio Verificado";
+      white-space:pre;
+      position:absolute;
+      top:24px;
+      right:28px;
+      background:#ffffff;
+      color:#06122f;
+      padding:12px 18px;
+      border-radius:18px;
+      font-size:14px;
+      font-weight:900;
+      line-height:1.2;
+      box-shadow:0 12px 30px rgba(0,0,0,.18);
+      z-index:8;
     }
 
-    #logoBox{ position:absolute !important; top:120px !important; left:50px !important; z-index:20; }
-    #logoNegocio{ width:210px !important; height:210px !important; object-fit:contain !important; background:#ffffff !important; border-radius:28px !important; padding:14px !important; box-shadow:0 18px 40px rgba(0,0,0,.25); }
-
-    .code-title{ position:absolute !important; left:310px !important; right:40px !important; top:165px !important; z-index:5; }
-    #codigo{ font-size:58px !important; font-weight:900; color:#ffffff; text-shadow:0 10px 24px rgba(0,0,0,.35); }
-
-    /* GRID DE INFO Y PREMIUM */
-    .info-grid{ padding:28px; display:grid; gap:18px; background:#ffffff; }
-    .negocio-premium{ display:block !important; background:transparent; border:none; padding:0; margin:0; }
-    .negocio-hero{ display:block !important; background:#fff7ed; border-radius:22px; padding:22px; box-shadow:0 8px 18px rgba(15,23,42,.08); }
-    .negocio-texto{ display:block !important; color:#06122f !important; font-size:17px; line-height:1.5; margin:0 0 10px; }
-    .negocio-galeria{ display:grid !important; grid-template-columns:repeat(3,1fr); gap:14px; margin:8px 0 10px; }
-    .negocio-galeria img{ width:100%; height:220px; object-fit:cover; border-radius:20px; box-shadow:0 10px 24px rgba(0,0,0,.14); }
-
-    /* REORGANIZACIÓN DE BOTONES */
-    .actions { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; padding: 14px 28px; }
-    
-    /* BOTÓN GOOGLE MAPS BLANCO */
-    .btn-google { 
-        background: #ffffff !important; 
-        color: #06122f !important; 
-        border: 1px solid #e5eaf2 !important; 
+    #logoBox{
+      position:absolute;
+      top:115px;
+      left:50px;
+      z-index:20;
+      display:none;
     }
-    .btn-google i { 
-        background: linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+
+    #logoNegocio{
+      width:205px;
+      height:205px;
+      object-fit:contain;
+      background:#ffffff;
+      border-radius:28px;
+      padding:14px;
+      box-shadow:0 18px 40px rgba(0,0,0,.25);
+    }
+
+    .code-title{
+      position:absolute;
+      left:305px;
+      right:40px;
+      top:155px;
+      height:115px;
+      display:flex;
+      align-items:center;
+      z-index:5;
+    }
+
+    #codigo{
+      font-size:54px;
+      line-height:1;
+      font-weight:900;
+      color:#ffffff;
+      letter-spacing:-2px;
+      text-shadow:0 10px 24px rgba(0,0,0,.35);
+      word-break:normal;
+      overflow-wrap:normal;
+    }
+
+    #datos{
+      display:block;
+    }
+
+    .info-grid{
+      padding:24px 28px 10px;
+      display:grid;
+      gap:16px;
+      background:#ffffff;
+    }
+
+    .info-item{
+      background:#fff7ed;
+      border-radius:22px;
+      padding:20px 22px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      box-shadow:0 8px 18px rgba(15,23,42,.08);
+    }
+
+    .info-icon{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      background:#ff7a00;
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:25px;
+      flex-shrink:0;
+    }
+
+    .info-label{
+      font-size:14px;
+      font-weight:900;
+      text-transform:uppercase;
+      color:#06122f;
+      margin-bottom:4px;
+    }
+
+    .info-value{
+      font-size:17px;
+      line-height:1.45;
+      color:#06122f;
+    }
+
+    .seo-text{
+      margin:18px 28px 8px;
+      padding:18px 22px;
+      border-radius:22px;
+      background:#ffffff;
+      font-size:17px;
+      line-height:1.45;
+      color:#06122f;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      padding:10px 28px;
     }
 
     .btn{
-      min-height:72px; border:none; border-radius:20px; display:flex; align-items:center; justify-content:center;
-      gap:14px; font-size:18px; font-weight:900; text-decoration:none; color:white; transition:.25s ease;
+      min-height:64px;
+      border:none;
+      border-radius:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      font-size:17px;
+      font-weight:900;
+      text-decoration:none;
+      color:white;
+      transition:.25s ease;
       box-shadow:0 10px 24px rgba(0,0,0,.12);
+      cursor:pointer;
     }
-    .btn-waze{ background:linear-gradient(135deg,#49d6ff,#1ab7f0); }
-    .btn-uber{ background:#000000; }
-    .btn-whatsapp{ background:linear-gradient(135deg,#00c853,#00a844); }
-    .btn-call{ background:linear-gradient(135deg,#005eff,#2f8cff); }
-    .btn-share{ background:linear-gradient(135deg,#ff7a00,#ff5e00); }
-    .btn-instagram{ background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4) !important; color:#fff; }
-    .btn-facebook, .btn-tiktok, .btn-web{ background:#ffffff; color:#06122f; border:1px solid #e5eaf2; min-height:72px; }
 
-    /* FOOTER LIGERO */
+    .btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .btn i{
+      font-size:24px;
+    }
+
+    .btn-google{
+      background:linear-gradient(135deg,#0b63ff,#1584ff);
+      color:#ffffff;
+    }
+
+    .btn-waze{
+      background:linear-gradient(135deg,#49d6ff,#1ab7f0);
+      color:#ffffff;
+    }
+
+    .btn-uber{
+      background:#000000;
+      color:#ffffff;
+    }
+
+    .btn-whatsapp{
+      background:linear-gradient(135deg,#00c853,#00a844);
+      color:#ffffff;
+    }
+
+    .btn-call{
+      background:linear-gradient(135deg,#005eff,#2f8cff);
+      color:#ffffff;
+    }
+
+    .btn-share{
+      background:linear-gradient(135deg,#ff7a00,#ff5e00);
+      color:#ffffff;
+    }
+
+    .btn-instagram{
+      background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4);
+      color:#ffffff;
+    }
+
+    .btn-facebook,
+    .btn-tiktok,
+    .btn-web{
+      background:#ffffff;
+      color:#06122f;
+      border:1px solid #e5eaf2;
+    }
+
+    .extra-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      padding:10px 28px 18px;
+    }
+
+    .extra-actions .btn{
+      min-height:58px;
+      font-size:16px;
+    }
+
+    .negocio-premium{
+      display:none;
+      padding:0 28px 12px;
+      background:#ffffff;
+    }
+
+    .negocio-hero{
+      background:#fff7ed;
+      border-radius:22px;
+      padding:20px 22px;
+      box-shadow:0 8px 18px rgba(15,23,42,.08);
+      margin-bottom:14px;
+    }
+
+    .negocio-texto{
+      color:#06122f;
+      font-size:17px;
+      line-height:1.45;
+      margin-bottom:8px;
+    }
+
+    .negocio-meta{
+      color:#06122f;
+      font-size:16px;
+      line-height:1.4;
+      font-weight:600;
+    }
+
+    .negocio-galeria{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+    }
+
+    .negocio-galeria img{
+      width:100%;
+      height:210px;
+      object-fit:cover;
+      border-radius:20px;
+      box-shadow:0 10px 24px rgba(0,0,0,.14);
+    }
+
+    .qr-section{
+      display:none;
+      text-align:center;
+      padding:20px 28px 24px;
+    }
+
+    .qr-box{
+      display:inline-block;
+      background:#ffffff;
+      border-radius:24px;
+      padding:18px;
+      box-shadow:0 8px 18px rgba(15,23,42,.08);
+    }
+
+    .qr-box img{
+      width:220px;
+      max-width:100%;
+    }
+
+    .qr-box p{
+      margin-top:10px;
+      color:#64748b;
+      font-weight:600;
+    }
+
     .footer-note{
-      background:linear-gradient(135deg,#dbeeff,#ffffff); padding:28px; border-radius:34px 34px 0 0;
-      color:#06122f; font-weight:800; display:flex; justify-content:center; align-items:center; gap:22px;
+      background:linear-gradient(135deg,#dbeeff,#ffffff);
+      padding:22px 28px;
+      border-radius:34px 34px 0 0;
+      color:#06122f;
+      font-weight:800;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:16px;
     }
 
-    .info-item{ background:#fff7ed; border-radius:22px; padding:24px; display:flex; align-items:center; gap:18px; }
-    .info-icon{ width:58px; height:58px; border-radius:50%; background:#ff7a00; color:white; display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
+    @media(max-width:768px){
 
-    @media (max-width:768px){
-      .code-header{ min-height:360px !important; }
-      #logoBox{ top:95px !important; left:50% !important; transform:translateX(-50%) !important; }
-      #logoNegocio{ width:135px !important; height:135px !important; }
-      .code-title{ top:245px !important; left:18px !important; right:18px !important; text-align:center !important; }
-      #codigo{ font-size:31px !important; }
-      .actions{ grid-template-columns:1fr; padding:10px 18px; }
-      .negocio-galeria{ grid-template-columns:1fr; }
+      .card{
+        border-radius:0;
+      }
+
+      .code-header{
+        min-height:340px;
+      }
+
+      .code-header::before{
+        top:16px;
+        left:16px;
+        font-size:14px;
+        line-height:1.05;
+        max-width:165px;
+      }
+
+      .code-header::after{
+        top:16px;
+        right:10px;
+        font-size:10px;
+        padding:8px 10px;
+        border-radius:14px;
+        max-width:135px;
+      }
+
+      #logoBox{
+        top:88px;
+        left:50%;
+        transform:translateX(-50%);
+      }
+
+      #logoNegocio{
+        width:132px;
+        height:132px;
+        border-radius:25px;
+      }
+
+      .code-title{
+        left:18px;
+        right:18px;
+        top:235px;
+        height:auto;
+        justify-content:center;
+        text-align:center;
+      }
+
+      #codigo{
+        font-size:30px;
+        line-height:1.03;
+        letter-spacing:-1px;
+        word-break:break-word;
+        overflow-wrap:break-word;
+        text-align:center;
+      }
+
+      .info-grid{
+        padding:18px 18px 8px;
+      }
+
+      .info-item{
+        padding:18px;
+        align-items:flex-start;
+      }
+
+      .seo-text{
+        margin:14px 18px 6px;
+        padding:16px;
+        font-size:16px;
+      }
+
+      .actions{
+        grid-template-columns:1fr;
+        padding:8px 18px;
+        gap:10px;
+      }
+
+      .btn{
+        min-height:58px;
+        font-size:15px;
+        border-radius:18px;
+      }
+
+      .btn i{
+        font-size:20px;
+      }
+
+      .extra-actions{
+        grid-template-columns:1fr 1fr;
+        padding:8px 18px 14px;
+        gap:10px;
+      }
+
+      .extra-actions .btn{
+        min-height:52px;
+        font-size:14px;
+      }
+
+      .negocio-premium{
+        padding:0 18px 10px;
+      }
+
+      .negocio-galeria{
+        grid-template-columns:1fr;
+      }
+
+      .negocio-galeria img{
+        height:210px;
+      }
+
+      .qr-section{
+        padding:18px;
+      }
+
+      .footer-note{
+        justify-content:center;
+        text-align:center;
+        flex-direction:column;
+        gap:3px;
+        font-size:14px;
+        padding:18px;
+      }
     }
   </style>
 </head>
+
 <body>
 
 <div class="card">
+
   <div class="code-header">
     <div class="code-title">
       <h1 id="codigo">AD507-CODE</h1>
     </div>
   </div>
 
-  <div id="logoBox" style="display:none;">
-    <img id="logoNegocio" src="" alt="Logo" />
+  <div id="logoBox">
+    <img id="logoNegocio" src="" alt="Logo del negocio">
   </div>
 
-  <div id="estado" class="status-message" style="text-align:center; padding:20px;">
-    <p>Cargando dirección...</p>
-  </div>
+  <div id="datos">
 
-  <div id="datos" style="display: none;">
     <div class="info-grid">
+
       <div class="info-item">
         <div class="info-icon"><i class="fas fa-tag"></i></div>
         <div>
-          <div style="font-size:15px; font-weight:900;">Nombre del lugar</div>
-          <div id="nombre">—</div>
-        </div>
-      </div>
-
-      <div id="negocioPremium1920" class="negocio-premium" style="display:none;">
-        <div class="negocio-hero">
-          <p class="negocio-texto">Un rincón con alma vintage en Casco Antiguo.</p>
-        </div>
-        <div class="negocio-galeria">
-          <img src="/img/the1920/interior.jpg"><img src="/img/the1920/mojito.jpg"><img src="/img/the1920/martini.jpg">
-        </div>
-      </div>
-
-      <div id="negocioPremiumGenerico" class="negocio-premium" style="display:none;">
-        <div class="negocio-hero">
-          <h2 id="premiumTitulo" class="negocio-titulo"></h2>
-          <p id="premiumDescripcion" class="negocio-texto"></p>
-        </div>
-        <div class="negocio-galeria">
-          <img id="premiumImg1" style="display:none;"><img id="premiumImg2" style="display:none;"><img id="premiumImg3" style="display:none;">
+          <div class="info-label">Nombre del lugar</div>
+          <div class="info-value" id="nombre">—</div>
         </div>
       </div>
 
       <div class="info-item">
         <div class="info-icon"><i class="fas fa-location-dot"></i></div>
         <div>
-          <div style="font-size:15px; font-weight:900;">Punto de referencia</div>
-          <div id="ref">—</div>
+          <div class="info-label">Punto de referencia</div>
+          <div class="info-value" id="ref">—</div>
         </div>
       </div>
 
-      <div class="info-item" id="horario-container" style="display: none;">
+      <div class="info-item" id="horario-container" style="display:none;">
         <div class="info-icon"><i class="fas fa-clock"></i></div>
         <div>
-          <div style="font-size:15px; font-weight:900;">Horario de atención</div>
-          <div id="horario">—</div>
+          <div class="info-label">Horario de atención</div>
+          <div class="info-value" id="horario">—</div>
         </div>
+      </div>
+
+    </div>
+
+    <div id="premium1920" class="negocio-premium">
+      <div class="negocio-hero">
+        <p class="negocio-texto">
+          Un rincón con alma vintage en Casco Antiguo, perfecto para cocktails y noches con estilo.
+        </p>
+        <div class="negocio-meta">
+          <div><b>Horario:</b> martes a domingo · 3:00 pm a 12:00 am</div>
+        </div>
+      </div>
+
+      <div class="negocio-galeria">
+        <img src="img/the1920/interior.jpg" alt="Interior The 1920">
+        <img src="img/the1920/mojito.jpg" alt="Mojito The 1920">
+        <img src="img/the1920/martini.jpg" alt="Martini The 1920">
       </div>
     </div>
 
-    <div class="actions">
-      <a id="btnGoogle" class="btn btn-google" target="_blank"><i class="fab fa-google"></i> Google Maps</a>
-      <a id="btnWaze" class="btn btn-waze" target="_blank"><i class="fab fa-waze"></i> Waze</a>
-      <a id="btnUber" class="btn btn-uber" target="_blank"><i class="fab fa-uber"></i> Uber</a>
+    <div class="seo-text">
+      🗺️ <b>Dirección digital del sistema Direcciones507 en Panamá.</b>
+      Este código <span id="seoCodigo">AD507-CODE</span> te lleva a una ubicación exacta.
+      Abre esta dirección en Google Maps, Waze o Uber fácilmente.
     </div>
 
     <div class="actions">
-      <a id="btnWhats" class="btn btn-whatsapp" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-      <a id="btnCall" class="btn btn-call"><i class="fas fa-phone"></i> Llamar</a>
-      <a id="btnShare" class="btn btn-share" href="javascript:void(0)"><i class="fas fa-share-nodes"></i> Compartir</a>
+      <a id="btnGoogle" class="btn btn-google" target="_blank">
+        <i class="fab fa-google"></i> Google Maps
+      </a>
+      <a id="btnWaze" class="btn btn-waze" target="_blank">
+        <i class="fab fa-waze"></i> Waze
+      </a>
+      <a id="btnUber" class="btn btn-uber" target="_blank">
+        <i class="fab fa-uber"></i> Uber
+      </a>
+    </div>
+
+    <div class="actions">
+      <a id="btnWhats" class="btn btn-whatsapp" target="_blank">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </a>
+      <a id="btnCall" class="btn btn-call">
+        <i class="fas fa-phone"></i> Llamar
+      </a>
+      <button id="btnShare" class="btn btn-share" type="button">
+        <i class="fas fa-share-nodes"></i> Compartir
+      </button>
     </div>
 
     <div class="actions" id="redes-container">
-      <a id="btnInstagram" class="btn btn-instagram" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
-      <a id="btnFacebook" class="btn btn-facebook" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
-      <a id="btnTikTok" class="btn btn-tiktok" target="_blank"><i class="fab fa-tiktok"></i> TikTok</a>
-      <a id="btnWeb" class="btn btn-web" target="_blank" style="display:none;">🌐 Web</a>
+      <a id="btnInstagram" class="btn btn-instagram" target="_blank">
+        <i class="fab fa-instagram"></i> Instagram
+      </a>
+      <a id="btnFacebook" class="btn btn-facebook" target="_blank" style="display:none;">
+        <i class="fab fa-facebook"></i> Facebook
+      </a>
+      <a id="btnTikTok" class="btn btn-tiktok" target="_blank" style="display:none;">
+        <i class="fab fa-tiktok"></i> TikTok
+      </a>
+      <a id="btnWeb" class="btn btn-web" target="_blank" style="display:none;">
+        <i class="fas fa-globe"></i> Sitio web
+      </a>
+    </div>
+
+    <div class="extra-actions">
+      <button id="btnQR" class="btn btn-google" type="button">
+        <i class="fas fa-qrcode"></i> Ver QR
+      </button>
+
+      <button id="btnStats" class="btn btn-uber" type="button">
+        <i class="fas fa-chart-simple"></i> Contador
+      </button>
+    </div>
+
+    <div id="qrSection" class="qr-section">
+      <div class="qr-box">
+        <h3>QR para compartir esta dirección</h3>
+        <img id="qrImg" src="" alt="QR de la dirección">
+        <p>Escanea y abre esta ubicación</p>
+      </div>
     </div>
 
     <div class="footer-note">
-      <i class="fas fa-shield-alt"></i> Ubicación verificada · <i class="fas fa-map-pin"></i> Direcciones507 Panamá
+      <span>🛡 Ubicación verificada</span>
+      <span>📍 Direcciones507 Panamá</span>
     </div>
+
   </div>
 </div>
 
 <script>
-   // ===== CÓDIGO FINAL CON TODAS LAS MEJORAS =====
-  
-  document.addEventListener('DOMContentLoaded', function() {
-    
-    // Configuración
-    const CODE = "AD507-CODE"; // Placeholder para reemplazar
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
-    
-    // Referencias a elementos
-    const estadoDiv = document.getElementById('estado');
-    const datosDiv = document.getElementById('datos');
-    const codigoH1 = document.getElementById('codigo');
-    const codigoSeo = document.getElementById('codigo-seo');
-    const nombreSpan = document.getElementById('nombre');
-    const refSpan = document.getElementById('ref');
-    
-    // Botones de navegación
-    const btnGoogle = document.getElementById('btnGoogle');
-    const btnWaze = document.getElementById('btnWaze');
-    const btnUber = document.getElementById('btnUber');
-    
-    // Botones de contacto
-    const btnWhats = document.getElementById('btnWhats');
-    const btnCall = document.getElementById('btnCall');
-    
-    // Redes sociales
-    const btnInstagram = document.getElementById('btnInstagram');
-    const btnFacebook = document.getElementById('btnFacebook');
-    const btnTikTok = document.getElementById('btnTikTok');
-    
-    // Horario
-    const horarioContainer = document.getElementById('horario-container');
-    const horarioSpan = document.getElementById('horario');
-    
-    // Verificar elementos críticos
-    if (!estadoDiv || !datosDiv || !codigoH1) {
-      console.error('Error: Elementos críticos no encontrados');
-      return;
-    }
-    
-    // Actualizar textos con el código
-    codigoH1.textContent = CODE;
-    if (codigoSeo) codigoSeo.textContent = CODE;
+document.addEventListener('DOMContentLoaded', function(){
 
-    function cargarLogoNegocio(codigo){
-  if(!codigo) return;
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
 
-  const img = document.getElementById("logoNegocio");
-  const box = document.getElementById("logoBox");
+  const pathCode = window.location.pathname.split('/').filter(Boolean).pop();
+  const CODE = (pathCode || "AD507-CODE").toUpperCase();
 
-  if(!img || !box) return;
+  document.getElementById('codigo').textContent = CODE;
+  document.getElementById('seoCodigo').textContent = CODE;
 
-  const base = "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/";
-  const urlJpg = base + codigo + ".jpg";
-  const urlPng = base + codigo + ".png";
+  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(window.location.href);
+  document.getElementById('qrImg').src = qrUrl;
 
-  img.onload = function(){
-    box.style.display = "block";
-  };
-
-  img.onerror = function(){
-    if(img.src === urlJpg){
-      img.src = urlPng;
-    } else {
-      box.style.display = "none";
-    }
-  };
-
-  img.src = urlJpg;
-}
-    
-    // Función principal
-    async function cargarDireccion() {
-      try {
-        // Mostrar carga
-        estadoDiv.style.display = 'block';
-        datosDiv.style.display = 'none';
-        
-        console.log('Fetching data for code:', CODE);
-        const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
-        
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Respuesta:', data);
-        
-        cargarLogoNegocio(CODE);
-        
-        // ===== MEJORA #3: Mensaje de error robusto =====
-        if (!data || !data.ok) {
-          throw new Error(data?.mensaje || data?.message || 'Dirección no encontrada');
-        }
-
-        // ===== LOGO =====
-if(data.logo){
-  document.getElementById("logoNegocio").src = data.logo;
-  document.getElementById("logoBox").style.display = "block";
-}
-
-// ===== WEB =====
-const btnWeb = document.getElementById("btnWeb");
-
-if (btnWeb) {
-  if (data.web) {
-    let webUrl = String(data.web).trim();
-
-    if (!webUrl.startsWith("http://") && !webUrl.startsWith("https://")) {
-      webUrl = "https://" + webUrl;
-    }
-
-    btnWeb.href = webUrl;
-    btnWeb.style.display = "inline-flex";
-  } else {
-    btnWeb.style.display = "none";
-  }
-}
-        
-        // Mostrar datos
-        estadoDiv.style.display = 'none';
-        datosDiv.style.display = 'block';
-        
-        // Información básica
-        if (nombreSpan) nombreSpan.textContent = data.nombre || '—';
-        if (refSpan) refSpan.textContent = data.referencia || '—';
-        
-        // Horario
-        if (data.horario && horarioContainer && horarioSpan) {
-          horarioSpan.textContent = data.horario;
-          horarioContainer.style.display = 'flex';
-        } else if (horarioContainer) {
-          horarioContainer.style.display = 'none';
-        }
-        
-        // Google Maps
-        if (btnGoogle && data.google) {
-          btnGoogle.href = data.google;
-        } else if (btnGoogle) {
-          btnGoogle.style.opacity = '0.5';
-          btnGoogle.style.pointerEvents = 'none';
-          btnGoogle.title = 'No disponible';
-        }
-        
-        // Waze
-        if (btnWaze && data.waze) {
-          btnWaze.href = data.waze;
-        } else if (btnWaze) {
-          btnWaze.style.opacity = '0.5';
-          btnWaze.style.pointerEvents = 'none';
-          btnWaze.title = 'No disponible';
-        }
-        
-        // Uber
-        if (btnUber && data.uber) {
-          btnUber.href = data.uber;
-        } else if (btnUber) {
-          btnUber.style.opacity = '0.5';
-          btnUber.style.pointerEvents = 'none';
-          btnUber.title = 'No disponible';
-        }
-        
-        // WhatsApp
-        if (btnWhats) {
-          if (data.whatsapp) {
-            btnWhats.href = data.whatsapp;
-          } else if (data.telefono) {
-            const telefono = String(data.telefono).replace(/\D/g, '');
-            btnWhats.href = `https://wa.me/${telefono}`;
-          } else {
-            btnWhats.style.display = 'none';
-          }
-        }
-        
-        // ===== MEJORA #2: Llamada con teléfono limpio =====
-        if (btnCall) {
-          if (data.telefono) {
-            const telefonoLimpio = String(data.telefono).replace(/\D/g, '');
-            btnCall.href = `tel:${telefonoLimpio}`;
-          } else {
-            btnCall.style.display = 'none';
-          }
-        }
-        
-        // Instagram
-        if (btnInstagram) {
-          if (data.instagram) {
-            btnInstagram.href = data.instagram;
-          } else {
-            btnInstagram.style.display = 'none';
-          }
-        }
-        
-        // Facebook
-        if (btnFacebook) {
-          if (data.facebook) {
-            btnFacebook.href = data.facebook;
-          } else {
-            btnFacebook.style.display = 'none';
-          }
-        }
-        
-        // TikTok
-        if (btnTikTok) {
-          if (data.tiktok) {
-            btnTikTok.href = data.tiktok;
-          } else {
-            btnTikTok.style.display = 'none';
-          }
-        }
-        
-        // Ocultar contenedor de redes si no hay ninguna
-        const redesContainer = document.getElementById('redes-container');
-        if (redesContainer) {
-          const redesVisibles = Array.from(redesContainer.children).some(
-            btn => btn.style.display !== 'none'
-          );
-          if (!redesVisibles) {
-            redesContainer.style.display = 'none';
-          }
-        }
-        // ===== QR para compartir la dirección =====
-const qrImg = document.getElementById("qrImg");
-const qrBox = document.getElementById("qrBox");
-
-if (qrImg && qrBox) {
-  const pageUrl = window.location.href;
-
-  const qrUrl =
-    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
-    encodeURIComponent(pageUrl);
-
-  qrImg.src = qrUrl;
-  qrBox.style.display = "block";
-}
-
-        // ===== BLOQUE PREMIUM THE 1920 =====
-      const codigoActual = (data.codigo || data.code || "").toUpperCase().trim();
-
-      if (codigoActual === "AD507-THE1920") {
-        const bloque1920 = document.getElementById("negocioPremium1920");
-        if (bloque1920) {
-          bloque1920.style.display = "block";
-        }
-      }
-        
-       // ===== BLOQUE PREMIUM AUTOMÁTICO POR CARPETA GITHUB =====
-const codigoPremium = (data.codigo || data.code || CODE || "").toUpperCase().trim();
-
-if (codigoPremium !== "AD507-THE1920") {
-
-  const slug = codigoPremium.replace("AD507-", "").toLowerCase();
-  const base = "https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/" + slug + "/";
-
-  const bloquePremium = document.getElementById("negocioPremiumGenerico");
-  const premiumLogo = document.getElementById("premiumLogo");
-  const premiumTitulo = document.getElementById("premiumTitulo");
-  const premiumDescripcion = document.getElementById("premiumDescripcion");
-  const premiumInstagram = document.getElementById("premiumInstagram");
-  const premiumTikTok = document.getElementById("premiumTikTok");
-  const premiumWhatsapp = document.getElementById("premiumWhatsapp");
-  const premiumImg1 = document.getElementById("premiumImg1");
-  const premiumImg2 = document.getElementById("premiumImg2");
-  const premiumImg3 = document.getElementById("premiumImg3");
-
-  function existeImagen(url) {
-    return new Promise((resolve) => {
-      const testImg = new Image();
-      testImg.onload = () => resolve(true);
-      testImg.onerror = () => resolve(false);
-      testImg.src = url;
-    });
-  }
-
-  async function activarPremium() {
-    const posiblesImagenes = [
-      "fachada.jpg",
-      "interior.jpg",
-      "interior1.jpg",
-      "maquinas.jpg",
-      "entrada.jpg",
-      "local.jpg"
-    ];
-
-    const encontradas = [];
-
-    for (const nombre of posiblesImagenes) {
-      const url = base + nombre;
-      const ok = await existeImagen(url);
-      if (ok) {
-        encontradas.push(url);
-      }
-      if (encontradas.length === 3) break;
-    }
-
-    if (encontradas.length === 0) return;
-
-    bloquePremium.style.display = "block";
-
-    if (data.logo && premiumLogo) {
-      premiumLogo.src = data.logo;
-      premiumLogo.style.display = "block";
-    }
-
-    if (premiumTitulo) {
-      premiumTitulo.textContent = data.nombre || "";
-    }
-
-    if (premiumDescripcion) {
-      premiumDescripcion.textContent =
-      data.descripcion ||
-      "Entrenamiento, salud y disciplina en un solo espacio.";
-      premiumDescripcion.style.display = "block";
-    }
-
-    if (premiumInstagram && data.instagram) {
-      premiumInstagram.href = data.instagram;
-      premiumInstagram.style.display = "inline-flex";
-    }
-
-    if (premiumTikTok && data.tiktok) {
-      premiumTikTok.href = data.tiktok;
-      premiumTikTok.style.display = "inline-flex";
-    }
-
-    if (premiumWhatsapp) {
-      if (data.whatsapp) {
-        premiumWhatsapp.href = data.whatsapp;
-        premiumWhatsapp.style.display = "inline-flex";
-      } else if (data.telefono) {
-        const telefono = String(data.telefono).replace(/\D/g, "");
-        premiumWhatsapp.href = `https://wa.me/${telefono}`;
-        premiumWhatsapp.style.display = "inline-flex";
-      }
-    }
-
-    if (premiumImg1 && encontradas[0]) {
-      premiumImg1.src = encontradas[0];
-      premiumImg1.style.display = "block";
-    }
-
-    if (premiumImg2 && encontradas[1]) {
-      premiumImg2.src = encontradas[1];
-      premiumImg2.style.display = "block";
-    }
-
-    if (premiumImg3 && encontradas[2]) {
-      premiumImg3.src = encontradas[2];
-      premiumImg3.style.display = "block";
-    }
-  }
-
-  activarPremium();
-}
-      } catch (error) {
-        console.error('Error:', error);
-        
-        if (estadoDiv) {
-          estadoDiv.innerHTML = `
-            <div class="error-message">
-              <i class="fas fa-exclamation-triangle"></i>
-              <span>${error.message}</span>
-            </div>
-            <p style="color: #64748b; margin-top: 1rem;">
-              <i class="fas fa-rotate-left"></i>
-              Intenta nuevamente
-            </p>
-          `;
-        }
-      }
-    }
-    
-    // Ejecutar
-    cargarDireccion();
-    
+  document.getElementById('btnQR').addEventListener('click', function(){
+    const box = document.getElementById('qrSection');
+    box.style.display = box.style.display === 'block' ? 'none' : 'block';
   });
 
+  document.getElementById('btnShare').addEventListener('click', async function(){
+    if(navigator.share){
+      try{
+        await navigator.share({
+          title: document.title,
+          text: 'Mira esta ubicación en Direcciones507',
+          url: window.location.href
+        });
+      }catch(e){}
+    }else{
+      navigator.clipboard.writeText(window.location.href);
+      alert("Enlace copiado.");
+    }
+  });
+
+  document.getElementById('btnStats').addEventListener('click', async function(){
+    try{
+      const res = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODE)}`);
+      const data = await res.json();
+
+      if(!data || !data.ok){
+        alert("No se pudo cargar el contador.");
+        return;
+      }
+
+      const s = data.stats || {};
+      alert(
+        "Contador AD507\\n\\n" +
+        "Google: " + (s.google || 0) + "\\n" +
+        "Waze: " + (s.waze || 0) + "\\n" +
+        "Uber: " + (s.uber || 0) + "\\n" +
+        "Compartir: " + (s.share || 0)
+      );
+
+    }catch(e){
+      alert("Error cargando contador.");
+    }
+  });
+
+  async function cargarDireccion(){
+    try{
+      const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
+      const data = await response.json();
+
+      if(!data.ok) return;
+
+      document.getElementById('nombre').textContent = data.nombre || "Cliente";
+      document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";
+
+      if(data.logo){
+        document.getElementById('logoNegocio').src = data.logo;
+        document.getElementById('logoBox').style.display = 'block';
+      }
+
+      if(data.horario){
+        document.getElementById('horario').textContent = data.horario;
+        document.getElementById('horario-container').style.display = 'flex';
+      }
+
+      document.getElementById('btnGoogle').href = data.google || "#";
+      document.getElementById('btnWaze').href = data.waze || "#";
+      document.getElementById('btnUber').href = data.uber || "#";
+
+      const tel = String(data.telefono || "").replace(/\D/g,'');
+      document.getElementById('btnWhats').href = tel ? `https://wa.me/${tel}` : "#";
+      document.getElementById('btnCall').href = tel ? `tel:${tel}` : "#";
+
+      if(data.instagram){
+        document.getElementById('btnInstagram').href = data.instagram;
+      }else{
+        document.getElementById('btnInstagram').style.display = 'none';
+      }
+
+      if(data.facebook){
+        document.getElementById('btnFacebook').href = data.facebook;
+        document.getElementById('btnFacebook').style.display = 'flex';
+      }
+
+      if(data.tiktok){
+        document.getElementById('btnTikTok').href = data.tiktok;
+        document.getElementById('btnTikTok').style.display = 'flex';
+      }
+
+      if(data.web){
+        document.getElementById('btnWeb').href = data.web;
+        document.getElementById('btnWeb').style.display = 'flex';
+      }
+
+      if(CODE === "AD507-THE1920"){
+        document.getElementById('premium1920').style.display = 'block';
+      }
+
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  cargarDireccion();
+
+});
 </script>
+
 </body>
 </html>

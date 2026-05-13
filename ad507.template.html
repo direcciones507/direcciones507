@@ -542,74 +542,409 @@ body{
 
 /* Título del código, horizontal */
 .code-title{
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:#eef6ff;
+  color:#06122f;
+  min-height:100vh;
+}
+
+.card{
+  width:100%;
+  max-width:1180px;
+  margin:0 auto;
+  background:#ffffff;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+  position:relative;
+}
+
+/* HERO */
+.code-header{
+  min-height:410px;
+  position:relative;
+  overflow:hidden;
+  display:block;
+  padding:34px;
+  background:
+    linear-gradient(90deg,rgba(2,8,23,.88),rgba(2,8,23,.38)),
+    url("img/the1920/interior.jpg");
+  background-size:cover;
+  background-position:center;
+}
+
+/* MARCA DIRECCIONES507 */
+.code-header::before{
+  content:"📍 DIRECCIONES507\AEncuentra. Llega. Conecta.";
+  white-space:pre;
+  position:absolute;
+  top:24px;
+  left:34px;
+  font-size:24px;
+  font-weight:900;
+  line-height:1.12;
+  color:#ffffff;
+  letter-spacing:-.8px;
+  text-shadow:0 6px 18px rgba(0,0,0,.35);
+  z-index:8;
+}
+
+/* VERIFICADO */
+.code-header::after{
+  content:"✅ VERIFICADO\ANegocio Verificado";
+  white-space:pre;
+  position:absolute;
+  top:24px;
+  right:28px;
+  background:#ffffff;
+  color:#06122f;
+  padding:14px 20px;
+  border-radius:18px;
+  font-size:15px;
+  font-weight:900;
+  line-height:1.2;
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+  z-index:8;
+}
+
+.code-icon{
+  display:none !important;
+}
+
+/* LOGO DEL COMERCIO */
+#logoBox{
+  position:absolute !important;
+  top:120px !important;
+  left:50px !important;
+  margin:0 !important;
+  z-index:20 !important;
+  display:block !important;
+}
+
+#logoNegocio{
+  width:220px !important;
+  height:220px !important;
+  max-width:220px !important;
+  max-height:220px !important;
+  object-fit:contain !important;
+  background:#ffffff !important;
+  border-radius:28px !important;
+  padding:14px !important;
+  box-shadow:0 18px 40px rgba(0,0,0,.25);
+}
+
+/* TITULO */
+.code-title{
   position:absolute !important;
   left:320px !important;
   right:40px !important;
-  top:185px !important;
+  top:178px !important;
   margin:0 !important;
   text-align:left !important;
+  z-index:5;
+}
+
+.code-label{
+  display:none;
 }
 
 #codigo{
   font-size:64px !important;
   line-height:1.05 !important;
+  font-weight:900;
+  color:#ffffff;
+  letter-spacing:-2px;
+  text-shadow:0 10px 24px rgba(0,0,0,.35);
   word-break:normal !important;
   overflow-wrap:normal !important;
   white-space:normal !important;
 }
 
-/* Quitar bloque antiguo de nombre del lugar */
+/* CONTENIDO */
+#datos{
+  display:block;
+}
+
+.info-grid{
+  padding:28px;
+  display:grid;
+  gap:18px;
+  background:#ffffff;
+}
+
+/* OCULTAR NOMBRE DEL LUGAR DUPLICADO */
 .info-grid > .info-item:first-of-type{
   display:none !important;
 }
 
-/* ===== TELÉFONO ===== */
+/* BOTONES */
+.actions,
+.btn-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+}
+
+.btn{
+  min-height:88px;
+  border:none;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  font-size:21px;
+  font-weight:900;
+  text-decoration:none;
+  color:white;
+  box-shadow:0 10px 24px rgba(0,0,0,.16);
+  transition:.25s ease;
+}
+
+.btn:hover{
+  transform:translateY(-3px);
+}
+
+.btn i{
+  font-size:32px;
+}
+
+.btn-google{
+  background:linear-gradient(135deg,#0b63ff,#1584ff);
+}
+
+.btn-waze{
+  background:linear-gradient(135deg,#49d6ff,#1ab7f0);
+}
+
+.btn-uber{
+  background:#000000;
+}
+
+.btn-whatsapp{
+  background:linear-gradient(135deg,#00c853,#00a844);
+}
+
+.btn-call{
+  background:linear-gradient(135deg,#005eff,#2f8cff);
+}
+
+.btn-share,
+.btn-copy{
+  background:linear-gradient(135deg,#ff7a00,#ff5e00);
+}
+
+/* REDES */
+.btn-instagram{
+  background:linear-gradient(135deg,#f58529,#dd2a7b,#8134af,#515bd4);
+  color:#ffffff;
+}
+
+.btn-facebook,
+.btn-tiktok,
+.btn-web{
+  background:#ffffff;
+  color:#06122f;
+  border:1px solid #e5eaf2;
+  box-shadow:0 8px 18px rgba(15,23,42,.10);
+  min-height:72px;
+}
+
+/* GALERIA */
+.negocio-galeria{
+  display:grid !important;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin:8px 0 10px;
+}
+
+.negocio-galeria img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:20px;
+  box-shadow:0 10px 24px rgba(0,0,0,.14);
+}
+
+/* NO OCULTAR PREMIUM PRO COMPLETO */
+.negocio-premium{
+  display:block !important;
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+
+.negocio-hero,
+.negocio-tag,
+.negocio-titulo,
+.negocio-texto,
+.negocio-meta{
+  display:none !important;
+}
+
+/* QR Y CLICS */
+.qr-box,
+.stats-box,
+.price-card,
+.plan-card{
+  background:#eaf5ff;
+  border-radius:22px;
+  padding:24px;
+  box-shadow:0 8px 20px rgba(15,23,42,.08);
+}
+
+/* HORARIO Y UBICACION */
+.info-item{
+  background:#fff7ed;
+  border-radius:22px;
+  padding:24px;
+  display:flex;
+  align-items:center;
+  gap:18px;
+  box-shadow:0 8px 18px rgba(15,23,42,.08);
+}
+
+.info-icon{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  background:#ff7a00;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  flex-shrink:0;
+}
+
+.info-label{
+  font-size:15px;
+  font-weight:900;
+  text-transform:uppercase;
+  color:#06122f;
+}
+
+.info-value{
+  font-size:17px;
+  line-height:1.5;
+}
+
+/* FOOTER */
+.footer,
+.footer-note{
+  background:linear-gradient(135deg,#dbeeff,#ffffff);
+  padding:28px;
+  border-radius:34px 34px 0 0;
+  text-align:center;
+  color:#06122f;
+  font-weight:800;
+}
+
+.footer-note{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+/* MOBILE */
 @media (max-width:768px){
 
+  .card{
+    border-radius:0;
+  }
+
   .code-header{
-    min-height:420px !important;
+    min-height:390px !important;
     padding:18px !important;
   }
 
   .code-header::before{
     top:18px !important;
     left:18px !important;
-    font-size:17px !important;
-    line-height:1.15 !important;
-    max-width:220px !important;
+    font-size:16px !important;
+    line-height:1.08 !important;
+    max-width:205px !important;
+    letter-spacing:-.5px;
   }
 
   .code-header::after{
     top:18px !important;
     right:12px !important;
     font-size:11px !important;
-    padding:9px 12px !important;
+    padding:9px 11px !important;
     border-radius:14px !important;
+    max-width:150px;
   }
 
   #logoBox{
-    top:125px !important;
-    left:32px !important;
+    top:105px !important;
+    left:50% !important;
+    transform:translateX(-50%) !important;
   }
 
   #logoNegocio{
     width:150px !important;
     height:150px !important;
+    border-radius:26px !important;
   }
 
   .code-title{
     left:24px !important;
     right:24px !important;
-    top:295px !important;
+    top:270px !important;
     text-align:center !important;
   }
 
   #codigo{
-    font-size:38px !important;
-    line-height:1.05 !important;
+    font-size:36px !important;
+    line-height:1.02 !important;
     letter-spacing:-1px !important;
     word-break:break-word !important;
     overflow-wrap:break-word !important;
+  }
+
+  .info-grid{
+    padding:18px;
+  }
+
+  .actions,
+  .btn-grid{
+    grid-template-columns:1fr;
+  }
+
+  .btn{
+    min-height:76px;
+    font-size:18px;
+  }
+
+  .negocio-galeria{
+    grid-template-columns:1fr;
+  }
+
+  .negocio-galeria img{
+    height:220px;
+  }
+
+  .info-item{
+    align-items:flex-start;
+  }
+
+  .footer-note{
+    text-align:center;
+    font-size:16px;
+    line-height:1.35;
+    padding:24px 18px;
   }
 }
 </style>

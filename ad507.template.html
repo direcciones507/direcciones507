@@ -30,6 +30,49 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      position: relative;
+    }
+
+    /* PANTALLA DE CARGA / PRELOADER */
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: #050b14;
+      z-index: 20000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .loader-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(59, 130, 246, 0.1);
+      border-left-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    .loader-text {
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      height: 20px;
+      text-align: center;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* CONTENEDOR INTELIGENTE */
@@ -190,11 +233,9 @@
       font-size: 24px;
     }
 
-    .gmaps-multicolor {
-      background: linear-gradient(to bottom right, #ea4335 25%, #4285f4 25% 50%, #fbbc05 50% 75%, #34a853 75%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: inline-block;
+    /* CORRECCIÓN PIN GOOGLE MAPS ORIGINAL */
+    .gmaps-original-color {
+      color: #ea4335;
     }
 
     .nav-box-text h4 {
@@ -226,7 +267,7 @@
       flex: 1;
     }
 
-    /* ===== NUEVA ESTRUCTURA DE GALERÍA PREMIUM PRO (REUBICADA ARRIBA) ===== */
+    /* ===== GALERÍA PREMIUM PRO AUTOMÁTICA ===== */
     .negocio-premium {
       display: none;
       padding: 0 0 20px;
@@ -242,7 +283,6 @@
       margin-bottom: 12px;
     }
 
-    /* Comportamiento móvil por defecto: 1 grande arriba, 2 abajo */
     .negocio-galeria {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -259,13 +299,11 @@
       cursor: pointer;
     }
 
-    /* La primera toma todo el ancho en móviles */
     .negocio-galeria img:first-child {
       grid-column: span 2;
       height: 200px;
     }
 
-    /* Adaptación fluida para pantallas de computadora */
     @media (min-width: 768px) {
       .negocio-galeria {
         grid-template-columns: 1.3fr 0.7fr;
@@ -273,7 +311,7 @@
       }
       .negocio-galeria img {
         height: 100%;
-        cursor: default; /* Sin zoom en escritorio */
+        cursor: default;
       }
       .negocio-galeria img:first-child {
         grid-column: 1 / 2;
@@ -282,7 +320,7 @@
       }
     }
 
-    /* Visor Lightbox para Pantalla Completa en Teléfono */
+    /* Visor Lightbox */
     .lightbox-overlay {
       position: fixed;
       inset: 0;
@@ -306,7 +344,7 @@
       box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     }
 
-    /* Grilla de 3: Ver Mapa, Llamar, Compartir */
+    /* Grillas de Acciones */
     .actions-triple-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -337,7 +375,6 @@
     .btn-action-triple span { font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .btn-action-triple p { font-size: 9px; color: #64748b; }
 
-    /* Grilla Redes Sociales */
     .social-quad-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -367,7 +404,6 @@
     .btn-social-quad.fb i { color: #1877f2; }
     .btn-social-quad.web i { color: #0284c7; }
 
-    /* Grilla de Botones en Pareja */
     .double-row-buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -375,6 +411,7 @@
       margin-bottom: 12px;
     }
 
+    /* ===== NUEVO SITEMA DE ACORDEÓN MEJORADO ===== */
     .accordion-item {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -385,6 +422,11 @@
       gap: 10px;
       position: relative;
       cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .accordion-item:hover {
+      background: #f1f5f9;
     }
 
     .accordion-icon-left {
@@ -413,6 +455,7 @@
       margin-bottom: 1px;
     }
 
+    /* Permite romper líneas y mostrar el texto completo al expandirse */
     .accordion-value {
       font-size: 12px;
       font-weight: 600;
@@ -420,9 +463,25 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transition: all 0.3s ease;
     }
 
-    .accordion-arrow-right { color: #94a3b8; font-size: 10px; }
+    .accordion-item.active .accordion-value {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+
+    .accordion-arrow-right { 
+      color: #94a3b8; 
+      font-size: 10px; 
+      transition: transform 0.3s ease;
+    }
+
+    .accordion-item.active .accordion-arrow-right {
+      transform: rotate(180deg);
+    }
+
     .accordion-full { margin-bottom: 12px; }
 
     .qr-section {
@@ -472,6 +531,12 @@
 
 <body>
 
+<!-- PANTALLA DE CARGA CON MENSAJES SECUENCIALES -->
+<div id="loaderOverlay" class="loader-overlay">
+  <div class="spinner"></div>
+  <div id="loaderText" class="loader-text">Verificando código...</div>
+</div>
+
 <div class="card">
 
   <div class="code-header">
@@ -504,7 +569,7 @@
 
   <div class="main-nav-grid">
     <a id="btnGoogle" class="nav-box box-google" target="_blank">
-      <i class="fa-solid fa-location-dot gmaps-multicolor"></i>
+      <i class="fa-solid fa-location-dot gmaps-original-color"></i>
       <div class="nav-box-text">
         <h4>Google Maps</h4>
         <p>Abrir navegación</p>
@@ -538,12 +603,11 @@
 
   <div class="white-sheet">
 
-    <div id="premium1920" class="negocio-premium">
+    <!-- CONTENEDOR DE GALERÍA DINÁMICA -->
+    <div id="premiumGalleryContainer" class="negocio-premium">
       <div class="sheet-section-title">Galería Comercial:</div>
-      <div class="negocio-galeria">
-        <img src="img/the1920/interior.jpg" alt="Imagen 1" class="gallery-clickable">
-        <img src="img/the1920/mojito.jpg" alt="Imagen 2" class="gallery-clickable">
-        <img src="img/the1920/martini.jpg" alt="Imagen 3" class="gallery-clickable">
+      <div id="galeriaFotos" class="negocio-galeria">
+        <!-- Las fotos del plan premium se inyectan aquí dinámicamente -->
       </div>
     </div>
 
@@ -609,7 +673,8 @@
       </div>
     </div>
 
-    <div class="accordion-item accordion-full" id="horario-container">
+    <!-- ACORDEÓN HORARIO -->
+    <div class="accordion-item accordion-full" id="btnHorario">
       <div class="accordion-icon-left"><i class="fa-solid fa-clock"></i></div>
       <div class="accordion-content-text">
         <div class="accordion-label">Horario de atención</div>
@@ -618,7 +683,8 @@
       <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
     </div>
 
-    <div class="accordion-item accordion-full">
+    <!-- ACORDEÓN UBICACIÓN -->
+    <div class="accordion-item accordion-full" id="btnRef">
       <div class="accordion-icon-left"><i class="fa-solid fa-location-dot"></i></div>
       <div class="accordion-content-text">
         <div class="accordion-label">Ubicación / Referencia</div>
@@ -671,25 +737,40 @@ document.addEventListener('DOMContentLoaded', function(){
   const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(window.location.href);
   document.getElementById('qrImg').src = qrUrl;
 
-  // GESTOR DE CLIC EN IMÁGENES (SÓLO MÓVIL)
+  // LÓGICA DE TEXTOS DE CARGA SECUENCIALES
+  const loaderTexts = ["Verificando código...", "Cargando ubicación...", "Preparando acceso..."];
+  let textIndex = 0;
+  const loaderTextElem = document.getElementById('loaderText');
+  
+  const loaderInterval = setInterval(() => {
+    textIndex = (textIndex + 1) % loaderTexts.length;
+    loaderTextElem.textContent = loaderTexts[textIndex];
+  }, 1200);
+
+  function ocultarCarga() {
+    clearInterval(loaderInterval);
+    const loader = document.getElementById('loaderOverlay');
+    loader.classList.add('hidden');
+  }
+
+  // GESTOR DE LIGHTBOX (SÓLO MÓVIL)
   const overlay = document.getElementById('lightboxOverlay');
   const lightboxImg = document.getElementById('lightboxImg');
-
-  document.querySelectorAll('.gallery-clickable').forEach(img => {
-    img.addEventListener('click', function() {
-      // Bloquea el visor si está en pantallas grandes de escritorio
-      if (window.innerWidth < 768) {
-        lightboxImg.src = this.src;
-        overlay.classList.add('show');
-      }
-    });
-  });
 
   overlay.addEventListener('click', function() {
     this.classList.remove('show');
   });
 
-  // FUNCIÓN REGISTRO AUTOMÁTICO DE CLICS
+  // SISTEMA DE APERTURA DE ACORDEONES CORREGIDO
+  function configurarAcordeon(idBoton) {
+    document.getElementById(idBoton).addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+  }
+  configurarAcordeon('btnHorario');
+  configurarAcordeon('btnRef');
+
+  // REGISTRO AUTOMÁTICO DE CLICS
   async function registrarClic(plataforma) {
     if(window.location.protocol === 'file:') return;
     try {
@@ -712,6 +793,7 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btnQR').addEventListener('click', function(){
     const box = document.getElementById('qrSection');
     box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    this.classList.toggle('active');
   });
 
   document.getElementById('btnShare').addEventListener('click', async function(){
@@ -764,6 +846,9 @@ document.addEventListener('DOMContentLoaded', function(){
       const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
       const data = await response.json();
 
+      // Forzar ocultar la pantalla de carga al recibir respuesta de la base de datos
+      ocultarCarga();
+
       if(!data.ok) return;
 
       document.getElementById('nombre').textContent = data.nombre || "Cliente Verificado";
@@ -812,12 +897,36 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnWeb').style.display = 'flex';
       }
 
-      if(CODE === "AD507-THE1920" || (data.plan && data.plan.toLowerCase().includes('premium'))){
-        document.getElementById('premium1920').style.display = 'block';
+      // INTEGRACIÓN DE GALERÍA DE IMÁGENES DINÁMICAS (PREMIUM PRO)
+      const esPremium = CODE === "AD507-THE1920" || (data.plan && data.plan.toLowerCase().includes('premium'));
+      
+      if(esPremium && data.fotos && Array.isArray(data.fotos) && data.fotos.length > 0){
+        const galeriaContainer = document.getElementById('galeriaFotos');
+        galeriaContainer.innerHTML = ''; // Vaciar contenedor antiguo
+
+        data.fotos.forEach((urlFoto, index) => {
+          const imgElement = document.createElement('img');
+          imgElement.src = urlFoto;
+          imgElement.alt = `Imagen ${index + 1}`;
+          imgElement.classList.add('gallery-clickable');
+
+          // Evento Lightbox individual para móviles
+          imgElement.addEventListener('click', function() {
+            if (window.innerWidth < 768) {
+              lightboxImg.src = this.src;
+              overlay.classList.add('show');
+            }
+          });
+
+          galeriaContainer.appendChild(imgElement);
+        });
+
+        document.getElementById('premiumGalleryContainer').style.display = 'block';
       }
 
     }catch(e){
       console.error(e);
+      ocultarCarga(); // Evita que se quede la pantalla fija en caso de error de red
     }
   }
 

@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       padding: 40px 24px;
     }
 
-    /* ===== TOPBAR (ESTILO NEUMÓRFICO FLOTANTE) ===== */
+    /* ===== TOPBAR ===== */
     .topbar {
       display: flex;
       align-items: center;
@@ -255,7 +255,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       font-weight: 700;
     }
 
-    /* ===== CARDS (ESTILO OSCURO TECNOLÓGICO) ===== */
+    /* ===== CARDS ===== */
     .card {
       background: rgba(15, 23, 42, 0.6);
       border-radius: 24px;
@@ -412,7 +412,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       color: #ffffff;
     }
 
-    /* ===== GRID DE PASOS (LAYOUT REESTRUCTURADO) ===== */
+    /* ===== GRID DE PASOS ===== */
     .info-top {
       display: grid;
       grid-template-columns: 1fr 300px;
@@ -465,7 +465,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       color: #ffffff;
     }
 
-    /* ===== PANEL QR MINIMALISTA ===== */
+    /* ===== PANEL QR ===== */
     .qr-box {
       background: rgba(15, 23, 42, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -500,7 +500,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
 
-    /* ===== MATRIZ DE PRECIOS (ESTILO COMPAÑÍA SAAS) ===== */
+    /* ===== MATRIZ DE PRECIOS ===== */
     .planes-title {
       font-size: 28px;
       font-weight: 900;
@@ -590,7 +590,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       color: #090d16;
     }
 
-    /* PLAN DESTACADO (PREMIUM) */
     .plan-card.plan-estrella {
       background: linear-gradient(180deg, rgba(37, 99, 235, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%);
       border: 2px solid #3b82f6;
@@ -628,7 +627,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       letter-spacing: 0.5px;
     }
 
-    /* PLAN PREMIUM PRO (ESTILO ULTRA LUX) */
     .plan-card.premium-pro {
       background: linear-gradient(145deg, #020617 0%, #0f172a 100%);
       border: 1px solid rgba(234, 179, 8, 0.3);
@@ -675,7 +673,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       border-color: rgba(255, 255, 255, 0.05);
     }
 
-    /* ===== SEO & FOOTER ===== */
+    /* ===== SEO LINKS ===== */
     .seo-btn {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.06);
@@ -699,19 +697,115 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       margin: 32px 0;
     }
 
-    .footer {
-      margin-top: 48px;
-      padding: 32px;
-      background: rgba(15, 23, 42, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 24px;
-      color: #64748b;
-      font-size: 13px;
-      text-align: center;
-      line-height: 1.6;
+    /* ===== NUEVOS ESTILOS PARA LOS BOTONES DE REDES (MÁS GRANDES) ===== */
+    .social-links-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 20px;
     }
 
-    /* ===== OVERLAY DE CARGA (PRO) ===== */
+    .social-pill-large {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 28px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 100px;
+      font-size: 16px;
+      color: #e2e8f0;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .social-pill-large i {
+      font-size: 20px;
+    }
+
+    /* Efectos de iluminación personalizados por marca */
+    .social-pill-large.ig:hover {
+      border-color: #d62976;
+      background: rgba(214, 41, 118, 0.1);
+      box-shadow: 0 8px 25px rgba(214, 41, 118, 0.2);
+      color: #fff;
+    }
+    .social-pill-large.tk:hover {
+      border-color: #ff0050;
+      background: rgba(255, 0, 80, 0.1);
+      box-shadow: 0 8px 25px rgba(255, 0, 80, 0.2);
+      color: #fff;
+    }
+    .social-pill-large.fb:hover {
+      border-color: #1877f2;
+      background: rgba(24, 119, 242, 0.1);
+      box-shadow: 0 8px 25px rgba(24, 119, 242, 0.2);
+      color: #fff;
+    }
+    .social-pill-large.wa:hover {
+      border-color: #25d366;
+      background: rgba(37, 211, 102, 0.1);
+      box-shadow: 0 8px 25px rgba(37, 211, 102, 0.2);
+      color: #fff;
+    }
+
+    /* ===== NUEVO FOOTER PREMIUM INTERNACIONAL ===== */
+    .premium-footer {
+      margin-top: 60px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(2, 6, 23, 0.8) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 32px;
+      padding: 40px 32px;
+    }
+
+    .footer-top-text {
+      color: #94a3b8;
+      font-size: 14px;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto 24px;
+    }
+
+    .footer-bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .footer-copyright {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .footer-copyright strong {
+      color: #cbd5e1;
+    }
+
+    .footer-legal-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-legal-links a {
+      color: #64748b;
+      font-size: 13px;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-legal-links a:hover {
+      color: #3b82f6;
+    }
+
+    /* ===== OVERLAY DE CARGA ===== */
     .code-loading-overlay {
       position: fixed;
       inset: 0;
@@ -788,7 +882,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       color: #3b82f6;
     }
 
-    /* ===== TARJETA DE IMPRESIÓN IMPRIMIR ===== */
+    /* ===== TARJETA DE IMPRESIÓN ===== */
     #printCard {
       background: #ffffff;
       border-radius: 24px;
@@ -798,7 +892,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       margin: 0 auto;
     }
 
-    /* ===== RESPONSIVE DISEÑO MÓVIL ===== */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 992px) {
       .hero-grid, .info-top {
         grid-template-columns: 1fr !important;
@@ -834,6 +928,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       }
       .social-wrap input[type="text"], .social-wrap button {
         width: 100%;
+      }
+      .footer-bottom-row {
+        flex-direction: column;
+        text-align: center;
+      }
+      .footer-legal-links {
+        justify-content: center;
+        gap: 16px;
       }
     }
   </style>
@@ -1030,7 +1132,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
            Notifica por WhatsApp cuando estés cerca o ya hayas llegado.
          </div>
 
-          <div class="btn-grid" id="gridVerificacion" style="display: block;">
+          <!-- AJUSTE: El botón QR para imprimir ya no aparece por defecto en la página principal (style="display: none;") -->
+          <div class="btn-grid" id="gridVerificacion" style="display: none;">
             <a href="#" id="linkVerificacion" class="btn btn-google">
               <i class="fa-solid fa-qrcode"></i> QR para imprimir
             </a>
@@ -1210,33 +1313,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
 
-    <!-- Redes -->
+    <!-- SECCIÓN DE REDES SOCIALES OPTIMIZADAS (BOTONES MÁS GRANDES Y PREMIUM) -->
     <div class="divider"></div>
-    <h3 style="font-size: 14px; text-transform:uppercase; letter-spacing:1px; color:#64748b; margin-bottom:16px; text-align:center;">Nuestras Redes</h3>
-    <div class="social-wrap" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;">
-      <a class="pill" href="https://www.instagram.com/direccionesdigitalespty" target="_blank"><i class="fa-brands fa-instagram" style="color: #d62976;"></i> Instagram</a>
-      <a class="pill" href="https://www.tiktok.com/@direcciones507" target="_blank"><i class="fa-brands fa-tiktok"></i> TikTok</a>
-      <a class="pill" href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank"><i class="fa-brands fa-facebook" style="color: #1877f2;"></i> Facebook</a>
-      <a class="pill" href="https://wa.me/50765996532" target="_blank"><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp</a>
+    <h3 style="font-size: 14px; text-transform:uppercase; letter-spacing:1.5px; color:#64748b; margin-bottom:8px; text-align:center; font-weight: 700;">Conéctate con Nosotros</h3>
+    <div class="social-links-wrap">
+      <a class="social-pill-large ig" href="https://www.instagram.com/direccionesdigitalespty" target="_blank"><i class="fa-brands fa-instagram" style="color: #d62976;"></i> Instagram</a>
+      <a class="social-pill-large tk" href="https://www.tiktok.com/@direcciones507" target="_blank"><i class="fa-brands fa-tiktok"></i> TikTok</a>
+      <a class="social-pill-large fb" href="https://www.facebook.com/profile.php?id=61587079091033" target="_blank"><i class="fa-brands fa-facebook" style="color: #1877f2;"></i> Facebook</a>
+      <a class="social-pill-large wa" href="https://wa.me/50765996532" target="_blank"><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp</a>
     </div>
 
-    <!-- FOOTER -->
-    <div class="footer">
-      <b style="color:#fff;">Direcciones507® y AD507® son sistemas digitales exclusivos desarrollados en Panamá.</b><br>
-      Queda estrictamente prohibida su reproducción, imitación o uso comercial sin autorización expresa del titular.
-    </div>
+    <!-- NUEVO PIE DE PÁGINA (FOOTER RECOMENDADO PREMIUM CON DERECHOS RESERVADOS PANAMÁ) -->
+    <footer class="premium-footer">
+      <div class="footer-top-text">
+        <strong>Direcciones507®</strong> y el ecosistema de códigos <strong>AD507®</strong> representan la infraestructura logística y de direccionamiento digital de vanguardia desarrollada de manera exclusiva en la República de Panamá. Queda estrictamente prohibida la alteración, duplicidad o explotación no autorizada de sus componentes protegidos de propiedad intelectual.
+      </div>
+      <div class="footer-bottom-row">
+        <div class="footer-copyright">
+          © 2026 <strong>Direcciones507</strong>. Todos los derechos reservados · Hecho en Panamá 🇵🇦
+        </div>
+        <div class="footer-legal-links">
+          <a href="#">Términos de Uso</a>
+          <a href="#">Privacidad</a>
+          <a href="#">Soporte</a>
+        </div>
+      </div>
+    </footer>
 
     <!-- ENLACES AD507 PARA GOOGLE -->
     <div style="max-width: 900px; margin: 48px auto 0; text-align: center; font-size: 13px;">
-      <h2 style="color: #64748b; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom: 12px;">Direcciones AD507</h2>
-      <p style="color:#475569;">Direcciones digitales en Panamá.</p>
+      <h2 style="color: #475569; font-size:13px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom: 12px;">Índice de Direcciones AD507</h2>
       <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px;">
-        <a href="/AD507-0001" style="color: #94a3b8; text-decoration:none;">AD507-0001</a>
-        <a href="/?code=AD507-transportejedidias" style="color: #94a3b8; text-decoration:none;">AD507-transportejedidias</a>
-        <a href="/AD507-0017" style="color: #94a3b8; text-decoration:none;">AD507-0017</a>
-        <a href="/AD507-0004" style="color: #94a3b8; text-decoration:none;">AD507-0004</a>
-        <a href="/?code=AD507-labdieselmontero" style="color: #94a3b8; text-decoration:none;">AD507-labdieselmontero</a>
-        <a href="/AD507-THE1920" style="color: #94a3b8; text-decoration:none;">AD507-THE1920</a>
+        <a href="/AD507-0001" style="color: #475569; text-decoration:none;">AD507-0001</a>
+        <a href="/?code=AD507-transportejedidias" style="color: #475569; text-decoration:none;">AD507-transportejedidias</a>
+        <a href="/AD507-0017" style="color: #475569; text-decoration:none;">AD507-0017</a>
+        <a href="/AD507-0004" style="color: #475569; text-decoration:none;">AD507-0004</a>
+        <a href="/?code=AD507-labdieselmontero" style="color: #475569; text-decoration:none;">AD507-labdieselmontero</a>
+        <a href="/AD507-THE1920" style="color: #475569; text-decoration:none;">AD507-THE1920</a>
       </div>
     </div>
 
@@ -1281,6 +1394,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     show(document.getElementById("gridCompartir"), "grid");
     show(document.getElementById("notaVerificacion"), "block");
     show(document.getElementById("divAfterVerif"), "block");
+    
+    // Muestra dinámicamente el botón QR para imprimir solo tras una consulta válida
+    show(document.getElementById("gridVerificacion"), "block"); 
   }
 
   function hidePanelSections() {
@@ -1297,6 +1413,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     hide(document.getElementById("statsPanel"));
     hide(document.getElementById("printCardWrap"));
     hide(document.getElementById("privacyCard"));
+    
+    // Lo mantiene oculto en la landing principal
+    hide(document.getElementById("gridVerificacion")); 
   }
 
   function extractLinkFromQr(qrUrl) {

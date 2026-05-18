@@ -11,11 +11,11 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2 family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
   <style>
-    /* ===== RESET & VARIABLES (LOOK COMPACTO MÓVIL) ===== */
+    /* ===== RESET & VARIABLES ===== */
     *{
       margin:0;
       padding:0;
@@ -32,7 +32,7 @@
       align-items: flex-start;
     }
 
-    /* Contenedor tipo pantalla de Smartphone */
+    /* CONTENEDOR INTELIGENTE */
     .card{
       width:100%;
       max-width:480px; 
@@ -44,6 +44,16 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: max-width 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+      .card {
+        max-width: 720px; 
+        margin: 20px auto;
+        min-height: calc(100vh - 40px);
+        border-radius: 24px;
+      }
     }
 
     /* ===== HEADER MÓVIL PREMIUM ===== */
@@ -84,7 +94,6 @@
       font-weight: 500;
     }
 
-    /* Badge Verificado */
     .verified-badge-top {
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.3);
@@ -113,7 +122,7 @@
       color: #64748b;
     }
 
-    /* ===== AREA DE IDENTIDAD (HERO NEGOCIO) ===== */
+    /* ===== AREA DE IDENTIDAD ===== */
     .identity-block {
       padding: 15px 18px;
       display: flex;
@@ -123,13 +132,13 @@
     }
 
     #logoBox {
-      display: none; /* JS lo activa si existe */
+      display: none; 
       flex-shrink: 0;
     }
 
     #logoNegocio {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       object-fit: contain;
       background: #ffffff;
       border-radius: 18px;
@@ -139,24 +148,26 @@
 
     .title-details-header {
       flex: 1;
+      min-width: 0;
     }
 
     #codigo {
-      font-size: 26px;
+      font-size: 21px; 
       font-weight: 900;
       color: #ffffff;
-      letter-spacing: -1px;
+      letter-spacing: -0.8px;
       margin-bottom: 4px;
+      word-wrap: break-word;
+      line-height: 1.2;
     }
 
-    /* Estilos dinámicos para textos Premium del bloque superior */
     .negocio-premium-top-text {
       color: #94a3b8;
       font-size: 13px;
       line-height: 1.3;
     }
 
-    /* ===== GRILLA PRINCIPAL DE NAVEGACIÓN (DE 2 EN 2) ===== */
+    /* ===== GRILLA PRINCIPAL DE NAVEGACIÓN ===== */
     .main-nav-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -177,6 +188,13 @@
 
     .nav-box i {
       font-size: 24px;
+    }
+
+    .gmaps-multicolor {
+      background: linear-gradient(to bottom right, #ea4335 25%, #4285f4 25% 50%, #fbbc05 50% 75%, #34a853 75%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
     }
 
     .nav-box-text h4 {
@@ -203,9 +221,16 @@
     .white-sheet {
       background: #ffffff;
       border-radius: 28px 28px 0 0;
-      padding: 20px 18px 0px;
+      padding: 24px 18px 0px;
       margin-top: 15px;
       flex: 1;
+    }
+
+    /* ===== NUEVA ESTRUCTURA DE GALERÍA PREMIUM PRO (REUBICADA ARRIBA) ===== */
+    .negocio-premium {
+      display: none;
+      padding: 0 0 20px;
+      width: 100%;
     }
 
     .sheet-section-title {
@@ -215,7 +240,70 @@
       letter-spacing: 0.5px;
       text-transform: uppercase;
       margin-bottom: 12px;
-      padding-left: 4px;
+    }
+
+    /* Comportamiento móvil por defecto: 1 grande arriba, 2 abajo */
+    .negocio-galeria {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    .negocio-galeria img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      cursor: pointer;
+    }
+
+    /* La primera toma todo el ancho en móviles */
+    .negocio-galeria img:first-child {
+      grid-column: span 2;
+      height: 200px;
+    }
+
+    /* Adaptación fluida para pantallas de computadora */
+    @media (min-width: 768px) {
+      .negocio-galeria {
+        grid-template-columns: 1.3fr 0.7fr;
+        grid-template-rows: repeat(2, 110px);
+      }
+      .negocio-galeria img {
+        height: 100%;
+        cursor: default; /* Sin zoom en escritorio */
+      }
+      .negocio-galeria img:first-child {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+        height: 230px;
+      }
+    }
+
+    /* Visor Lightbox para Pantalla Completa en Teléfono */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 11, 20, 0.95);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease;
+    }
+    .lightbox-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .lightbox-img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     }
 
     /* Grilla de 3: Ver Mapa, Llamar, Compartir */
@@ -223,7 +311,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
 
     .btn-action-triple {
@@ -245,23 +333,16 @@
       color: #1e3a8a;
     }
 
-    .btn-action-triple span {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
+    .btn-action-triple .fa-map-marked-alt { color: #ea4335; }
+    .btn-action-triple span { font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .btn-action-triple p { font-size: 9px; color: #64748b; }
 
-    .btn-action-triple p {
-      font-size: 9px;
-      color: #64748b;
-    }
-
-    /* Grilla Redes Sociales (Fila Compacta Cuádruple) */
+    /* Grilla Redes Sociales */
     .social-quad-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
 
     .btn-social-quad {
@@ -280,94 +361,75 @@
       text-transform: uppercase;
     }
 
-    .btn-social-quad i {
-      font-size: 14px;
-    }
-
+    .btn-social-quad i { font-size: 14px; }
     .btn-social-quad.ig i { color: #d62976; }
     .btn-social-quad.tk i { color: #000000; }
     .btn-social-quad.fb i { color: #1877f2; }
     .btn-social-quad.web i { color: #0284c7; }
 
-    /* ===== BLOQUES DESPLEGABLES / ACORDEONES (MORA FORMATO) ===== */
+    /* Grilla de Botones en Pareja */
+    .double-row-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
     .accordion-item {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 16px;
-      padding: 14px 16px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 12px;
+      gap: 10px;
       position: relative;
       cursor: pointer;
     }
 
     .accordion-icon-left {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: #e0f2fe;
       color: #0284c7;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      font-size: 13px;
       flex-shrink: 0;
     }
 
     .accordion-content-text {
       flex: 1;
+      min-width: 0;
     }
 
     .accordion-label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       color: #64748b;
       text-transform: uppercase;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
 
     .accordion-value {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #0f172a;
-      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .accordion-arrow-right {
-      color: #94a3b8;
-      font-size: 12px;
-    }
+    .accordion-arrow-right { color: #94a3b8; font-size: 10px; }
+    .accordion-full { margin-bottom: 12px; }
 
-    /* Contenedor dinámico de Galería e Información Extra */
-    .negocio-premium {
-      display: none;
-      padding: 4px 4px 14px;
-      width: 100%;
-    }
-
-    .negocio-galeria {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      width: 100%;
-      margin-top: 4px;
-    }
-
-    .negocio-galeria img {
-      width: 100%;
-      height: 90px;
-      object-fit: cover;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    /* Bloque QR Ocultable */
     .qr-section {
       display: none;
       text-align: center;
       padding: 10px 0 14px;
+      grid-column: span 2;
     }
 
     .qr-box {
@@ -379,23 +441,11 @@
       width: 100%;
     }
 
-    .qr-box h3 {
-      font-size: 13px;
-      color: #0f172a;
-      margin-bottom: 10px;
-    }
+    .qr-box h3 { font-size: 13px; color: #0f172a; margin-bottom: 10px; }
+    .qr-box img { width: 150px; height: 150px; }
+    .seo-text { display: none; }
 
-    .qr-box img {
-      width: 150px;
-      height: 150px;
-    }
-
-    /* Ocultación de texto SEO redundante según interfaz */
-    .seo-text {
-      display: none;
-    }
-
-    /* ===== PREMIUM FOOTER (REPLICADO DE TU CAPTURA) ===== */
+    /* ===== PREMIUM FOOTER ===== */
     .premium-footer {
       background: #070f1e;
       padding: 20px 18px;
@@ -406,56 +456,17 @@
       margin-top: auto;
     }
 
-    .footer-brand-side {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    @media (min-width: 768px) { .premium-footer { border-radius: 0 0 24px 24px; } }
 
-    .footer-brand-side i {
-      font-size: 20px;
-      color: #3b82f6;
-    }
-
-    .footer-title-main {
-      color: #ffffff;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: -0.3px;
-    }
-
-    .footer-title-main span {
-      color: #3b82f6;
-    }
-
-    .footer-subtitle-sub {
-      color: #64748b;
-      font-size: 9px;
-    }
-
-    .footer-secure-side {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-align: right;
-    }
-
-    .footer-secure-side i {
-      color: #64748b;
-      font-size: 16px;
-    }
-
-    .secure-title-text {
-      color: #cbd5e1;
-      font-size: 10px;
-      font-weight: 700;
-      line-height: 1.1;
-    }
-
-    .secure-desc-text {
-      color: #64748b;
-      font-size: 8px;
-    }
+    .footer-brand-side { display: flex; align-items: center; gap: 8px; }
+    .footer-brand-side i { font-size: 20px; color: #3b82f6; }
+    .footer-title-main { color: #ffffff; font-size: 13px; font-weight: 900; letter-spacing: -0.3px; }
+    .footer-title-main span { color: #3b82f6; }
+    .footer-subtitle-sub { color: #64748b; font-size: 9px; }
+    .footer-secure-side { display: flex; align-items: center; gap: 8px; text-align: right; }
+    .footer-secure-side i { color: #64748b; font-size: 16px; }
+    .secure-title-text { color: #cbd5e1; font-size: 10px; font-weight: 700; line-height: 1.1; }
+    .secure-desc-text { color: #64748b; font-size: 8px; }
   </style>
 </head>
 
@@ -493,7 +504,7 @@
 
   <div class="main-nav-grid">
     <a id="btnGoogle" class="nav-box box-google" target="_blank">
-      <i class="fa-solid fa-location-dot"></i>
+      <i class="fa-solid fa-location-dot gmaps-multicolor"></i>
       <div class="nav-box-text">
         <h4>Google Maps</h4>
         <p>Abrir navegación</p>
@@ -526,14 +537,21 @@
   </div>
 
   <div class="white-sheet">
-    
-    <div class="sheet-section-title">Llegar Con:</div>
+
+    <div id="premium1920" class="negocio-premium">
+      <div class="sheet-section-title">Galería Comercial:</div>
+      <div class="negocio-galeria">
+        <img src="img/the1920/interior.jpg" alt="Imagen 1" class="gallery-clickable">
+        <img src="img/the1920/mojito.jpg" alt="Imagen 2" class="gallery-clickable">
+        <img src="img/the1920/martini.jpg" alt="Imagen 3" class="gallery-clickable">
+      </div>
+    </div>
 
     <div class="actions-triple-row">
       <a id="btnGoogleSecundario" class="btn-action-triple" target="_blank" href="#">
         <i class="fa-solid fa-map-marked-alt"></i>
         <span>Ver Mapa</span>
-        <p>En Google Maps</p>
+        <p>Google Maps</p>
       </a>
 
       <a id="btnCall" class="btn-action-triple" href="#">
@@ -560,36 +578,38 @@
         <i class="fa-brands fa-facebook"></i> Facebook
       </a>
       <a id="btnWeb" class="btn-social-quad web" target="_blank" style="display:none;">
-        <i class="fa-solid fa-globe"></i> Sitio Web
+        <i class="fa-solid fa-globe"></i> Web
       </a>
     </div>
 
-    <div class="accordion-item" id="btnQR">
-      <div class="accordion-icon-left"><i class="fa-solid fa-qrcode"></i></div>
-      <div class="accordion-content-text">
-        <div class="accordion-label">Ver QR</div>
-        <div class="accordion-value">Para imprimir</div>
+    <div class="double-row-buttons">
+      <div class="accordion-item" id="btnQR">
+        <div class="accordion-icon-left"><i class="fa-solid fa-qrcode"></i></div>
+        <div class="accordion-content-text">
+          <div class="accordion-label">Ver QR</div>
+          <div class="accordion-value">Imprimir</div>
+        </div>
+        <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
       </div>
-      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
+
+      <div class="accordion-item" id="btnStats">
+        <div class="accordion-icon-left"><i class="fa-solid fa-chart-bar"></i></div>
+        <div class="accordion-content-text">
+          <div class="accordion-label">Clic en mapa</div>
+          <div class="accordion-value" id="valClicks">Estadísticas</div>
+        </div>
+        <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
+      </div>
+
+      <div id="qrSection" class="qr-section">
+        <div class="qr-box">
+          <h3>QR para compartir esta dirección</h3>
+          <img id="qrImg" src="" alt="QR de la dirección">
+        </div>
+      </div>
     </div>
 
-    <div id="qrSection" class="qr-section">
-      <div class="qr-box">
-        <h3>QR para compartir esta dirección</h3>
-        <img id="qrImg" src="" alt="QR de la dirección">
-      </div>
-    </div>
-
-    <div class="accordion-item" id="btnStats">
-      <div class="accordion-icon-left"><i class="fa-solid fa-chart-bar"></i></div>
-      <div class="accordion-content-text">
-        <div class="accordion-label">Clics en mapa</div>
-        <div class="accordion-value" id="valClicks">Ver estadísticas</div>
-      </div>
-      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
-    </div>
-
-    <div class="accordion-item" id="horario-container">
+    <div class="accordion-item accordion-full" id="horario-container">
       <div class="accordion-icon-left"><i class="fa-solid fa-clock"></i></div>
       <div class="accordion-content-text">
         <div class="accordion-label">Horario de atención</div>
@@ -598,22 +618,13 @@
       <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
     </div>
 
-    <div class="accordion-item">
+    <div class="accordion-item accordion-full">
       <div class="accordion-icon-left"><i class="fa-solid fa-location-dot"></i></div>
       <div class="accordion-content-text">
         <div class="accordion-label">Ubicación / Referencia</div>
         <div class="accordion-value" id="ref">Cargando detalles...</div>
       </div>
       <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
-    </div>
-
-    <div id="premium1920" class="negocio-premium">
-      <div class="sheet-section-title" style="margin-top: 10px;">Galería Comercial:</div>
-      <div class="negocio-galeria">
-        <img src="img/the1920/interior.jpg" alt="Galería 1">
-        <img src="img/the1920/mojito.jpg" alt="Galería 2">
-        <img src="img/the1920/martini.jpg" alt="Galería 3">
-      </div>
     </div>
 
     <div class="seo-text">
@@ -642,6 +653,10 @@
 
 </div>
 
+<div id="lightboxOverlay" class="lightbox-overlay">
+  <img id="lightboxImg" src="" alt="Vista Previa" class="lightbox-img">
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function(){
 
@@ -655,6 +670,44 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(window.location.href);
   document.getElementById('qrImg').src = qrUrl;
+
+  // GESTOR DE CLIC EN IMÁGENES (SÓLO MÓVIL)
+  const overlay = document.getElementById('lightboxOverlay');
+  const lightboxImg = document.getElementById('lightboxImg');
+
+  document.querySelectorAll('.gallery-clickable').forEach(img => {
+    img.addEventListener('click', function() {
+      // Bloquea el visor si está en pantallas grandes de escritorio
+      if (window.innerWidth < 768) {
+        lightboxImg.src = this.src;
+        overlay.classList.add('show');
+      }
+    });
+  });
+
+  overlay.addEventListener('click', function() {
+    this.classList.remove('show');
+  });
+
+  // FUNCIÓN REGISTRO AUTOMÁTICO DE CLICS
+  async function registrarClic(plataforma) {
+    if(window.location.protocol === 'file:') return;
+    try {
+      await fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODE)}&platform=${plataforma}`, {
+        method: "GET",
+        mode: "no-cors"
+      });
+    } catch(e) {
+      console.error("Error al guardar clic:", e);
+    }
+  }
+
+  document.getElementById('btnGoogle').addEventListener('click', () => registrarClic('google'));
+  document.getElementById('btnGoogleSecundario').addEventListener('click', () => registrarClic('google'));
+  document.getElementById('btnWaze').addEventListener('click', () => registrarClic('waze'));
+  document.getElementById('btnUber').addEventListener('click', () => registrarClic('uber'));
+  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('share'));
+  document.getElementById('btnShare').addEventListener('click', () => registrarClic('share'));
 
   document.getElementById('btnQR').addEventListener('click', function(){
     const box = document.getElementById('qrSection');
@@ -691,16 +744,14 @@ document.addEventListener('DOMContentLoaded', function(){
       }
 
       const s = data.stats || {};
-      
-      // Actualiza la visualización interna del acordeón de clics
-      document.getElementById('valClicks').textContent = `${(s.google || 0) + (s.waze || 0) + (s.uber || 0)} Clics Totales`;
+      document.getElementById('valClicks').textContent = `${(s.google || 0) + (s.waze || 0) + (s.uber || 0)} Clics`;
 
       alert(
-        "Contador AD507\n\n" +
+        "Contador Direcciones507\n\n" +
         "Google Maps: " + (s.google || 0) + "\n" +
         "Waze: " + (s.waze || 0) + "\n" +
         "Uber: " + (s.uber || 0) + "\n" +
-        "Compartir: " + (s.share || 0)
+        "Compartir/WhatsApp: " + (s.share || 0)
       );
 
     }catch(e){
@@ -710,15 +761,11 @@ document.addEventListener('DOMContentLoaded', function(){
 
   async function cargarDireccion(){
     try{
-      if(window.location.protocol === 'file:'){
-        console.warn("Ejecución local detectada.");
-      }
       const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
       const data = await response.json();
 
       if(!data.ok) return;
 
-      // Vincula el nombre corto directo a la cabecera e identidad
       document.getElementById('nombre').textContent = data.nombre || "Cliente Verificado";
       document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";
 
@@ -731,7 +778,6 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('horario').textContent = data.horario;
       }
 
-      // Enlaces de navegación GPS primarios y secundarios
       document.getElementById('btnGoogle').href = data.google || "#";
       document.getElementById('btnGoogleSecundario').href = data.google || "#";
       document.getElementById('btnWaze').href = data.waze || "#";
@@ -766,7 +812,6 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnWeb').style.display = 'flex';
       }
 
-      // Render de Perfiles Premium autorizados (Muestra la galería de fotos adjunta)
       if(CODE === "AD507-THE1920" || (data.plan && data.plan.toLowerCase().includes('premium'))){
         document.getElementById('premium1920').style.display = 'block';
       }

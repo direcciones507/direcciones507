@@ -233,7 +233,7 @@
       font-size: 24px;
     }
 
-    /* CORRECCIÓN PIN GOOGLE MAPS ORIGINAL */
+    /* PIN GOOGLE MAPS ORIGINAL */
     .gmaps-original-color {
       color: #ea4335;
     }
@@ -411,7 +411,7 @@
       margin-bottom: 12px;
     }
 
-    /* ===== NUEVO SITEMA DE ACORDEÓN MEJORADO ===== */
+    /* SITEMA DE ACORDEÓN MEJORADO */
     .accordion-item {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -455,7 +455,6 @@
       margin-bottom: 1px;
     }
 
-    /* Permite romper líneas y mostrar el texto completo al expandirse */
     .accordion-value {
       font-size: 12px;
       font-weight: 600;
@@ -531,7 +530,6 @@
 
 <body>
 
-<!-- PANTALLA DE CARGA CON MENSAJES SECUENCIALES -->
 <div id="loaderOverlay" class="loader-overlay">
   <div class="spinner"></div>
   <div id="loaderText" class="loader-text">Verificando código...</div>
@@ -603,12 +601,10 @@
 
   <div class="white-sheet">
 
-    <!-- CONTENEDOR DE GALERÍA DINÁMICA -->
     <div id="premiumGalleryContainer" class="negocio-premium">
       <div class="sheet-section-title">Galería Comercial:</div>
       <div id="galeriaFotos" class="negocio-galeria">
-        <!-- Las fotos del plan premium se inyectan aquí dinámicamente -->
-      </div>
+        </div>
     </div>
 
     <div class="actions-triple-row">
@@ -673,7 +669,6 @@
       </div>
     </div>
 
-    <!-- ACORDEÓN HORARIO -->
     <div class="accordion-item accordion-full" id="btnHorario">
       <div class="accordion-icon-left"><i class="fa-solid fa-clock"></i></div>
       <div class="accordion-content-text">
@@ -683,7 +678,6 @@
       <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
     </div>
 
-    <!-- ACORDEÓN UBICACIÓN -->
     <div class="accordion-item accordion-full" id="btnRef">
       <div class="accordion-icon-left"><i class="fa-solid fa-location-dot"></i></div>
       <div class="accordion-content-text">
@@ -728,6 +722,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec";
 
+  // Captura dinámicamente el código desde la URL
   const pathCode = window.location.pathname.split('/').filter(Boolean).pop();
   const CODE = (pathCode || "AD507-CODE").toUpperCase();
 
@@ -770,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function(){
   configurarAcordeon('btnHorario');
   configurarAcordeon('btnRef');
 
-  // REGISTRO AUTOMÁTICO DE CLICS
+  // REGISTRO UNIVERSAL DE CLICS (Envía el CODE exacto del negocio dinámicamente)
   async function registrarClic(plataforma) {
     if(window.location.protocol === 'file:') return;
     try {
@@ -846,7 +841,7 @@ document.addEventListener('DOMContentLoaded', function(){
       const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
       const data = await response.json();
 
-      // Forzar ocultar la pantalla de carga al recibir respuesta de la base de datos
+      // Ocultar pre-loader
       ocultarCarga();
 
       if(!data.ok) return;
@@ -897,36 +892,51 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnWeb').style.display = 'flex';
       }
 
-      // INTEGRACIÓN DE GALERÍA DE IMÁGENES DINÁMICAS (PREMIUM PRO)
-      const esPremium = CODE === "AD507-THE1920" || (data.plan && data.plan.toLowerCase().includes('premium'));
+      // CORRECCIÓN Y VERIFICACIÓN UNIVERSAL DE PLANES PREMIUM/PRO
+      // Detecta de forma inteligente si la celda "plan" contiene la palabra 'premium' o 'pro' sin importar el código
+      const planNormalizado = String(data.plan || "").toLowerCase();
+      const esPlanPremiumPro = CODE === "AD507-THE1920" || planNormalizado.includes('premium') || planNormalizado.includes('pro');
       
-      if(esPremium && data.fotos && Array.isArray(data.fotos) && data.fotos.length > 0){
-        const galeriaContainer = document.getElementById('galeriaFotos');
-        galeriaContainer.innerHTML = ''; // Vaciar contenedor antiguo
+      if(esPlanPremiumPro){
+        let listaFotos = [];
 
-        data.fotos.forEach((urlFoto, index) => {
-          const imgElement = document.createElement('img');
-          imgElement.src = urlFoto;
-          imgElement.alt = `Imagen ${index + 1}`;
-          imgElement.classList.add('gallery-clickable');
+        // Verifica si la base de datos envía un array o celdas individuales por separado
+        if(data.fotos && Array.isArray(data.fotos)){
+          listaFotos = data.fotos.filter(url => url);
+        } else {
+          if(data.foto1) listaFotos.push(data.foto1);
+          if(data.foto2) listaFotos.push(data.foto2);
+          if(data.foto3) listaFotos.push(data.foto3);
+        }
 
-          // Evento Lightbox individual para móviles
-          imgElement.addEventListener('click', function() {
-            if (window.innerWidth < 768) {
-              lightboxImg.src = this.src;
-              overlay.classList.add('show');
-            }
+        // Renderiza la grilla comercial si se detectan imágenes válidas
+        if(listaFotos.length > 0){
+          const galeriaContainer = document.getElementById('galeriaFotos');
+          galeriaContainer.innerHTML = ''; 
+
+          listaFotos.forEach((urlFoto, index) => {
+            const imgElement = document.createElement('img');
+            imgElement.src = urlFoto;
+            imgElement.alt = `Imagen ${index + 1}`;
+            imgElement.classList.add('gallery-clickable');
+
+            imgElement.addEventListener('click', function() {
+              if (window.innerWidth < 768) {
+                lightboxImg.src = this.src;
+                overlay.classList.add('show');
+              }
+            });
+
+            galeriaContainer.appendChild(imgElement);
           });
 
-          galeriaContainer.appendChild(imgElement);
-        });
-
-        document.getElementById('premiumGalleryContainer').style.display = 'block';
+          document.getElementById('premiumGalleryContainer').style.display = 'block';
+        }
       }
 
     }catch(e){
       console.error(e);
-      ocultarCarga(); // Evita que se quede la pantalla fija en caso de error de red
+      ocultarCarga();
     }
   }
 

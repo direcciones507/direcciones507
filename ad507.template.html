@@ -922,11 +922,10 @@ document.addEventListener('DOMContentLoaded', function(){
             imgElement.classList.add('gallery-clickable');
 
             imgElement.addEventListener('click', function() {
-              if (window.innerWidth < 768) {
-                lightboxImg.src = this.src;
-                overlay.classList.add('show');
-              }
-            });
+              lightboxImg.src = this.src;
+              overlay.classList.add('show');
+          });
+
 
             galeriaContainer.appendChild(imgElement);
           });

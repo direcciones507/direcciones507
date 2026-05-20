@@ -720,6 +720,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
 
+  // ⚠️ RECOMPILA TU APPSCRIPT E INTRODUCE LA NUEVA URL AQUÍ SI LLEGA A CAMBIAR
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec";
 
   // Captura dinámicamente el código desde la URL
@@ -765,11 +766,11 @@ document.addEventListener('DOMContentLoaded', function(){
   configurarAcordeon('btnHorario');
   configurarAcordeon('btnRef');
 
-  // REGISTRO UNIVERSAL DE CLICS (Envía el CODE exacto del negocio dinámicamente)
+  // ✅ PARCHE: REGISTRO UNIVERSAL DE CLICS ADAPTADO AL NUEVO ACCESO DEL APPSCRIPT (action=track y event=plataforma)
   async function registrarClic(plataforma) {
     if(window.location.protocol === 'file:') return;
     try {
-      await fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODE)}&platform=${plataforma}`, {
+      await fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODE)}&event=${plataforma}`, {
         method: "GET",
         mode: "no-cors"
       });
@@ -782,7 +783,7 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btnGoogleSecundario').addEventListener('click', () => registrarClic('google'));
   document.getElementById('btnWaze').addEventListener('click', () => registrarClic('waze'));
   document.getElementById('btnUber').addEventListener('click', () => registrarClic('uber'));
-  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('share'));
+  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('aviso')); // Cambiado a aviso para que sume correctamente en la columna correspondiente
   document.getElementById('btnShare').addEventListener('click', () => registrarClic('share'));
 
   document.getElementById('btnQR').addEventListener('click', function(){
@@ -828,7 +829,8 @@ document.addEventListener('DOMContentLoaded', function(){
         "Google Maps: " + (s.google || 0) + "\n" +
         "Waze: " + (s.waze || 0) + "\n" +
         "Uber: " + (s.uber || 0) + "\n" +
-        "Compartir/WhatsApp: " + (s.share || 0)
+        "Compartir: " + (s.share || 0) + "\n" +
+        "WhatsApp Aviso: " + (s.aviso || 0)
       );
 
     }catch(e){
@@ -864,7 +866,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('btnUber').href = data.uber || "#";
 
       const tel = String(data.telefono || "").replace(/\D/g,'');
-      document.getElementById('btnWhats').href = tel ? `https://wa.me/${tel}` : "#";
+      document.getElementById('btnWhats').href = data.whatsapp || "#"; // Usar el link directo formateado por el AppScript
       document.getElementById('btnCall').href = tel ? `tel:${tel}` : "#";
       
       if(tel && document.getElementById('refTelefono')) {
@@ -893,14 +895,13 @@ document.addEventListener('DOMContentLoaded', function(){
       }
 
       // CORRECCIÓN Y VERIFICACIÓN UNIVERSAL DE PLANES PREMIUM/PRO
-      // Detecta de forma inteligente si la celda "plan" contiene la palabra 'premium' o 'pro' sin importar el código
       const planNormalizado = String(data.plan || "").toLowerCase();
       const esPlanPremiumPro = CODE === "AD507-THE1920" || planNormalizado.includes('premium') || planNormalizado.includes('pro');
       
       if(esPlanPremiumPro){
         let listaFotos = [];
 
-        // Verifica si la base de datos envía un array o celdas individuales por separado
+        // ✅ Sincronizado dinámicamente con el parche estructurado en el AppScript
         if(data.fotos && Array.isArray(data.fotos)){
           listaFotos = data.fotos.filter(url => url);
         } else {

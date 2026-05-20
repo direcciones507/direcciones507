@@ -92,13 +92,13 @@
     .nav-menu a:hover, .nav-menu a.active { color: var(--cyan-brand); }
     .btn-nav-action { background: linear-gradient(135deg, #0891b2, #0284c7); color: #fff !important; padding: 10px 20px; border-radius: 8px; font-size: 12px !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2); }
 
-    /* ===== SECCIONES DESPLEGABLES (ACORDEÓN) ===== */
+    /* ===== SECCIONES DESPLEGABLES ===== */
     .dropdown-section { display: none; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-glow); padding: 48px 0; animation: slideDown 0.4s ease-out; }
     .dropdown-section.active { display: block; }
     .inner-section-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 16px; text-align: center; }
     .inner-section-title span { color: var(--cyan-brand); }
 
-    /* ===== LOADER FLOTANTE COMPLETO FIJO ===== */
+    /* ===== LOADER FLOTANTE ===== */
     .code-loading-overlay {
       position: fixed;
       inset: 0;
@@ -136,7 +136,7 @@
     .search-location-select { display: flex; align-items: center; gap: 8px; border-left: 1px solid rgba(255, 255, 255, 0.1); padding: 0 16px; color: #fff; font-size: 14px; white-space: nowrap; }
     .btn-search-trigger { background: linear-gradient(135deg, var(--cyan-brand), var(--blue-brand)); color: #fff; border: none; padding: 14px 32px; font-weight: 700; border-radius: 100px; cursor: pointer; font-size: 14px; text-transform: uppercase; }
 
-    /* ===== CONTENEDOR MAPA DE PANAMÁ REAL ===== */
+    /* ===== CONTENEDOR MAPA ===== */
     .map-art-container { position: relative; width: 100%; height: 380px; min-height: 350px; border-radius: 20px; overflow: hidden; border: 2px solid rgba(6, 182, 212, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4); z-index: 10; }
     #mapaPanamaReal { width: 100%; height: 100%; background: #0b1329; }
 
@@ -169,7 +169,6 @@
     .cta-banner-premium p { color: var(--text-muted); font-size: 14px; }
     .cta-action-right-side { display: flex; flex-direction: column; gap: 12px; }
     .btn-premium-cta-trigger { display: flex; align-items: center; justify-content: center; gap: 10px; background: transparent; border: 2px solid var(--cyan-brand); color: #fff; padding: 16px; border-radius: 100px; font-weight: 700; text-decoration: none; font-size: 14px; text-transform: uppercase; cursor: pointer; }
-    .btn-premium-cta-trigger:hover { background: var(--cyan-brand); color: var(--bg-dark); box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3); }
 
     /* ===== PLANES COMERCIALES ===== */
     .planes-section-wrapper { margin-top: 56px; }
@@ -183,7 +182,6 @@
     .plan-perks-list li { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     .plan-perks-list li i { color: var(--cyan-brand); font-size: 11px; }
     .btn-plan-action-trigger { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--cyan-brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
-    .plan-pricing-card.popular .btn-plan-action-trigger { background: var(--cyan-brand); color: var(--bg-dark); }
 
     /* ===== SECCIÓN ESTADÍSTICAS ===== */
     .counters-bar-section { background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 0; margin-top: 56px; }
@@ -215,69 +213,48 @@
     .home-premium-galeria { display: none; margin-bottom: 24px; }
     .galeria-grid-home { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
     .galeria-grid-home img { width: 100%; height: 110px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; }
-    @media (max-width: 480px) { .galeria-grid-home { grid-template-columns: 1fr; } .galeria-grid-home img { height: 160px; } }
 
     /* VISOR LIGHTBOX */
     .lightbox-overlay { position: fixed; inset: 0; background: rgba(5, 11, 20, 0.95); z-index: 100000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.25s ease; }
     .lightbox-overlay.show { opacity: 1; visibility: visible; }
     .lightbox-img { max-width: 90%; max-height: 80vh; border-radius: 16px; }
 
-    /* BOTONES NAVEGACIÓN CLIENTE */
+    /* BOTONES */
     .btn-grid-vertical { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-vertical-client { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 15px; text-decoration: none; width: 100%; text-transform: uppercase; color: #fff; }
     .btn-vertical-client.google { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .btn-vertical-client.google:hover { background: rgba(255, 255, 255, 0.1); border-color: #3b82f6; }
     .btn-vertical-client.waze { background: rgba(0, 176, 255, 0.15); border: 1px solid rgba(0, 176, 255, 0.3); }
-    .btn-vertical-client.waze:hover { background: #00b0ff; color: #090d16; }
     .btn-vertical-client.uber { background: #ffffff; color: #000; }
     .btn-vertical-client.alert { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
 
-    /* INTERACCIONES ADICIONALES */
     .btn-qr-print-action { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; border-radius: 16px; font-weight: 700; font-size: 14px; text-decoration: none; background: rgba(255, 255, 255, 0.03); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.06); cursor: pointer; width: 100%; margin-top: 12px; }
     .btn-stats-client-matched { display: none; width: 100%; justify-content: space-between; align-items: center; cursor: pointer; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; font-weight: 700; font-size: 14px; margin-top: 12px; color: #f1f5f9; }
     .btn-premium-action-row { display: flex; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-action-refined { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%); color: #cbd5e1; }
-    .btn-action-refined:hover { border-color: #3b82f6; color: #ffffff; background: rgba(37, 99, 235, 0.05); }
 
-    /* REDES DEL CLIENTE */
     .social-links-wrap-grid-client { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px auto 0; width: 100%; max-width: 420px; }
     .social-links-wrap-grid-client.active { display: grid; }
 
-    /* BLOQUE DE ENLACES SEO */
     .seo-pages-buttons-container { display: flex; gap: 12px; width: 100%; margin-top: 25px; margin-bottom: 25px; }
     .btn-seo-page-link { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 14px; color: #fff; font-weight: 700; font-size: 12.5px; text-decoration: none; text-transform: uppercase; cursor: pointer; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    .btn-seo-page-link i { color: var(--cyan-brand); font-size: 15px; }
-    .btn-seo-page-link:hover { border-color: var(--cyan-brand); background: rgba(6, 182, 212, 0.08); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.15); transform: translateY(-2px); }
-
-    /* IMPRESIÓN QR */
+    
     #printCardWrap { display: none; margin-top: 32px; background: rgba(0,0,0,0.2); padding: 24px; border-radius:24px; }
     #printCard { background: #ffffff; border-radius: 24px; padding: 24px; max-width: 360px; color: #0f172a; margin: 0 auto; }
 
-    /* REDES CON COLORES OFICIALES EXCLUSIVOS */
     .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 14px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; }
-    
     .social-pill-large.wa-color { border-color: rgba(37, 211, 102, 0.4); background: rgba(37, 211, 102, 0.05); }
     .social-pill-large.wa-color i { color: #25d366; }
-    .social-pill-large.wa-color:hover { background: #25d366; color: #000; border-color: #25d366; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
-
     .social-pill-large.ig-color { border-color: rgba(214, 41, 118, 0.4); background: rgba(214, 41, 118, 0.05); }
     .social-pill-large.ig-color i { color: #d62976; }
-    .social-pill-large.ig-color:hover { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(214, 41, 118, 0.3); }
-
     .social-pill-large.tk-color { border-color: rgba(255, 0, 80, 0.4); background: rgba(255, 0, 80, 0.05); }
-    .social-pill-large.tk-color i { color: #00f2fe; filter: drop-shadow(-2px 0 0 #ff0050); }
-    .social-pill-large.tk-color:hover { background: #000; color: #fff; border-color: #ff0050; box-shadow: 0 4px 15px rgba(255, 0, 80, 0.4); }
-
+    .social-pill-large.tk-color i { color: #00f2fe; }
     .social-pill-large.web-color { border-color: rgba(6, 182, 212, 0.4); background: rgba(6, 182, 212, 0.05); }
     .social-pill-large.web-color i { color: var(--cyan-brand); }
-    .social-pill-large.web-color:hover { background: var(--cyan-brand); color: #000; border-color: var(--cyan-brand); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
 
-    /* ===== DIRECTORIO ENLACES INDEX ===== */
     .seo-directory-wrapper { padding: 48px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center; margin-top: 56px; }
     .seo-directory-wrapper h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 20px; }
     .seo-links-flex { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .seo-trigger-link { color: var(--text-muted); text-decoration: none; font-size: 12px; background: rgba(255, 255, 255, 0.02); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.04); cursor: pointer; }
-    .seo-trigger-link:hover { color: var(--cyan-brand); border-color: var(--cyan-brand); }
 
     .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; }
     .footer-copy { font-size: 11px; color: #718096; }
@@ -295,8 +272,7 @@
 </head>
 <body>
 
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5ZNJXT2B"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5ZNJXT2B" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <header>
     <div class="container nav-wrap">
@@ -367,7 +343,7 @@
       <div class="code-loading-badge">Código Oficial AD507</div>
       <div class="code-loading-spinner"></div>
       <h3 style="color:#fff; font-size:18px; margin-bottom:8px;">Validando código oficial AD507...</h3>
-      <p style="color:#64748b; font-size:14px;">Estamos verificando la información de la base de datos.</p>
+      <p style="color:#64748b; font-size:14px;">Estamos verificar la información de la base de datos.</p>
       <div class="code-loading-steps">
         <div class="step" id="step1">Verificando código...</div>
         <div class="step" id="step2">Cargando ubicación...</div>
@@ -562,7 +538,7 @@
 
         <div id="seccionRedesSocialesCliente" class="social-links-wrap-grid-client">
           <a class="social-pill-large ig" id="clInstagram" target="_blank"><i class="fa-brands fa-instagram" style="color: #d62976;"></i> Instagram</a>
-          <a class="social-pill-large tk" id="clTikTok" target="_blank"><i class="fa-brands fa-tiktok"></i> TikTok</a>
+          <a class="social-pill-large tk" id="clTikTok" target="_blank"><i class="fa-brands fa-tiktok" style="color: #000;"></i> TikTok</a>
           <a class="social-pill-large fb" id="clFacebook" target="_blank"><i class="fa-brands fa-facebook" style="color: #1877f2;"></i> Facebook</a>
           <a class="social-pill-large wa" id="clWeb" target="_blank"><i class="fa-solid fa-globe" style="color: #0284c7;"></i> Página Web</a>
         </div>
@@ -603,11 +579,11 @@
   <div class="container seo-directory-wrapper">
     <h4>Directorio de Códigos Oficiales de Panamá</h4>
     <div class="seo-links-flex">
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-THE1920', 'pagina')">AD507-THE1920</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-LABDIESELMONTERO', 'enlace')">AD507-LABDIESELMONTERO</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-TRANSPORTEJEDIDIAS', 'enlace')">AD507-TRANSPORTEJEDIDIAS</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-0001', 'pagina')">AD507-0001</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-0002', 'pagina')">AD507-0002</span>
+      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-THE1920')">AD507-THE1920</span>
+      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-LABDIESELMONTERO')">AD507-LABDIESELMONTERO</span>
+      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-TRANSPORTEJEDIDIAS')">AD507-TRANSPORTEJEDIDIAS</span>
+      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-0001')">AD507-0001</span>
+      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-0002')">AD507-0002</span>
     </div>
   </div>
 
@@ -672,9 +648,9 @@
       }
     }
 
-    function ejecutarEnlaceInterno(codigoAsignado, tipoEnlace) {
-      const codigoLimpio = String(codigoAsignado).trim().toUpperCase();
-      window.location.href = `https://direcciones507.com/${codigoLimpio}`;
+    function ejecutarEnlaceInterno(codigoAsignado) {
+      document.getElementById("inputCodigo").value = codigoAsignado;
+      ejecutarBusquedaSistema();
     }
 
     async function registrarClicBase(plataforma) {
@@ -798,7 +774,7 @@
           if(tieneRedes) redesBox.classList.add("active");
         }
 
-        const shareUrl = `https://direcciones507.com/${encodeURIComponent(CODIGO_ACTUAL)}`;
+        const shareUrl = `https://direcciones507.com/?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
         document.getElementById("btnCompartir").onclick = async () => {
           if (navigator.share) {
             try { await navigator.share({ title: "Dirección Digital", text: `Código ${CODIGO_ACTUAL}`, url: shareUrl }); } catch { navigator.clipboard.writeText(shareUrl); alert("✅ Link copiado"); }
@@ -844,6 +820,7 @@
         document.getElementById('btnGoogle').onclick = () => registrarClicBase('google');
         document.getElementById('btnWaze').onclick = () => registrarClicBase('waze');
         document.getElementById('btnUber').onclick = () => registrarClicBase('uber');
+        document.getElementById('btnAviso').onclick = () => registrarClicBase('aviso');
 
         document.getElementById("mainGlobalHeroView").style.display = "none";
         document.getElementById("seoHomeButtonsContainer").style.display = "none";

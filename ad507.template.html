@@ -14,6 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+  <!-- ✅ FIX FAVICON: Evita que se congele el favicon de 1920 por defecto -->
   <link id="dynamicFavicon" rel="icon" type="image/png" href="https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/favicon.png">
   <link id="dynamicAppleIcon" rel="apple-touch-icon" href="https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/favicon.png">
 
@@ -377,11 +378,9 @@
 
     .btn-action-triple i {
       font-size: 18px;
-      color: #1e3a8a;
+      color: #3b82f6;
     }
 
-    /* ✅ ELIMINADO EL PIN ROJO: Cambiado al azul oficial de Direcciones507 */
-    .btn-action-triple .fa-map-marked-alt { color: #3b82f6; }
     .btn-action-triple span { font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .btn-action-triple p { font-size: 9px; color: #64748b; }
 
@@ -492,8 +491,6 @@
     }
 
     .accordion-full { margin-bottom: 12px; }
-
-    /* ✅ ELIMINADO EL PIN ROJO INFERIOR: Fuerza a que el pin del acordeón sea azul */
     #btnRef .accordion-icon-left i { color: #3b82f6; }
 
     .qr-section {
@@ -607,7 +604,7 @@
       <i class="fa-brands fa-whatsapp"></i>
       <div class="nav-box-text">
         <h4>WhatsApp</h4>
-        <p>Escríbenos ahora</p>
+        <p>Avisar que llegué</p>
       </div>
     </a>
   </div>
@@ -616,8 +613,7 @@
 
     <div id="premiumGalleryContainer" class="negocio-premium">
       <div class="sheet-section-title">Galería Comercial:</div>
-      <div id="galeriaFotos" class="negocio-galeria">
-        </div>
+      <div id="galeriaFotos" class="negocio-galeria"></div>
     </div>
 
     <div class="actions-triple-row">
@@ -735,8 +731,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec";
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryCode = urlParams.get('code');
   const pathCode = window.location.pathname.split('/').filter(Boolean).pop();
-  const CODE = (pathCode || "AD507-CODE").toUpperCase();
+  const CODE = (queryCode || pathCode || "AD507-CODE").toUpperCase();
 
   document.getElementById('codigo').textContent = CODE;
   document.getElementById('seoCodigo').textContent = CODE;
@@ -777,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function(){
   async function registrarClic(plataforma) {
     if(window.location.protocol === 'file:') return;
     try {
-      await fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODE)}&event=${plataforma}`, {
+      await fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODE)}&platform=${plataforma}`, {
         method: "GET",
         mode: "no-cors"
       });
@@ -790,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btnGoogleSecundario').addEventListener('click', () => registrarClic('google'));
   document.getElementById('btnWaze').addEventListener('click', () => registrarClic('waze'));
   document.getElementById('btnUber').addEventListener('click', () => registrarClic('uber'));
-  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('aviso'));
+  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('share'));
   document.getElementById('btnShare').addEventListener('click', () => registrarClic('share'));
 
   document.getElementById('btnQR').addEventListener('click', function(){
@@ -852,13 +850,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
       ocultarCarga();
 
-      if(!data.ok) return;
+      if(!data || data.status === "error") return;
 
       document.getElementById('nombre').textContent = data.nombre || "Cliente Verificado";
       document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";
 
-      // ✅ PARCHE FAVICON INTELIGENTE: Cambia el icono de la pestaña al logo del cliente si existe
-      if(data.logo){
+      if(data.logo && data.logo.trim() !== ""){
         document.getElementById('logoNegocio').src = data.logo;
         document.getElementById('logoBox').style.display = 'block';
         
@@ -870,17 +867,37 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('horario').textContent = data.horario;
       }
 
-      document.getElementById('btnGoogle').href = data.google || "#";
-      document.getElementById('btnGoogleSecundario').href = data.google || "#";
-      document.getElementById('btnWaze').href = data.waze || "#";
-      document.getElementById('btnUber').href = data.uber || "#";
+      let lat = data.lat || data.latitude || "";
+      let lng = data.lng || data.longitude || "";
+      if ((!lat || !lng) && data.coordenadas) {
+        const match = String(data.coordenadas).match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
+        if (match) { lat = match[1]; lng = match[2]; }
+      }
 
-      const tel = String(data.telefono || "").replace(/\D/g,'');
-      document.getElementById('btnWhats').href = tel ? `https://wa.me/${tel}` : "#";
-      document.getElementById('btnCall').href = tel ? `tel:${tel}` : "#";
-      
-      if(tel && document.getElementById('refTelefono')) {
-        document.getElementById('refTelefono').textContent = `+${tel}`;
+      if(lat && lng) {
+        document.getElementById('btnGoogle').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        document.getElementById('btnGoogleSecundario').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        document.getElementById('btnWaze').href = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+        document.getElementById('btnUber').href = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+      } else {
+        document.getElementById('btnGoogle').href = data.google || "#";
+        document.getElementById('btnGoogleSecundario').href = data.google || "#";
+        document.getElementById('btnWaze').href = data.waze || "#";
+        document.getElementById('btnUber').href = data.uber || "#";
+      }
+
+      let tel = String(data.telefono || "").replace(/\D/g,'');
+      if (tel.length === 8) tel = "507" + tel;
+
+      if(tel.length >= 10) {
+        document.getElementById('btnWhats').href = `https://wa.me/${tel}?text=¡Hola!%20Acabo%20de%20llegar%20siguiendo%20mi%20c%C3%B3digo%20de%20ubicaci%C3%B3n%20AD507:%20${encodeURIComponent(CODE)}`;
+        document.getElementById('btnCall').href = `tel:${tel}`;
+        if(document.getElementById('refTelefono')) {
+          document.getElementById('refTelefono').textContent = `+${tel}`;
+        }
+      } else {
+        document.getElementById('btnWhats').href = "#";
+        document.getElementById('btnCall').href = "#";
       }
 
       if(data.instagram){
@@ -905,7 +922,7 @@ document.addEventListener('DOMContentLoaded', function(){
       }
 
       const planNormalizado = String(data.plan || "").toLowerCase();
-      const esPlanPremiumPro = CODE === "AD507-THE1920" || planNormalizado.includes('premium') || planNormalizado.includes('pro');
+      const esPlanPremiumPro = planNormalizado.includes('premium') || planNormalizado.includes('pro') || planNormalizado.includes('corporativo') || planNormalizado.includes('comercial') || CODE.includes('0023');
       
       if(esPlanPremiumPro){
         let listaFotos = [];
@@ -928,7 +945,6 @@ document.addEventListener('DOMContentLoaded', function(){
             imgElement.alt = `Imagen ${index + 1}`;
             imgElement.classList.add('gallery-clickable');
 
-            // ✅ CLIC UNIVERSAL EN CUALQUIER DISPOSITIVO: Abre en grande sin importar el ancho de pantalla
             imgElement.addEventListener('click', function() {
               lightboxImg.src = this.src;
               overlay.classList.add('show');

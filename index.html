@@ -54,7 +54,6 @@
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* ✅ CORRECCIÓN OVERFLOW: Bloquea el scroll horizontal de raíz en celulares */
     html, body {
       background: var(--bg-dark);
       color: #f3f4f6;
@@ -77,7 +76,7 @@
       width: 100%;
     }
 
-    /* ===== NAVBAR ===== */
+    /* ===== NAVBAR PREMIUM ===== */
     header {
       padding: 24px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -164,8 +163,6 @@
     /* ===== SECCIÓN CÓMO FUNCIONA PREMIUM ADJUSTED ===== */
     .how-it-works-timeline { background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(3, 7, 18, 0.9) 100%); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 24px; padding: 48px 24px; margin-top: 56px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); width: 100%; }
     .timeline-steps-flex { display: flex; justify-content: space-between; align-items: stretch; gap: 20px; flex-wrap: wrap; margin-top: 32px; }
-    
-    /* ✅ FIX RESPONSIVO: Cambiado a max-width para asegurar ajuste central perfecto sin scroll horizontal */
     .timeline-step-card { flex: 1; min-width: 240px; max-width: 100%; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 20px; border-radius: 20px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     .timeline-step-card:hover { border-color: var(--cyan-brand); background: rgba(6, 182, 212, 0.02); transform: translateY(-5px); }
     .timeline-badge-icon { width: 64px; height: 64px; border-radius: 16px; background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(6, 182, 212, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--cyan-brand); font-size: 24px; position: relative; }
@@ -227,8 +224,11 @@
     /* INTERACCIONES ADICIONALES */
     .btn-qr-print-action { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; border-radius: 16px; font-weight: 700; font-size: 14px; text-decoration: none; background: rgba(255, 255, 255, 0.03); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.06); cursor: pointer; width: 100%; margin-top: 12px; }
     .btn-stats-client-matched { display: none; width: 100%; justify-content: space-between; align-items: center; cursor: pointer; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; font-weight: 700; font-size: 14px; margin-top: 12px; color: #f1f5f9; }
+    
+    /* ✅ BOTONES COMPARTIR Y COPIAR: Reestablecidos al formato original oscuro premium */
     .btn-premium-action-row { display: flex; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-action-refined { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%); color: #cbd5e1; }
+    .btn-action-refined:hover { border-color: #3b82f6; color: #ffffff; background: rgba(37, 99, 235, 0.05); }
 
     .social-links-wrap-grid-client { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px auto 0; width: 100%; max-width: 420px; }
     .social-links-wrap-grid-client.active { display: grid; }
@@ -241,7 +241,7 @@
     #printCardWrap { display: none; margin-top: 32px; background: rgba(0,0,0,0.2); padding: 24px; border-radius:24px; }
     #printCard { background: #ffffff; border-radius: 24px; padding: 24px; max-width: 360px; color: #0f172a; margin: 0 auto; }
 
-    /* REDES CON COLORES OFICIALES DEL FOOTER GLOBAL */
+    /* ✅ BOTONES DE REDES SOCIALES DEL FOOTER REPARADOS EN SU GRILLA ORIGINAL */
     .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; padding: 0 4px; }
     .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 6px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 13px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     
@@ -258,7 +258,6 @@
     .seo-links-flex { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; width: 100%; }
     .seo-trigger-link { color: var(--text-muted); text-decoration: none; font-size: 12px; background: rgba(255, 255, 255, 0.02); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.04); cursor: pointer; }
 
-    /* TEXTO FOOTER */
     .footer-copy { font-size: 11.5px; color: #64748b; font-weight: 500; letter-spacing: 0.3px; text-align: center; line-height: 1.5; width: 100%; margin-top: 8px; }
 
     @media (max-width: 992px) {
@@ -494,7 +493,7 @@
       <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-map-location-dot"></i></div><div class="counter-metrics-data"><h4>+1,000</h4><p>Direcciones registradas</p></div></div>
       <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-users"></i></div><div class="counter-metrics-data"><h4>+2,000</h4><p>Negocios conectados</p></div></div>
       <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-chart-line"></i></div><div class="counter-metrics-data"><h4>+10,000</h4><p>Búsquedas mensuales</p></div></div>
-      <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-globe"></i></div><div class="counter-metrics-data"><h4>Todo Panamá</h4><p>Coverage nacional completa</p></div></div>
+      <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-globe"></i></div><div class="counter-metrics-data"><h4>Todo Panamá</h4><p>Cobertura nacional completa</p></div></div>
     </div>
   </section>
 
@@ -610,7 +609,8 @@
       <div class="footer-copy">© 2026 <strong>Direcciones507</strong>. Todos los derechos reservados. Hecho en Panamá 🇵🇦</div>
     </div>
   </footer>
-  
+
+  <div id="lightboxOverlay" class="lightbox-overlay"><img id="lightboxImg" src="" alt="Vista Previa" class="lightbox-img"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -666,7 +666,6 @@
       window.location.href = `https://direcciones507.com/${codigoLimpio}`;
     }
 
-    // ✅ CORRECCIÓN DEL CONTADOR: Apunta a las variables que tu backend de Sheets necesita procesar sin errores
     async function registrarClicBase(plataforma) {
       if(!CODIGO_ACTUAL || window.location.protocol === 'file:') return;
       try { await fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}`, { method: "GET", mode: "no-cors" }); } catch(e) {}
@@ -835,7 +834,6 @@
           statsBtn.style.display = "none";
         }
 
-        // ✅ ASOCIACIÓN DE CLICS REPARADA CON LOS IDS CORRECTOS EN MINÚSCULA/MAYÚSCULA EXACTA
         document.getElementById('btnGoogle').onclick = () => registrarClicBase('google');
         document.getElementById('btnWaze').onclick = () => registrarClicBase('waze');
         document.getElementById('btnUber').onclick = () => registrarClicBase('uber');

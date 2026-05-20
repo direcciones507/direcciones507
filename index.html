@@ -154,12 +154,23 @@
     .feat-premium-card h4 { font-size: 15px; color: #fff; margin-bottom: 8px; font-weight: 700; }
     .feat-premium-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
+    /* ===== NUEVO DISEÑO VISUAL MEJORADO PREMIUM "CÓMO FUNCIONA" ===== */
+    .how-it-works-timeline { background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(3, 7, 18, 0.9) 100%); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 24px; padding: 48px 32px; margin-top: 56px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+    .timeline-steps-flex { display: flex; justify-content: space-between; align-items: stretch; gap: 24px; flex-wrap: wrap; margin-top: 32px; }
+    .timeline-step-card { flex: 1; min-width: 250px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 20px; border-radius: 20px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    .timeline-step-card:hover { border-color: var(--cyan-brand); background: rgba(6, 182, 212, 0.02); transform: translateY(-5px); }
+    .timeline-badge-icon { width: 64px; height: 64px; border-radius: 16px; background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(6, 182, 212, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--cyan-brand); font-size: 24px; position: relative; }
+    .timeline-step-number { position: absolute; top: -10px; right: -10px; width: 26px; height: 26px; background: linear-gradient(135deg, var(--cyan-brand), var(--blue-brand)); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(6, 182, 212, 0.4); }
+    .timeline-step-card h5 { font-size: 18px; color: #fff; margin-bottom: 10px; font-weight: 800; letter-spacing: -0.3px; }
+    .timeline-step-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+
     /* ===== CALL TO ACTION ===== */
     .cta-banner-premium { background: radial-gradient(circle at top right, rgba(6, 182, 212, 0.15), transparent), var(--bg-card); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 24px; padding: 48px; margin-top: 56px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: center; }
     .cta-banner-premium h3 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; }
     .cta-banner-premium p { color: var(--text-muted); font-size: 14px; }
     .cta-action-right-side { display: flex; flex-direction: column; gap: 12px; }
     .btn-premium-cta-trigger { display: flex; align-items: center; justify-content: center; gap: 10px; background: transparent; border: 2px solid var(--cyan-brand); color: #fff; padding: 16px; border-radius: 100px; font-weight: 700; text-decoration: none; font-size: 14px; text-transform: uppercase; cursor: pointer; }
+    .btn-premium-cta-trigger:hover { background: var(--cyan-brand); color: var(--bg-dark); box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3); }
 
     /* ===== PLANES COMERCIALES ===== */
     .planes-section-wrapper { margin-top: 56px; }
@@ -173,6 +184,7 @@
     .plan-perks-list li { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     .plan-perks-list li i { color: var(--cyan-brand); font-size: 11px; }
     .btn-plan-action-trigger { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--cyan-brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
+    .plan-pricing-card.popular .btn-plan-action-trigger { background: var(--cyan-brand); color: var(--bg-dark); }
 
     /* ===== SECCIÓN ESTADÍSTICAS ===== */
     .counters-bar-section { background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 0; margin-top: 56px; }
@@ -204,20 +216,25 @@
     .home-premium-galeria { display: none; margin-bottom: 24px; }
     .galeria-grid-home { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
     .galeria-grid-home img { width: 100%; height: 110px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; }
+    @media (max-width: 480px) { .galeria-grid-home { grid-template-columns: 1fr; } .galeria-grid-home img { height: 160px; } }
 
     /* BOTONES NAVEGACIÓN CLIENTE */
     .btn-grid-vertical { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-vertical-client { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 15px; text-decoration: none; width: 100%; text-transform: uppercase; color: #fff; }
     .btn-vertical-client.google { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .btn-vertical-client.google:hover { background: rgba(255, 255, 255, 0.1); border-color: #3b82f6; }
     .btn-vertical-client.waze { background: rgba(0, 176, 255, 0.15); border: 1px solid rgba(0, 176, 255, 0.3); }
+    .btn-vertical-client.waze:hover { background: #00b0ff; color: #090d16; }
     .btn-vertical-client.uber { background: #ffffff; color: #000; }
     .btn-vertical-client.alert { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
 
+    /* INTERACCIONES ADICIONALES */
     .btn-qr-print-action { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; border-radius: 16px; font-weight: 700; font-size: 14px; text-decoration: none; background: rgba(255, 255, 255, 0.03); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.06); cursor: pointer; width: 100%; margin-top: 12px; }
     .btn-stats-client-matched { display: none; width: 100%; justify-content: space-between; align-items: center; cursor: pointer; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; font-weight: 700; font-size: 14px; margin-top: 12px; color: #f1f5f9; }
     .btn-premium-action-row { display: flex; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-action-refined { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%); color: #cbd5e1; }
 
+    /* REDES DEL CLIENTE */
     .social-links-wrap-grid-client { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px auto 0; width: 100%; max-width: 420px; }
     .social-links-wrap-grid-client.active { display: grid; }
 
@@ -239,6 +256,11 @@
     .seo-directory-wrapper h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 20px; }
     .seo-links-flex { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .seo-trigger-link { color: var(--text-muted); text-decoration: none; font-size: 12px; background: rgba(255, 255, 255, 0.02); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.04); cursor: pointer; }
+
+    .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; }
+    
+    /* ✅ FIX DEFINITIVO FOOTER: Letra más pequeña para visualización móvil compacta */
+    .footer-copy { font-size: 10px; color: #526175; font-weight: 500; letter-spacing: 0.3px; }
 
     @media (max-width: 992px) {
       .hero-grid-layout, .cta-banner-premium, .planes-grid-layout { grid-template-columns: 1fr !important; text-align: center; }
@@ -288,20 +310,25 @@
 
   <div id="secFuncionamiento" class="dropdown-section">
     <div class="container">
-      <h2 class="inner-section-title">Cómo <span>Funciona</span></h2>
-      <p style="text-align: center; max-width: 600px; margin: 0 auto 32px; color: var(--text-muted); font-size: 14px;">El sistema más ágil y efectivo diseñado para el ecosistema urbano y comercial de Panamá.</p>
-      <div class="timeline-steps-flex">
-        <div class="timeline-step-card">
-          <div class="timeline-badge-icon"><i class="fa-solid fa-magnifying-glass"></i><div class="timeline-step-number">1</div></div>
-          <h5>Busca el Código</h5><p>Ingresa el identificador único AD507 del destino inyectado en la barra del buscador principal.</p>
-        </div>
-        <div class="timeline-step-card">
-          <div class="timeline-badge-icon"><i class="fa-solid fa-map-pin"></i><div class="timeline-step-number">2</div></div>
-          <h5>Valida la Ficha</h5><p>El sistema despliega al instante el nombre del lugar y sus puntos de referencia exactos.</p>
-        </div>
-        <div class="timeline-step-card">
-          <div class="timeline-badge-icon"><i class="fa-solid fa-location-arrow"></i><div class="timeline-step-number">3</div></div>
-          <h5>Abre y Navega</h5><p>Haz clic y transfiere las coordenadas en un second a Waze, Google Maps o Uber sin margen de error.</p>
+      <div class="how-it-works-timeline">
+        <h2 class="inner-section-title">Cómo <span>Funciona</span></h2>
+        <p style="text-align: center; max-width: 600px; margin: 0 auto 12px; color: var(--text-muted); font-size: 14.5px;">El sistema más ágil y efectivo diseñado para el ecosistema urbano y comercial de Panamá.</p>
+        <div class="timeline-steps-flex">
+          <div class="timeline-step-card">
+            <div class="timeline-badge-icon"><i class="fa-solid fa-magnifying-glass"></i><div class="timeline-step-number">1</div></div>
+            <h5>Busca el Código</h5>
+            <p>Ingresa el identificador único AD507 del destino inyectado en la barra del buscador principal.</p>
+          </div>
+          <div class="timeline-step-card">
+            <div class="timeline-badge-icon"><i class="fa-solid fa-map-pin"></i><div class="timeline-step-number">2</div></div>
+            <h5>Valida la Ficha</h5>
+            <p>El sistema despliega al instante el nombre del lugar de destino y sus puntos de referencia exactos.</p>
+          </div>
+          <div class="timeline-step-card">
+            <div class="timeline-badge-icon"><i class="fa-solid fa-location-arrow"></i><div class="timeline-step-number">3</div></div>
+            <h5>Abre y Navega</h5>
+            <p>Haz clic y transfiere las coordenadas en un segundo a Waze, Google Maps o Uber sin margen de error.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -611,7 +638,6 @@
       }
     };
 
-    // ✅ REPARACIÓN DEL MENÚ SUPERIOR DE NAVEGACIÓN (INTEGRADO TOTALMENTE)
     function toggleSeccion(idSeccion) {
       if(idSeccion === 'secInicio') {
         document.querySelectorAll('.dropdown-section').forEach(s => s.style.display = "none");
@@ -854,4 +880,3 @@
 
 </body>
 </html>
-

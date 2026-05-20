@@ -12,7 +12,7 @@
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
   j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletm.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
   })(window,document,'script','dataLayer','GTM-5ZNJXT2B');</script>
 
   <link rel="icon" type="image/png" href="assets/logo-direcciones507.png?v=2" />
@@ -25,7 +25,7 @@
   <meta property="og:image" content="https://direcciones507.com/assets/og-image.jpg?v=2" />
 
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Direcciones507 | Encuentra. Llega. Conecta.</title>
   <meta name="description" content="El directorio de direcciones más completo de Panamá. Genera tu ubicación exacta con un código AD507 de forma estable y segura.">
   
@@ -54,11 +54,16 @@
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    body {
+    /* ✅ CORRECCIÓN OVERFLOW: Bloquea el scroll horizontal de raíz en celulares */
+    html, body {
       background: var(--bg-dark);
       color: #f3f4f6;
       overflow-x: hidden;
+      width: 100%;
       min-height: 100vh;
+    }
+
+    body {
       background-image: 
         radial-gradient(circle at 85% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 50%),
         radial-gradient(circle at 15% 75%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
@@ -69,9 +74,10 @@
       max-width: 1240px;
       margin: 0 auto;
       padding: 0 24px;
+      width: 100%;
     }
 
-    /* ===== NAVBAR PREMIUM ===== */
+    /* ===== NAVBAR ===== */
     header {
       padding: 24px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -80,6 +86,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      width: 100%;
     }
 
     .nav-wrap { display: flex; align-items: center; justify-content: space-between; }
@@ -92,8 +99,8 @@
     .nav-menu a:hover, .nav-menu a.active { color: var(--cyan-brand); }
     .btn-nav-action { background: linear-gradient(135deg, #0891b2, #0284c7); color: #fff !important; padding: 10px 20px; border-radius: 8px; font-size: 12px !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2); }
 
-    /* ===== SECCIONES DESPLEGABLES (ACORDEÓN) ===== */
-    .dropdown-section { display: none; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-glow); padding: 48px 0; animation: slideDown 0.4s ease-out; }
+    /* ===== SECCIONES DESPLEGABLES ===== */
+    .dropdown-section { display: none; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-glow); padding: 48px 0; animation: slideDown 0.4s ease-out; width: 100%; }
     .dropdown-section.active { display: block; }
     .inner-section-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 16px; text-align: center; }
     .inner-section-title span { color: var(--cyan-brand); }
@@ -121,7 +128,7 @@
     @keyframes spin-loader { to { transform: rotate(360deg); } }
 
     /* ===== HERO DESIGN ===== */
-    .hero-view-wrapper { padding: 64px 0; position: relative; }
+    .hero-view-wrapper { padding: 64px 0; position: relative; width: 100%; }
     .hero-grid-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
     .tagline-badge { display: inline-flex; padding: 6px 14px; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); color: var(--cyan-brand); font-size: 12px; font-weight: 700; border-radius: 100px; margin-bottom: 20px; text-transform: uppercase; }
     .main-hero-title { font-size: 48px; font-weight: 900; line-height: 1.15; color: #fff; letter-spacing: -1.5px; margin-bottom: 16px; }
@@ -154,10 +161,12 @@
     .feat-premium-card h4 { font-size: 15px; color: #fff; margin-bottom: 8px; font-weight: 700; }
     .feat-premium-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
-    /* ===== SECCIÓN CÓMO FUNCIONA MEJORADA PREMIUM ===== */
-    .how-it-works-timeline { background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(3, 7, 18, 0.9) 100%); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 24px; padding: 48px 32px; margin-top: 56px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
-    .timeline-steps-flex { display: flex; justify-content: space-between; align-items: stretch; gap: 24px; flex-wrap: wrap; margin-top: 32px; }
-    .timeline-step-card { flex: 1; min-width: 250px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 20px; border-radius: 20px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    /* ===== SECCIÓN CÓMO FUNCIONA PREMIUM ADJUSTED ===== */
+    .how-it-works-timeline { background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(3, 7, 18, 0.9) 100%); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 24px; padding: 48px 24px; margin-top: 56px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); width: 100%; }
+    .timeline-steps-flex { display: flex; justify-content: space-between; align-items: stretch; gap: 20px; flex-wrap: wrap; margin-top: 32px; }
+    
+    /* ✅ FIX RESPONSIVO: Cambiado a max-width para asegurar ajuste central perfecto sin scroll horizontal */
+    .timeline-step-card { flex: 1; min-width: 240px; max-width: 100%; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 20px; border-radius: 20px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
     .timeline-step-card:hover { border-color: var(--cyan-brand); background: rgba(6, 182, 212, 0.02); transform: translateY(-5px); }
     .timeline-badge-icon { width: 64px; height: 64px; border-radius: 16px; background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(6, 182, 212, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--cyan-brand); font-size: 24px; position: relative; }
     .timeline-step-number { position: absolute; top: -10px; right: -10px; width: 26px; height: 26px; background: linear-gradient(135deg, var(--cyan-brand), var(--blue-brand)); color: #fff; border-radius: 50%; font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(6, 182, 212, 0.4); }
@@ -165,14 +174,14 @@
     .timeline-step-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
 
     /* ===== CALL TO ACTION ===== */
-    .cta-banner-premium { background: radial-gradient(circle at top right, rgba(6, 182, 212, 0.15), transparent), var(--bg-card); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 24px; padding: 48px; margin-top: 56px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: center; }
+    .cta-banner-premium { background: radial-gradient(circle at top right, rgba(6, 182, 212, 0.15), transparent), var(--bg-card); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 24px; padding: 48px; margin-top: 56px; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: center; width: 100%; }
     .cta-banner-premium h3 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; }
     .cta-banner-premium p { color: var(--text-muted); font-size: 14px; }
     .cta-action-right-side { display: flex; flex-direction: column; gap: 12px; }
     .btn-premium-cta-trigger { display: flex; align-items: center; justify-content: center; gap: 10px; background: transparent; border: 2px solid var(--cyan-brand); color: #fff; padding: 16px; border-radius: 100px; font-weight: 700; text-decoration: none; font-size: 14px; text-transform: uppercase; cursor: pointer; }
 
     /* ===== PLANES COMERCIALES ===== */
-    .planes-section-wrapper { margin-top: 56px; }
+    .planes-section-wrapper { margin-top: 56px; width: 100%; }
     .planes-grid-layout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 32px; }
     .plan-pricing-card { background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 32px 20px; text-align: center; position: relative; }
     .plan-pricing-card.popular { border-color: var(--cyan-brand); background: linear-gradient(180deg, rgba(6, 182, 212, 0.05) 0%, transparent 100%); }
@@ -184,17 +193,9 @@
     .plan-perks-list li i { color: var(--cyan-brand); font-size: 11px; }
     .btn-plan-action-trigger { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--cyan-brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
 
-    /* ===== SECCIÓN ESTADÍSTICAS ===== */
-    .counters-bar-section { background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 0; margin-top: 56px; }
-    .counters-bar-flex { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
-    .counter-block-node { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 200px; }
-    .counter-icon-node { font-size: 28px; color: var(--cyan-brand); }
-    .counter-block-node h4 { font-size: 24px; font-weight: 800; color: #fff; line-height: 1.1; }
-    .counter-block-node p { font-size: 13px; color: var(--text-muted); }
-
     /* ===== PANEL CENTRAL DEL CLIENTE ===== */
     .card-panel-wrapper { width: 100%; max-width: 540px; margin: 40px auto; background: rgba(15, 23, 42, 0.8); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; }
-    @media (max-width: 640px) { .card-panel-wrapper { max-width: 92%; } }
+    @media (max-width: 640px) { .card-panel-wrapper { max-width: 100%; } }
     .panel-header { padding: 24px 24px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); text-align: center; }
     .panel-header h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue-brand); margin-bottom: 12px; }
     
@@ -202,7 +203,7 @@
     .pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; font-size: 14px; color: #f3f4f6; font-weight: 500; width: 100%; }
     .pill b { font-weight: 800; color: #fff; }
     
-    .panel-body { padding: 24px; }
+    .panel-body { padding: 24px; width: 100%; }
     .info-field { margin-bottom: 24px; width: 100%; }
     .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px; }
     .field-value { background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px 20px; width: 100%; }
@@ -211,8 +212,8 @@
     #uiRef { font-size: 15px; font-weight: 600; color: #cbd5e1; }
 
     /* GALERÍA DINÁMICA */
-    .home-premium-galeria { display: none; margin-bottom: 24px; }
-    .galeria-grid-home { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+    .home-premium-galeria { display: none; margin-bottom: 24px; width: 100%; }
+    .galeria-grid-home { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; width: 100%; }
     .galeria-grid-home img { width: 100%; height: 110px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; }
 
     /* BOTONES NAVEGACIÓN CLIENTE */
@@ -229,7 +230,6 @@
     .btn-premium-action-row { display: flex; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-action-refined { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%); color: #cbd5e1; }
 
-    /* REDES DEL CLIENTE INTERNO */
     .social-links-wrap-grid-client { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px auto 0; width: 100%; max-width: 420px; }
     .social-links-wrap-grid-client.active { display: grid; }
 
@@ -242,29 +242,24 @@
     #printCard { background: #ffffff; border-radius: 24px; padding: 24px; max-width: 360px; color: #0f172a; margin: 0 auto; }
 
     /* REDES CON COLORES OFICIALES DEL FOOTER GLOBAL */
-    .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; }
-    .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 14px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; width: 100%; }
+    .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; padding: 0 4px; }
+    .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 6px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 13px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     
     .social-pill-large.wa-color { border-color: rgba(37, 211, 102, 0.4); background: rgba(37, 211, 102, 0.05); }
     .social-pill-large.wa-color i { color: #25d366; }
-    .social-pill-large.wa-color:hover { background: #25d366; color: #000; border-color: #25d366; }
-
     .social-pill-large.ig-color { border-color: rgba(214, 41, 118, 0.4); background: rgba(214, 41, 118, 0.05); }
     .social-pill-large.ig-color i { color: #d62976; }
-    .social-pill-large.ig-color:hover { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; }
-
     .social-pill-large.tk-color { border-color: rgba(255, 0, 80, 0.4); background: rgba(255, 0, 80, 0.05); }
     .social-pill-large.tk-color i { color: #00f2fe; }
-    .social-pill-large.tk-color:hover { background: #000; color: #fff; }
 
     /* ===== DIRECTORIO ENLACES INDEX ===== */
-    .seo-directory-wrapper { padding: 48px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center; margin-top: 56px; }
+    .seo-directory-wrapper { padding: 48px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center; margin-top: 56px; width: 100%; }
     .seo-directory-wrapper h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 20px; }
-    .seo-links-flex { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .seo-links-flex { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; width: 100%; }
     .seo-trigger-link { color: var(--text-muted); text-decoration: none; font-size: 12px; background: rgba(255, 255, 255, 0.02); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.04); cursor: pointer; }
 
-    /* ✅ CONTROL DE FUENTE LEGBILE DEL FOOTER EN MÓVIL Y ESCRITORIO */
-    .footer-copy { font-size: 11.5px; color: #64748b; font-weight: 500; letter-spacing: 0.3px; text-align: center; line-height: 1.5; }
+    /* TEXTO FOOTER */
+    .footer-copy { font-size: 11.5px; color: #64748b; font-weight: 500; letter-spacing: 0.3px; text-align: center; line-height: 1.5; width: 100%; margin-top: 8px; }
 
     @media (max-width: 992px) {
       .hero-grid-layout, .cta-banner-premium, .planes-grid-layout { grid-template-columns: 1fr !important; text-align: center; }
@@ -499,7 +494,7 @@
       <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-map-location-dot"></i></div><div class="counter-metrics-data"><h4>+1,000</h4><p>Direcciones registradas</p></div></div>
       <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-users"></i></div><div class="counter-metrics-data"><h4>+2,000</h4><p>Negocios conectados</p></div></div>
       <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-chart-line"></i></div><div class="counter-metrics-data"><h4>+10,000</h4><p>Búsquedas mensuales</p></div></div>
-      <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-globe"></i></div><div class="counter-metrics-data"><h4>Todo Panamá</h4><p>Cobertura nacional completa</p></div></div>
+      <div class="counter-block-node"><div class="counter-icon-node"><i class="fa-solid fa-globe"></i></div><div class="counter-metrics-data"><h4>Todo Panamá</h4><p>Coverage nacional completa</p></div></div>
     </div>
   </section>
 
@@ -616,6 +611,8 @@
     </div>
   </footer>
 
+  <div id="lightboxOverlay" class="lightbox-overlay"><img id="lightboxImg" src="" alt="Vista Previa" class="lightbox-img"></div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec";
@@ -670,7 +667,7 @@
       window.location.href = `https://direcciones507.com/${codigoLimpio}`;
     }
 
-    // ✅ ENLACE DEL INDEX CORREGIDO: Mapea las llamadas fetch usando los parámetros esperados de tu Sheets
+    // ✅ CORRECCIÓN DEL CONTADOR: Apunta a las variables que tu backend de Sheets necesita procesar sin errores
     async function registrarClicBase(plataforma) {
       if(!CODIGO_ACTUAL || window.location.protocol === 'file:') return;
       try { await fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}`, { method: "GET", mode: "no-cors" }); } catch(e) {}
@@ -839,7 +836,7 @@
           statsBtn.style.display = "none";
         }
 
-        // ✅ LIST_LISTENERS CORREGIDOS: Asocia los clics directamente a los IDs del panel del buscador para que sumen métricas en Sheets
+        // ✅ ASOCIACIÓN DE CLICS REPARADA CON LOS IDS CORRECTOS EN MINÚSCULA/MAYÚSCULA EXACTA
         document.getElementById('btnGoogle').onclick = () => registrarClicBase('google');
         document.getElementById('btnWaze').onclick = () => registrarClicBase('waze');
         document.getElementById('btnUber').onclick = () => registrarClicBase('uber');
@@ -873,4 +870,3 @@
 
 </body>
 </html>
-              

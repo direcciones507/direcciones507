@@ -12,7 +12,7 @@
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
   j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  'https://www.googletm.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
   })(window,document,'script','dataLayer','GTM-5ZNJXT2B');</script>
 
   <link rel="icon" type="image/png" href="assets/logo-direcciones507.png?v=2" />
@@ -92,7 +92,7 @@
     .nav-menu a:hover, .nav-menu a.active { color: var(--cyan-brand); }
     .btn-nav-action { background: linear-gradient(135deg, #0891b2, #0284c7); color: #fff !important; padding: 10px 20px; border-radius: 8px; font-size: 12px !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2); }
 
-    /* ===== SECCIONES DESPLEGABLES ===== */
+    /* ===== SECCIONES DESPLEGABLES (ACORDEÓN) ===== */
     .dropdown-section { display: none; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-glow); padding: 48px 0; animation: slideDown 0.4s ease-out; }
     .dropdown-section.active { display: block; }
     .inner-section-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 16px; text-align: center; }
@@ -136,7 +136,7 @@
     .search-location-select { display: flex; align-items: center; gap: 8px; border-left: 1px solid rgba(255, 255, 255, 0.1); padding: 0 16px; color: #fff; font-size: 14px; white-space: nowrap; }
     .btn-search-trigger { background: linear-gradient(135deg, var(--cyan-brand), var(--blue-brand)); color: #fff; border: none; padding: 14px 32px; font-weight: 700; border-radius: 100px; cursor: pointer; font-size: 14px; text-transform: uppercase; }
 
-    /* ===== CONTENEDOR MAPA ===== */
+    /* ===== CONTENEDOR MAPA DE PANAMÁ REAL ===== */
     .map-art-container { position: relative; width: 100%; height: 380px; min-height: 350px; border-radius: 20px; overflow: hidden; border: 2px solid rgba(6, 182, 212, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4); z-index: 10; }
     #mapaPanamaReal { width: 100%; height: 100%; background: #0b1329; }
 
@@ -154,7 +154,7 @@
     .feat-premium-card h4 { font-size: 15px; color: #fff; margin-bottom: 8px; font-weight: 700; }
     .feat-premium-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
-    /* ===== NUEVO DISEÑO VISUAL MEJORADO PREMIUM "CÓMO FUNCIONA" ===== */
+    /* ===== SECCIÓN CÓMO FUNCIONA MEJORADA PREMIUM ===== */
     .how-it-works-timeline { background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(3, 7, 18, 0.9) 100%); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 24px; padding: 48px 32px; margin-top: 56px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
     .timeline-steps-flex { display: flex; justify-content: space-between; align-items: stretch; gap: 24px; flex-wrap: wrap; margin-top: 32px; }
     .timeline-step-card { flex: 1; min-width: 250px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 20px; border-radius: 20px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
@@ -170,7 +170,6 @@
     .cta-banner-premium p { color: var(--text-muted); font-size: 14px; }
     .cta-action-right-side { display: flex; flex-direction: column; gap: 12px; }
     .btn-premium-cta-trigger { display: flex; align-items: center; justify-content: center; gap: 10px; background: transparent; border: 2px solid var(--cyan-brand); color: #fff; padding: 16px; border-radius: 100px; font-weight: 700; text-decoration: none; font-size: 14px; text-transform: uppercase; cursor: pointer; }
-    .btn-premium-cta-trigger:hover { background: var(--cyan-brand); color: var(--bg-dark); box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3); }
 
     /* ===== PLANES COMERCIALES ===== */
     .planes-section-wrapper { margin-top: 56px; }
@@ -184,7 +183,6 @@
     .plan-perks-list li { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     .plan-perks-list li i { color: var(--cyan-brand); font-size: 11px; }
     .btn-plan-action-trigger { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--cyan-brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
-    .plan-pricing-card.popular .btn-plan-action-trigger { background: var(--cyan-brand); color: var(--bg-dark); }
 
     /* ===== SECCIÓN ESTADÍSTICAS ===== */
     .counters-bar-section { background: rgba(15, 23, 42, 0.4); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 0; margin-top: 56px; }
@@ -216,15 +214,12 @@
     .home-premium-galeria { display: none; margin-bottom: 24px; }
     .galeria-grid-home { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
     .galeria-grid-home img { width: 100%; height: 110px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; }
-    @media (max-width: 480px) { .galeria-grid-home { grid-template-columns: 1fr; } .galeria-grid-home img { height: 160px; } }
 
     /* BOTONES NAVEGACIÓN CLIENTE */
     .btn-grid-vertical { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-vertical-client { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 15px; text-decoration: none; width: 100%; text-transform: uppercase; color: #fff; }
     .btn-vertical-client.google { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .btn-vertical-client.google:hover { background: rgba(255, 255, 255, 0.1); border-color: #3b82f6; }
     .btn-vertical-client.waze { background: rgba(0, 176, 255, 0.15); border: 1px solid rgba(0, 176, 255, 0.3); }
-    .btn-vertical-client.waze:hover { background: #00b0ff; color: #090d16; }
     .btn-vertical-client.uber { background: #ffffff; color: #000; }
     .btn-vertical-client.alert { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
 
@@ -234,33 +229,42 @@
     .btn-premium-action-row { display: flex; gap: 12px; margin: 20px 0; width: 100%; }
     .btn-action-refined { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%); color: #cbd5e1; }
 
-    /* REDES DEL CLIENTE */
+    /* REDES DEL CLIENTE INTERNO */
     .social-links-wrap-grid-client { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px auto 0; width: 100%; max-width: 420px; }
     .social-links-wrap-grid-client.active { display: grid; }
 
+    /* BLOQUE DE ENLACES SEO */
     .seo-pages-buttons-container { display: flex; gap: 12px; width: 100%; margin-top: 25px; margin-bottom: 25px; }
     .btn-seo-page-link { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 14px; color: #fff; font-weight: 700; font-size: 12.5px; text-decoration: none; text-transform: uppercase; cursor: pointer; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-    
+
+    /* IMPRESIÓN QR */
     #printCardWrap { display: none; margin-top: 32px; background: rgba(0,0,0,0.2); padding: 24px; border-radius:24px; }
     #printCard { background: #ffffff; border-radius: 24px; padding: 24px; max-width: 360px; color: #0f172a; margin: 0 auto; }
 
-    .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 14px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; }
+    /* REDES CON COLORES OFICIALES DEL FOOTER GLOBAL */
+    .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; }
+    .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 14px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; width: 100%; }
+    
     .social-pill-large.wa-color { border-color: rgba(37, 211, 102, 0.4); background: rgba(37, 211, 102, 0.05); }
     .social-pill-large.wa-color i { color: #25d366; }
+    .social-pill-large.wa-color:hover { background: #25d366; color: #000; border-color: #25d366; }
+
     .social-pill-large.ig-color { border-color: rgba(214, 41, 118, 0.4); background: rgba(214, 41, 118, 0.05); }
     .social-pill-large.ig-color i { color: #d62976; }
+    .social-pill-large.ig-color:hover { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; }
+
     .social-pill-large.tk-color { border-color: rgba(255, 0, 80, 0.4); background: rgba(255, 0, 80, 0.05); }
     .social-pill-large.tk-color i { color: #00f2fe; }
+    .social-pill-large.tk-color:hover { background: #000; color: #fff; }
 
+    /* ===== DIRECTORIO ENLACES INDEX ===== */
     .seo-directory-wrapper { padding: 48px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center; margin-top: 56px; }
     .seo-directory-wrapper h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 20px; }
     .seo-links-flex { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .seo-trigger-link { color: var(--text-muted); text-decoration: none; font-size: 12px; background: rgba(255, 255, 255, 0.02); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.04); cursor: pointer; }
 
-    .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; }
-    
-    /* ✅ FIX DEFINITIVO FOOTER: Letra más pequeña para visualización móvil compacta */
-    .footer-copy { font-size: 10px; color: #526175; font-weight: 500; letter-spacing: 0.3px; }
+    /* ✅ CONTROL DE FUENTE LEGBILE DEL FOOTER EN MÓVIL Y ESCRITORIO */
+    .footer-copy { font-size: 11.5px; color: #64748b; font-weight: 500; letter-spacing: 0.3px; text-align: center; line-height: 1.5; }
 
     @media (max-width: 992px) {
       .hero-grid-layout, .cta-banner-premium, .planes-grid-layout { grid-template-columns: 1fr !important; text-align: center; }
@@ -639,17 +643,6 @@
     };
 
     function toggleSeccion(idSeccion) {
-      if(idSeccion === 'secInicio') {
-        document.querySelectorAll('.dropdown-section').forEach(s => s.style.display = "none");
-        document.querySelectorAll('.nav-menu a').forEach(a => a.classList.remove('active'));
-        document.getElementById('lnkInicio').classList.add('active');
-        document.getElementById("mainGlobalHeroView").style.display = "block";
-        document.getElementById("seoHomeButtonsContainer").style.display = "block";
-        document.getElementById("globalMetricsFooterRow").style.display = "flex";
-        document.getElementById("mainClientPanelCardContainer").style.display = "none";
-        return;
-      }
-
       const seccion = document.getElementById(idSeccion);
       if(!seccion) return;
       const estaActiva = seccion.style.display === "block";
@@ -679,6 +672,7 @@
       window.location.href = `https://direcciones507.com/${codigoLimpio}`;
     }
 
+    // ✅ ENLACE DEL INDEX CORREGIDO: Mapea las llamadas fetch usando los parámetros esperados de tu Sheets
     async function registrarClicBase(plataforma) {
       if(!CODIGO_ACTUAL || window.location.protocol === 'file:') return;
       try { await fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}`, { method: "GET", mode: "no-cors" }); } catch(e) {}
@@ -847,6 +841,7 @@
           statsBtn.style.display = "none";
         }
 
+        // ✅ LIST_LISTENERS CORREGIDOS: Asocia los clics directamente a los IDs del panel del buscador para que sumen métricas en Sheets
         document.getElementById('btnGoogle').onclick = () => registrarClicBase('google');
         document.getElementById('btnWaze').onclick = () => registrarClicBase('waze');
         document.getElementById('btnUber').onclick = () => registrarClicBase('uber');
@@ -880,3 +875,4 @@
 
 </body>
 </html>
+              

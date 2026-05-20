@@ -14,6 +14,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+  <link id="dynamicFavicon" rel="icon" type="image/png" href="https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/favicon.png">
+  <link id="dynamicAppleIcon" rel="apple-touch-icon" href="https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/favicon.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{TITLE}}">
+  <meta property="og:description" content="{{DESC}}">
+  <meta property="og:image" content="https://raw.githubusercontent.com/direcciones507/direcciones507/main/img/logos/favicon.png">
+  <meta property="og:image:width" content="300">
+  <meta property="og:image:height" content="300">
+
   <style>
     /* ===== RESET & VARIABLES ===== */
     *{
@@ -233,7 +243,6 @@
       font-size: 24px;
     }
 
-    /* PIN GOOGLE MAPS ORIGINAL */
     .gmaps-original-color {
       color: #ea4335;
     }
@@ -371,7 +380,8 @@
       color: #1e3a8a;
     }
 
-    .btn-action-triple .fa-map-marked-alt { color: #ea4335; }
+    /* ✅ ELIMINADO EL PIN ROJO: Cambiado al azul oficial de Direcciones507 */
+    .btn-action-triple .fa-map-marked-alt { color: #3b82f6; }
     .btn-action-triple span { font-size: 11px; font-weight: 800; text-transform: uppercase; }
     .btn-action-triple p { font-size: 9px; color: #64748b; }
 
@@ -482,6 +492,9 @@
     }
 
     .accordion-full { margin-bottom: 12px; }
+
+    /* ✅ ELIMINADO EL PIN ROJO INFERIOR: Fuerza a que el pin del acordeón sea azul */
+    #btnRef .accordion-icon-left i { color: #3b82f6; }
 
     .qr-section {
       display: none;
@@ -720,10 +733,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
 
-  // ⚠️ RECOMPILA TU APPSCRIPT E INTRODUCE LA NUEVA URL AQUÍ SI LLEGA A CAMBIAR
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec";
 
-  // Captura dinámicamente el código desde la URL
   const pathCode = window.location.pathname.split('/').filter(Boolean).pop();
   const CODE = (pathCode || "AD507-CODE").toUpperCase();
 
@@ -733,7 +744,6 @@ document.addEventListener('DOMContentLoaded', function(){
   const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(window.location.href);
   document.getElementById('qrImg').src = qrUrl;
 
-  // LÓGICA DE TEXTOS DE CARGA SECUENCIALES
   const loaderTexts = ["Verificando código...", "Cargando ubicación...", "Preparando acceso..."];
   let textIndex = 0;
   const loaderTextElem = document.getElementById('loaderText');
@@ -749,7 +759,6 @@ document.addEventListener('DOMContentLoaded', function(){
     loader.classList.add('hidden');
   }
 
-  // GESTOR DE LIGHTBOX (SÓLO MÓVIL)
   const overlay = document.getElementById('lightboxOverlay');
   const lightboxImg = document.getElementById('lightboxImg');
 
@@ -757,7 +766,6 @@ document.addEventListener('DOMContentLoaded', function(){
     this.classList.remove('show');
   });
 
-  // SISTEMA DE APERTURA DE ACORDEONES CORREGIDO
   function configurarAcordeon(idBoton) {
     document.getElementById(idBoton).addEventListener('click', function() {
       this.classList.toggle('active');
@@ -766,7 +774,6 @@ document.addEventListener('DOMContentLoaded', function(){
   configurarAcordeon('btnHorario');
   configurarAcordeon('btnRef');
 
-  // ✅ PARCHE: REGISTRO UNIVERSAL DE CLICS ADAPTADO AL NUEVO ACCESO DEL APPSCRIPT (action=track y event=plataforma)
   async function registrarClic(plataforma) {
     if(window.location.protocol === 'file:') return;
     try {
@@ -783,7 +790,7 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btnGoogleSecundario').addEventListener('click', () => registrarClic('google'));
   document.getElementById('btnWaze').addEventListener('click', () => registrarClic('waze'));
   document.getElementById('btnUber').addEventListener('click', () => registrarClic('uber'));
-  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('aviso')); // Cambiado a aviso para que sume correctamente en la columna correspondiente
+  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('aviso'));
   document.getElementById('btnShare').addEventListener('click', () => registrarClic('share'));
 
   document.getElementById('btnQR').addEventListener('click', function(){
@@ -843,7 +850,6 @@ document.addEventListener('DOMContentLoaded', function(){
       const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
       const data = await response.json();
 
-      // Ocultar pre-loader
       ocultarCarga();
 
       if(!data.ok) return;
@@ -851,9 +857,13 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('nombre').textContent = data.nombre || "Cliente Verificado";
       document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";
 
+      // ✅ PARCHE FAVICON INTELIGENTE: Cambia el icono de la pestaña al logo del cliente si existe
       if(data.logo){
         document.getElementById('logoNegocio').src = data.logo;
         document.getElementById('logoBox').style.display = 'block';
+        
+        document.getElementById('dynamicFavicon').href = data.logo;
+        document.getElementById('dynamicAppleIcon').href = data.logo;
       }
 
       if(data.horario){
@@ -866,7 +876,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('btnUber').href = data.uber || "#";
 
       const tel = String(data.telefono || "").replace(/\D/g,'');
-      document.getElementById('btnWhats').href = data.whatsapp || "#"; // Usar el link directo formateado por el AppScript
+      document.getElementById('btnWhats').href = tel ? `https://wa.me/${tel}` : "#";
       document.getElementById('btnCall').href = tel ? `tel:${tel}` : "#";
       
       if(tel && document.getElementById('refTelefono')) {
@@ -894,14 +904,12 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnWeb').style.display = 'flex';
       }
 
-      // CORRECCIÓN Y VERIFICACIÓN UNIVERSAL DE PLANES PREMIUM/PRO
       const planNormalizado = String(data.plan || "").toLowerCase();
       const esPlanPremiumPro = CODE === "AD507-THE1920" || planNormalizado.includes('premium') || planNormalizado.includes('pro');
       
       if(esPlanPremiumPro){
         let listaFotos = [];
 
-        // ✅ Sincronizado dinámicamente con el parche estructurado en el AppScript
         if(data.fotos && Array.isArray(data.fotos)){
           listaFotos = data.fotos.filter(url => url);
         } else {
@@ -910,7 +918,6 @@ document.addEventListener('DOMContentLoaded', function(){
           if(data.foto3) listaFotos.push(data.foto3);
         }
 
-        // Renderiza la grilla comercial si se detectan imágenes válidas
         if(listaFotos.length > 0){
           const galeriaContainer = document.getElementById('galeriaFotos');
           galeriaContainer.innerHTML = ''; 
@@ -921,11 +928,11 @@ document.addEventListener('DOMContentLoaded', function(){
             imgElement.alt = `Imagen ${index + 1}`;
             imgElement.classList.add('gallery-clickable');
 
+            // ✅ CLIC UNIVERSAL EN CUALQUIER DISPOSITIVO: Abre en grande sin importar el ancho de pantalla
             imgElement.addEventListener('click', function() {
               lightboxImg.src = this.src;
               overlay.classList.add('show');
-          });
-
+            });
 
             galeriaContainer.appendChild(imgElement);
           });

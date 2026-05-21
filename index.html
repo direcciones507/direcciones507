@@ -23,7 +23,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://direcciones507.com/" />
   <meta property="og:title" content="Direcciones507 | Encuentra. Llega. Conecta." />
-  <meta property="og:description" content="El directorio de direcciones más completo de Panamá. Genera tu ubicación exacta con un código AD507 de forma estable y segura." />
+  <meta property="og:description" content="Creamos direcciones inteligentes para transformar la manera de llegar en todo Panamá. Tu ubicación exacta, conectada al instante con las principales plataformas de navegación." />
   <meta property="og:image" content="https://direcciones507.com/assets/og-image.jpg?v=202605202000" />
   <meta property="og:image:secure_url" content="https://direcciones507.com/assets/og-image.jpg?v=202605202000" />
   <meta property="og:image:type" content="image/jpeg" />
@@ -198,48 +198,94 @@
     .plan-perks-list li i { color: var(--cyan-brand); font-size: 11px; }
     .btn-plan-action-trigger { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--cyan-brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
 
-    /* ===== PANEL CENTRAL DEL CLIENTE ===== */
-    .card-panel-wrapper { width: 100%; max-width: 540px; margin: 40px auto; background: rgba(15, 23, 42, 0.8); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; }
-    @media (max-width: 640px) { .card-panel-wrapper { max-width: 100%; } }
-    .panel-header { padding: 24px 24px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); text-align: center; }
-    .panel-header h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue-brand); margin-bottom: 12px; }
+    /* ===== ✅ COMPONENTE UNIFICADO: DISEÑO ESTILO APP MÓVIL (COMO LA PLANTILLA) ===== */
+    .card-panel-wrapper { width: 100%; max-width: 480px; margin: 40px auto; background: #070f1e; border-radius: 24px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,.5); overflow: hidden; display: flex; flex-direction: column; }
+    @media (max-width: 640px) { .card-panel-wrapper { max-width: 100%; border-radius: 0; margin: 0; min-height: 100vh; } }
     
-    .pill-group-vertical { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-    .pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; font-size: 14px; color: #f3f4f6; font-weight: 500; width: 100%; }
-    .pill b { font-weight: 800; color: #fff; }
+    .code-header-node { padding: 20px 18px 10px; display: flex; justify-content: space-between; align-items: center; background: #070f1e; }
+    .brand-group-node { display: flex; align-items: center; gap: 8px; }
+    .brand-icon-node { font-size: 24px; color: #3b82f6; }
+    .brand-title-node { color: #ffffff; font-size: 15px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; }
+    .brand-title-node span { color: #3b82f6; }
+    .brand-subtitle-node { color: #94a3b8; font-size: 10px; font-weight: 500; }
     
-    .panel-body { padding: 24px; width: 100%; }
-    .info-field { margin-bottom: 24px; width: 100%; }
-    .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px; }
-    .field-value { background: rgba(255, 255, 255, 0.02); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 16px 20px; width: 100%; }
-    
-    #uiNombre { font-size: 20px; font-weight: 800; color: #ffffff; }
-    #uiRef { font-size: 15px; font-weight: 600; color: #cbd5e1; }
+    .verified-badge-node { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 10px; display: flex; align-items: center; gap: 6px; text-align: left; }
+    .verified-badge-node i { color: #10b981; font-size: 14px; }
+    .verified-title-node { font-size: 11px; font-weight: 800; color: #10b981; line-height: 1.1; }
+    .verified-desc-node { font-size: 8px; color: #64748b; }
 
-    /* GALERÍA DINÁMICA */
-    .home-premium-galeria { display: none; margin-bottom: 24px; width: 100%; }
-    .galeria-grid-home { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; width: 100%; }
-    .galeria-grid-home img { width: 100%; height: 110px; object-fit: cover; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); cursor: pointer; }
+    .identity-block-node { padding: 15px 18px; display: flex; gap: 16px; align-items: center; background: linear-gradient(180deg, #070f1e 0%, #0a1428 100%); width: 100%; }
+    #uiLogoBoxHome { display: none; flex-shrink: 0; }
+    #uiLogoImgHome { width: 90px; height: 90px; object-fit: contain; background: #ffffff; border-radius: 18px; padding: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    .title-details-node { flex: 1; min-width: 0; text-align: left; }
+    .code-title-text { font-size: 21px; font-weight: 900; color: #ffffff; letter-spacing: -0.8px; margin-bottom: 4px; word-wrap: break-word; line-height: 1.2; }
+    
+    /* GRILLA CUADRADA PREMIUM DE BOTONES */
+    .main-nav-grid-node { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 18px; width: 100%; }
+    .nav-box-node { border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; cursor: pointer; }
+    .nav-box-node i { font-size: 24px; }
+    .nav-box-text-node { text-align: left; }
+    .nav-box-text-node h4 { font-size: 13px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; }
+    .nav-box-text-node p { font-size: 11px; opacity: 0.7; }
+    
+    .box-node-google { background: #ffffff; color: #0f172a; }
+    .box-node-google .nav-box-text-node h4 { color: #0f172a; }
+    .box-node-google .nav-box-text-node p { color: #64748b; }
+    .box-node-waze { background: linear-gradient(135deg, #33ccff, #1ab7f0); }
+    .box-node-uber { background: #000000; border: 1px solid rgba(255,255,255,0.15); }
+    .box-node-whatsapp { background: linear-gradient(135deg, #22c55e, #16a34a); }
 
-    /* BOTONES NAVEGACIÓN CLIENTE */
-    .btn-grid-vertical { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; width: 100%; }
-    .btn-vertical-client { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 15px; text-decoration: none; width: 100%; text-transform: uppercase; color: #fff; }
-    .btn-vertical-client.google { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .btn-vertical-client.waze { background: rgba(0, 176, 255, 0.15); border: 1px solid rgba(0, 176, 255, 0.3); }
-    .btn-vertical-client.uber { background: #ffffff; color: #000; }
-    .btn-vertical-client.alert { background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); color: #22c55e; }
+    /* HOJA BLANCA INFERIOR UNIFICADA */
+    .white-sheet-node { background: #ffffff; border-radius: 28px 28px 0 0; padding: 24px 18px 15px; margin-top: 15px; flex: 1; width: 100%; }
+    
+    /* ACORDEONES ESTILO PLANTILLA */
+    .accordion-item-node { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; position: relative; cursor: pointer; margin-bottom: 12px; width: 100%; transition: background 0.2s ease; }
+    .accordion-item-node:hover { background: #f1f5f9; }
+    .accordion-icon-left-node { width: 32px; height: 32px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .accordion-content-text-node { flex: 1; min-width: 0; text-align: left; }
+    .accordion-label-node { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 1px; }
+    .accordion-value-node { font-size: 12px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .accordion-item-node.active .accordion-value-node { white-space: normal; overflow: visible; text-overflow: clip; }
+    .accordion-arrow-node { color: #94a3b8; font-size: 10px; margin-left: auto; transition: transform 0.3s ease; }
+    .accordion-item-node.active .accordion-arrow-node { transform: rotate(180deg); }
+    
+    #uiBtnRefHome .accordion-icon-left-node i { color: #3b82f6; }
+    #uiBtnHorarioHome .accordion-icon-left-node i { color: #0284c7; }
+
+    /* GALERÍA EN HOJA BLANCA */
+    .home-premium-galeria { display: none; padding: 0 0 20px; width: 100%; }
+    .galeria-grid-home { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; margin-top: 8px; }
+    .galeria-grid-home img { width: 100%; height: 120px; object-fit: cover; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); cursor: pointer; }
+    .galeria-grid-home img:first-child { grid-column: span 2; height: 200px; }
+
+    /* FILAS DE ACCIONES SECUNDARIAS */
+    .actions-triple-row-node { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; width: 100%; }
+    .btn-action-triple-node { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px 6px; text-align: center; text-decoration: none; color: #0f172a; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+    .btn-action-triple-node i { font-size: 18px; color: #3b82f6; }
+    .btn-action-triple-node span { font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .btn-action-triple-node p { font-size: 9px; color: #64748b; }
+
+    .btn-qr-box-node { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; margin-bottom: 12px; }
+    .btn-qr-box-node i { color: #0284c7; }
+
+    /* PANEL DE ESTADÍSTICAS ESTILIZADO */
+    .stats-panel-node { display: none; width: 100%; padding: 20px; background: #070f1e; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); margin-top: 4px; margin-bottom: 16px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); }
+    .stat-row-node { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); font-size: 13px; color: #fff; }
+    .stat-row-node span { color: #94a3b8; }
+    .stat-row-node:last-of-type { border-bottom: none; }
 
     /* INTERACCIONES ADICIONALES */
     .btn-qr-print-action { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; border-radius: 16px; font-weight: 700; font-size: 14px; text-decoration: none; background: rgba(255, 255, 255, 0.03); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.06); cursor: pointer; width: 100%; margin-top: 12px; }
-    .btn-stats-client-matched { display: none; width: 100%; justify-content: space-between; align-items: center; cursor: pointer; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; font-weight: 700; font-size: 14px; margin-top: 12px; color: #f1f5f9; }
     
-    /* ✅ BOTONES COMPARTIR Y COPIAR: Reestablecidos al formato original oscuro premium */
-    .btn-premium-action-row { display: flex; gap: 12px; margin: 20px 0; width: 100%; }
-    .btn-action-refined { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%); color: #cbd5e1; }
-    .btn-action-refined:hover { border-color: #3b82f6; color: #ffffff; background: rgba(37, 99, 235, 0.05); }
-
-    .social-links-wrap-grid-client { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px auto 0; width: 100%; max-width: 420px; }
-    .social-links-wrap-grid-client.active { display: grid; }
+    /* BOTONES DE REDES SOCIALES UNIFICADOS */
+    .social-quad-row-node { display: none; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; width: 100%; }
+    .social-quad-row-node.active { display: grid; }
+    .btn-social-quad-node { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 4px; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; color: #334155; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .btn-social-quad-node i { font-size: 14px; }
+    .btn-social-quad-node.ig i { color: #d62976; }
+    .btn-social-quad-node.tk i { color: #000000; }
+    .btn-social-quad-node.fb i { color: #1877f2; }
+    .btn-social-quad-node.web i { color: #0284c7; }
 
     /* BLOQUE DE ENLACES SEO */
 .seo-pages-buttons-container {
@@ -486,7 +532,7 @@
           <div class="tagline-badge">Todo Panamá en un solo lugar</div>
           <h2 class="main-hero-title">Encuentra cualquier dirección <span>fácil, rápido y preciso.</span></h2>
           <p class="main-hero-desc">
-            La evolución del direccionamiento en Panamá. Creamos códigos estables y precisos que cambian para siempre la forma de moverte, conectar y ser encontrado. Todo accesible desde cualquier dispositivo.
+            Creamos direcciones inteligentes para transformar la manera de llegar en todo Panamá. Tu ubicación exacta, conectada al instante con las principales plataformas de navegación desde cualquier dispositivo.
           </p>
 
           <div class="search-bar-premium-container">
@@ -597,7 +643,6 @@
     </div>
   </main>
 
-  <!-- ✅ SECCIÓN ADICIONAL: QUIÉNES SOMOS ADAPTADO PARA MÓVILES -->
   <section class="container" id="movilQuienesSomos" style="margin-top: 56px; margin-bottom: 20px;">
     <div style="background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); padding: 32px 24px; border-radius: 24px; text-align: center;">
       <span style="font-size:11px; color:var(--cyan-brand); font-weight:800; letter-spacing:1px; text-transform:uppercase;">Infraestructura Digital</span>
@@ -631,83 +676,156 @@
   <div class="container" id="mainClientPanelCardContainer" style="display: none;">
     <div class="card-panel-wrapper">
       
-      <div class="panel-header">
-        <h2>Ubicación Verificada</h2>
-        <div class="pill-group-vertical" style="margin-top: 14px;">
-          <div class="pill"><i class="fa-solid fa-hashtag" style="color: var(--cyan-brand);"></i> Código: <b id="uiCodigo">-</b></div>
-          <div class="pill"><i class="fa-solid fa-circle-check" style="color:#22c55e;"></i> Estado: <b>Activo</b></div>
+      <div class="code-header-node">
+        <div class="brand-group-node">
+          <i class="fa-solid fa-map-location-dot brand-icon-node"></i>
+          <div>
+            <div class="brand-title-node">DIRECCIONES<span>507</span></div>
+            <div class="brand-subtitle-node">Encuentra. Llega. Conecta.</div>
+          </div>
+        </div>
+        <div class="verified-badge-node">
+          <i class="fa-solid fa-circle-check"></i>
+          <div>
+            <div class="verified-title-node">VERIFIED</div>
+            <div class="verified-desc-node" id="uiStatusText">Ubicación Activa</div>
+          </div>
         </div>
       </div>
 
-      <div class="panel-body">
-        <div class="info-field">
-          <div class="field-label">Nombre del Lugar</div>
-          <div class="field-value" id="uiNombre">-</div>
+      <div class="identity-block-node">
+        <div id="uiLogoBoxHome">
+          <img id="uiLogoImgHome" src="" alt="Logo">
         </div>
-
-        <div class="info-field">
-          <div class="field-label">Punto de Referencia Exacto</div>
-          <div class="field-value" id="uiRef">-</div>
+        <div class="title-details-node">
+          <h1 class="code-title-text" id="uiCodigo">AD507-CODE</h1>
+          <div class="negocio-premium-top-text" id="uiNombre">—</div>
         </div>
+      </div>
 
-        <div class="info-field home-premium-galeria" id="fieldGaleriaHome">
-          <div class="field-label">Galería Comercial Premium Pro</div>
+      <div class="main-nav-grid-layout" style="background: #070f1e; width: 100%;">
+        <div class="main-nav-grid">
+          <a id="btnGoogle" class="nav-box-node box-node-google" target="_blank">
+            <i class="fa-solid fa-location-dot gmaps-original-color"></i>
+            <div class="nav-box-text-node">
+              <h4>Google Maps</h4>
+              <p>Abrir navegación</p>
+            </div>
+          </a>
+          <a id="btnWaze" class="nav-box-node box-node-waze" target="_blank">
+            <i class="fa-brands fa-waze"></i>
+            <div class="nav-box-text-node">
+              <h4>Waze</h4>
+              <p>Abrir navegación</p>
+            </div>
+          </a>
+          <a id="btnUber" class="nav-box-node box-node-uber" target="_blank">
+            <i class="fa-brands fa-uber"></i>
+            <div class="nav-box-text-node">
+              <h4>Uber</h4>
+              <p>Pedir un viaje</p>
+            </div>
+          </a>
+          <a id="btnAviso" class="nav-box-node box-node-whatsapp" target="_blank">
+            <i class="fa-brands fa-whatsapp"></i>
+            <div class="nav-box-text-node">
+              <h4>WhatsApp</h4>
+              <p>Avisar que llegué</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="white-sheet-node">
+        
+        <div class="home-premium-galeria" id="fieldGaleriaHome">
+          <div class="sheet-section-title">Galería Comercial Premium:</div>
           <div class="galeria-grid-home" id="galeriaFotosHome"></div>
         </div>
 
-        <div class="btn-grid-vertical" id="gridUbicacion">
-          <a class="btn-vertical-client google" id="btnGoogle" target="_blank"><i class="fa-solid fa-location-dot" style="color: #ea4335;"></i> Google Maps</a>
-          <a class="btn-vertical-client waze" id="btnWaze" target="_blank"><i class="fa-brands fa-waze" style="color: #00b0ff;"></i> Waze</a>
-          <a class="btn-vertical-client uber" id="btnUber" target="_blank"><i class="fa-brands fa-uber"></i> Uber</a>
-          <a class="btn-vertical-client alert" id="btnAviso" target="_blank"><i class="fa-brands fa-whatsapp"></i> Avisar que llegué</a>
+        <div class="actions-triple-row-node">
+          <div class="btn-action-triple-node" id="btnCompartir">
+            <i class="fa-solid fa-share-nodes"></i>
+            <span>Compartir</span>
+            <p>Dirección</p>
+          </div>
+          <div class="btn-action-triple-node" id="btnCopiar">
+            <i class="fa-solid fa-copy" style="color: #a855f7;"></i>
+            <span>Copiar Link</span>
+            <p>Portapapeles</p>
+          </div>
         </div>
 
-        <div id="gridVerificacion">
-          <a href="#" id="linkVerificacion" class="btn-qr-print-action">
-            <i class="fa-solid fa-qrcode"></i> QR para imprimir
-          </a>
+        <div class="btn-qr-box-node" id="linkVerificacion">
+          <div class="accordion-icon-left-node"><i class="fa-solid fa-qrcode"></i></div>
+          <div class="accordion-content-text-node">
+            <div class="accordion-label-node">Código QR Oficial</div>
+            <div class="accordion-value-node">Ver QR para imprimir</div>
+          </div>
+          <i class="fa-solid fa-chevron-down accordion-arrow-node"></i>
         </div>
 
-        <div class="btn-premium-action-row" id="gridCompartir">
-          <button class="btn-action-refined" type="button" id="btnCompartir"><i class="fa-solid fa-share-nodes" style="color: #3b82f6;"></i> Compartir</button>
-          <button class="btn-action-refined" type="button" id="btnCopiar"><i class="fa-solid fa-copy" style="color: #a855f7;"></i> Copiar link</button>
+        <div class="btn-qr-box-node" id="btnStats" style="display: none;">
+          <div class="accordion-icon-left-node"><i class="fa-solid fa-chart-bar" style="color:#f59e0b;"></i></div>
+          <div class="accordion-content-text-node">
+            <div class="accordion-label-node">Métricas de Tráfico</div>
+            <div class="accordion-value-node" id="uiLabelClicksHome">Estadísticas de clics</div>
+          </div>
+          <i class="fa-solid fa-chevron-down accordion-arrow-node"></i>
+        </div>
+
+        <div id="statsPanel" class="stats-panel-node">
+          <div class="stat-row-node"><span>Google Maps</span> <b id="stGoogle">0</b></div>
+          <div class="stat-row-node"><span>Waze</span> <b id="stWaze">0</b></div>
+          <div class="stat-row-node"><span>Uber</span> <b id="stUber">0</b></div>
+          <div class="stat-row-node"><span>Compartido</span> <b id="stShare">0</b></div>
+          <div class="stat-row-node"><span>Copió link</span> <b id="stCopy">0</b></div>
+          <div id="stUpdated" style="margin-top: 12px; color: #64748b; font-size:11px; text-align:right; font-weight:500;">Actualizado: -</div>
+        </div>
+
+        <div class="accordion-item-node" id="uiBtnHorarioHome">
+          <div class="accordion-icon-left-node"><i class="fa-solid fa-clock"></i></div>
+          <div class="accordion-content-text-node">
+            <div class="accordion-label-node">Horario de atención</div>
+            <div class="accordion-value-node" id="uiHorarioHome">No especificado</div>
+          </div>
+          <i class="fa-solid fa-chevron-down accordion-arrow-node"></i>
+        </div>
+
+        <div class="accordion-item-node" id="uiBtnRefHome">
+          <div class="accordion-icon-left-node"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="accordion-content-text-node">
+            <div class="accordion-label-node">Ubicación / Referencia</div>
+            <div class="accordion-value-node" id="uiRef">Cargando detalles...</div>
+          </div>
+          <i class="fa-solid fa-chevron-down accordion-arrow-node"></i>
         </div>
 
         <div id="seccionRedesSocialesCliente" class="social-links-wrap-grid-client">
-          <a class="social-pill-large ig" id="clInstagram" target="_blank"><i class="fa-brands fa-instagram" style="color: #d62976;"></i> Instagram</a>
-          <a class="social-pill-large tk" id="clTikTok" target="_blank"><i class="fa-brands fa-tiktok" style="color: #000;"></i> TikTok</a>
-          <a class="social-pill-large fb" id="clFacebook" target="_blank"><i class="fa-brands fa-facebook" style="color: #1877f2;"></i> Facebook</a>
-          <a class="social-pill-large wa" id="clWeb" target="_blank"><i class="fa-solid fa-globe" style="color: #0284c7;"></i> Página Web</a>
+          <div class="social-quad-row-node active" style="margin-top: 10px;">
+            <a class="btn-social-quad-node ig" id="clInstagram" target="_blank"><i class="fa-brands fa-instagram"></i> Instagram</a>
+            <a class="btn-social-quad-node tk" id="clTikTok" target="_blank"><i class="fa-brands fa-tiktok"></i> TikTok</a>
+            <a class="btn-social-quad-node fb" id="clFacebook" target="_blank"><i class="fa-brands fa-facebook"></i> Facebook</a>
+            <a class="btn-social-quad-node web" id="clWeb" target="_blank"><i class="fa-solid fa-globe"></i> Web</a>
+          </div>
         </div>
 
-        <div class="btn-stats-client-matched" id="btnStats">
-          <span>📊 Actividad del cliente</span><span>▾</span>
-        </div>
-        <div id="statsPanel" class="stats-panel" style="display: none; width: 100%; padding: 24px; background: rgba(15, 23, 42, 0.8); border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); margin-top: 12px;">
-          <div class="stat-row" style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); font-size:14px;"><span style="color:#94a3b8;">Google Maps</span> <b id="stGoogle" style="color:#fff;">0</b></div>
-          <div class="stat-row" style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); font-size:14px;"><span style="color:#94a3b8;">Waze</span> <b id="stWaze" style="color:#fff;">0</b></div>
-          <div class="stat-row" style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); font-size:14px;"><span style="color:#94a3b8;">Uber</span> <b id="stUber" style="color:#fff;">0</b></div>
-          <div class="stat-row" style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed rgba(255,255,255,0.1); font-size:14px;"><span style="color:#94a3b8;">Compartido</span> <b id="stShare" style="color:#fff;">0</b></div>
-          <div class="stat-row" style="display: flex; justify-content: space-between; padding: 12px 0; font-size:14px;"><span style="color:#94a3b8;">Copió link</span> <b id="stCopy" style="color:#fff;">0</b></div>
-          <div class="updated" id="stUpdated" style="margin-top: 16px; color: #64748b; font-size:13px; text-align:right; font-weight:500;">Actualizado: -</div>
-        </div>
-        
         <div id="printCardWrap">
           <div id="printCard">
             <div style="display: flex; align-items: center; gap: 12px;">
               <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #3b82f6, #4f46e5); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size:15px;">AD</div>
-              <div><b style="font-size: 16px; color:#0f172a;">Dirección Digital AD507</b><div style="color: #64748b; font-size:13px;">Escanea para verificar</div></div>
+              <div style="text-align: left;"><b style="font-size: 16px; color:#0f172a;">Dirección Digital AD507</b><div style="color: #64748b; font-size:13px;">Escanea para verificar</div></div>
             </div>
-            <div style="margin: 16px 0; font-size:15px; color:#334155; font-weight:600;">Código: <b id="printCodigo" style="color:#3b82f6;">-</b></div>
+            <div style="margin: 16px 0; font-size:15px; color:#334155; font-weight:600; text-align: left;">Código: <b id="printCodigo" style="color:#3b82f6;">-</b></div>
             <div style="display: flex; justify-content: center; margin: 16px 0;"><img id="qrVerificacion" style="width: 220px; height: 220px; border-radius: 12px;" alt="QR"></div>
             <div style="margin-top: 20px; display: flex; gap: 10px;">
               <button id="btnImprimirQR" type="button" style="background: #3b82f6; color: white; border: none; border-radius: 100px; padding: 12px; flex: 1; font-weight: 700; cursor: pointer; font-size:14px;">Imprimir</button>
-              <button id="btnOcultarQR" type="button" style="background: #f1f5f9; color: #1e293b; border: none; border-radius: 100px; padding: 12px; flex: 1; font-weight: 700; pointer: cursor; font-size:14px;">Ocultar</button>
+              <button id="btnOcultarQR" type="button" style="background: #f1f5f9; color: #1e293b; border: none; border-radius: 100px; padding: 12px; flex: 1; font-weight: 700; cursor: pointer; font-size:14px;">Ocultar</button>
             </div>
           </div>
         </div>
 
-        <button onclick="window.location.reload()" style="width: 100%; background: transparent; border: none; color: var(--text-muted); font-size: 11px; margin-top: 24px; cursor: pointer; text-decoration: underline; font-weight: 600; text-transform:uppercase; letter-spacing:0.5px;">Realizar otra consulta</button>
+        <button onclick="window.location.reload()" style="width: 100%; background: transparent; border: none; color: #64748b; font-size: 11px; margin-top: 24px; cursor: pointer; text-decoration: underline; font-weight: 600; text-transform:uppercase; letter-spacing:0.5px;">Realizar otra consulta</button>
       </div>
 
     </div>
@@ -738,7 +856,6 @@
         </a>
       </div>
       
-      <!-- ✅ ENLACE DE POLÍTICAS ESTILIZADO -->
       <div style="margin-top: 5px;">
         <a href="#" onclick="abrirPoliticas(event)" style="color: #64748b; font-size: 12px; text-decoration: underline; font-weight: 600; letter-spacing: 0.5px; cursor: pointer;">Política de Privacidad y Términos de Servicio</a>
       </div>
@@ -747,7 +864,6 @@
     </div>
   </footer>
 
-  <!-- ✅ VENTANA EMERGENTE (MODAL) PARA LAS POLÍTICAS DE PRIVACIDAD -->
   <div id="modalPoliticas" style="position: fixed; inset: 0; background: rgba(3, 7, 18, 0.95); backdrop-filter: blur(10px); z-index: 999999; display: none; align-items: center; justify-content: center; padding: 20px;">
     <div style="background: #0f172a; border: 1px solid rgba(6, 182, 212, 0.3); padding: 32px 24px; border-radius: 24px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
       <h3 style="color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Política de Privacidad y Uso</h3>
@@ -784,6 +900,10 @@
         document.getElementById("inputCodigo").value = urlCode;
         ejecutarBusquedaSistema();
       }
+
+      // Configuración de los acordeones del Index
+      document.getElementById('uiBtnHorarioHome').addEventListener('click', function() { this.classList.toggle('active'); });
+      document.getElementById('uiBtnRefHome').addEventListener('click', function() { this.classList.toggle('active'); });
     };
 
     function toggleSeccion(idSeccion) {
@@ -815,7 +935,7 @@
 
     function ejecutarEnlaceInterno(codigoAsignado) {
       const codigoLimpio = String(codigoAsignado).trim().toUpperCase();
-      window.location.href = `https://direcciones507.com/${codigoLimpio}`;
+      window.location.href = `https://direcciones507.com/${codigoLinter}`;
     }
 
     async function registrarClicBase(plataforma) {
@@ -868,16 +988,26 @@
 
         const data = respuesta;
         CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
+        const planLower = String(data.plan || "").toLowerCase().trim();
 
-        const planLower = String(data.plan || "").toLowerCase();
-        if (planLower.includes("residential") || planLower.includes("residencial")) {
+        // ✅ REGLA 1. PERSONA / RESIDENCIAL PRIVADO
+        if (planLower === "persona" || planLower === "residencial" || planLower.includes("residential")) {
           alert("🔒 Acceso Resguardado: Este código AD507 pertenece a una cuenta Residencial Privada. Por políticas de protección de datos de Direcciones507, la cartografía e imágenes están deshabilitadas al público.");
           return;
         }
 
         document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL;
-        document.getElementById("uiNombre").textContent = data.nombre || "-";
-        document.getElementById("uiRef").textContent = data.referencia || "-";
+        document.getElementById("uiNombre").textContent = data.nombre || "Cliente Verificado";
+        document.getElementById("uiRef").textContent = data.referencia || "Referencia no indicada";
+        document.getElementById("uiHorarioHome").textContent = data.horario || "No especificado";
+
+        // Control y renderizado dinámico del Logo (Solo si es Premium y existe la URL)
+        if (planLower === "premium" && data.logo) {
+          document.getElementById("uiLogoImgHome").src = data.logo;
+          document.getElementById("uiLogoBoxHome").style.display = "block";
+        } else {
+          document.getElementById("uiLogoBoxHome").style.display = "none";
+        }
 
         let lat = data.lat || data.latitude || "";
         let lng = data.lng || data.longitude || "";
@@ -910,12 +1040,11 @@
           document.getElementById("btnUber").href = data.uber || "#";
         }
 
-        const esNegocio = planLower.includes('business') || planLower.includes('premium') || planLower.includes('pro') || planLower.includes('corporativo') || planLower.includes('comercial') || CODIGO_ACTUAL.includes('THE1920') || CODIGO_ACTUAL.includes('MONTERO') || CODIGO_ACTUAL.includes('JEDIDIAS') || CODIGO_ACTUAL.includes('0023');
-
+        // ✅ REGLA 2. CONTROL EXCLUSIVO DE LA GALERÍA COMERCIAL (SÓLO PLAN PREMIUM)
         const containerGaleria = document.getElementById('fieldGaleriaHome');
         const gridFotos = document.getElementById('galeriaFotosHome');
 
-        if(esNegocio && gridFotos && containerGaleria){
+        if(planLower === "premium" && gridFotos && containerGaleria){
           let fotosValidas = data.fotos && Array.isArray(data.fotos) ? data.fotos.filter(u=>u) : [data.foto1, data.foto2, data.foto3].filter(u=>u);
           if(fotosValidas.length > 0){
             gridFotos.innerHTML = '';
@@ -932,32 +1061,32 @@
           } else { containerGaleria.style.display = "none"; }
         } else { containerGaleria.style.display = "none"; }
 
+        // Mapeo dinámico de Redes Sociales en la sábana inferior
         const redesBox = document.getElementById("seccionRedesSocialesCliente");
-        if(esNegocio && redesBox) {
+        if((planLower === "negocio" || planLower === "premium") && redesBox) {
           let tieneRedes = false;
           if(data.instagram) { document.getElementById("clInstagram").href = data.instagram; document.getElementById("clInstagram").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clInstagram").style.display="none"; }
           if(data.tiktok) { document.getElementById("clTikTok").href = data.tiktok; document.getElementById("clTikTok").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clTikTok").style.display="none"; }
           if(data.facebook) { document.getElementById("clFacebook").href = data.facebook; document.getElementById("clFacebook").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clFacebook").style.display="none"; }
           if(data.web) { document.getElementById("clWeb").href = data.web; document.getElementById("clWeb").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clWeb").style.display="none"; }
           
-          if(tieneRedes) redesBox.classList.add("active");
+          if(tieneRedes) redesBox.style.display = "block";
+          else redesBox.style.display = "none";
+        } else {
+          redesBox.style.display = "none";
         }
 
         const shareUrl = `https://direcciones507.com/?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
         document.getElementById("btnGoogle").onclick = () => registrarClicBase("google");
         document.getElementById("btnWaze").onclick = () => registrarClicBase("waze");
         document.getElementById("btnUber").onclick = () => registrarClicBase("uber");
+        document.getElementById("btnAviso").onclick = () => registrarClicBase("aviso");
 
         document.getElementById("btnCompartir").onclick = async () => {
           await registrarClicBase("share");
-
           if (navigator.share) {
             try {
-              await navigator.share({
-                title: "Dirección Digital",
-                text: `Código ${CODIGO_ACTUAL}`,
-                url: shareUrl
-              });
+              await navigator.share({ title: "Dirección Digital", text: `Código ${CODIGO_ACTUAL}`, url: shareUrl });
             } catch {
               navigator.clipboard.writeText(shareUrl);
               alert("✅ Link copiado");
@@ -974,9 +1103,6 @@
           alert("✅ Link copiado");
         };
 
-        document.getElementById("btnGoogle").onclick = () => registrarClicBase("google");
-        document.getElementById("btnWaze").onclick = () => registrarClicBase("waze");
-        document.getElementById("btnUber").onclick = () => registrarClicBase("uber");
         document.getElementById("linkVerificacion").onclick = (e) => {
           e.preventDefault();
           document.getElementById("printCard").style.background = "#ffffff";
@@ -985,9 +1111,10 @@
           document.getElementById("printCardWrap").style.display = "block";
         };
 
+        // ✅ REGLA 3. METRICAS ACTIVA SÓLO EN NEGOCIO Y PREMIUM
         const statsBtn = document.getElementById("btnStats");
         const statsPanel = document.getElementById("statsPanel");
-        if (esNegocio) {
+        if (planLower === "negocio" || planLower === "premium") {
           statsBtn.style.display = "flex";
           statsBtn.onclick = async () => {
             const vis = statsPanel.style.display === "block";
@@ -1010,12 +1137,8 @@
           };
         } else {
           statsBtn.style.display = "none";
+          statsPanel.style.display = "none";
         }
-
-        document.getElementById('btnGoogle').onclick = () => registrarClicBase('google');
-        document.getElementById('btnWaze').onclick = () => registrarClicBase('waze');
-        document.getElementById('btnUber').onclick = () => registrarClicBase('uber');
-        document.getElementById('btnAviso').onclick = () => registrarClicBase('aviso');
 
         document.getElementById("mainGlobalHeroView").style.display = "none";
         document.getElementById("seoHomeButtonsContainer").style.display = "none";
@@ -1043,7 +1166,6 @@
       if (e.key === "Enter") ejecutarBusquedaSistema();
     });
 
-    // ✅ FUNCIONES AÑADIDAS: Control del modal emergente de políticas de privacidad
     function abrirPoliticas(e) {
       e.preventDefault();
       document.getElementById("modalPoliticas").style.display = "flex";

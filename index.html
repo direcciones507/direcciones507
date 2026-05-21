@@ -198,7 +198,7 @@
     .plan-perks-list li i { color: var(--cyan-brand); font-size: 11px; }
     .btn-plan-action-trigger { display: block; width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--cyan-brand); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
 
-    /* ===== ✅ COMPONENTE UNIFICADO: DISEÑO ESTILO APP MÓVIL (COMO LA PLANTILLA) ===== */
+    /* ===== COMPONENTE UNIFICADO: DISEÑO ESTILO APP MÓVIL ===== */
     .card-panel-wrapper { width: 100%; max-width: 480px; margin: 40px auto; background: #070f1e; border-radius: 24px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,.5); overflow: hidden; display: flex; flex-direction: column; }
     @media (max-width: 640px) { .card-panel-wrapper { max-width: 100%; border-radius: 0; margin: 0; min-height: 100vh; } }
     
@@ -221,7 +221,7 @@
     .code-title-text { font-size: 21px; font-weight: 900; color: #ffffff; letter-spacing: -0.8px; margin-bottom: 4px; word-wrap: break-word; line-height: 1.2; }
     
     /* GRILLA CUADRADA PREMIUM DE BOTONES */
-    .main-nav-grid-node { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 18px; width: 100%; }
+    .main-nav-grid { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 10px 18px; width: 100%; }
     .nav-box-node { border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; cursor: pointer; }
     .nav-box-node i { font-size: 24px; }
     .nav-box-text-node { text-align: left; }
@@ -288,68 +288,20 @@
     .btn-social-quad-node.web i { color: #0284c7; }
 
     /* BLOQUE DE ENLACES SEO */
-.seo-pages-buttons-container {
-  display: flex;
-  gap: 16px;
-  width: 100%;
-  margin-top: 25px;
-  margin-bottom: 35px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
+    .seo-pages-buttons-container { display: flex; gap: 16px; width: 100%; margin-top: 25px; margin-bottom: 35px; justify-content: center; align-items: center; flex-wrap: wrap; }
+    .btn-seo-page-link { flex: 1; min-width: 280px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 20px; border-radius: 18px; color: #ffffff; font-weight: 800; font-size: 13px; text-decoration: none; text-transform: uppercase; cursor: pointer; text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(12px); transition: all 0.30s ease; letter-spacing: 0.3px; }
+    .btn-seo-page-link:first-child { background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(6,182,212,0.12)); border: 1px solid rgba(59,130,246,0.45); box-shadow: 0 0 25px rgba(59,130,246,0.18); }
+    .btn-seo-page-link:last-child { background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(236,72,153,0.12)); border: 1px solid rgba(236,72,153,0.45); box-shadow: 0 0 25px rgba(236,72,153,0.15); }
+    .btn-seo-page-link:hover { transform: translateY(-3px) scale(1.01); filter: brightness(1.08); }
+    .btn-seo-page-link i { font-size: 18px; }
 
-.btn-seo-page-link {
-  flex: 1;
-  min-width: 280px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 18px 20px;
-  border-radius: 18px;
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 13px;
-  text-decoration: none;
-  text-transform: uppercase;
-  cursor: pointer;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(12px);
-  transition: all 0.30s ease;
-  letter-spacing: 0.3px;
-}
-
-.btn-seo-page-link:first-child {
-  background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(6,182,212,0.12));
-  border: 1px solid rgba(59,130,246,0.45);
-  box-shadow: 0 0 25px rgba(59,130,246,0.18);
-}
-
-.btn-seo-page-link:last-child {
-  background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(236,72,153,0.12));
-  border: 1px solid rgba(236,72,153,0.45);
-  box-shadow: 0 0 25px rgba(236,72,153,0.15);
-}
-
-.btn-seo-page-link:hover {
-  transform: translateY(-3px) scale(1.01);
-  filter: brightness(1.08);
-}
-
-.btn-seo-page-link i {
-  font-size: 18px;
-}
     /* IMPRESIÓN QR */
     #printCardWrap { display: none; margin-top: 32px; background: rgba(0,0,0,0.2); padding: 24px; border-radius:24px; }
     #printCard { background: #ffffff; border-radius: 24px; padding: 24px; max-width: 360px; color: #0f172a; margin: 0 auto; }
 
-    /* ✅ BOTONES DE REDES SOCIALES DEL FOOTER REPARADOS EN SU GRILLA ORIGINAL */
+    /* BOTONES DE REDES SOCIALES DEL FOOTER REPARADOS EN SU GRILLA ORIGINAL */
     .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; padding: 0 4px; }
     .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 6px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 13px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-    
     .social-pill-large.wa-color { border-color: rgba(37, 211, 102, 0.4); background: rgba(37, 211, 102, 0.05); }
     .social-pill-large.wa-color i { color: #25d366; }
     .social-pill-large.ig-color { border-color: rgba(214, 41, 118, 0.4); background: rgba(214, 41, 118, 0.05); }
@@ -366,65 +318,13 @@
     .footer-copy { font-size: 11.5px; color: #64748b; font-weight: 500; letter-spacing: 0.3px; text-align: center; line-height: 1.5; width: 100%; margin-top: 8px; }
 
     /* CONTADORES CENTRADOS PREMIUM */
-.counters-bar-section {
-  width: 100%;
-  padding: 20px 0 10px;
-}
-
-.counters-bar-flex {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-
-.counter-block-node {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: rgba(15, 23, 42, 0.45);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 18px;
-  padding: 18px 22px;
-  min-width: 240px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-  transition: all 0.30s ease;
-}
-
-.counter-block-node:hover {
-  transform: translateY(-4px);
-  border-color: rgba(6,182,212,0.35);
-  box-shadow: 0 0 25px rgba(6,182,212,0.15);
-}
-
-.counter-icon-node {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(6,182,212,0.18), rgba(59,130,246,0.15));
-  color: #06b6d4;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-.counter-metrics-data h4 {
-  font-size: 28px;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.counter-metrics-data p {
-  font-size: 14px;
-  color: #cbd5e1;
-  line-height: 1.3;
-}
+    .counters-bar-section { width: 100%; padding: 20px 0 10px; }
+    .counters-bar-flex { display: flex; justify-content: center; align-items: stretch; gap: 18px; flex-wrap: wrap; }
+    .counter-block-node { display: flex; align-items: center; gap: 14px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 18px 22px; min-width: 240px; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.25); transition: all 0.30s ease; }
+    .counter-block-node:hover { transform: translateY(-4px); border-color: rgba(6,182,212,0.35); box-shadow: 0 0 25px rgba(6,182,212,0.15); }
+    .counter-icon-node { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,0.18), rgba(59,130,246,0.15)); color: #06b6d4; font-size: 22px; flex-shrink: 0; }
+    .counter-metrics-data h4 { font-size: 28px; font-weight: 900; color: #ffffff; line-height: 1; margin-bottom: 4px; }
+    .counter-metrics-data p { font-size: 14px; color: #cbd5e1; line-height: 1.3; }
     
     @media (max-width: 992px) {
       .hero-grid-layout, .cta-banner-premium, .planes-grid-layout { grid-template-columns: 1fr !important; text-align: center; }
@@ -441,7 +341,7 @@
 
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5ZNJXT2B" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
-  <header>
+  <header id="mainAppHeader">
     <div class="container nav-wrap">
       <a href="/" class="brand-group">
         <div class="brand-logo-icon"><i class="fa-solid fa-location-dot"></i></div>
@@ -705,28 +605,28 @@
 
       <div class="main-nav-grid-layout" style="background: #070f1e; width: 100%;">
         <div class="main-nav-grid">
-          <a id="btnGoogle" class="nav-box-node box-node-google" target="_blank">
+          <a id="btnGoogleHome" class="nav-box-node box-node-google" target="_blank">
             <i class="fa-solid fa-location-dot gmaps-original-color"></i>
             <div class="nav-box-text-node">
               <h4>Google Maps</h4>
               <p>Abrir navegación</p>
             </div>
           </a>
-          <a id="btnWaze" class="nav-box-node box-node-waze" target="_blank">
+          <a id="btnWazeHome" class="nav-box-node box-node-waze" target="_blank">
             <i class="fa-brands fa-waze"></i>
             <div class="nav-box-text-node">
               <h4>Waze</h4>
               <p>Abrir navegación</p>
             </div>
           </a>
-          <a id="btnUber" class="nav-box-node box-node-uber" target="_blank">
+          <a id="btnUberHome" class="nav-box-node box-node-uber" target="_blank">
             <i class="fa-brands fa-uber"></i>
             <div class="nav-box-text-node">
               <h4>Uber</h4>
               <p>Pedir un viaje</p>
             </div>
           </a>
-          <a id="btnAviso" class="nav-box-node box-node-whatsapp" target="_blank">
+          <a id="btnAvisoHome" class="nav-box-node box-node-whatsapp" target="_blank">
             <i class="fa-brands fa-whatsapp"></i>
             <div class="nav-box-text-node">
               <h4>WhatsApp</h4>
@@ -744,12 +644,12 @@
         </div>
 
         <div class="actions-triple-row-node">
-          <div class="btn-action-triple-node" id="btnCompartir">
+          <div class="btn-action-triple-node" id="btnCompartirHome">
             <i class="fa-solid fa-share-nodes"></i>
             <span>Compartir</span>
             <p>Dirección</p>
           </div>
-          <div class="btn-action-triple-node" id="btnCopiar">
+          <div class="btn-action-triple-node" id="btnCopiarHome">
             <i class="fa-solid fa-copy" style="color: #a855f7;"></i>
             <span>Copiar Link</span>
             <p>Portapapeles</p>
@@ -901,7 +801,6 @@
         ejecutarBusquedaSistema();
       }
 
-      // Configuración de los acordeones del Index
       document.getElementById('uiBtnHorarioHome').addEventListener('click', function() { this.classList.toggle('active'); });
       document.getElementById('uiBtnRefHome').addEventListener('click', function() { this.classList.toggle('active'); });
     };
@@ -919,6 +818,7 @@
         if(idSeccion === 'secNosotros') document.getElementById('lnkNosotros').classList.add('active');
         if(idSeccion === 'secFuncionamiento') document.getElementById('lnkFuncionamiento').classList.add('active');
         if(idSeccion === 'secContacto') document.getElementById('lnkContacto').classList.add('active');
+        document.getElementById("mainAppHeader").style.display = "block"; // Se mantiene para las sub-páginas informativas
         document.getElementById("mainGlobalHeroView").style.display = "none";
         document.getElementById("seoHomeButtonsContainer").style.display = "none";
         document.getElementById("globalMetricsFooterRow").style.display = "none";
@@ -926,6 +826,7 @@
         document.getElementById("movilQuienesSomos").style.display = "none";
       } else {
         document.getElementById('lnkInicio').classList.add('active');
+        document.getElementById("mainAppHeader").style.display = "block";
         document.getElementById("mainGlobalHeroView").style.display = "block";
         document.getElementById("seoHomeButtonsContainer").style.display = "block";
         document.getElementById("globalMetricsFooterRow").style.display = "flex";
@@ -935,7 +836,7 @@
 
     function ejecutarEnlaceInterno(codigoAsignado) {
       const codigoLimpio = String(codigoAsignado).trim().toUpperCase();
-      window.location.href = `https://direcciones507.com/${codigoLinter}`;
+      window.location.href = `https://direcciones507.com/${codigoLimpio}`;
     }
 
     async function registrarClicBase(plataforma) {
@@ -990,7 +891,6 @@
         CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
         const planLower = String(data.plan || "").toLowerCase().trim();
 
-        // ✅ REGLA 1. PERSONA / RESIDENCIAL PRIVADO
         if (planLower === "persona" || planLower === "residencial" || planLower.includes("residential")) {
           alert("🔒 Acceso Resguardado: Este código AD507 pertenece a una cuenta Residencial Privada. Por políticas de protección de datos de Direcciones507, la cartografía e imágenes están deshabilitadas al público.");
           return;
@@ -1001,7 +901,6 @@
         document.getElementById("uiRef").textContent = data.referencia || "Referencia no indicada";
         document.getElementById("uiHorarioHome").textContent = data.horario || "No especificado";
 
-        // Control y renderizado dinámico del Logo (Solo si es Premium y existe la URL)
         if (planLower === "premium" && data.logo) {
           document.getElementById("uiLogoImgHome").src = data.logo;
           document.getElementById("uiLogoBoxHome").style.display = "block";
@@ -1027,20 +926,19 @@
             setTimeout(() => { map.invalidateSize(); }, 200);
           }
 
-          document.getElementById("btnGoogle").href = `https://www.google.com/maps/search/?api=1&query=${latNum},${lngNum}`;
-          document.getElementById("btnWaze").href = `https://www.waze.com/ul?ll=${latNum},${lngNum}&navigate=yes`;
-          document.getElementById("btnUber").href = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${latNum}&dropoff[longitude]=${lngNum}`;
+          document.getElementById("btnGoogleHome").href = `https://www.google.com/maps/search/?api=1&query=${latNum},${lngNum}`;
+          document.getElementById("btnWazeHome").href = `https://www.waze.com/ul?ll=${latNum},${lngNum}&navigate=yes`;
+          document.getElementById("btnUberHome").href = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${latNum}&dropoff[longitude]=${lngNum}`;
           
           let tel = String(data.telefono || "").replace(/\D/g, "");
           if (tel.length === 8) tel = "507" + tel;
-          document.getElementById("btnAviso").href = tel.length >= 10 ? `https://wa.me/${tel}?text=¡Hola!%20Ya%20llegu%C3%A9%20siguiendo%20mi%20c%C3%B3digo%20AD507:%20${encodeURIComponent(CODIGO_ACTUAL)}` : "#";
+          document.getElementById("btnAvisoHome").href = tel.length >= 10 ? `https://wa.me/${tel}?text=¡Hola!%20Ya%20llegu%C3%A9%20siguiendo%20mi%20c%C3%B3digo%20AD507:%20${encodeURIComponent(CODIGO_ACTUAL)}` : "#";
         } else {
-          document.getElementById("btnGoogle").href = data.google || "#";
-          document.getElementById("btnWaze").href = data.waze || "#";
-          document.getElementById("btnUber").href = data.uber || "#";
+          document.getElementById("btnGoogleHome").href = data.google || "#";
+          document.getElementById("btnWazeHome").href = data.waze || "#";
+          document.getElementById("btnUberHome").href = data.uber || "#";
         }
 
-        // ✅ REGLA 2. CONTROL EXCLUSIVO DE LA GALERÍA COMERCIAL (SÓLO PLAN PREMIUM)
         const containerGaleria = document.getElementById('fieldGaleriaHome');
         const gridFotos = document.getElementById('galeriaFotosHome');
 
@@ -1061,7 +959,6 @@
           } else { containerGaleria.style.display = "none"; }
         } else { containerGaleria.style.display = "none"; }
 
-        // Mapeo dinámico de Redes Sociales en la sábana inferior
         const redesBox = document.getElementById("seccionRedesSocialesCliente");
         if((planLower === "negocio" || planLower === "premium") && redesBox) {
           let tieneRedes = false;
@@ -1077,12 +974,14 @@
         }
 
         const shareUrl = `https://direcciones507.com/?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
-        document.getElementById("btnGoogle").onclick = () => registrarClicBase("google");
-        document.getElementById("btnWaze").onclick = () => registrarClicBase("waze");
-        document.getElementById("btnUber").onclick = () => registrarClicBase("uber");
-        document.getElementById("btnAviso").onclick = () => registrarClicBase("aviso");
+        
+        // ✅ CONEXIÓN DE CONTADORES: Mapeo exacto de eventos hacia la hoja de Excel
+        document.getElementById("btnGoogleHome").onclick = () => registrarClicBase("google");
+        document.getElementById("btnWazeHome").onclick = () => registrarClicBase("waze");
+        document.getElementById("btnUberHome").onclick = () => registrarClicBase("uber");
+        document.getElementById("btnAvisoHome").onclick = () => registrarClicBase("aviso");
 
-        document.getElementById("btnCompartir").onclick = async () => {
+        document.getElementById("btnCompartirHome").onclick = async () => {
           await registrarClicBase("share");
           if (navigator.share) {
             try {
@@ -1097,7 +996,7 @@
           }
         };
 
-        document.getElementById("btnCopiar").onclick = async () => {
+        document.getElementById("btnCopiarHome").onclick = async () => {
           await registrarClicBase("copy");
           navigator.clipboard.writeText(shareUrl);
           alert("✅ Link copiado");
@@ -1111,7 +1010,6 @@
           document.getElementById("printCardWrap").style.display = "block";
         };
 
-        // ✅ REGLA 3. METRICAS ACTIVA SÓLO EN NEGOCIO Y PREMIUM
         const statsBtn = document.getElementById("btnStats");
         const statsPanel = document.getElementById("statsPanel");
         if (planLower === "negocio" || planLower === "premium") {
@@ -1140,6 +1038,9 @@
           statsPanel.style.display = "none";
         }
 
+        // ✅ REGLA VISUAL DE LOGO: Ocultar el Header principal para evitar duplicidad al ver el resultado
+        document.getElementById("mainAppHeader").style.display = "none";
+        
         document.getElementById("mainGlobalHeroView").style.display = "none";
         document.getElementById("seoHomeButtonsContainer").style.display = "none";
         document.getElementById("globalMetricsFooterRow").style.display = "none";

@@ -913,10 +913,20 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnTikTok').style.display = 'flex';
       }
 
-      if(data.web){
-        document.getElementById('btnWeb').href = data.web;
-        document.getElementById('btnWeb').style.display = 'flex';
-      }
+      function normalizarUrl(url) {
+  url = String(url || "").trim();
+  if (!url) return "";
+  if (!/^https?:\/\//i.test(url)) {
+    url = "https://" + url;
+  }
+  return url;
+}
+
+if(data.web){
+  const webUrl = normalizarUrl(data.web);
+  document.getElementById('btnWeb').href = webUrl;
+  document.getElementById('btnWeb').style.display = 'flex';
+}
 
       const planNormalizado = String(data.plan || "").toLowerCase();
       const esPlanPremiumPro = planNormalizado.includes('premium') || planNormalizado.includes('pro');

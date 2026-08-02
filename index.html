@@ -802,11 +802,23 @@
       
       setTimeout(() => { map.invalidateSize(); }, 400);
 
+      // Detecta cuando el código llega mediante un enlace compartido.
+      // En ese caso, una dirección residencial sí puede abrirse.
       const urlParams = new URLSearchParams(window.location.search);
-      const urlCode = urlParams.get('code');
+      let urlCode = urlParams.get('code');
+
+      // Compatibilidad adicional con enlaces tipo /AD507-CODIGO
+      if (!urlCode) {
+        const pathCode = decodeURIComponent(window.location.pathname)
+          .split('/')
+          .filter(Boolean)
+          .pop();
+        if (pathCode && /^AD507-/i.test(pathCode)) urlCode = pathCode;
+      }
+
       if (urlCode) {
         document.getElementById("inputCodigo").value = urlCode;
-        ejecutarBusquedaSistema();
+        ejecutarBusquedaSistema("enlace");
       }
 
       document.getElementById('uiBtnHorarioHome').addEventListener('click', function() { this.classList.toggle('active'); });
@@ -859,7 +871,7 @@
       try { return JSON.parse(text); } catch (e) { throw new Error("Respuesta inválida"); }
     }
 
-    async function ejecutarBusquedaSistema() {
+    async function ejecutarBusquedaSistema(origen = "buscador") {
       const input = document.getElementById("inputCodigo");
       const log = document.getElementById("msgLogBusqueda");
       const codigo = (input.value || "").trim();
@@ -899,8 +911,15 @@
         CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
         const planLower = String(data.plan || "").toLowerCase().trim();
 
-        if (planLower === "persona" || planLower === "residencial" || planLower.includes("residential")) {
-          alert("🔒 Acceso Resguardado: Este código AD507 pertenece a una cuenta Residencial Privada. Por políticas de protección de datos de Direcciones507, la cartografía e imágenes están deshabilitadas al público.");
+        const esResidencial =
+          planLower === "persona" ||
+          planLower === "residencial" ||
+          planLower.includes("residential");
+
+        // Las residencias no aparecen mediante el buscador público,
+        // pero sí se abren cuando el visitante recibió el enlace directo.
+        if (esResidencial && origen !== "enlace") {
+          alert("🔒 Dirección privada: este código residencial no está disponible en el buscador público. Para abrirlo, utiliza el enlace directo compartido por el titular.");
           return;
         }
 

@@ -856,7 +856,7 @@
 
     function ejecutarEnlaceInterno(codigoAsignado) {
       const codigoLimpio = String(codigoAsignado).trim().toUpperCase();
-      window.location.href = `https://direcciones507.com/${codigoLimpio}`;
+      window.location.href = `https://direcciones507.com/?code=${encodeURIComponent(codigoLimpio)}`;
     }
 
     async function registrarClicBase(plataforma) {

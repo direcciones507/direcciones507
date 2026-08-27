@@ -203,6 +203,7 @@
       border-radius: 18px;
       padding: 8px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      cursor: pointer;
     }
 
     .title-details-header {
@@ -693,6 +694,14 @@
       <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
     </div>
 
+    <div class="accordion-item accordion-full" id="codigoPostalContainer" style="display:none;">
+      <div class="accordion-icon-left"><i class="fa-solid fa-envelope"></i></div>
+      <div class="accordion-content-text">
+        <div class="accordion-label">Código postal</div>
+        <div class="accordion-value" id="codigoPostal">No especificado</div>
+      </div>
+    </div>
+
     <div class="accordion-item accordion-full" id="btnRef">
       <div class="accordion-icon-left"><i class="fa-solid fa-location-dot"></i></div>
       <div class="accordion-content-text">
@@ -766,6 +775,13 @@ document.addEventListener('DOMContentLoaded', function(){
 
   overlay.addEventListener('click', function() {
     this.classList.remove('show');
+  });
+
+  document.getElementById('logoNegocio').addEventListener('click', function() {
+    if (!this.src) return;
+    lightboxImg.src = this.src;
+    lightboxImg.alt = this.alt || 'Logo del negocio';
+    overlay.classList.add('show');
   });
 
   function configurarAcordeon(idBoton) {
@@ -864,6 +880,20 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('logoBox').style.display = 'block';
       }
 
+      const planNormalizado = String(data.plan || '').trim().toLowerCase();
+      const esPremiumPro = planNormalizado.includes('premium pro') || planNormalizado.includes('pro');
+      const esNegocioPremium = !esPremiumPro && planNormalizado.includes('premium');
+      const permiteDatosPremium = esNegocioPremium || esPremiumPro;
+
+      // Negocio Gratis: sin código postal, redes sociales ni galería.
+      // Negocio Premium: código postal y redes sociales, sin galería.
+      // Premium Pro: todo lo anterior y galería de hasta cinco fotos.
+      const codigoPostal = data.codigoPostal || data.codigo_postal || data.postal || '';
+      if(permiteDatosPremium && codigoPostal){
+        document.getElementById('codigoPostal').textContent = codigoPostal;
+        document.getElementById('codigoPostalContainer').style.display = 'flex';
+      }
+
       if(data.horario){
         document.getElementById('horario').textContent = data.horario;
       }
@@ -903,18 +933,18 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnCall').href = "#";
       }
 
-      if(data.instagram){
+      if(permiteDatosPremium && data.instagram){
         document.getElementById('btnInstagram').href = data.instagram;
       }else{
         document.getElementById('btnInstagram').style.display = 'none';
       }
 
-      if(data.facebook){
+      if(permiteDatosPremium && data.facebook){
         document.getElementById('btnFacebook').href = data.facebook;
         document.getElementById('btnFacebook').style.display = 'flex';
       }
 
-      if(data.tiktok){
+      if(permiteDatosPremium && data.tiktok){
         document.getElementById('btnTikTok').href = data.tiktok;
         document.getElementById('btnTikTok').style.display = 'flex';
       }
@@ -928,24 +958,23 @@ document.addEventListener('DOMContentLoaded', function(){
   return url;
 }
 
-if(data.web){
+if(permiteDatosPremium && data.web){
   const webUrl = normalizarUrl(data.web);
   document.getElementById('btnWeb').href = webUrl;
   document.getElementById('btnWeb').style.display = 'flex';
 }
 
-      const planNormalizado = String(data.plan || "").toLowerCase();
-      const esPlanPremiumPro = planNormalizado.includes('premium') || planNormalizado.includes('pro');
-      
-      if(esPlanPremiumPro){
+      if(esPremiumPro){
         let listaFotos = [];
 
         if(data.fotos && Array.isArray(data.fotos)){
-          listaFotos = data.fotos.filter(url => url);
+          listaFotos = data.fotos.filter(url => url).slice(0, 5);
         } else {
           if(data.foto1) listaFotos.push(data.foto1);
           if(data.foto2) listaFotos.push(data.foto2);
           if(data.foto3) listaFotos.push(data.foto3);
+          if(data.foto4) listaFotos.push(data.foto4);
+          if(data.foto5) listaFotos.push(data.foto5);
         }
 
         if(listaFotos.length > 0){

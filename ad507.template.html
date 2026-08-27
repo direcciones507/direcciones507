@@ -880,16 +880,10 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('logoBox').style.display = 'block';
       }
 
-      const planNormalizado = String(data.plan || '').trim().toLowerCase();
-      const esPremiumPro = planNormalizado.includes('premium pro') || planNormalizado.includes('pro');
-      const esNegocioPremium = !esPremiumPro && planNormalizado.includes('premium');
-      const permiteDatosPremium = esNegocioPremium || esPremiumPro;
-
-      // Negocio Gratis: sin código postal, redes sociales ni galería.
-      // Negocio Premium: código postal y redes sociales, sin galería.
-      // Premium Pro: todo lo anterior y galería de hasta cinco fotos.
+      // Por ahora la plantilla muestra únicamente los datos que se hayan cargado.
+      // La administración manual de cada plan determina qué campos recibe cada negocio.
       const codigoPostal = data.codigoPostal || data.codigo_postal || data.postal || '';
-      if(permiteDatosPremium && codigoPostal){
+      if(codigoPostal){
         document.getElementById('codigoPostal').textContent = codigoPostal;
         document.getElementById('codigoPostalContainer').style.display = 'flex';
       }
@@ -933,18 +927,18 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnCall').href = "#";
       }
 
-      if(permiteDatosPremium && data.instagram){
+      if(data.instagram){
         document.getElementById('btnInstagram').href = data.instagram;
       }else{
         document.getElementById('btnInstagram').style.display = 'none';
       }
 
-      if(permiteDatosPremium && data.facebook){
+      if(data.facebook){
         document.getElementById('btnFacebook').href = data.facebook;
         document.getElementById('btnFacebook').style.display = 'flex';
       }
 
-      if(permiteDatosPremium && data.tiktok){
+      if(data.tiktok){
         document.getElementById('btnTikTok').href = data.tiktok;
         document.getElementById('btnTikTok').style.display = 'flex';
       }
@@ -958,13 +952,13 @@ document.addEventListener('DOMContentLoaded', function(){
   return url;
 }
 
-if(permiteDatosPremium && data.web){
+if(data.web){
   const webUrl = normalizarUrl(data.web);
   document.getElementById('btnWeb').href = webUrl;
   document.getElementById('btnWeb').style.display = 'flex';
 }
 
-      if(esPremiumPro){
+      {
         let listaFotos = [];
 
         if(data.fotos && Array.isArray(data.fotos)){

@@ -153,6 +153,7 @@
     /* ===== CONTENEDOR MAPA DE PANAMÁ REAL ===== */
     .map-art-container { position: relative; width: 100%; height: 380px; min-height: 350px; border-radius: 20px; overflow: hidden; border: 2px solid rgba(6, 182, 212, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4); z-index: 10; }
     #mapaPanamaReal { width: 100%; height: 100%; background: #0b1329; }
+    .map-art-container .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.7); }
 
     /* ===== ICONOS DE CATEGORÍAS ===== */
     .category-pills-row { display: flex; justify-content: flex-start; gap: 16px; margin-top: 40px; flex-wrap: wrap; }
@@ -164,7 +165,7 @@
     /* ===== GRID DE BENEFICIOS ===== */
     .features-grid-view { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 56px; }
     .feat-premium-card { background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; text-align: center; }
-    .feat-card-icon { width: 44px; height: 44px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 50%; }
+    .feat-card-icon { width: 44px; height: 44px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 50%; background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.25); color: var(--cyan-brand); }
     .feat-premium-card h4 { font-size: 15px; color: #fff; margin-bottom: 8px; font-weight: 700; }
     .feat-premium-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
@@ -291,7 +292,7 @@
     .seo-pages-buttons-container { display: flex; gap: 16px; width: 100%; margin-top: 25px; margin-bottom: 35px; justify-content: center; align-items: center; flex-wrap: wrap; }
     .btn-seo-page-link { flex: 1; min-width: 280px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 20px; border-radius: 18px; color: #ffffff; font-weight: 800; font-size: 13px; text-decoration: none; text-transform: uppercase; cursor: pointer; text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(12px); transition: all 0.30s ease; letter-spacing: 0.3px; }
     .btn-seo-page-link:first-child { background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(6,182,212,0.12)); border: 1px solid rgba(59,130,246,0.45); box-shadow: 0 0 25px rgba(59,130,246,0.18); }
-    .btn-seo-page-link:last-child { background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(236,72,153,0.12)); border: 1px solid rgba(236,72,153,0.45); box-shadow: 0 0 25px rgba(236,72,153,0.15); }
+    .btn-seo-page-link:last-child { background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(6,182,212,0.12)); border: 1px solid rgba(6,182,212,0.45); box-shadow: 0 0 25px rgba(6,182,212,0.15); }
     .btn-seo-page-link:hover { transform: translateY(-3px) scale(1.01); filter: brightness(1.08); }
     .btn-seo-page-link i { font-size: 18px; }
 
@@ -465,11 +466,11 @@
 
       <div class="features-grid-view">
         <div class="feat-premium-card">
-          <div class="feat-card-icon"><i class="fa-solid fa-map-pin" style="color: #e74c3c;"></i></div>
+          <div class="feat-card-icon"><i class="fa-solid fa-map-pin"></i></div>
           <h4>Direcciones Precisas</h4><p>Ubicación exacta mapeada satelitalmente para que llegues sin ninguna complicación.</p>
         </div>
         <div class="feat-premium-card">
-          <div class="feat-card-icon"><i class="fa-solid fa-shield-halved" style="color: #2ecc71;"></i></div>
+          <div class="feat-card-icon"><i class="fa-solid fa-shield-halved"></i></div>
           <h4>Confiable y Verificado</h4><p>Validamos cada dirección para garantizarte datos reales, estables y seguros.</p>
         </div>
         <div class="feat-premium-card">
@@ -501,7 +502,7 @@
         
         <div class="planes-grid-layout">
           <div class="plan-pricing-card">
-            <h4>Residencial</h4><div class="plan-numeric-val">$12.99</div>
+            <h4>Residencial Privado</h4><div class="plan-numeric-val">$12.99</div>
             <ul class="plan-perks-list">
               <li><i class="fa-solid fa-circle-check"></i> Código AD507 Único</li>
               <li><i class="fa-solid fa-circle-check"></i> Enlace Maps / Waze / Uber</li>
@@ -511,7 +512,7 @@
             <a href="https://wa.me/50765996532?text=Hola,%20deseo%20el%20Plan%20Residential" target="_blank" class="btn-plan-action-trigger">Solicitar Plan</a>
           </div>
           <div class="plan-pricing-card">
-            <h4>Business Basic</h4><div class="plan-numeric-val">Gratis</div>
+            <h4>Negocio Gratis</h4><div class="plan-numeric-val">Gratis</div>
             <ul class="plan-perks-list">
               <li><i class="fa-solid fa-circle-check"></i> Infraestructura Residencial</li>
               <li><i class="fa-solid fa-circle-check"></i> Indexado en Buscador</li>
@@ -522,7 +523,7 @@
           </div>
           <div class="plan-pricing-card popular">
             <div class="plan-badge-tag">RECOMENDADO</div>
-            <h4>Premium Pro</h4><div class="plan-numeric-val">$19.99</div>
+            <h4>Negocio Premium</h4><div class="plan-numeric-val">$19.99</div>
             <ul class="plan-perks-list">
               <li><i class="fa-solid fa-circle-check"></i> Infraestructura Comercial</li>
               <li><i class="fa-solid fa-circle-check"></i> Integración Redes Sociales</li>
@@ -532,7 +533,7 @@
             <a href="https://wa.me/50765996532?text=Hola,%20deseo%20el%20Plan%20Premium%20Pro" target="_blank" class="btn-plan-action-trigger">Solicitar Plan</a>
           </div>
           <div class="plan-pricing-card">
-            <h4>Corporativo Pro</h4><div class="plan-numeric-val">$39.99</div>
+            <h4>Premium Pro</h4><div class="plan-numeric-val">$39.99</div>
             <ul class="plan-perks-list">
               <li><i class="fa-solid fa-circle-check"></i> Todo el ecosistema Pro</li>
               <li><i class="fa-solid fa-circle-check"></i> Galería Exclusiva 5 Fotos</li>
@@ -794,7 +795,7 @@
     let CODIGO_ACTUAL = "";
 
     window.onload = function() {
-      map = L.map('mapaPanamaReal').setView([8.5380, -80.7821], 7);
+      map = L.map('mapaPanamaReal', { zoomControl: true }).fitBounds([[7.05, -83.05], [9.65, -77.15]]);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap'
       }).addTo(map);

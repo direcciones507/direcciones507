@@ -38,15 +38,18 @@ jobs:
             exit 1
           fi
 
+      - name: Patch frontend for AD507 2026
+        run: bash scripts/patch-ad507-2026.sh
+
       - name: Download codes
         run: |
-          curl -L "https://script.google.com/macros/s/AKfycbxUaC0NIG7nJIdaFIKBoxSvOo517Pj1cUeEhBf--rXGCrUEiUGxMjsY71AGMzpKAX8f7g/exec?action=list" -o codes.json
+          curl -fL "https://script.google.com/macros/s/AKfycbwg7Yo7TmzETYqHTVd1NEMteyfERdlAzFkqICyefy6ak7XkK7aU1OZ3XjVvs-laFJY/exec?action=list" -o codes.json
 
           echo "=== TOTAL CODIGOS ==="
           jq '.codes | length' codes.json
 
           echo "=== PRIMEROS CODIGOS ==="
-          jq -r '.codes[] | "\(.codigo // "") | \(.plan // "")"' codes.json | head -30
+          jq -r '.codes[] | "\(.codigo // "") | \(.plan // .plan_comercial // "") | indexable=\(.indexable // "legacy")"' codes.json | head -30
 
       - name: Validate codes.json
         run: |
@@ -66,18 +69,19 @@ jobs:
         run: |
           mkdir -p out
 
-          echo "=== CODIGOS NEGOCIO/PREMIUM GENERADOS ==="
+          echo "=== CODIGOS PUBLICOS/INDEXABLES GENERADOS ==="
 
           jq -c '.codes[]' codes.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
-            PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
+            PLAN=$(echo "$item" | jq -r '.plan // .plan_comercial // ""' | tr '[:upper:]' '[:lower:]' | xargs)
+            INDEXABLE=$(echo "$item" | jq -r '.indexable // ""')
 
             if [[ -z "$CODE" ]]; then
               continue
             fi
 
-            if [[ "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* ]]; then
-              echo "GENERANDO: $CODE | PLAN: $PLAN"
+            if [[ "$INDEXABLE" == "true" || "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* || "$PLAN" == "gratis" ]]; then
+              echo "GENERANDO: $CODE | PLAN: $PLAN | INDEXABLE: $INDEXABLE"
 
               SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
               SLUG_UPPER="$CODE"
@@ -113,9 +117,10 @@ jobs:
 
           jq -c '.codes[]' codes.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
-            PLAN=$(echo "$item" | jq -r '.plan // ""' | tr '[:upper:]' '[:lower:]' | xargs)
+            PLAN=$(echo "$item" | jq -r '.plan // .plan_comercial // ""' | tr '[:upper:]' '[:lower:]' | xargs)
+            INDEXABLE=$(echo "$item" | jq -r '.indexable // ""')
 
-            if [[ -n "$CODE" && ( "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* ) ]]; then
+            if [[ -n "$CODE" && ( "$INDEXABLE" == "true" || "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* || "$PLAN" == "gratis" ) ]]; then
               SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
 
               echo "  <url>" >> out/sitemap.xml
@@ -141,6 +146,7 @@ jobs:
             if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi
             if [ -f 404.html ]; then cp 404.html out/404.html; fi
             if [ -f CNAME ]; then cp CNAME out/CNAME; fi
+            if [ -d assets ]; then cp -R assets out/assets; fi
             if [ -d img ]; then cp -R img out/img; fi
             if [ -d jacinto ]; then cp -R jacinto out/jacinto; fi
             if [ -d liliana ]; then cp -R liliana out/liliana; fi
@@ -157,17 +163,15 @@ jobs:
             exit 1
           fi
 
+          echo "=== VERIFICAR API 2026 EN FRONTEND ==="
+          grep -q 'AKfycbwg7Yo7TmzETYqHTVd1NEMteyfERdlAzFkqICyefy6ak7XkK7aU1OZ3XjVvs-laFJY' out/index.html
+          ! grep -q 'action=click&code=' out/index.html
+
           echo "=== VERIFICAR PAGINAS CLAVE ==="
           if [ -d out/ad507-0012 ] || [ -d out/AD507-0012 ]; then
             echo "OK: AD507-0012 existe"
           else
             echo "AVISO: AD507-0012 no existe en este build"
-          fi
-
-          if [ -d out/ad507-transportesdevida ] || [ -d out/AD507-TRANSPORTESDEVIDA ]; then
-            echo "OK: AD507-TRANSPORTESDEVIDA existe"
-          else
-            echo "AVISO: AD507-TRANSPORTESDEVIDA no existe en este build"
           fi
 
           echo "=== PRIMERAS LINEAS DE out/index.html ==="

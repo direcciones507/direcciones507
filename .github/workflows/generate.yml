@@ -43,7 +43,7 @@ jobs:
 
       - name: Download codes
         run: |
-          curl -fL "https://script.google.com/macros/s/AKfycbwg7Yo7TmzETYqHTVd1NEMteyfERdlAzFkqICyefy6ak7XkK7aU1OZ3XjVvs-laFJY/exec?action=list" -o codes.json
+          curl -fL "https://script.google.com/macros/s/AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq/exec?action=list" -o codes.json
 
           echo "=== TOTAL CODIGOS ==="
           jq '.codes | length' codes.json
@@ -164,7 +164,7 @@ jobs:
           fi
 
           echo "=== VERIFICAR API 2026 EN FRONTEND ==="
-          grep -q 'AKfycbwg7Yo7TmzETYqHTVd1NEMteyfERdlAzFkqICyefy6ak7XkK7aU1OZ3XjVvs-laFJY' out/index.html
+          grep -q 'AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq' out/index.html
           ! grep -q 'action=click&code=' out/index.html
 
           echo "=== VERIFICAR PAGINAS CLAVE ==="

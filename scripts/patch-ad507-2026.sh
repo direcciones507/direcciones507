@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-NEW_WEBAPP_URL="https://script.google.com/macros/s/AKfycbwg7Yo7TmzETYqHTVd1NEMteyfERdlAzFkqICyefy6ak7XkK7aU1OZ3XjVvs-laFJY/exec"
+NEW_WEBAPP_URL="https://script.google.com/macros/s/AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq/exec"
 
 # Patch every maintained HTML source before the Pages build. This keeps old LEGACY
 # records working while allowing the 2026 API to control new plan capabilities.

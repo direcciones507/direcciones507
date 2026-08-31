@@ -1331,7 +1331,25 @@
     document.getElementById("btnOcultarQR").onclick = () => { document.getElementById("printCardWrap").style.display = "none"; };
     document.getElementById("btnImprimirQR").onclick = () => {
       const w = window.open("", "_blank");
-      w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script>
+      w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
+      w.document.close();
+    };
+    document.getElementById('lightboxOverlay').onclick = function(){ this.classList.remove('show'); };
+
+    document.getElementById("inputCodigo").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") ejecutarBusquedaSistema();
+    });
+
+    function abrirPoliticas(e) {
+      e.preventDefault();
+      document.getElementById("modalPoliticas").style.display = "flex";
+    }
+
+    function cerrarPoliticas() {
+      document.getElementById("modalPoliticas").style.display = "none";
+    }
+  </script>
+
   <div id="residentialPinOverlay" class="residential-pin-overlay" role="dialog" aria-modal="true" aria-labelledby="residentialPinTitle">
     <form id="residentialPinForm" class="residential-pin-card" novalidate>
       <i class="fas fa-shield-halved" aria-hidden="true"></i>
@@ -1452,25 +1470,6 @@
     });
     setTimeout(() => input.focus(),100);
   })();
-  <\/script>
-
-</body></html>`);
-      w.document.close();
-    };
-    document.getElementById('lightboxOverlay').onclick = function(){ this.classList.remove('show'); };
-
-    document.getElementById("inputCodigo").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") ejecutarBusquedaSistema();
-    });
-
-    function abrirPoliticas(e) {
-      e.preventDefault();
-      document.getElementById("modalPoliticas").style.display = "flex";
-    }
-
-    function cerrarPoliticas() {
-      document.getElementById("modalPoliticas").style.display = "none";
-    }
   </script>
 
 </body>

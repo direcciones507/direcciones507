@@ -149,6 +149,56 @@
     .hero-register-note { color: var(--text-muted); font-size: 12px; line-height: 1.4; }
 
 
+    /* ===== RESTAURAR HERO APROBADO ===== */
+    #mainGlobalHeroView .hero-grid-layout {
+      grid-template-columns: 1fr;
+      max-width: 960px;
+      margin: 0 auto;
+      gap: 0;
+      text-align: center;
+    }
+    #mainGlobalHeroView .hero-grid-layout > div:first-child { width: 100%; }
+    #mainGlobalHeroView .map-art-container { display: none !important; }
+    .hero-integrations {
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto 28px;
+      padding: 20px 12px 22px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+    }
+    .hero-integrations-title {
+      color: var(--cyan-brand);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: 16px;
+    }
+    .hero-integrations-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 10px;
+      align-items: center;
+    }
+    .hero-integration-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .hero-integration-item i { color: var(--cyan-brand); font-size: 24px; }
+    .hero-integration-item .fa-whatsapp { color: #25d366; }
+    @media (max-width: 640px) {
+      .hero-integrations-row { grid-template-columns: repeat(3, minmax(0,1fr)); row-gap: 18px; }
+      .hero-integration-item i { font-size: 22px; }
+    }
+
     /* ===== CTA DIRECCION GRATIS ===== */
     .free-address-card { background: radial-gradient(circle at top right, rgba(6, 182, 212, 0.15), transparent), var(--bg-card); border: 1px solid rgba(6, 182, 212, 0.26); border-radius: 24px; padding: 26px; margin: -10px 0 30px; box-shadow: 0 16px 38px rgba(0,0,0,0.28); }
     .free-address-card .free-kicker { font-size: 11px; color: var(--cyan-brand); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 7px; }
@@ -550,6 +600,18 @@
           </div>
           <div id="msgLogBusqueda" style="display: none; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
 
+
+          <div class="hero-integrations" aria-label="Aplicaciones integradas">
+            <div class="hero-integrations-title">Integramos tus aplicaciones directamente</div>
+            <div class="hero-integrations-row">
+              <div class="hero-integration-item"><i class="fa-solid fa-location-dot"></i><span>Google Maps</span></div>
+              <div class="hero-integration-item"><i class="fa-brands fa-waze"></i><span>Waze</span></div>
+              <div class="hero-integration-item"><i class="fa-brands fa-uber"></i><span>Uber</span></div>
+              <div class="hero-integration-item"><i class="fa-brands fa-whatsapp"></i><span>WhatsApp</span></div>
+              <div class="hero-integration-item"><i class="fa-solid fa-qrcode"></i><span>Código QR</span></div>
+            </div>
+          </div>
+
           <div class="category-pills-row">
             <div class="cat-item-node"><div class="cat-icon-circle"><i class="fa-solid fa-shop"></i></div><span>Negocios</span></div>
             <div class="cat-item-node"><div class="cat-icon-circle"><i class="fa-solid fa-house"></i></div><span>Residencias</span></div>
@@ -560,9 +622,6 @@
           </div>
         </div>
 
-        <div class="map-art-container">
-          <div id="mapaPanamaReal"></div>
-        </div>
 
       </div>
 

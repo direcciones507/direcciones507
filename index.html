@@ -336,18 +336,21 @@
     /* BOTONES DE REDES SOCIALES DEL FOOTER REPARADOS EN SU GRILLA ORIGINAL */
     .footer-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: 0 auto; padding: 0 4px; }
     .social-pill-large { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 6px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; font-size: 13px; color: #fff; font-weight: 700; text-decoration: none; text-transform: uppercase; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-    .social-pill-large.wa-color { border-color: rgba(37, 211, 102, 0.4); background: rgba(37, 211, 102, 0.05); }
-    .social-pill-large.wa-color i { color: #25d366; }
-    .social-pill-large.ig-color { border-color: rgba(214, 41, 118, 0.4); background: rgba(214, 41, 118, 0.05); }
-    .social-pill-large.ig-color i { color: #d62976; }
-    .social-pill-large.tk-color { border-color: rgba(255, 0, 80, 0.4); background: rgba(255, 0, 80, 0.05); }
-    .social-pill-large.tk-color i { color: #00f2fe; }
+    .social-pill-large { transition: transform .22s ease, filter .22s ease, box-shadow .22s ease; }
+    .social-pill-large:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    .social-pill-large.wa-color { border-color: rgba(37, 211, 102, 0.72); background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; box-shadow: 0 8px 20px rgba(37,211,102,.18); }
+    .social-pill-large.wa-color i { color: #fff; }
+    .social-pill-large.ig-color { border-color: rgba(253, 29, 29, 0.55); background: linear-gradient(135deg, #833ab4, #c13584 45%, #fd1d1d 72%, #fcb045); color: #fff; box-shadow: 0 8px 20px rgba(193,53,132,.18); }
+    .social-pill-large.ig-color i { color: #fff; }
+    .social-pill-large.tk-color { border-color: rgba(255,255,255,.2); background: #000000; color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.28); }
+    .social-pill-large.tk-color i { color: #fff; }
 
     /* ===== DIRECTORIO ENLACES INDEX ===== */
     .seo-directory-wrapper { padding: 48px 0; border-top: 1px solid rgba(255, 255, 255, 0.05); text-align: center; margin-top: 56px; width: 100%; }
     .seo-directory-wrapper h4 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #fff; margin-bottom: 20px; }
     .seo-links-flex { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; width: 100%; }
-    .seo-trigger-link { color: var(--text-muted); text-decoration: none; font-size: 12px; background: rgba(255, 255, 255, 0.02); padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.04); cursor: pointer; }
+    .seo-trigger-link { color: #dbeafe; text-decoration: none; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, rgba(15,23,42,.88), rgba(8,47,73,.72)); padding: 9px 15px; border-radius: 999px; border: 1px solid rgba(6,182,212,.38); cursor: pointer; box-shadow: 0 5px 14px rgba(0,0,0,.18); transition: all .22s ease; }
+    .seo-trigger-link:hover { color: #ffffff; border-color: rgba(6,182,212,.8); background: linear-gradient(135deg, rgba(8,145,178,.28), rgba(37,99,235,.24)); transform: translateY(-2px); box-shadow: 0 8px 18px rgba(6,182,212,.14); }
 
     .footer-copy { font-size: 11.5px; color: #64748b; font-weight: 500; letter-spacing: 0.3px; text-align: center; line-height: 1.5; width: 100%; margin-top: 8px; }
 

@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESC}}">
+  <link rel="canonical" href="{{CANONICAL}}">
+  <meta name="robots" content="index, follow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <link id="dynamicFavicon" rel="icon" type="image/png" href="https://direcciones507.com/assets/logo-direcciones507.png?v=2">
+  <link id="dynamicAppleIcon" rel="apple-touch-icon" href="https://direcciones507.com/assets/logo-direcciones507.png?v=2">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{TITLE}}">
+  <meta property="og:description" content="{{DESC}}">
+  <meta property="og:url" content="{{CANONICAL}}">
+  <meta property="og:image" content="https://direcciones507.com/assets/logo-direcciones507.png?v=2">
+  <meta property="og:image:width" content="300">
+  <meta property="og:image:height" content="300">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{TITLE}}">
+  <meta name="twitter:description" content="{{DESC}}">
+  <meta name="twitter:image" content="{{OG_IMAGE}}">
+
+  <style>
+    /* ===== RESET & VARIABLES ===== */
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      font-family:'Inter',system-ui,sans-serif;
+      background:#050b14;
+      color:#06122f;
+      min-height:100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    /* PANTALLA DE CARGA / PRELOADER */
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: #050b14;
+      z-index: 20000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .loader-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(59, 130, 246, 0.1);
+      border-left-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    .loader-text {
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      height: 20px;
+      text-align: center;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* CONTENEDOR INTELIGENTE */
+    .card{
+      width:100%;
+      max-width:480px; 
+      margin:0 auto;
+      background:#070f1e;
+      overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+      position:relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: max-width 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+      .card {
+        max-width: 720px; 
+        margin: 20px auto;
+        min-height: calc(100vh - 40px);
+        border-radius: 24px;
+      }
+    }
+
+    /* ===== HEADER MÓVIL PREMIUM ===== */
+    .code-header{
+      padding: 20px 18px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #070f1e;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon-main {
+      font-size: 24px;
+      color: #3b82f6;
+    }
+
+    .brand-title-text {
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+
+    .brand-title-text span {
+      color: #3b82f6;
+    }
+
+    .brand-subtitle-text {
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .verified-badge-top {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .verified-badge-top i {
+      color: #10b981;
+      font-size: 14px;
+    }
+
+    .verified-title-sub {
+      font-size: 11px;
+      font-weight: 800;
+      color: #10b981;
+      line-height: 1.1;
+    }
+
+    .verified-desc-sub {
+      font-size: 8px;
+      color: #64748b;
+    }
+
+    /* ===== AREA DE IDENTIDAD ===== */
+    .identity-block {
+      padding: 15px 18px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      background: linear-gradient(180deg, #070f1e 0%, #0a1428 100%);
+    }
+
+    #logoBox {
+      display: none; 
+      flex-shrink: 0;
+    }
+
+    #logoNegocio {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+
+    .title-details-header {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #codigo {
+      font-size: 21px; 
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.8px;
+      margin-bottom: 4px;
+      word-wrap: break-word;
+      line-height: 1.2;
+    }
+
+    .negocio-premium-top-text {
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    /* ===== GRILLA PRINCIPAL DE NAVEGACIÓN ===== */
+    .main-nav-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 10px 18px;
+    }
+
+    .nav-box {
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .nav-box i {
+      font-size: 24px;
+    }
+
+    .gmaps-original-color {
+      color: #ea4335;
+    }
+
+    .nav-box-text h4 {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .nav-box-text p {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    .box-google { background: #ffffff; color: #0f172a; }
+    .box-google .nav-box-text h4 { color: #0f172a; }
+    .box-google .nav-box-text p { color: #64748b; }
+    
+    .box-waze { background: linear-gradient(135deg, #33ccff, #1ab7f0); }
+    .box-uber { background: #000000; border: 1px solid rgba(255,255,255,0.15); }
+    .box-whatsapp { background: linear-gradient(135deg, #22c55e, #16a34a); }
+
+    /* ===== SECCIÓN CONTENEDORA BLANCA INFERIOR ===== */
+    .white-sheet {
+      background: #ffffff;
+      border-radius: 28px 28px 0 0;
+      padding: 24px 18px 0px;
+      margin-top: 15px;
+      flex: 1;
+    }
+
+    /* ===== GALERÍA PREMIUM PRO AUTOMÁTICA ===== */
+    .negocio-premium {
+      display: none;
+      padding: 0 0 20px;
+      width: 100%;
+    }
+
+    .sheet-section-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .negocio-galeria {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    .negocio-galeria img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      cursor: pointer;
+    }
+
+    .negocio-galeria img:first-child {
+      grid-column: span 2;
+      height: 200px;
+    }
+
+    @media (min-width: 768px) {
+      .negocio-galeria {
+        grid-template-columns: 1.3fr 0.7fr;
+        grid-template-rows: repeat(2, 110px);
+      }
+      .negocio-galeria img {
+        height: 100%;
+        cursor: default;
+      }
+      .negocio-galeria img:first-child {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+        height: 230px;
+      }
+    }
+
+    /* Visor Lightbox */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 11, 20, 0.95);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease;
+    }
+    .lightbox-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .lightbox-img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Grillas de Acciones */
+    .actions-triple-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn-action-triple {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px 6px;
+      text-align: center;
+      text-decoration: none;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action-triple i {
+      font-size: 18px;
+      color: #3b82f6;
+    }
+
+    .btn-action-triple span { font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .btn-action-triple p { font-size: 9px; color: #64748b; }
+
+    .social-quad-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .btn-social-quad {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      color: #334155;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .btn-social-quad i { font-size: 14px; }
+    .btn-social-quad.ig i { color: #d62976; }
+    .btn-social-quad.tk i { color: #000000; }
+    .btn-social-quad.fb i { color: #1877f2; }
+    .btn-social-quad.web i { color: #0284c7; }
+
+    .double-row-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    /* SITEMA DE ACORDEÓN MEJORADO */
+    .accordion-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .accordion-item:hover {
+      background: #f1f5f9;
+    }
+
+    .accordion-icon-left {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e0f2fe;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .accordion-content-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .accordion-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 1px;
+    }
+
+    .accordion-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all 0.3s ease;
+    }
+
+    .accordion-item.active .accordion-value {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+
+    .accordion-arrow-right { 
+      color: #94a3b8; 
+      font-size: 10px; 
+      transition: transform 0.3s ease;
+    }
+
+    .accordion-item.active .accordion-arrow-right {
+      transform: rotate(180deg);
+    }
+
+    .accordion-full { margin-bottom: 12px; }
+
+    #btnRef .accordion-icon-left i { color: #3b82f6; }
+
+    .qr-section {
+      display: none;
+      text-align: center;
+      padding: 10px 0 14px;
+      grid-column: span 2;
+    }
+
+    .qr-box {
+      display: inline-block;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px;
+      width: 100%;
+    }
+
+    .qr-box h3 { font-size: 13px; color: #0f172a; margin-bottom: 10px; }
+    .qr-box img { width: 150px; height: 150px; }
+    .seo-text { display: none; }
+
+    /* ===== PREMIUM FOOTER ===== */
+    .premium-footer {
+      background: #070f1e;
+      padding: 20px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      margin-top: auto;
+    }
+
+    @media (min-width: 768px) { .premium-footer { border-radius: 0 0 24px 24px; } }
+
+    .footer-brand-side { display: flex; align-items: center; gap: 8px; }
+    .footer-brand-side i { font-size: 20px; color: #3b82f6; }
+    .footer-title-main { color: #ffffff; font-size: 13px; font-weight: 900; letter-spacing: -0.3px; }
+    .footer-title-main span { color: #3b82f6; }
+    .footer-subtitle-sub { color: #64748b; font-size: 9px; }
+    .footer-secure-side { display: flex; align-items: center; gap: 8px; text-align: right; }
+    .footer-secure-side i { color: #64748b; font-size: 16px; }
+    .secure-title-text { color: #cbd5e1; font-size: 10px; font-weight: 700; line-height: 1.1; }
+    .secure-desc-text { color: #64748b; font-size: 8px; }
+  </style>
+</head>
+
+<body>
+
+<div id="loaderOverlay" class="loader-overlay">
+  <div class="spinner"></div>
+  <div id="loaderText" class="loader-text">Verificando código...</div>
+</div>
+
+<div class="card">
+
+  <div class="code-header">
+    <div class="brand-group">
+      <i class="fa-solid fa-map-location-dot brand-icon-main"></i>
+      <div>
+        <div class="brand-title-text">DIRECCIONES<span>507</span></div>
+        <div class="brand-subtitle-text">Encuentra. Llega. Conecta.</div>
+      </div>
+    </div>
+
+    <div class="verified-badge-top">
+      <i class="fa-solid fa-circle-check"></i>
+      <div>
+        <div class="verified-title-sub">VERIFIED</div>
+        <div class="verified-desc-sub">Negocio Verificado</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="identity-block">
+    <div id="logoBox">
+      <img id="logoNegocio" src="" alt="Logo del negocio">
+    </div>
+    <div class="title-details-header">
+      <h1 id="codigo">AD507-CODE</h1>
+      <div id="nombre" class="negocio-premium-top-text">—</div>
+    </div>
+  </div>
+
+  <div class="main-nav-grid">
+    <a id="btnGoogle" class="nav-box box-google" target="_blank">
+      <i class="fa-solid fa-location-dot gmaps-original-color"></i>
+      <div class="nav-box-text">
+        <h4>Google Maps</h4>
+        <p>Abrir navegación</p>
+      </div>
+    </a>
+    
+    <a id="btnWaze" class="nav-box box-waze" target="_blank">
+      <i class="fa-brands fa-waze"></i>
+      <div class="nav-box-text">
+        <h4>Waze</h4>
+        <p>Abrir navegación</p>
+      </div>
+    </a>
+
+    <a id="btnUber" class="nav-box box-uber" target="_blank">
+      <i class="fa-brands fa-uber"></i>
+      <div class="nav-box-text">
+        <h4>Uber</h4>
+        <p>Pedir un viaje</p>
+      </div>
+    </a>
+
+    <a id="btnWhats" class="nav-box box-whatsapp" target="_blank">
+      <i class="fa-brands fa-whatsapp"></i>
+      <div class="nav-box-text">
+        <h4>WhatsApp</h4>
+        <p>Avisar que llegué</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="white-sheet">
+
+    <div id="premiumGalleryContainer" class="negocio-premium">
+      <div class="sheet-section-title">Galería Comercial:</div>
+      <div id="galeriaFotos" class="negocio-galeria"></div>
+    </div>
+
+    <div class="actions-triple-row">
+      <a id="btnGoogleSecundario" class="btn-action-triple" target="_blank" href="#">
+        <i class="fa-solid fa-map-marked-alt"></i>
+        <span>Ver Mapa</span>
+        <p>Google Maps</p>
+      </a>
+
+      <a id="btnCall" class="btn-action-triple" href="#">
+        <i class="fa-solid fa-phone"></i>
+        <span>Llamar</span>
+        <p id="refTelefono">Contacto</p>
+      </a>
+
+      <div id="btnShare" class="btn-action-triple" style="cursor: pointer;">
+        <i class="fa-solid fa-share-nodes"></i>
+        <span>Compartir</span>
+        <p>Dirección</p>
+      </div>
+    </div>
+
+    <div class="social-quad-row" id="redes-container">
+      <a id="btnInstagram" class="btn-social-quad ig" target="_blank">
+        <i class="fa-brands fa-instagram"></i> Instagram
+      </a>
+      <a id="btnTikTok" class="btn-social-quad tk" target="_blank" style="display:none;">
+        <i class="fa-brands fa-tiktok"></i> TikTok
+      </a>
+      <a id="btnFacebook" class="btn-social-quad fb" target="_blank" style="display:none;">
+        <i class="fa-brands fa-facebook"></i> Facebook
+      </a>
+      <a id="btnWeb" class="btn-social-quad web" target="_blank" style="display:none;">
+        <i class="fa-solid fa-globe"></i> Web
+      </a>
+    </div>
+
+    <div class="double-row-buttons">
+      <div class="accordion-item" id="btnQR">
+        <div class="accordion-icon-left"><i class="fa-solid fa-qrcode"></i></div>
+        <div class="accordion-content-text">
+          <div class="accordion-label">Ver QR</div>
+          <div class="accordion-value">Imprimir</div>
+        </div>
+        <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
+      </div>
+
+      <div class="accordion-item" id="btnStats">
+        <div class="accordion-icon-left"><i class="fa-solid fa-chart-bar"></i></div>
+        <div class="accordion-content-text">
+          <div class="accordion-label">Clic en mapa</div>
+          <div class="accordion-value" id="valClicks">Estadísticas</div>
+        </div>
+        <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
+      </div>
+
+      <div id="qrSection" class="qr-section">
+        <div class="qr-box">
+          <h3>QR para compartir esta dirección</h3>
+          <img id="qrImg" src="" alt="QR de la dirección">
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item accordion-full" id="btnHorario">
+      <div class="accordion-icon-left"><i class="fa-solid fa-clock"></i></div>
+      <div class="accordion-content-text">
+        <div class="accordion-label">Horario de atención</div>
+        <div class="accordion-value" id="horario">No especificado</div>
+      </div>
+      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
+    </div>
+
+    <div class="accordion-item accordion-full" id="codigoPostalContainer" style="display:none;">
+      <div class="accordion-icon-left"><i class="fa-solid fa-envelope"></i></div>
+      <div class="accordion-content-text">
+        <div class="accordion-label">Código postal</div>
+        <div class="accordion-value" id="codigoPostal">No especificado</div>
+      </div>
+    </div>
+
+    <div class="accordion-item accordion-full" id="btnRef">
+      <div class="accordion-icon-left"><i class="fa-solid fa-location-dot"></i></div>
+      <div class="accordion-content-text">
+        <div class="accordion-label">Ubicación / Referencia</div>
+        <div class="accordion-value" id="ref">Cargando detalles...</div>
+      </div>
+      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
+    </div>
+
+    <div class="seo-text">
+      <span id="seoCodigo">AD507-CODE</span>
+    </div>
+
+  </div>
+
+  <footer class="premium-footer">
+    <div class="footer-brand-side">
+      <i class="fa-solid fa-map-location-dot"></i>
+      <div>
+        <div class="footer-title-main">DIRECCIONES<span>507</span></div>
+        <div class="footer-subtitle-sub">Encuentra. Llega. Conecta.</div>
+      </div>
+    </div>
+
+    <div class="footer-secure-side">
+      <div>
+        <div class="secure-title-text">Seguro y Confiable</div>
+        <div class="secure-desc-text">Servicio garantizado</div>
+      </div>
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+  </footer>
+
+</div>
+
+<div id="lightboxOverlay" class="lightbox-overlay">
+  <img id="lightboxImg" src="" alt="Vista Previa" class="lightbox-img">
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec";
+
+  const pathCode = window.location.pathname.split('/').filter(Boolean).pop();
+  const CODE = (pathCode || "AD507-CODE").toUpperCase();
+
+  document.getElementById('codigo').textContent = CODE;
+  document.getElementById('seoCodigo').textContent = CODE;
+
+  const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(window.location.href);
+  document.getElementById('qrImg').src = qrUrl;
+
+  const loaderTexts = ["Verificando código...", "Cargando ubicación...", "Preparando acceso..."];
+  let textIndex = 0;
+  const loaderTextElem = document.getElementById('loaderText');
+  
+  const loaderInterval = setInterval(() => {
+    textIndex = (textIndex + 1) % loaderTexts.length;
+    loaderTextElem.textContent = loaderTexts[textIndex];
+  }, 1200);
+
+  function ocultarCarga() {
+    clearInterval(loaderInterval);
+    const loader = document.getElementById('loaderOverlay');
+    loader.classList.add('hidden');
+  }
+
+  const overlay = document.getElementById('lightboxOverlay');
+  const lightboxImg = document.getElementById('lightboxImg');
+
+  overlay.addEventListener('click', function() {
+    this.classList.remove('show');
+  });
+
+  document.getElementById('logoNegocio').addEventListener('click', function() {
+    if (!this.src) return;
+    lightboxImg.src = this.src;
+    lightboxImg.alt = this.alt || 'Logo del negocio';
+    overlay.classList.add('show');
+  });
+
+  function configurarAcordeon(idBoton) {
+    document.getElementById(idBoton).addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+  }
+  configurarAcordeon('btnHorario');
+  configurarAcordeon('btnRef');
+
+  async function registrarClic(plataforma) {
+    if(window.location.protocol === 'file:') return;
+    try {
+      await fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODE)}&event=${plataforma}`, {
+        method: "GET",
+        mode: "no-cors"
+      });
+    } catch(e) {
+      console.error("Error al guardar clic:", e);
+    }
+  }
+
+  document.getElementById('btnGoogle').addEventListener('click', () => registrarClic('google'));
+  document.getElementById('btnGoogleSecundario').addEventListener('click', () => registrarClic('google'));
+  document.getElementById('btnWaze').addEventListener('click', () => registrarClic('waze'));
+  document.getElementById('btnUber').addEventListener('click', () => registrarClic('uber'));
+  document.getElementById('btnWhats').addEventListener('click', () => registrarClic('aviso'));
+  document.getElementById('btnShare').addEventListener('click', () => registrarClic('share'));
+
+  document.getElementById('btnQR').addEventListener('click', function(){
+    const box = document.getElementById('qrSection');
+    box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    this.classList.toggle('active');
+  });
+
+  document.getElementById('btnShare').addEventListener('click', async function(){
+    if(navigator.share){
+      try{
+        await navigator.share({
+          title: document.title,
+          text: 'Mira esta ubicación en Direcciones507',
+          url: window.location.href
+        });
+      }catch(e){}
+    }else{
+      navigator.clipboard.writeText(window.location.href);
+      alert("Enlace copiado.");
+    }
+  });
+
+  document.getElementById('btnStats').addEventListener('click', async function(){
+    if(window.location.protocol === 'file:'){
+      alert("La simulación local no soporta llamadas fetch vivas directas.");
+      return;
+    }
+    try{
+      const res = await fetch(`${WEBAPP_URL}?action=stats&code=${encodeURIComponent(CODE)}`);
+      const data = await res.json();
+
+      if(!data || !data.ok){
+        alert("No se pudo cargar el contador.");
+        return;
+      }
+
+      const s = data.stats || {};
+      document.getElementById('valClicks').textContent = `${(s.google || 0) + (s.waze || 0) + (s.uber || 0)} Clics`;
+
+      alert(
+        "Contador Direcciones507\n\n" +
+        "Google Maps: " + (s.google || 0) + "\n" +
+        "Waze: " + (s.waze || 0) + "\n" +
+        "Uber: " + (s.uber || 0) + "\n" +
+        "Compartir: " + (s.share || 0) + "\n" +
+        "WhatsApp Aviso: " + (s.aviso || 0)
+      );
+
+    }catch(e){
+      alert("Error cargando contador.");
+    }
+  });
+
+  async function cargarDireccion(){
+    try{
+      const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);
+      const data = await response.json();
+
+      ocultarCarga();
+
+      if(!data.ok) return;
+
+      document.getElementById('nombre').textContent = data.nombre || "Cliente Verificado";
+      document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";
+
+      if(data.logo){
+      document.getElementById('logoNegocio').src = data.logo;
+      document.getElementById('logoBox').style.display = 'block';
+      }
+
+      // Por ahora la plantilla muestra únicamente los datos que se hayan cargado.
+      // La administración manual de cada plan determina qué campos recibe cada negocio.
+      const codigoPostal = data.codigoPostal || data.codigo_postal || data.postal || '';
+      if(codigoPostal){
+        document.getElementById('codigoPostal').textContent = codigoPostal;
+        document.getElementById('codigoPostalContainer').style.display = 'flex';
+      }
+
+      if(data.horario){
+        document.getElementById('horario').textContent = data.horario;
+      }
+
+      // ✅ REPARACIÓN DE ENLACES SATELITALES LARGOS BASADOS EN PARSEO CORRECTO DE LAT/LNG
+      let lat = data.lat || data.latitude || "";
+      let lng = data.lng || data.longitude || "";
+      if ((!lat || !lng) && data.coordenadas) {
+        const match = String(data.coordenadas).match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
+        if (match) { lat = match[1]; lng = match[2]; }
+      }
+
+      if(lat && lng) {
+        document.getElementById('btnGoogle').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        document.getElementById('btnGoogleSecundario').href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        document.getElementById('btnWaze').href = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+        document.getElementById('btnUber').href = `https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}`;
+      } else {
+        document.getElementById('btnGoogle').href = data.google || "#";
+        document.getElementById('btnGoogleSecundario').href = data.google || "#";
+        document.getElementById('btnWaze').href = data.waze || "#";
+        document.getElementById('btnUber').href = data.uber || "#";
+      }
+
+      // ✅ REPARACIÓN DEL BOTÓN WHATSAPP DE AVISO DIRECTO
+      let tel = String(data.telefono || "").replace(/\D/g,'');
+      if (tel.length === 8) tel = "507" + tel;
+
+      if(tel.length >= 10) {
+        document.getElementById('btnWhats').href = `https://wa.me/${tel}?text=¡Hola!%20Acabo%20de%20llegar%20siguiendo%20mi%20c%C3%B3digo%20de%20ubicaci%C3%B3n%20AD507:%20${encodeURIComponent(CODE)}`;
+        document.getElementById('btnCall').href = `tel:${tel}`;
+        if(document.getElementById('refTelefono')) {
+          document.getElementById('refTelefono').textContent = `+${tel}`;
+        }
+      } else {
+        document.getElementById('btnWhats').href = "#";
+        document.getElementById('btnCall').href = "#";
+      }
+
+      if(data.instagram){
+        document.getElementById('btnInstagram').href = data.instagram;
+      }else{
+        document.getElementById('btnInstagram').style.display = 'none';
+      }
+
+      if(data.facebook){
+        document.getElementById('btnFacebook').href = data.facebook;
+        document.getElementById('btnFacebook').style.display = 'flex';
+      }
+
+      if(data.tiktok){
+        document.getElementById('btnTikTok').href = data.tiktok;
+        document.getElementById('btnTikTok').style.display = 'flex';
+      }
+
+      function normalizarUrl(url) {
+  url = String(url || "").trim();
+  if (!url) return "";
+  if (!/^https?:\/\//i.test(url)) {
+    url = "https://" + url;
+  }
+  return url;
+}
+
+if(data.web){
+  const webUrl = normalizarUrl(data.web);
+  document.getElementById('btnWeb').href = webUrl;
+  document.getElementById('btnWeb').style.display = 'flex';
+}
+
+      {
+        let listaFotos = [];
+
+        if(data.fotos && Array.isArray(data.fotos)){
+          listaFotos = data.fotos.filter(url => url).slice(0, 5);
+        } else {
+          if(data.foto1) listaFotos.push(data.foto1);
+          if(data.foto2) listaFotos.push(data.foto2);
+          if(data.foto3) listaFotos.push(data.foto3);
+          if(data.foto4) listaFotos.push(data.foto4);
+          if(data.foto5) listaFotos.push(data.foto5);
+        }
+
+        if(listaFotos.length > 0){
+          const galeriaContainer = document.getElementById('galeriaFotos');
+          galeriaContainer.innerHTML = ''; 
+
+          listaFotos.forEach((urlFoto, index) => {
+            const imgElement = document.createElement('img');
+            imgElement.src = urlFoto;
+            imgElement.alt = `Imagen ${index + 1}`;
+            imgElement.classList.add('gallery-clickable');
+
+            imgElement.addEventListener('click', function() {
+              lightboxImg.src = this.src;
+              overlay.classList.add('show');
+            });
+
+            galeriaContainer.appendChild(imgElement);
+          });
+
+          document.getElementById('premiumGalleryContainer').style.display = 'block';
+        }
+      }
+
+    }catch(e){
+      console.error(e);
+      ocultarCarga();
+    }
+  }
+
+  cargarDireccion();
+
+});
+</script>
+
+</body>
+</html>

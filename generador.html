@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Generador de Enlaces AD507</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #0b1e4a 0%, #1a2f6a 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .header h1 {
+            color: #0b1e4a;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #5a6d8a;
+            font-size: 1.1rem;
+        }
+        .search-box {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        #searchInput {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid #dde3ed;
+            border-radius: 15px;
+            font-size: 1.1rem;
+        }
+        .stats {
+            background: #eef2f7;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .stats span {
+            font-weight: 600;
+            color: #0b1e4a;
+        }
+        .refresh-btn {
+            background: #0b1e4a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .client-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-left: 6px solid #1a2f6a;
+        }
+        .client-info h3 {
+            color: #0b1e4a;
+            margin-bottom: 5px;
+            font-size: 1.3rem;
+        }
+        .client-details {
+            color: #5a6d8a;
+            font-size: 0.95rem;
+        }
+        .client-details i {
+            width: 20px;
+            color: #1a2f6a;
+        }
+        .btn-copy {
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            font-size: 1rem;
+        }
+        .btn-copy:hover {
+            background: #128C7E;
+        }
+        .btn-copy.copied {
+            background: #0b1e4a;
+        }
+        .loading, .error-message {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 20px;
+            color: #5a6d8a;
+        }
+        .error-message {
+            color: #c62828;
+            background: #ffebee;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255,255,255,0.7);
+        }
+        @media (max-width: 600px) {
+            .client-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .btn-copy {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Generador de Enlaces AD507</h1>
+            <p>Haz clic en "Copiar Enlace" y pégalo directamente en WhatsApp</p>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar cliente por nombre o código...">
+        </div>
+
+        <div class="stats" id="stats">
+            <span><i class="fas fa-users"></i> <span id="totalClientes">0</span> clientes</span>
+            <button class="refresh-btn" onclick="cargarClientes()">
+                <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+        </div>
+
+        <div id="clientsList">
+            <div class="loading">
+                <i class="fas fa-spinner fa-pulse fa-3x"></i>
+                <p style="margin-top: 20px;">Cargando lista de clientes...</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            AD507 Panamá • Panel administrativo
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://direcciones507.github.io/direcciones507/panel.html';
+
+        function generarEnlace(cliente) {
+            if (!cliente.coordenadas || !cliente.coordenadas.includes(',')) {
+                console.warn('Coordenadas inválidas para', cliente.codigo);
+                return '#';
+            }
+            const [lat, lng] = cliente.coordenadas.split(',').map(c => c.trim());
+            const params = new URLSearchParams({
+                codigo: cliente.codigo,
+                nombre: cliente.nombre || '',
+                telefono: (cliente.telefono || '').replace(/\D/g, ''),
+                referencia: cliente.referencia || '',
+                lat: lat,
+                lng: lng
+            });
+            return `${BASE_URL}?${params.toString()}`;
+        }
+
+        function formatearTelefono(tel) {
+            const nums = (tel || '').replace(/\D/g, '');
+            if (nums.length === 8) return nums.slice(0,4) + '-' + nums.slice(4);
+            return tel;
+        }
+
+        async function copiarAlPortapapeles(texto, boton) {
+            try {
+                await navigator.clipboard.writeText(texto);
+                const originalHTML = boton.innerHTML;
+                boton.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+                boton.classList.add('copied');
+                setTimeout(() => {
+                    boton.innerHTML = originalHTML;
+                    boton.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                alert('Error al copiar. Selecciona el enlace manualmente.');
+            }
+        }
+
+        async function cargarClientes() {
+            const lista = document.getElementById('clientsList');
+            lista.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse fa-3x"></i><p>Cargando...</p></div>';
+
+            try {
+                console.log('Intentando cargar desde: datos/clientes.json');
+                const response = await fetch('datos/clientes.json');
+                
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                
+                const data = await response.json();
+                console.log('Datos recibidos:', data);
+
+                let clientesArray = [];
+                if (data.clientes && Array.isArray(data.clientes)) {
+                    clientesArray = data.clientes;
+                } else if (Array.isArray(data)) {
+                    clientesArray = data;
+                } else {
+                    throw new Error('Formato JSON no reconocido');
+                }
+
+                document.getElementById('totalClientes').textContent = clientesArray.length;
+
+                if (clientesArray.length === 0) {
+                    lista.innerHTML = '<div class="loading">No hay clientes disponibles</div>';
+                    return;
+                }
+
+                mostrarClientes(clientesArray);
+
+            } catch (error) {
+                console.error('Error crítico:', error);
+                lista.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        <h3 style="margin:20px 0;">Error al cargar los datos</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top:20px; font-size:0.9rem;">Verifica que el archivo <strong>datos/clientes.json</strong> exista en el repositorio.</p>
+                        <button onclick="cargarClientes()" style="margin-top:20px; padding:10px 25px; background:#0b1e4a; color:white; border:none; border-radius:30px; cursor:pointer;">
+                            <i class="fas fa-sync-alt"></i> Reintentar
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function mostrarClientes(clientes) {
+            const lista = document.getElementById('clientsList');
+            lista.innerHTML = '';
+
+            clientes.sort((a, b) => (a.codigo || '').localeCompare(b.codigo || ''));
+
+            clientes.forEach(cliente => {
+                if (!cliente.codigo) return;
+
+                const enlace = generarEnlace(cliente);
+                const card = document.createElement('div');
+                card.className = 'client-card';
+                card.innerHTML = `
+                    <div class="client-info">
+                        <h3><i class="fas fa-tag"></i> ${cliente.codigo} - ${cliente.nombre || 'Sin nombre'}</h3>
+                        <div class="client-details">
+                            <div><i class="fas fa-phone"></i> ${formatearTelefono(cliente.telefono)}</div>
+                            <div><i class="fas fa-map-pin"></i> ${cliente.referencia || 'Sin referencia'}</div>
+                            <div style="font-size:0.85rem; color:#aaa; margin-top:5px;">
+                                <i class="fas fa-link"></i> ${enlace.substring(0, 60)}...
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-copy" onclick="copiarAlPortapapeles('${enlace}', this)">
+                        <i class="fas fa-copy"></i> Copiar Enlace
+                    </button>
+                `;
+                lista.appendChild(card);
+            });
+
+            const searchInput = document.getElementById('searchInput');
+            searchInput.removeEventListener('keyup', filtrarClientes);
+            searchInput.addEventListener('keyup', filtrarClientes);
+        }
+
+        function filtrarClientes() {
+            const term = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.client-card');
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarClientes);
+    </script>
+</body>
+</html>
+
+

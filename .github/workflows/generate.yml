@@ -1,0 +1,253 @@
+name: Generate AD507 Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Verify required files exist
+        run: |
+          if [ ! -f ad507.template.html ]; then
+            echo "ERROR: ad507.template.html no existe"
+            exit 1
+          fi
+
+          if [ ! -f index.html ]; then
+            echo "ERROR: index.html no existe"
+            exit 1
+          fi
+
+      - name: Patch frontend for AD507 2026
+        run: bash scripts/patch-ad507-2026.sh
+
+      - name: Refine hero visual details
+        run: python3 .github/scripts/refine_hero.py
+
+      - name: Make directory links canonical
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("index.html")
+          text = p.read_text(encoding="utf-8")
+
+          # El directorio inferior debe abrir directamente la página SEO estática del código,
+          # no la vista dinámica del index con ?code=.
+          text = re.sub(
+              r'<span class="seo-trigger-link" onclick="ejecutarEnlaceInterno\(\'([^\']+)\'\)">([^<]+)</span>',
+              lambda m: f'<a class="seo-trigger-link" href="/{m.group(1)}/">{m.group(2)}</a>',
+              text
+          )
+
+          # Cualquier navegación interna o enlace compartido usa también la ruta corta canónica.
+          text = text.replace(
+              'window.location.href = `https://direcciones507.com/${encodeURIComponent(codigoLimpio)}`;',
+              'window.location.href = `https://direcciones507.com/${encodeURIComponent(codigoLimpio)}/`;'
+          )
+          text = text.replace(
+              'const shareUrl = `https://direcciones507.com/${encodeURIComponent(CODIGO_ACTUAL)}`;',
+              'const shareUrl = `https://direcciones507.com/${encodeURIComponent(CODIGO_ACTUAL)}/`;'
+          )
+
+          p.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Download codes
+        run: |
+          curl -fL "https://script.google.com/macros/s/AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq/exec?action=list" -o codes.json
+
+          echo "=== TOTAL CODIGOS ==="
+          jq '.codes | length' codes.json
+
+          echo "=== PRIMEROS CODIGOS ==="
+          jq -r '.codes[] | "\(.codigo // "") | \(.plan // .plan_comercial // "") | indexable=\(.indexable // "legacy")"' codes.json | head -30
+
+      - name: Validate codes.json
+        run: |
+          TOTAL=$(jq '.codes | length' codes.json)
+
+          if [ -z "$TOTAL" ] || [ "$TOTAL" = "null" ]; then
+            echo "ERROR: No se pudo leer codes.json"
+            exit 1
+          fi
+
+          if [ "$TOTAL" -lt 20 ]; then
+            echo "ERROR: codes.json vino incompleto. Cancelando deploy."
+            exit 1
+          fi
+
+      - name: Generate pages
+        run: |
+          mkdir -p out
+
+          echo "=== CODIGOS PUBLICOS/INDEXABLES GENERADOS ==="
+
+          jq -c '.codes[]' codes.json | while read -r item; do
+            CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
+            PLAN=$(echo "$item" | jq -r '.plan // .plan_comercial // ""' | tr '[:upper:]' '[:lower:]' | xargs)
+            INDEXABLE=$(echo "$item" | jq -r '.indexable // ""')
+
+            if [[ -z "$CODE" ]]; then
+              continue
+            fi
+
+            if [[ "$INDEXABLE" == "true" || "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* || "$PLAN" == "gratis" ]]; then
+              echo "GENERANDO: $CODE | PLAN: $PLAN | INDEXABLE: $INDEXABLE"
+
+              SLUG_LOWER=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+              SLUG_UPPER="$CODE"
+
+              for SLUG in "$SLUG_UPPER" "$SLUG_LOWER"; do
+                DIR="out/$SLUG"
+                mkdir -p "$DIR"
+
+                cp ad507.template.html "$DIR/index.html"
+
+                sed -i "s|AD507-CODE|$CODE|g" "$DIR/index.html"
+                sed -i "s|{{CODE}}|$CODE|g" "$DIR/index.html"
+                sed -i "s|{{TITLE}}|Dirección $CODE - Direcciones507 Panamá|g" "$DIR/index.html"
+                sed -i "s|{{DESC}}|Dirección digital $CODE en Panamá|g" "$DIR/index.html"
+                sed -i "s|{{CANONICAL}}|https://direcciones507.com/$SLUG_LOWER/|g" "$DIR/index.html"
+                sed -i "s|{{SLUG}}|$SLUG_LOWER|g" "$DIR/index.html"
+              done
+            fi
+          done
+
+      - name: Generate sitemap
+        run: |
+          cat > out/sitemap.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url>
+              <loc>https://direcciones507.com/</loc>
+              <lastmod>__DATE__</lastmod>
+            </url>
+          EOF
+
+          sed -i "s|__DATE__|$(date +%Y-%m-%d)|g" out/sitemap.xml
+
+          jq -c '.codes[]' codes.json | while read -r item; do
+            CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
+            PLAN=$(echo "$item" | jq -r '.plan // .plan_comercial // ""' | tr '[:upper:]' '[:lower:]' | xargs)
+            INDEXABLE=$(echo "$item" | jq -r '.indexable // ""')
+
+            if [[ -n "$CODE" && ( "$INDEXABLE" == "true" || "$PLAN" == *"negocio"* || "$PLAN" == *"premium"* || "$PLAN" == *"pro"* || "$PLAN" == "gratis" ) ]]; then
+              SLUG=$(echo "$CODE" | tr '[:upper:]' '[:lower:]')
+
+              echo "  <url>" >> out/sitemap.xml
+              echo "    <loc>https://direcciones507.com/$SLUG/</loc>" >> out/sitemap.xml
+              echo "    <lastmod>$(date +%Y-%m-%d)</lastmod>" >> out/sitemap.xml
+              echo "  </url>" >> out/sitemap.xml
+            fi
+          done
+
+          echo '</urlset>' >> out/sitemap.xml
+
+      - name: Copy root files
+        run: |
+            cp index.html out/index.html
+          
+            echo "=== COPIANDO PAGINAS HTML SEO ==="
+            find . -maxdepth 1 -name "*.html" \
+            ! -name "index.html" \
+            ! -name "ad507.template.html" \
+            -exec cp {} out/ \;
+
+            if [ -f logo.png ]; then cp logo.png out/logo.png; fi
+            if [ -f ad507-the1920-phone-preview.jpg ]; then
+              cp ad507-the1920-phone-preview.jpg out/ad507-the1920-phone-preview.jpg
+            fi
+            if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi
+            if [ -f 404.html ]; then cp 404.html out/404.html; fi
+            if [ -f CNAME ]; then cp CNAME out/CNAME; fi
+            if [ -d assets ]; then cp -R assets out/assets; fi
+            if [ -d img ]; then cp -R img out/img; fi
+            if [ -d jacinto ]; then cp -R jacinto out/jacinto; fi
+            if [ -d liliana ]; then cp -R liliana out/liliana; fi
+
+            touch out/.nojekyll
+
+      - name: Verify generated site
+        run: |
+          echo "=== ARCHIVOS GENERADOS ==="
+          find out -maxdepth 3 -type f | sort || true
+
+          if [ ! -f out/index.html ]; then
+            echo "ERROR: out/index.html no fue generado"
+            exit 1
+          fi
+
+          if [ ! -s out/ad507-the1920-phone-preview.jpg ]; then
+            echo "ERROR: la vista previa del teléfono no llegó al artefacto publicado"
+            exit 1
+          fi
+
+          echo "=== VERIFICAR API 2026 EN FRONTEND ==="
+          grep -q 'AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq' out/index.html
+          ! grep -q 'action=click&code=' out/index.html
+
+          echo "=== VERIFICAR DIRECTORIO CON PAGINAS CORTAS ==="
+          grep -q 'href="/AD507-THE1920/"' out/index.html
+          ! grep -q "onclick=\"ejecutarEnlaceInterno('AD507-THE1920')\"" out/index.html
+
+          echo "=== VERIFICAR PAGINAS CLAVE ==="
+          if [ -d out/ad507-0012 ] || [ -d out/AD507-0012 ]; then
+            echo "OK: AD507-0012 existe"
+          else
+            echo "AVISO: AD507-0012 no existe en este build"
+          fi
+
+          echo "=== PRIMERAS LINEAS DE out/index.html ==="
+          head -20 out/index.html || true
+
+          if [ -f out/CNAME ]; then
+            echo "=== CNAME ==="
+            cat out/CNAME
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Wait for legacy Pages build
+        run: |
+          echo "Esperando para que este deploy generado sea el último en publicarse..."
+          sleep 90
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,34 @@
+name: Actualizar CTA direccion gratis
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-free-address.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-home:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Aplicar parche
+        run: python .github/scripts/patch_free_address.py
+      - name: Validar cambios
+        run: |
+          grep -q 'Obtén tu dirección digital GRATIS' index.html
+          grep -q 'Gratis por WhatsApp' index.html
+          grep -q 'Gratis en línea' index.html
+          grep -q '¿Cómo llenar el formulario?' index.html
+          grep -q 'function toggleFormGuide' index.html
+          if grep -q 'Miles de personas te están buscando' index.html; then exit 1; fi
+      - name: Publicar cambios
+        run: |
+          git config user.name 'direcciones507'
+          git config user.email 'ventas@direcciones507.com'
+          git add index.html
+          git commit -m 'Subir dirección gratis y agregar guía de formulario'
+          git push origin HEAD:main

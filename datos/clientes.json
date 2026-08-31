@@ -1,0 +1,11 @@
+{
+  "version": "3.0",
+  "ultima_actualizacion": "2026-03-28 12:41:02",
+  "total_clientes_excel": 5,
+  "total_clientes_json": 0,
+  "estructura_origen": {
+    "archivo": "AD507_MASTER_FINAL_PANAMA_CORREGIDO_v2.xlsx",
+    "hoja": "direcciones"
+  },
+  "clientes": []
+}

@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Página no encontrada | Direcciones507</title>
   <meta name="robots" content="noindex,follow">
+  <script>
+    (function () {
+      var path = (window.location.pathname || "").replace(/^\/+|\/+$/g, "");
+      if (/^AD507-[A-Za-z0-9]+$/i.test(path)) {
+        var code = path.toUpperCase();
+        window.location.replace("/?code=" + encodeURIComponent(code));
+      }
+    })();
+  </script>
   <style>
     body{
       font-family:system-ui;
@@ -26,4 +35,3 @@
   <p><a href="/">Volver al inicio</a></p>
 </body>
 </html>
-

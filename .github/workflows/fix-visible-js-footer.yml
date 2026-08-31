@@ -1,0 +1,40 @@
+name: One-time footer JS fix
+
+on:
+  push:
+    branches:
+      - fix-visible-js-footer
+    paths:
+      - .github/workflows/fix-visible-js-footer.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-visible-js-footer
+      - name: Fix escaped closing script tag
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = "    setTimeout(() => input.focus(),100);\n  })();\n  </script>\n\n</body></html>`);"
+          new = "    setTimeout(() => input.focus(),100);\n  })();\n  <\\/script>\n\n</body></html>`);"
+          if old not in s:
+              raise SystemExit('Expected exact footer pattern not found; refusing to modify')
+          if s.count(old) != 1:
+              raise SystemExit('Pattern is not unique; refusing to modify')
+          p.write_text(s.replace(old, new, 1), encoding='utf-8')
+      - name: Remove one-time workflow and commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/fix-visible-js-footer.yml
+          git add index.html
+          git commit -m "Fix visible JavaScript at page footer"
+          git push origin HEAD:fix-visible-js-footer

@@ -98,13 +98,53 @@ jobs:
             exit 1
           fi
 
+      - name: Normalize and secure public generation source
+        run: |
+          jq '
+            def normcode: (.codigo // "") | tostring | gsub("^\\s+|\\s+$"; "") | ascii_upcase;
+            def plan: (.plan // .plan_comercial // "") | tostring | gsub("^\\s+|\\s+$"; "") | ascii_downcase;
+            def residential:
+              ((.tipo_direccion // "") | tostring | ascii_downcase | contains("residencial")) or
+              ((.privacidad // "") | tostring | ascii_downcase | contains("privad")) or
+              ((.indexacion_google // "") | tostring | ascii_downcase | contains("no index"));
+            def business:
+              (.indexable == true) or (.publico == true) or
+              (plan | contains("negocio")) or (plan | contains("premium")) or
+              (plan | contains("pro")) or (plan == "gratis");
+            .codes |= map(if type == "string" then {codigo:.} else . end) |
+            .codes += [
+              {codigo:"AD507-MONASANFRANCISCO",plan:"Negocio",legacy:true,tipo_direccion:"NEGOCIO",publico:true,indexable:true},
+              {codigo:"AD507-MONACOSTADELESTE",plan:"Negocio",legacy:true,tipo_direccion:"NEGOCIO",publico:true,indexable:true}
+            ] |
+            [.codes[] |
+              .codigo = normcode |
+              select(.codigo | test("^AD507-[A-Z0-9]+$")) |
+              select((residential | not) and business)
+            ] |
+            unique_by(.codigo) |
+            {ok:true,codes:.,count:length}
+          ' codes.json > codes.public.json
+
+          PUBLIC_TOTAL=$(jq '.codes | length' codes.public.json)
+          if [ "$PUBLIC_TOTAL" -lt 20 ]; then
+            echo "ERROR: fuente pública incompleta después de normalizar"
+            exit 1
+          fi
+
+          for REQUIRED in AD507-MONASANFRANCISCO AD507-MONACOSTADELESTE; do
+            jq -e --arg code "$REQUIRED" '.codes[] | select(.codigo == $code)' codes.public.json >/dev/null || {
+              echo "ERROR: falta negocio público obligatorio $REQUIRED"
+              exit 1
+            }
+          done
+
       - name: Generate pages
         run: |
           mkdir -p out
 
           echo "=== CODIGOS PUBLICOS/INDEXABLES GENERADOS ==="
 
-          jq -c '.codes[]' codes.json | while read -r item; do
+          jq -c '.codes[]' codes.public.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // .plan_comercial // ""' | tr '[:upper:]' '[:lower:]' | xargs)
             INDEXABLE=$(echo "$item" | jq -r '.indexable // ""')
@@ -148,7 +188,7 @@ jobs:
 
           sed -i "s|__DATE__|$(date +%Y-%m-%d)|g" out/sitemap.xml
 
-          jq -c '.codes[]' codes.json | while read -r item; do
+          jq -c '.codes[]' codes.public.json | while read -r item; do
             CODE=$(echo "$item" | jq -r '.codigo // ""' | xargs)
             PLAN=$(echo "$item" | jq -r '.plan // .plan_comercial // ""' | tr '[:upper:]' '[:lower:]' | xargs)
             INDEXABLE=$(echo "$item" | jq -r '.indexable // ""')
@@ -211,6 +251,25 @@ jobs:
           echo "=== VERIFICAR DIRECTORIO CON PAGINAS CORTAS ==="
           grep -q 'href="/AD507-THE1920/"' out/index.html
           ! grep -q "onclick=\"ejecutarEnlaceInterno('AD507-THE1920')\"" out/index.html
+
+          echo "=== VERIFICAR TODAS LAS RUTAS COMERCIALES ESPERADAS ==="
+          MISSING=0
+          while IFS= read -r CODE; do
+            if [ ! -f "out/$CODE/index.html" ]; then
+              echo "ERROR: falta ruta comercial out/$CODE/index.html"
+              MISSING=1
+            fi
+          done < <(jq -r '.codes[].codigo' codes.public.json)
+          if [ "$MISSING" -ne 0 ]; then
+            exit 1
+          fi
+
+          for REQUIRED in AD507-MONASANFRANCISCO AD507-MONACOSTADELESTE AD507-THE1920; do
+            test -f "out/$REQUIRED/index.html" || {
+              echo "ERROR: ruta de control ausente $REQUIRED"
+              exit 1
+            }
+          done
 
           echo "=== VERIFICAR PAGINAS CLAVE ==="
           if [ -d out/ad507-0012 ] || [ -d out/AD507-0012 ]; then

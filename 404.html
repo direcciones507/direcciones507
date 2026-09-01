@@ -6,11 +6,30 @@
   <title>Página no encontrada | Direcciones507</title>
   <meta name="robots" content="noindex,follow">
   <script>
-    (function () {
+    (async function () {
       var path = (window.location.pathname || "").replace(/^\/+|\/+$/g, "");
       if (/^AD507-[A-Za-z0-9]+$/i.test(path)) {
         var code = path.toUpperCase();
-        window.location.replace("/?code=" + encodeURIComponent(code));
+        try {
+          var response = await fetch("https://ad507-core-production.up.railway.app/internal/v1/residential/entry/resolve", {
+            method: "POST",
+            mode: "cors",
+            cache: "no-store",
+            headers: {"content-type": "application/json"},
+            body: JSON.stringify({entry_id: code})
+          });
+          var result = await response.json();
+          if (response.ok && result && result.residential === true) {
+            window.location.replace("/?residential=" + encodeURIComponent(code) + "&entry=short-v2");
+            return;
+          }
+          if (response.ok && result && result.residential === false) {
+            window.location.replace("/?code=" + encodeURIComponent(code));
+          }
+        } catch (_) {
+          // Fallo cerrado: una indisponibilidad del resolver nunca convierte
+          // una ruta desconocida en acceso comercial.
+        }
       }
     })();
   </script>

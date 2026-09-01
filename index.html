@@ -1473,6 +1473,25 @@
     const entryId = String(params.get("residential") || "").trim();
     if (!entryId) return;
 
+    // Registro no bloqueante del escaneo del QR permanente. El identificador
+    // es aleatorio por sesión de pestaña y no contiene datos del visitante.
+    try {
+      const scanSessionKey = "ad507_residential_scan_session";
+      let scanSessionId = sessionStorage.getItem(scanSessionKey);
+      if (!scanSessionId) {
+        scanSessionId = crypto.randomUUID();
+        sessionStorage.setItem(scanSessionKey, scanSessionId);
+      }
+      fetch(RESIDENTIAL_CORE + "/internal/v1/residential/qr/scan", {
+        method:"POST",
+        mode:"cors",
+        cache:"no-store",
+        keepalive:true,
+        headers:{"content-type":"application/json"},
+        body:JSON.stringify({entry_id:entryId,scan_session_id:scanSessionId})
+      }).catch(() => {});
+    } catch (_) {}
+
     marcarResidencialNoIndex();
     const overlay = document.getElementById("residentialPinOverlay");
     const form = document.getElementById("residentialPinForm");

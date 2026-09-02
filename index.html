@@ -1211,7 +1211,17 @@
 
     async function registrarClicBase(plataforma) {
       if(!CODIGO_ACTUAL || window.location.protocol === 'file:') return;
-      try { await fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}`, { method: "GET", mode: "no-cors" }); } catch(e) {}
+      const legacyCounter = fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}`, {
+        method: "GET",
+        mode: "no-cors"
+      }).catch(() => null);
+      const historicalEvent = fetch("https://ad507-core-production.up.railway.app/internal/v1/analytics/track", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ code: CODIGO_ACTUAL, event: plataforma }),
+        keepalive: true
+      }).catch(() => null);
+      await Promise.allSettled([legacyCounter, historicalEvent]);
     }
 
     async function fetchJsonSafe(url) {

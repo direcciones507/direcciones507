@@ -1144,6 +1144,45 @@
       document.title = 'Dirección Digital Privada | Direcciones507';
     }
 
+    function configurarVistaResidencial(telefono) {
+      // Ajuste exclusivamente visual para fichas residenciales autorizadas.
+      // No modifica PIN, QR, sesiones, tokens ni validación server-side.
+      const directory = document.querySelector(".seo-directory-wrapper");
+      if (directory) directory.style.display = "none";
+
+      const footerSocials = document.querySelector("footer .footer-3col-grid");
+      if (footerSocials) footerSocials.style.display = "none";
+
+      const footer = document.querySelector("footer");
+      if (footer) {
+        footer.style.marginTop = "22px";
+        footer.style.paddingBottom = "24px";
+      }
+
+      const natalieLauncher = document.getElementById("natalieLauncher");
+      const natalieChat = document.getElementById("natalieChat");
+      if (natalieLauncher) natalieLauncher.style.display = "none";
+      if (natalieChat) {
+        natalieChat.classList.remove("open");
+        natalieChat.style.display = "none";
+      }
+
+      const whatsappButton = document.getElementById("btnAvisoHome");
+      if (!whatsappButton) return;
+
+      let tel = String(telefono || "").replace(/\D/g, "");
+      if (tel.length === 8) tel = "507" + tel;
+      if (tel.length >= 10) {
+        const message = "Hola, te contacto desde tu Dirección Digital AD507";
+        whatsappButton.href = `https://wa.me/${tel}?text=${encodeURIComponent(message)}`;
+        whatsappButton.style.display = "flex";
+        const subtitle = whatsappButton.querySelector("p");
+        if (subtitle) subtitle.textContent = "Contactar residencia";
+      } else {
+        whatsappButton.style.display = "none";
+      }
+    }
+
     async function ejecutarEnlaceResidencial(token) {
       const log = document.getElementById("msgLogBusqueda");
       const overlay = document.getElementById("codeLoadingOverlay");
@@ -1165,7 +1204,7 @@
         document.getElementById("fieldGaleriaHome").style.display = "none";
         document.getElementById("seccionRedesSocialesCliente").style.display = "none";
         document.getElementById("btnStats").style.display = "none";
-        document.getElementById("btnAvisoHome").style.display = "none";
+        configurarVistaResidencial(data.telefono || data.whatsapp || "");
 
         const coords = String(data.coordenada || "");
         const m = coords.match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);
@@ -1527,7 +1566,7 @@
       document.getElementById("fieldGaleriaHome").style.display = "none";
       document.getElementById("seccionRedesSocialesCliente").style.display = "none";
       document.getElementById("btnStats").style.display = "none";
-      document.getElementById("btnAvisoHome").style.display = "none";
+      configurarVistaResidencial(residence.telefono || residence.whatsapp || "");
 
       const coords = String(residence.coordenada || "");
       const match = coords.match(/(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)/);

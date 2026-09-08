@@ -1,0 +1,89 @@
+name: One-shot fix Drive image URLs
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-shot-fix-drive-images.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch AD507 image handling generically
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          helper = r'''
+    function normalizarImagenDrive(url){
+      const raw = String(url || '').trim();
+      if(!raw) return '';
+
+      const patterns = [
+        /drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/i,
+        /drive\.google\.com\/open\?id=([A-Za-z0-9_-]+)/i,
+        /drive\.google\.com\/uc\?(?:[^#]*&)?id=([A-Za-z0-9_-]+)/i
+      ];
+
+      for(const pattern of patterns){
+        const match = raw.match(pattern);
+        if(match && match[1]){
+          return `https://lh3.googleusercontent.com/d/${match[1]}`;
+        }
+      }
+
+      return raw;
+    }
+'''
+
+          files = [Path('ad507.template.html'), Path('index.html')]
+          for p in files:
+              if not p.exists():
+                  continue
+              text = p.read_text(encoding='utf-8')
+
+              if 'function normalizarImagenDrive(url)' not in text:
+                  marker = '<script>'
+                  if marker not in text:
+                      raise SystemExit(f'No se encontró <script> en {p}')
+                  text = text.replace(marker, marker + '\n' + helper, 1)
+
+              text = text.replace("document.getElementById('logoNegocio').src = data.logo;",
+                                  "document.getElementById('logoNegocio').src = normalizarImagenDrive(data.logo);")
+              text = text.replace('document.getElementById("uiLogoImgHome").src = data.logo;',
+                                  'document.getElementById("uiLogoImgHome").src = normalizarImagenDrive(data.logo);')
+              text = text.replace('imgElement.src = urlFoto;',
+                                  'imgElement.src = normalizarImagenDrive(urlFoto);')
+              text = text.replace('img.src = url;',
+                                  'img.src = normalizarImagenDrive(url);')
+              text = text.replace('img.src = u;',
+                                  'img.src = normalizarImagenDrive(u);')
+
+              p.write_text(text, encoding='utf-8')
+
+          # Verificación fail-closed: la plantilla SEO debe quedar normalizada.
+          template = Path('ad507.template.html').read_text(encoding='utf-8')
+          assert 'function normalizarImagenDrive(url)' in template
+          assert 'imgElement.src = normalizarImagenDrive(urlFoto);' in template
+          assert "document.getElementById('logoNegocio').src = normalizarImagenDrive(data.logo);" in template
+          PY
+
+      - name: Commit general fix
+        run: |
+          git config user.name "direcciones507"
+          git config user.email "ventas@direcciones507.com"
+          git add ad507.template.html index.html
+          if git diff --cached --quiet; then
+            echo "No changes required"
+            exit 0
+          fi
+          git commit -m "Normalize Google Drive image URLs for all AD507 pages"
+          git push origin HEAD:main

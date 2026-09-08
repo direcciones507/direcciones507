@@ -1,0 +1,3 @@
+Force one general AD507 regeneration after Drive image URL normalization.
+Reason: previously published client artifacts predated commit dabda2534c47aafa18dd52507b92d25552092338.
+This is a platform-wide regeneration marker, not a per-client override.

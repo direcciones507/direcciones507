@@ -1,0 +1,26 @@
+name: Run Drive image normalizer
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Run Drive image normalizer'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - run: python3 .github/scripts/normalize_drive_images.py
+      - run: |
+          git config user.name direcciones507
+          git config user.email ventas@direcciones507.com
+          git add ad507.template.html index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Normalize Drive image URLs across AD507'
+          git push origin HEAD:main

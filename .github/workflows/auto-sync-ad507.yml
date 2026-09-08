@@ -1,0 +1,96 @@
+name: Auto-sync AD507 routes
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: "ad507-auto-sync"
+  cancel-in-progress: true
+
+jobs:
+  detect-missing-routes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Download current master codes
+        run: |
+          curl -fL "https://script.google.com/macros/s/AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq/exec?action=list" -o codes.json
+
+          TOTAL=$(jq '.codes | length' codes.json)
+          if [ -z "$TOTAL" ] || [ "$TOTAL" = "null" ] || [ "$TOTAL" -lt 20 ]; then
+            echo "ERROR: master incompleto o ilegible"
+            exit 1
+          fi
+
+      - name: Normalize public business codes
+        run: |
+          jq '
+            def normcode: (.codigo // "") | tostring | gsub("^\\s+|\\s+$"; "") | ascii_upcase;
+            def plan: (.plan // .plan_comercial // "") | tostring | gsub("^\\s+|\\s+$"; "") | ascii_downcase;
+            def residential:
+              ((.tipo_direccion // "") | tostring | ascii_downcase | contains("residencial")) or
+              ((.privacidad // "") | tostring | ascii_downcase | contains("privad")) or
+              ((.indexacion_google // "") | tostring | ascii_downcase | contains("no index"));
+            def business:
+              (.indexable == true) or (.publico == true) or
+              (plan | contains("negocio")) or (plan | contains("premium")) or
+              (plan | contains("pro")) or (plan == "gratis");
+            .codes |= map(if type == "string" then {codigo:.} else . end) |
+            .codes += [
+              {codigo:"AD507-MONASANFRANCISCO",plan:"Negocio",legacy:true,tipo_direccion:"NEGOCIO",publico:true,indexable:true},
+              {codigo:"AD507-MONACOSTADELESTE",plan:"Negocio",legacy:true,tipo_direccion:"NEGOCIO",publico:true,indexable:true}
+            ] |
+            [.codes[] |
+              .codigo = normcode |
+              select(.codigo | test("^AD507-[A-Z0-9]+$")) |
+              select((residential | not) and business)
+            ] |
+            unique_by(.codigo) |
+            {ok:true,codes:.,count:length}
+          ' codes.json > codes.public.json
+
+          PUBLIC_TOTAL=$(jq '.codes | length' codes.public.json)
+          if [ "$PUBLIC_TOTAL" -lt 20 ]; then
+            echo "ERROR: fuente pública incompleta después de normalizar"
+            exit 1
+          fi
+
+      - name: Detect missing published AD507 route
+        id: detect
+        run: |
+          MISSING=0
+
+          while IFS= read -r CODE; do
+            STATUS=$(curl -L -s -o /dev/null -w "%{http_code}" --max-time 15 "https://direcciones507.com/$CODE/" || echo "000")
+            echo "$CODE -> HTTP $STATUS"
+
+            if [ "$STATUS" != "200" ]; then
+              echo "MISSING_ROUTE=$CODE"
+              MISSING=1
+              break
+            fi
+          done < <(jq -r '.codes[].codigo' codes.public.json)
+
+          echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
+
+      - name: Regenerate and publish complete AD507 site
+        if: steps.detect.outputs.missing == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Se detectó al menos una ruta AD507 pública ausente."
+          echo "Activando el generador general existente para reconstruir el artefacto completo."
+          gh workflow run generate.yml --repo "$GITHUB_REPOSITORY"
+
+      - name: No publication required
+        if: steps.detect.outputs.missing != '1'
+        run: echo "Todas las rutas AD507 públicas del maestro ya responden HTTP 200."

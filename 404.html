@@ -8,28 +8,72 @@
   <script>
     (async function () {
       var path = (window.location.pathname || "").replace(/^\/+|\/+$/g, "");
-      if (/^AD507-[A-Za-z0-9]+$/i.test(path)) {
-        var code = path.toUpperCase();
-        try {
-          var response = await fetch("https://ad507-core-production.up.railway.app/internal/v1/residential/entry/resolve", {
-            method: "POST",
-            mode: "cors",
-            cache: "no-store",
-            headers: {"content-type": "application/json"},
-            body: JSON.stringify({entry_id: code})
-          });
-          var result = await response.json();
-          if (response.ok && result && result.residential === true) {
-            window.location.replace("/?residential=" + encodeURIComponent(code) + "&entry=short-v2");
-            return;
-          }
-          if (response.ok && result && result.residential === false) {
-            window.location.replace("/?code=" + encodeURIComponent(code));
-          }
-        } catch (_) {
-          // Fallo cerrado: una indisponibilidad del resolver nunca convierte
-          // una ruta desconocida en acceso comercial.
+      if (!/^AD507-[A-Za-z0-9]+$/i.test(path)) return;
+
+      var code = path.toUpperCase();
+      var CORE = "https://ad507-core-production.up.railway.app";
+      var MASTER = "https://script.google.com/macros/s/AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq/exec";
+
+      function showBusiness() {
+        document.title = code + " | Direcciones507";
+        document.documentElement.style.height = "100%";
+        document.body.innerHTML = "";
+        document.body.style.cssText = "margin:0;height:100%;overflow:hidden;background:#0b0f19";
+        var frame = document.createElement("iframe");
+        frame.src = "/?code=" + encodeURIComponent(code);
+        frame.title = "Dirección Digital " + code;
+        frame.style.cssText = "border:0;width:100%;height:100%;display:block";
+        frame.setAttribute("allow", "geolocation; clipboard-read; clipboard-write");
+        document.body.appendChild(frame);
+      }
+
+      try {
+        var response = await fetch(CORE + "/internal/v1/residential/entry/resolve", {
+          method: "POST",
+          mode: "cors",
+          cache: "no-store",
+          headers: {"content-type": "application/json"},
+          body: JSON.stringify({entry_id: code})
+        });
+        var result = await response.json().catch(function () { return null; });
+
+        if (response.ok && result && result.residential === true) {
+          window.location.replace("/?residential=" + encodeURIComponent(code) + "&entry=short-v2");
+          return;
         }
+        if (response.ok && result && result.residential === false) {
+          showBusiness();
+          return;
+        }
+      } catch (_) {}
+
+      try {
+        var businessResponse = await fetch(MASTER + "?code=" + encodeURIComponent(code), {
+          method: "GET",
+          mode: "cors",
+          cache: "no-store",
+          redirect: "follow",
+          headers: {"accept": "application/json"}
+        });
+        if (!businessResponse.ok) return;
+
+        var data = await businessResponse.json();
+        if (!data || data.ok === false || data.status === "error") return;
+
+        var returnedCode = String(data.codigo || data.code || "").trim().toUpperCase();
+        if (returnedCode !== code) return;
+
+        var rawPlan = String(data.plan || data.plan_comercial || "").trim().toLowerCase();
+        var isResidential =
+          String(data.tipo_direccion || "").trim().toUpperCase() === "RESIDENCIAL" ||
+          data.publico === false ||
+          rawPlan === "persona" ||
+          rawPlan === "residencial" ||
+          rawPlan.indexOf("residencial") !== -1;
+
+        if (!isResidential) showBusiness();
+      } catch (_) {
+        // Fallo cerrado: si el código no se confirma, se conserva el 404.
       }
     })();
   </script>

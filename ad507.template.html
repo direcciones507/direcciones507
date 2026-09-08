@@ -742,6 +742,22 @@
 </div>
 
 <script>
+
+    function normalizarImagenDrive(url){
+      const raw = String(url || '').trim();
+      if(!raw) return '';
+      const patterns = [
+        /drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/i,
+        /drive\.google\.com\/open\?id=([A-Za-z0-9_-]+)/i,
+        /drive\.google\.com\/uc\?(?:[^#]*&)?id=([A-Za-z0-9_-]+)/i
+      ];
+      for(const pattern of patterns){
+        const match = raw.match(pattern);
+        if(match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+      }
+      return raw;
+    }
+
 document.addEventListener('DOMContentLoaded', function(){
 
   const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec";
@@ -876,7 +892,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";
 
       if(data.logo){
-      document.getElementById('logoNegocio').src = data.logo;
+      document.getElementById('logoNegocio').src = normalizarImagenDrive(data.logo);
       document.getElementById('logoBox').style.display = 'block';
       }
 
@@ -977,7 +993,7 @@ if(data.web){
 
           listaFotos.forEach((urlFoto, index) => {
             const imgElement = document.createElement('img');
-            imgElement.src = urlFoto;
+            imgElement.src = normalizarImagenDrive(urlFoto);
             imgElement.alt = `Imagen ${index + 1}`;
             imgElement.classList.add('gallery-clickable');
 

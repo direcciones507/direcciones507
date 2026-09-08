@@ -3,6 +3,22 @@
 <head>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-88307ETH2H"></script>
   <script>
+
+    function normalizarImagenDrive(url){
+      const raw = String(url || '').trim();
+      if(!raw) return '';
+      const patterns = [
+        /drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/i,
+        /drive\.google\.com\/open\?id=([A-Za-z0-9_-]+)/i,
+        /drive\.google\.com\/uc\?(?:[^#]*&)?id=([A-Za-z0-9_-]+)/i
+      ];
+      for(const pattern of patterns){
+        const match = raw.match(pattern);
+        if(match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+      }
+      return raw;
+    }
+
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
@@ -1328,7 +1344,7 @@
         document.getElementById("uiHorarioHome").textContent = data.horario || "No especificado";
 
         if (planLower === "premium" && data.logo) {
-          document.getElementById("uiLogoImgHome").src = data.logo;
+          document.getElementById("uiLogoImgHome").src = normalizarImagenDrive(data.logo);
           document.getElementById("uiLogoBoxHome").style.display = "block";
         } else {
           document.getElementById("uiLogoBoxHome").style.display = "none";
@@ -1374,7 +1390,7 @@
             gridFotos.innerHTML = '';
             fotosValidas.forEach((url) => {
               const img = document.createElement('img');
-              img.src = url;
+              img.src = normalizarImagenDrive(url);
               img.onclick = function(){
                 document.getElementById('lightboxImg').src = this.src;
                 document.getElementById('lightboxOverlay').classList.add('show');

@@ -1009,7 +1009,43 @@
         if (event.key === "Escape" && panel.classList.contains("open")) setOpen(false);
       });
 
-      form.addEventListener("submit", async (event) => {
+      const openInviteeShare = async () => {
+      if (!inviteeShareToken) return false;
+      button.disabled = true;
+      message.textContent = "Abriendo enlace temporal seguro…";
+      try {
+        const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/share/access", {
+          method:"POST",
+          mode:"cors",
+          cache:"no-store",
+          headers:{
+            "content-type":"application/json",
+            "authorization":"Bearer " + inviteeShareToken
+          },
+          body:JSON.stringify({entry_id:entryId})
+        });
+        const authorized = await response.json();
+        if (!response.ok || authorized.ok !== true || authorized.scope !== "residential_invitee_read_only") {
+          message.textContent = "Este enlace temporal venció, fue revocado o no es válido.";
+          input.style.display = "none";
+          button.style.display = "none";
+          return true;
+        }
+        renderAuthorizedResidence(authorized, "");
+        return true;
+      } catch (_) {
+        message.textContent = "No fue posible abrir el enlace temporal.";
+        input.style.display = "none";
+        button.style.display = "none";
+        return true;
+      }
+    };
+
+    if (inviteeShareToken) {
+      openInviteeShare();
+    }
+
+    form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const query = input.value.trim();
         if (!query || sending || completed) return;
@@ -1537,10 +1573,12 @@
     const params = new URLSearchParams(window.location.search);
     const entryId = String(params.get("residential") || "").trim();
     if (!entryId) return;
+    const shareMatch = String(window.location.hash || "").match(/^#share=([A-Za-z0-9_-]{43})$/);
+    const inviteeShareToken = shareMatch ? shareMatch[1] : "";
 
     // Registro no bloqueante del escaneo del QR permanente. El identificador
     // es aleatorio por sesión de pestaña y no contiene datos del visitante.
-    try {
+    if (!inviteeShareToken) try {
       const scanSessionKey = "ad507_residential_scan_session";
       let scanSessionId = sessionStorage.getItem(scanSessionKey);
       if (!scanSessionId) {
@@ -1571,7 +1609,7 @@
       input.focus();
     };
 
-    const renderAuthorizedResidence = (data) => {
+    const renderAuthorizedResidence = (data, ownerAuthorization = "") => {
       const residence = data && data.residence ? data.residence : {};
       CODIGO_ACTUAL = String(residence.codigo || "").trim().toUpperCase();
       document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL || "AD507";
@@ -1608,16 +1646,79 @@
         document.getElementById("btnWazeHome").href = "#";
         document.getElementById("btnUberHome").href = "#";
       }
-      document.getElementById("btnCompartirHome").onclick = async () => {
-        const qrEntryUrl = window.location.origin + window.location.pathname + "?residential=" + encodeURIComponent(entryId);
-        if (navigator.share) await navigator.share({title:"Dirección residencial privada",url:qrEntryUrl});
-        else { await navigator.clipboard.writeText(qrEntryUrl); alert("✅ Enlace copiado"); }
-      };
-      document.getElementById("btnCopiarHome").onclick = async () => {
-        const qrEntryUrl = window.location.origin + window.location.pathname + "?residential=" + encodeURIComponent(entryId);
-        await navigator.clipboard.writeText(qrEntryUrl);
-        alert("✅ Enlace copiado");
-      };
+      const shareBtn = document.getElementById("btnCompartirHome");
+      const copyBtn = document.getElementById("btnCopiarHome");
+      const isOwner = typeof ownerAuthorization === "string" && ownerAuthorization.length > 0;
+
+      if (!isOwner) {
+        // Invitado: puede consultar y navegar, pero no crear, renovar ni copiar
+        // enlaces desde los controles de Direcciones507.
+        shareBtn.style.display = "none";
+        copyBtn.style.display = "none";
+      } else {
+        shareBtn.style.display = "";
+        copyBtn.style.display = "";
+        const createTemporaryShare = async () => {
+          const choice = window.prompt("¿Por cuánto tiempo deseas compartir esta dirección?\n\nEscribe: 2, 6, 8 o 24 horas.", "2");
+          if (choice === null) return null;
+          const durationHours = Number(String(choice).trim());
+          if (![2,6,8,24].includes(durationHours)) {
+            alert("Selecciona únicamente 2, 6, 8 o 24 horas.");
+            return null;
+          }
+          const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/share/create", {
+            method:"POST",
+            mode:"cors",
+            cache:"no-store",
+            headers:{
+              "content-type":"application/json",
+              "authorization":"Bearer " + ownerAuthorization
+            },
+            body:JSON.stringify({entry_id:entryId,duration_hours:durationHours})
+          });
+          const created = await response.json();
+          if (!response.ok || created.ok !== true || typeof created.share_token !== "string") {
+            alert("No fue posible crear el enlace temporal. Vuelve a validar el PIN.");
+            return null;
+          }
+          // El token va en el fragmento (#), no en la consulta, para que no se
+          // envíe al servidor web ni aparezca en logs HTTP del sitio.
+          return window.location.origin + window.location.pathname +
+            "?residential=" + encodeURIComponent(entryId) +
+            "#share=" + encodeURIComponent(created.share_token);
+        };
+
+        shareBtn.onclick = async () => {
+          try {
+            const shareUrl = await createTemporaryShare();
+            if (!shareUrl) return;
+            if (navigator.share) {
+              try {
+                await navigator.share({title:"Dirección residencial privada",url:shareUrl});
+              } catch (error) {
+                if (error && error.name === "AbortError") return;
+                await navigator.clipboard.writeText(shareUrl);
+                alert("✅ Enlace temporal copiado");
+              }
+            } else {
+              await navigator.clipboard.writeText(shareUrl);
+              alert("✅ Enlace temporal copiado");
+            }
+          } catch (_) {
+            alert("No fue posible compartir la dirección.");
+          }
+        };
+        copyBtn.onclick = async () => {
+          try {
+            const shareUrl = await createTemporaryShare();
+            if (!shareUrl) return;
+            await navigator.clipboard.writeText(shareUrl);
+            alert("✅ Enlace temporal copiado");
+          } catch (_) {
+            alert("No fue posible copiar el enlace temporal.");
+          }
+        };
+      }
 
       overlay.classList.remove("show");
       document.getElementById("mainAppHeader").style.display = "none";
@@ -1660,14 +1761,14 @@
         });
         const authorized = await accessResponse.json();
         if (!accessResponse.ok || authorized.ok !== true) { denied(); return; }
-        renderAuthorizedResidence(authorized);
+        renderAuthorizedResidence(authorized, verified.authorization);
       } catch (_) {
         denied();
       } finally {
         button.disabled = false;
       }
     });
-    setTimeout(() => input.focus(),100);
+    if (!inviteeShareToken) setTimeout(() => input.focus(),100);
   })();
   </script>
 

@@ -1575,6 +1575,17 @@
     if (!entryId) return;
     const shareMatch = String(window.location.hash || "").match(/^#share=([A-Za-z0-9_-]{43})$/);
     const inviteeShareToken = shareMatch ? shareMatch[1] : "";
+    const inviteeDeviceKey = inviteeShareToken ? "ad507_invitee_device_" + inviteeShareToken.slice(0,12) : "";
+    const getInviteeDeviceToken = () => {
+      if (!inviteeDeviceKey) return "";
+      let token = localStorage.getItem(inviteeDeviceKey) || "";
+      if (!/^[A-Za-z0-9_-]{43}$/.test(token)) {
+        const bytes = new Uint8Array(32); crypto.getRandomValues(bytes);
+        token = btoa(String.fromCharCode(...bytes)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+        localStorage.setItem(inviteeDeviceKey, token);
+      }
+      return token;
+    };
 
     // Registro no bloqueante del escaneo del QR permanente. El identificador
     // es aleatorio por sesión de pestaña y no contiene datos del visitante.
@@ -1650,20 +1661,21 @@
       const copyBtn = document.getElementById("btnCopiarHome");
       const isOwner = typeof ownerAuthorization === "string" && ownerAuthorization.length > 0;
 
+      const qrOfficial = document.getElementById("linkVerificacion");
       if (!isOwner) {
-        // Invitado: puede consultar y navegar, pero no crear, renovar ni copiar
-        // enlaces desde los controles de Direcciones507.
         shareBtn.style.display = "none";
         copyBtn.style.display = "none";
+        if (qrOfficial) qrOfficial.style.display = "none";
       } else {
         shareBtn.style.display = "";
         copyBtn.style.display = "";
+        if (qrOfficial) qrOfficial.style.display = "";
         const createTemporaryShare = async () => {
-          const choice = window.prompt("¿Por cuánto tiempo deseas compartir esta dirección?\n\nEscribe: 2, 6, 8 o 24 horas.", "2");
+          const choice = window.prompt("¿Por cuánto tiempo deseas compartir esta dirección?\n\nEscribe: 1, 2, 3 o 4 horas.", "1");
           if (choice === null) return null;
           const durationHours = Number(String(choice).trim());
-          if (![2,6,8,24].includes(durationHours)) {
-            alert("Selecciona únicamente 2, 6, 8 o 24 horas.");
+          if (![1,2,3,4].includes(durationHours)) {
+            alert("Selecciona únicamente 1, 2, 3 o 4 horas.");
             return null;
           }
           const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/share/create", {
@@ -1730,6 +1742,33 @@
       window.scrollTo({top:0,behavior:"smooth"});
     };
 
+    const openInviteeShare = async () => {
+      if (!inviteeShareToken) return false;
+      button.disabled = true;
+      message.textContent = "Validando enlace temporal…";
+      try {
+        const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/share/access", {
+          method:"POST", mode:"cors", cache:"no-store",
+          headers:{
+            "content-type":"application/json",
+            "authorization":"Bearer " + inviteeShareToken,
+            "x-ad507-invitee-device":getInviteeDeviceToken()
+          },
+          body:JSON.stringify({entry_id:entryId})
+        });
+        const authorized = await response.json();
+        if (!response.ok || authorized.ok !== true || authorized.scope !== "residential_invitee_read_only") {
+          message.textContent = "Este enlace temporal ya fue usado en otro dispositivo o ha vencido.";
+          return false;
+        }
+        renderAuthorizedResidence(authorized, "");
+        return true;
+      } catch (_) {
+        message.textContent = "No fue posible validar el enlace temporal.";
+        return false;
+      } finally { button.disabled = false; }
+    };
+
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const pin = input.value;
@@ -1768,7 +1807,8 @@
         button.disabled = false;
       }
     });
-    if (!inviteeShareToken) setTimeout(() => input.focus(),100);
+    if (inviteeShareToken) openInviteeShare();
+    else setTimeout(() => input.focus(),100);
   })();
   </script>
 

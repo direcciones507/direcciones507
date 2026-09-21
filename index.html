@@ -1657,6 +1657,23 @@
         document.getElementById("btnWazeHome").href = "#";
         document.getElementById("btnUberHome").href = "#";
       }
+      // Navegación residencial autorizada: abrir siempre fuera de la ficha
+      // y mantener los cuatro accesos visibles únicamente después de autorizar.
+      ["btnGoogleHome","btnWazeHome","btnUberHome","btnAvisoHome"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.target = "_blank";
+          el.rel = "noopener noreferrer";
+        }
+      });
+      const whatsappBtn = document.getElementById("btnAvisoHome");
+      if (whatsappBtn && residence.whatsapp) {
+        let tel = String(residence.whatsapp).replace(/\D/g,"");
+        if (tel.length === 8) tel = "507" + tel;
+        whatsappBtn.href = `https://wa.me/${tel}?text=${encodeURIComponent("Hola, te contacto desde tu Dirección Digital " + (CODIGO_ACTUAL || "AD507"))}`;
+        whatsappBtn.style.display = "flex";
+      }
+
       const shareBtn = document.getElementById("btnCompartirHome");
       const copyBtn = document.getElementById("btnCopiarHome");
       const isOwner = typeof ownerAuthorization === "string" && ownerAuthorization.length > 0;
@@ -1669,7 +1686,14 @@
       } else {
         shareBtn.style.display = "";
         copyBtn.style.display = "";
-        if (qrOfficial) qrOfficial.style.display = "";
+        if (qrOfficial) {
+          qrOfficial.style.display = "";
+          qrOfficial.onclick = () => {
+            const permanentUrl = window.location.origin + "/" + encodeURIComponent(CODIGO_ACTUAL) + "/";
+            const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=700x700&data=" + encodeURIComponent(permanentUrl);
+            window.open(qrUrl, "_blank", "noopener,noreferrer");
+          };
+        }
         const createTemporaryShare = async () => {
           const choice = window.prompt("¿Por cuánto tiempo deseas compartir esta dirección?\n\nEscribe: 1, 2, 3 o 4 horas.", "1");
           if (choice === null) return null;

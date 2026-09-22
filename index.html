@@ -1574,7 +1574,24 @@
     const entryId = String(params.get("residential") || "").trim();
     if (!entryId) return;
     const shareMatch = String(window.location.hash || "").match(/^#share=([A-Za-z0-9_-]{43})$/);
+    const ownerActivationMatch = String(window.location.hash || "").match(/^#owner-activate=([A-Za-z0-9_-]{43})$/);
     const inviteeShareToken = shareMatch ? shareMatch[1] : "";
+    const ownerActivationToken = ownerActivationMatch ? ownerActivationMatch[1] : "";
+    const ownerCredentialKey = "ad507_owner_credential_" + entryId.toUpperCase();
+    const readOwnerCredential = () => {
+      try {
+        const token = localStorage.getItem(ownerCredentialKey) || "";
+        return /^[A-Za-z0-9_-]{43}$/.test(token) ? token : "";
+      } catch (_) { return ""; }
+    };
+    const saveOwnerCredential = (token) => {
+      if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return false;
+      try { localStorage.setItem(ownerCredentialKey, token); return true; }
+      catch (_) { return false; }
+    };
+    const forgetOwnerCredential = () => {
+      try { localStorage.removeItem(ownerCredentialKey); } catch (_) {}
+    };
     const inviteeDeviceKey = inviteeShareToken ? "ad507_invitee_device_" + inviteeShareToken.slice(0,12) : "";
     const getInviteeDeviceToken = () => {
       if (!inviteeDeviceKey) return "";
@@ -1620,7 +1637,7 @@
       input.focus();
     };
 
-    const renderAuthorizedResidence = (data, ownerAuthorization = "") => {
+    const renderAuthorizedResidence = (data, authorizedRole, ownerCredential = "") => {
       const residence = data && data.residence ? data.residence : {};
       CODIGO_ACTUAL = String(residence.codigo || "").trim().toUpperCase();
       document.getElementById("uiCodigo").textContent = CODIGO_ACTUAL || "AD507";
@@ -1676,7 +1693,7 @@
 
       const shareBtn = document.getElementById("btnCompartirHome");
       const copyBtn = document.getElementById("btnCopiarHome");
-      const isOwner = typeof ownerAuthorization === "string" && ownerAuthorization.length > 0;
+      const isOwner = authorizedRole === "owner" && /^[A-Za-z0-9_-]{43}$/.test(ownerCredential);
 
       const qrOfficial = document.getElementById("linkVerificacion");
       if (!isOwner) {
@@ -1708,13 +1725,13 @@
             cache:"no-store",
             headers:{
               "content-type":"application/json",
-              "authorization":"Bearer " + ownerAuthorization
+              "authorization":"Bearer " + ownerCredential
             },
             body:JSON.stringify({entry_id:entryId,duration_hours:durationHours})
           });
           const created = await response.json();
           if (!response.ok || created.ok !== true || typeof created.share_token !== "string") {
-            alert("No fue posible crear el enlace temporal. Vuelve a validar el PIN.");
+            alert("No fue posible crear el enlace temporal. Verifica la autenticación del propietario.");
             return null;
           }
           // El token va en el fragmento (#), no en la consulta, para que no se
@@ -1781,11 +1798,11 @@
           body:JSON.stringify({entry_id:entryId})
         });
         const authorized = await response.json();
-        if (!response.ok || authorized.ok !== true || authorized.scope !== "residential_invitee_read_only") {
+        if (!response.ok || authorized.ok !== true || authorized.role !== "temporary_guest") {
           message.textContent = "Este enlace temporal ya fue usado en otro dispositivo o ha vencido.";
           return false;
         }
-        renderAuthorizedResidence(authorized, "");
+        renderAuthorizedResidence(authorized, "temporary_guest");
         return true;
       } catch (_) {
         message.textContent = "No fue posible validar el enlace temporal.";
@@ -1823,16 +1840,65 @@
           body:JSON.stringify({entry_id:entryId})
         });
         const authorized = await accessResponse.json();
-        if (!accessResponse.ok || authorized.ok !== true) { denied(); return; }
-        renderAuthorizedResidence(authorized, verified.authorization);
+        if (!accessResponse.ok || authorized.ok !== true || authorized.role !== "pin_visitor") { denied(); return; }
+        renderAuthorizedResidence(authorized, "pin_visitor");
       } catch (_) {
         denied();
       } finally {
         button.disabled = false;
       }
     });
-    if (inviteeShareToken) openInviteeShare();
-    else setTimeout(() => input.focus(),100);
+    const openOwnerResidence = async (ownerCredential) => {
+      const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/owner/access", {
+        method:"POST", mode:"cors", cache:"no-store",
+        headers:{
+          "content-type":"application/json",
+          "authorization":"Bearer " + ownerCredential
+        },
+        body:JSON.stringify({entry_id:entryId})
+      });
+      const authorized = await response.json();
+      if (!response.ok || authorized.ok !== true || authorized.role !== "owner") return false;
+      renderAuthorizedResidence(authorized, "owner", ownerCredential);
+      return true;
+    };
+
+    const activateOwnerDevice = async () => {
+      button.disabled = true;
+      message.textContent = "Activando este dispositivo del propietario…";
+      try {
+        const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/owner/activate", {
+          method:"POST", mode:"cors", cache:"no-store",
+          headers:{"content-type":"application/json"},
+          body:JSON.stringify({entry_id:entryId,activation_token:ownerActivationToken})
+        });
+        const activated = await response.json();
+        if (!response.ok || activated.ok !== true || activated.role !== "owner" ||
+            !saveOwnerCredential(activated.owner_credential || "")) {
+          message.textContent = "No fue posible activar este dispositivo. Solicita un enlace de activación nuevo.";
+          return false;
+        }
+        history.replaceState(null, "", window.location.pathname + "?residential=" + encodeURIComponent(entryId));
+        return openOwnerResidence(activated.owner_credential);
+      } catch (_) {
+        message.textContent = "No fue posible activar este dispositivo. Solicita un enlace de activación nuevo.";
+        return false;
+      } finally { button.disabled = false; }
+    };
+
+    const startResidentialAccess = async () => {
+      if (inviteeShareToken) { await openInviteeShare(); return; }
+      if (ownerActivationToken) { await activateOwnerDevice(); return; }
+      const ownerCredential = readOwnerCredential();
+      if (ownerCredential) {
+        try {
+          if (await openOwnerResidence(ownerCredential)) return;
+        } catch (_) {}
+        forgetOwnerCredential();
+      }
+      setTimeout(() => input.focus(),100);
+    };
+    startResidentialAccess();
   })();
   </script>
 

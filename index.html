@@ -1562,7 +1562,7 @@
       <p>Ingresa el PIN autorizado para consultar esta dirección. El QR por sí solo no concede acceso.</p>
       <input id="residentialPinInput" class="residential-pin-input" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" autocomplete="off" aria-label="PIN residencial" required>
       <button id="residentialPinSubmit" class="residential-pin-submit" type="submit">Acceder de forma segura</button>
-      <button id="residentialOwnerSetup" class="residential-pin-submit" type="button" hidden style="margin-top:10px;background:#fff;color:#111;border:1px solid #d7d7d7;">Activar mi dispositivo</button>
+      <button id="residentialOwnerSetup" class="residential-pin-submit" type="submit" hidden style="margin-top:10px;background:#fff;color:#111;border:1px solid #d7d7d7;">Activar mi dispositivo</button>
       
       <p id="residentialPinMessage" class="residential-pin-message" aria-live="polite"></p>
     </form>
@@ -1633,7 +1633,10 @@
     const button = document.getElementById("residentialPinSubmit");
     const ownerSetupButton = document.getElementById("residentialOwnerSetup");
     const message = document.getElementById("residentialPinMessage");
-    if (ownerSetupRequested) ownerSetupButton.hidden = false;
+    if (ownerSetupRequested) {
+      ownerSetupButton.hidden = false;
+      button.hidden = true;
+    }
     overlay.classList.add("show");
 
     const denied = () => {
@@ -1815,49 +1818,46 @@
       } finally { button.disabled = false; }
     };
 
-    ownerSetupButton.addEventListener("click", async () => {
-      const pin = input.value;
-      if (!/^[0-9]{6,12}$/.test(pin)) {
-        message.textContent = "Ingresa primero el PIN entregado por Direcciones507.";
-        input.focus();
-        return;
-      }
-      const phone = window.prompt("Confirma el número de teléfono registrado del propietario.");
-      if (phone === null) return;
-      const normalizedPhone = String(phone).replace(/[^0-9]/g,"");
-      if (normalizedPhone.length < 7) {
-        message.textContent = "El número registrado no es válido.";
-        return;
-      }
-      button.disabled = true;
-      ownerSetupButton.disabled = true;
-      message.textContent = "Activando este dispositivo…";
-      try {
-        const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/owner/enroll", {
-          method:"POST", mode:"cors", cache:"no-store",
-          headers:{"content-type":"application/json"},
-          body:JSON.stringify({entry_id:entryId,pin,phone:normalizedPhone})
-        });
-        input.value = "";
-        const activated = await response.json();
-        if (!response.ok || activated.ok !== true || activated.role !== "owner" ||
-            !saveOwnerCredential(activated.owner_credential || "")) {
-          message.textContent = "Este acceso de activación ya fue utilizado o los datos no coinciden.";
-          return;
-        }
-        history.replaceState(null,"",window.location.pathname+"?residential="+encodeURIComponent(entryId));
-        renderAuthorizedResidence(activated,"owner",activated.owner_credential);
-      } catch (_) {
-        message.textContent = "No fue posible activar este dispositivo en este momento.";
-      } finally {
-        button.disabled = false;
-        ownerSetupButton.disabled = false;
-      }
-    });
-
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const pin = input.value;
+      if (ownerSetupRequested) {
+        if (!/^[0-9]{6,12}$/.test(pin)) {
+          message.textContent = "Ingresa el PIN entregado por Direcciones507.";
+          input.focus();
+          return;
+        }
+        const phone = window.prompt("Confirma el número de teléfono registrado del propietario.");
+        if (phone === null) return;
+        const normalizedPhone = String(phone).replace(/[^0-9]/g,"");
+        if (normalizedPhone.length < 7) {
+          message.textContent = "El número registrado no es válido.";
+          return;
+        }
+        ownerSetupButton.disabled = true;
+        message.textContent = "Activando este dispositivo…";
+        try {
+          const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/owner/enroll", {
+            method:"POST", mode:"cors", cache:"no-store",
+            headers:{"content-type":"application/json"},
+            body:JSON.stringify({entry_id:entryId,pin,phone:normalizedPhone})
+          });
+          input.value = "";
+          const activated = await response.json();
+          if (!response.ok || activated.ok !== true || activated.role !== "owner" ||
+              !saveOwnerCredential(activated.owner_credential || "")) {
+            message.textContent = "Este acceso de activación ya fue utilizado o los datos no coinciden.";
+            return;
+          }
+          history.replaceState(null,"",window.location.pathname+"?residential="+encodeURIComponent(entryId));
+          renderAuthorizedResidence(activated,"owner",activated.owner_credential);
+        } catch (_) {
+          message.textContent = "No fue posible activar este dispositivo en este momento.";
+        } finally {
+          ownerSetupButton.disabled = false;
+        }
+        return;
+      }
       if (!/^[0-9]{6,12}$/.test(pin)) { denied(); return; }
       button.disabled = true;
       message.textContent = "";

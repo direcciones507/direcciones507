@@ -1009,43 +1009,7 @@
         if (event.key === "Escape" && panel.classList.contains("open")) setOpen(false);
       });
 
-      const openInviteeShare = async () => {
-      if (!inviteeShareToken) return false;
-      button.disabled = true;
-      message.textContent = "Abriendo enlace temporal seguro…";
-      try {
-        const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/share/access", {
-          method:"POST",
-          mode:"cors",
-          cache:"no-store",
-          headers:{
-            "content-type":"application/json",
-            "authorization":"Bearer " + inviteeShareToken
-          },
-          body:JSON.stringify({entry_id:entryId})
-        });
-        const authorized = await response.json();
-        if (!response.ok || authorized.ok !== true || authorized.scope !== "residential_invitee_read_only") {
-          message.textContent = "Este enlace temporal venció, fue revocado o no es válido.";
-          input.style.display = "none";
-          button.style.display = "none";
-          return true;
-        }
-        renderAuthorizedResidence(authorized, "");
-        return true;
-      } catch (_) {
-        message.textContent = "No fue posible abrir el enlace temporal.";
-        input.style.display = "none";
-        button.style.display = "none";
-        return true;
-      }
-    };
-
-    if (inviteeShareToken) {
-      openInviteeShare();
-    }
-
-    form.addEventListener("submit", async (event) => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const query = input.value.trim();
         if (!query || sending || completed) return;
@@ -1889,7 +1853,20 @@
 
     const startResidentialAccess = async () => {
       if (inviteeShareToken) { await openInviteeShare(); return; }
-      if (ownerActivationToken) { await activateOwnerDevice(); return; }
+      if (ownerActivationToken) {
+        document.getElementById("residentialPinTitle").textContent = "Activación del propietario";
+        const intro = form.querySelector("p");
+        if (intro) intro.textContent = "Activa este dispositivo como propietario de la dirección.";
+        input.style.display = "none";
+        button.textContent = "Activar mi dispositivo";
+        message.textContent = "";
+        button.addEventListener("click", async (event) => {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          await activateOwnerDevice();
+        }, {once:true});
+        return;
+      }
       const ownerCredential = readOwnerCredential();
       if (ownerCredential) {
         try {

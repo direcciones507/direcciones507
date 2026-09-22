@@ -39,7 +39,7 @@
         var result = await response.json().catch(function () { return null; });
 
         if (response.ok && result && result.residential === true) {
-          window.location.replace("/?residential=" + encodeURIComponent(code) + "&entry=short-v2");
+          window.location.replace("/?residential=" + encodeURIComponent(code) + "&entry=short-v2" + (window.location.hash || ""));
           return;
         }
         if (response.ok && result && result.residential === false) {

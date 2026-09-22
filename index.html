@@ -1045,6 +1045,45 @@
       openInviteeShare();
     }
 
+    ownerEnrollButton.addEventListener("click", async () => {
+      const pin = input.value;
+      if (!/^[0-9]{6,12}$/.test(pin)) {
+        message.textContent = "Ingresa primero el PIN residencial.";
+        input.focus();
+        return;
+      }
+      const phone = window.prompt("Confirma el número de teléfono registrado del propietario. Puedes escribirlo con o sin +507.");
+      if (phone === null) return;
+      const normalizedPhone = String(phone).replace(/[^0-9]/g,"");
+      if (normalizedPhone.length < 7) {
+        message.textContent = "El número registrado no es válido.";
+        return;
+      }
+      button.disabled = true;
+      ownerEnrollButton.disabled = true;
+      message.textContent = "Autenticando este dispositivo como propietario…";
+      try {
+        const response = await fetch(RESIDENTIAL_CORE + "/internal/v1/residential/owner/enroll", {
+          method:"POST", mode:"cors", cache:"no-store",
+          headers:{"content-type":"application/json"},
+          body:JSON.stringify({entry_id:entryId,pin,phone:normalizedPhone})
+        });
+        input.value = "";
+        const activated = await response.json();
+        if (!response.ok || activated.ok !== true || activated.role !== "owner" ||
+            !saveOwnerCredential(activated.owner_credential || "")) {
+          message.textContent = "No fue posible autenticar al propietario. Verifica el PIN y el teléfono registrado.";
+          return;
+        }
+        renderAuthorizedResidence(activated, "owner", activated.owner_credential);
+      } catch (_) {
+        message.textContent = "No fue posible autenticar al propietario en este momento.";
+      } finally {
+        button.disabled = false;
+        ownerEnrollButton.disabled = false;
+      }
+    });
+
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const query = input.value.trim();
@@ -1562,6 +1601,7 @@
       <p>Ingresa el PIN autorizado para consultar esta dirección. El QR por sí solo no concede acceso.</p>
       <input id="residentialPinInput" class="residential-pin-input" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" autocomplete="off" aria-label="PIN residencial" required>
       <button id="residentialPinSubmit" class="residential-pin-submit" type="submit">Acceder de forma segura</button>
+      <button id="residentialOwnerEnroll" class="residential-pin-submit" type="button" style="margin-top:10px;background:#fff;color:#111;border:1px solid #d7d7d7;">Soy el propietario</button>
       <p id="residentialPinMessage" class="residential-pin-message" aria-live="polite"></p>
     </form>
   </div>
@@ -1628,6 +1668,7 @@
     const form = document.getElementById("residentialPinForm");
     const input = document.getElementById("residentialPinInput");
     const button = document.getElementById("residentialPinSubmit");
+    const ownerEnrollButton = document.getElementById("residentialOwnerEnroll");
     const message = document.getElementById("residentialPinMessage");
     overlay.classList.add("show");
 

@@ -610,6 +610,21 @@
     .btn-social-quad.fb i { color: #4f8df7; }
     .btn-social-quad.web i { color: #c8a96b; }
 
+    /* Descripción comercial Premium Pro: se mantiene fuera del flujo móvil
+       y solo aparece cuando el plan y el contenido lo permiten. */
+    .commercial-description {
+      display: none;
+    }
+
+    .commercial-description-text {
+      margin: 0;
+      color: #f3f0e8;
+      font-size: 15px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
     /* ===== TABLET: COMPOSICIÓN WEB AMPLIA ===== */
     @media (min-width: 768px) and (max-width: 1099px) {
       body {
@@ -1011,10 +1026,27 @@
         grid-row: 3;
       }
 
+      .commercial-description.is-visible {
+        display: block;
+        grid-column: 1 / 13;
+        grid-row: 4;
+        padding: 20px 22px;
+        border: 1px solid rgba(200, 169, 107, 0.26);
+        border-left: 3px solid #c8a96b;
+        border-radius: 16px;
+        background:
+          linear-gradient(135deg, rgba(20, 31, 47, 0.96), rgba(14, 16, 20, 0.98));
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+      }
+
       .social-quad-row {
         grid-column: 1 / 13 !important;
         grid-row: 4;
         margin: 0;
+      }
+
+      .white-sheet:has(.commercial-description.is-visible) .social-quad-row {
+        grid-row: 5;
       }
 
       #btnGoogleSecundario {
@@ -1027,15 +1059,28 @@
         grid-row: 5;
       }
 
+      .white-sheet:has(.commercial-description.is-visible) #btnGoogleSecundario,
+      .white-sheet:has(.commercial-description.is-visible) #btnShare {
+        grid-row: 6;
+      }
+
       .double-row-buttons {
         grid-column: 1 / 13 !important;
         grid-row: 6;
         margin: 0;
       }
 
+      .white-sheet:has(.commercial-description.is-visible) .double-row-buttons {
+        grid-row: 7;
+      }
+
       .seo-text {
         grid-column: 1 / 13;
         grid-row: 7;
+      }
+
+      .white-sheet:has(.commercial-description.is-visible) .seo-text {
+        grid-row: 8;
       }
 
       .main-nav-grid {
@@ -1468,6 +1513,10 @@
       <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
     </div>
 
+    <section id="commercialDescription" class="commercial-description" aria-label="Descripción comercial">
+      <p id="commercialDescriptionText" class="commercial-description-text"></p>
+    </section>
+
     <div class="seo-text">
       <span id="seoCodigo">AD507-CODE</span>
     </div>
@@ -1663,6 +1712,15 @@ document.addEventListener('DOMContentLoaded', function(){
 
       if(data.horario){
         document.getElementById('horario').textContent = data.horario;
+      }
+
+      const planComercial = String(data.plan || '').trim().toLocaleLowerCase('es');
+      const descripcionComercial = String(data.descripcionComercial || '').trim();
+      const descripcionContainer = document.getElementById('commercialDescription');
+      const descripcionText = document.getElementById('commercialDescriptionText');
+      if(planComercial === 'premium pro' && descripcionComercial && descripcionContainer && descripcionText){
+        descripcionText.textContent = descripcionComercial;
+        descripcionContainer.classList.add('is-visible');
       }
 
       // ✅ REPARACIÓN DE ENLACES SATELITALES LARGOS BASADOS EN PARSEO CORRECTO DE LAT/LNG

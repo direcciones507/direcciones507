@@ -320,6 +320,10 @@
       height: 200px;
     }
 
+    .gallery-business-status {
+      display: none;
+    }
+
     @media (min-width: 768px) {
       .negocio-galeria {
         grid-template-columns: 1.3fr 0.7fr;
@@ -688,13 +692,64 @@
       }
 
       .negocio-galeria {
-        grid-template-columns: minmax(0, 1.55fr) minmax(150px, 0.75fr);
-        grid-template-rows: repeat(2, 172px);
+        display: flex;
         gap: 12px;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        touch-action: pan-x;
       }
 
+      .negocio-galeria::-webkit-scrollbar {
+        display: none;
+      }
+
+      .negocio-galeria img,
       .negocio-galeria img:first-child {
-        height: 356px;
+        flex: 0 0 calc(100% - 58px);
+        width: calc(100% - 58px);
+        height: 382px;
+        grid-column: auto;
+        grid-row: auto;
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+        cursor: pointer;
+      }
+
+      .gallery-business-status {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        min-height: 44px;
+        margin-top: 12px;
+        padding: 10px 14px;
+        border: 1px solid rgba(200, 169, 107, 0.22);
+        border-radius: 13px;
+        background: rgba(17, 19, 22, 0.86);
+        color: #e5e7eb;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .gallery-business-status::before {
+        content: '';
+        flex: 0 0 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #94a3b8;
+        box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.12);
+      }
+
+      .gallery-business-status.is-open::before {
+        background: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
+      }
+
+      .gallery-business-status.is-closed::before {
+        background: #ef4444;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14);
       }
 
       .btn-action-triple,
@@ -704,18 +759,18 @@
       }
 
       #btnHorario {
-        grid-column: 1 / 7;
-        grid-row: 5;
+        grid-column: 8 / 13;
+        grid-row: 4;
       }
 
       #codigoPostalContainer {
         grid-column: 1 / 7;
-        grid-row: 6;
+        grid-row: 5;
       }
 
       #btnRef {
-        grid-column: 7 / 13;
-        grid-row: 5 / span 2;
+        grid-column: 8 / 13;
+        grid-row: 5;
       }
 
       .accordion-full {
@@ -813,13 +868,64 @@
       }
 
       .negocio-galeria {
-        grid-template-columns: minmax(0, 1.65fr) minmax(180px, 0.75fr);
-        grid-template-rows: repeat(2, 205px);
+        display: flex;
         gap: 14px;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        touch-action: pan-x;
       }
 
+      .negocio-galeria::-webkit-scrollbar {
+        display: none;
+      }
+
+      .negocio-galeria img,
       .negocio-galeria img:first-child {
-        height: 424px;
+        flex: 0 0 calc(100% - 76px);
+        width: calc(100% - 76px);
+        height: 458px;
+        grid-column: auto;
+        grid-row: auto;
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+        cursor: pointer;
+      }
+
+      .gallery-business-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 46px;
+        margin-top: 14px;
+        padding: 11px 15px;
+        border: 1px solid rgba(200, 169, 107, 0.22);
+        border-radius: 13px;
+        background: rgba(17, 19, 22, 0.86);
+        color: #e5e7eb;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .gallery-business-status::before {
+        content: '';
+        flex: 0 0 8px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #94a3b8;
+        box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.12);
+      }
+
+      .gallery-business-status.is-open::before {
+        background: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.14);
+      }
+
+      .gallery-business-status.is-closed::before {
+        background: #ef4444;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14);
       }
 
       .btn-action-triple,
@@ -829,18 +935,18 @@
       }
 
       #btnHorario {
-        grid-column: 1 / 7;
-        grid-row: 5;
+        grid-column: 8 / 13;
+        grid-row: 4;
       }
 
       #codigoPostalContainer {
         grid-column: 1 / 7;
-        grid-row: 6;
+        grid-row: 5;
       }
 
       #btnRef {
-        grid-column: 7 / 13;
-        grid-row: 5 / span 2;
+        grid-column: 8 / 13;
+        grid-row: 5;
       }
 
       .accordion-full {
@@ -854,6 +960,88 @@
       .premium-footer {
         padding: 24px 40px;
         border-radius: 0 0 30px 30px;
+      }
+    }
+
+    /* ===== TABLET + DESKTOP: JERARQUÍA PÚBLICA DEL NEGOCIO =====
+       Identidad → fotos/estado → información → redes → acciones. */
+    @media (min-width: 768px) {
+      .card {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .code-header { order: 1; }
+      .identity-block { order: 2; }
+      .white-sheet { order: 3; }
+      .main-nav-grid { order: 4; }
+      .premium-footer { order: 5; }
+
+      .white-sheet:has(#premiumGalleryContainer[style*="display: block"]) #premiumGalleryContainer,
+      .white-sheet:not(:has(#premiumGalleryContainer[style*="display: block"])) #premiumGalleryContainer {
+        grid-column: 1 / 13;
+        grid-row: 1;
+        width: 100%;
+        padding: 0;
+      }
+
+      /* Los tres elementos conservan sus enlaces y listeners, pero participan
+         individualmente en el grid para colocar Teléfono con la información. */
+      .actions-triple-row {
+        display: contents;
+      }
+
+      #btnHorario {
+        grid-column: 1 / 5;
+        grid-row: 2;
+      }
+
+      #btnCall {
+        grid-column: 5 / 9;
+        grid-row: 2;
+      }
+
+      #btnRef {
+        grid-column: 9 / 13;
+        grid-row: 2;
+      }
+
+      #codigoPostalContainer {
+        grid-column: 1 / 13;
+        grid-row: 3;
+      }
+
+      .social-quad-row {
+        grid-column: 1 / 13 !important;
+        grid-row: 4;
+        margin: 0;
+      }
+
+      #btnGoogleSecundario {
+        grid-column: 1 / 7;
+        grid-row: 5;
+      }
+
+      #btnShare {
+        grid-column: 7 / 13;
+        grid-row: 5;
+      }
+
+      .double-row-buttons {
+        grid-column: 1 / 13 !important;
+        grid-row: 6;
+        margin: 0;
+      }
+
+      .seo-text {
+        grid-column: 1 / 13;
+        grid-row: 7;
+      }
+
+      .main-nav-grid {
+        margin: 0;
+        background: linear-gradient(180deg, #090a0c 0%, #050b14 100%);
+        border-top: 1px solid rgba(200, 169, 107, 0.18);
       }
     }
   </style>
@@ -935,6 +1123,7 @@
     <div id="premiumGalleryContainer" class="negocio-premium">
       <div class="sheet-section-title">Galería Comercial:</div>
       <div id="galeriaFotos" class="negocio-galeria"></div>
+      <div id="galleryBusinessStatus" class="gallery-business-status" aria-live="polite"></div>
     </div>
 
     <div class="actions-triple-row">
@@ -1288,6 +1477,87 @@ if(data.web){
   document.getElementById('btnWeb').style.display = 'flex';
 }
 
+      function actualizarEstadoGaleria(horarioReal) {
+        const estado = document.getElementById('galleryBusinessStatus');
+        const horarioTexto = String(horarioReal || '').trim();
+        if (!estado || !horarioTexto) return;
+
+        estado.classList.remove('is-open', 'is-closed');
+        estado.textContent = `Horario: ${horarioTexto}`;
+
+        const normalizado = horarioTexto
+          .toLocaleLowerCase('es')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/\u2013|\u2014/g, '-');
+
+        const partesPanama = new Intl.DateTimeFormat('es-PA', {
+          timeZone: 'America/Panama',
+          weekday: 'long',
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23'
+        }).formatToParts(new Date());
+        const valorParte = tipo => partesPanama.find(parte => parte.type === tipo)?.value || '';
+        const diaActual = valorParte('weekday')
+          .toLocaleLowerCase('es')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .slice(0, 3);
+        const minutosActuales = Number(valorParte('hour')) * 60 + Number(valorParte('minute'));
+        const dias = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom'];
+        const indiceActual = dias.indexOf(diaActual);
+        const descriptorDias = normalizado.split(/\d/)[0].trim();
+
+        let aplicaHoy = !dias.some(dia => descriptorDias.includes(dia));
+        if (/todos\s+los\s+dias|diario/.test(descriptorDias)) aplicaHoy = true;
+        if (descriptorDias.includes(diaActual)) aplicaHoy = true;
+
+        const rangoDias = descriptorDias.match(/(lun|mar|mie|jue|vie|sab|dom)[a-z]*\s*(?:-|\ba\b)\s*(lun|mar|mie|jue|vie|sab|dom)/);
+        if (rangoDias && indiceActual >= 0) {
+          const inicioDia = dias.indexOf(rangoDias[1]);
+          const finDia = dias.indexOf(rangoDias[2]);
+          aplicaHoy = inicioDia <= finDia
+            ? indiceActual >= inicioDia && indiceActual <= finDia
+            : indiceActual >= inicioDia || indiceActual <= finDia;
+        }
+
+        const coincidenciasHora = [...normalizado.matchAll(/\b(\d{1,2})(?::(\d{2}))?\s*(a\.?\s*m\.?|p\.?\s*m\.?|am|pm)?\b/g)];
+        if (coincidenciasHora.length < 2) return;
+
+        const convertirMinutos = coincidencia => {
+          let hora = Number(coincidencia[1]);
+          const minuto = Number(coincidencia[2] || 0);
+          const periodo = String(coincidencia[3] || '').replace(/[.\s]/g, '');
+          if (hora > 23 || minuto > 59) return null;
+          if (periodo === 'pm' && hora < 12) hora += 12;
+          if (periodo === 'am' && hora === 12) hora = 0;
+          return hora * 60 + minuto;
+        };
+        const apertura = convertirMinutos(coincidenciasHora.at(-2));
+        const cierre = convertirMinutos(coincidenciasHora.at(-1));
+        if (apertura === null || cierre === null || apertura >= cierre) return;
+
+        const formatoHora = minutos => {
+          const hora24 = Math.floor(minutos / 60);
+          const minuto = String(minutos % 60).padStart(2, '0');
+          const periodo = hora24 < 12 ? 'a. m.' : 'p. m.';
+          const hora12 = hora24 % 12 || 12;
+          return `${hora12}:${minuto} ${periodo}`;
+        };
+
+        if (aplicaHoy && minutosActuales >= apertura && minutosActuales < cierre) {
+          estado.textContent = `Abierto · Cierra a las ${formatoHora(cierre)}`;
+          estado.classList.add('is-open');
+        } else if (aplicaHoy && minutosActuales < apertura) {
+          estado.textContent = `Cerrado · Abre a las ${formatoHora(apertura)}`;
+          estado.classList.add('is-closed');
+        } else {
+          estado.textContent = `Cerrado · Horario: ${horarioTexto}`;
+          estado.classList.add('is-closed');
+        }
+      }
+
       {
         let listaFotos = [];
 
@@ -1320,6 +1590,7 @@ if(data.web){
           });
 
           document.getElementById('premiumGalleryContainer').style.display = 'block';
+          actualizarEstadoGaleria(data.horario);
         }
       }
 

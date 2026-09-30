@@ -698,7 +698,7 @@
         overscroll-behavior-inline: contain;
         scroll-snap-type: x mandatory;
         scrollbar-width: none;
-        touch-action: pan-x;
+        touch-action: auto;
       }
 
       .negocio-galeria::-webkit-scrollbar {
@@ -874,7 +874,7 @@
         overscroll-behavior-inline: contain;
         scroll-snap-type: x mandatory;
         scrollbar-width: none;
-        touch-action: pan-x;
+        touch-action: auto;
       }
 
       .negocio-galeria::-webkit-scrollbar {
@@ -1150,6 +1150,152 @@
         flex-basis: 84%;
         width: 84%;
         height: min(430px, 42vw);
+      }
+    }
+
+    /* ===== CORRECCIÓN VISUAL FINAL: TABLET + DESKTOP ===== */
+    @media (min-width: 768px) {
+      #logoNegocio {
+        width: 106px;
+        height: 106px;
+        object-fit: contain;
+      }
+
+      .verified-badge-top {
+        background: rgba(59, 130, 246, 0.12);
+        border-color: rgba(96, 165, 250, 0.34);
+      }
+
+      .verified-badge-top i,
+      .verified-title-sub {
+        color: #60a5fa;
+      }
+
+      .verified-desc-sub {
+        color: #93a9c7;
+      }
+
+      .negocio-galeria {
+        gap: 12px;
+        padding: 6px;
+        -webkit-overflow-scrolling: touch;
+        background: linear-gradient(145deg, rgba(7, 18, 34, 0.34), rgba(9, 10, 12, 0.58));
+        border-radius: 15px;
+      }
+
+      .negocio-galeria img,
+      .negocio-galeria img:first-child {
+        flex: 0 0 31%;
+        width: 31%;
+        height: clamp(230px, 30vw, 280px);
+        object-fit: contain;
+        object-position: center;
+        background: linear-gradient(145deg, #0a1625, #090a0c);
+        scroll-snap-align: center;
+      }
+
+      .btn-action-triple {
+        padding: 14px 9px;
+        gap: 7px;
+      }
+
+      .btn-action-triple i {
+        font-size: 22px;
+      }
+
+      .btn-action-triple span {
+        font-size: 13px;
+      }
+
+      .btn-action-triple p {
+        font-size: 11px;
+      }
+
+      .btn-social-quad {
+        padding: 13px 8px;
+        gap: 8px;
+        font-size: 13px;
+      }
+
+      .btn-social-quad i {
+        font-size: 19px;
+      }
+
+      .accordion-item {
+        padding: 15px 17px;
+        gap: 12px;
+      }
+
+      .accordion-icon-left {
+        width: 38px;
+        height: 38px;
+        font-size: 16px;
+      }
+
+      .accordion-label {
+        font-size: 12px;
+      }
+
+      .accordion-value {
+        font-size: 14px;
+      }
+
+      .accordion-arrow-right {
+        font-size: 12px;
+      }
+
+      .nav-box i {
+        font-size: 28px;
+      }
+
+      .nav-box-text h4 {
+        font-size: 14px;
+      }
+
+      .nav-box-text p {
+        font-size: 12px;
+      }
+
+      .footer-brand-side i {
+        font-size: 24px;
+      }
+
+      .footer-title-main {
+        font-size: 16px;
+      }
+
+      .footer-subtitle-sub {
+        font-size: 11px;
+      }
+
+      .footer-secure-side i {
+        font-size: 20px;
+      }
+
+      .secure-title-text {
+        font-size: 12px;
+      }
+
+      .secure-desc-text {
+        font-size: 10px;
+      }
+    }
+
+    @media (min-width: 981px) {
+      #logoNegocio {
+        width: 112px;
+        height: 112px;
+      }
+
+      .negocio-galeria {
+        gap: 14px;
+      }
+
+      .negocio-galeria img,
+      .negocio-galeria img:first-child {
+        flex-basis: 30.5%;
+        width: 30.5%;
+        height: clamp(260px, 24vw, 320px);
       }
     }
   </style>

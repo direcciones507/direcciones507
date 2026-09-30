@@ -1044,6 +1044,114 @@
         border-top: 1px solid rgba(200, 169, 107, 0.18);
       }
     }
+
+    /* ===== PULIDO DE CABECERA Y GALERÍA: TABLET + DESKTOP ===== */
+    @media (min-width: 768px) {
+      .code-header {
+        background: #071222;
+      }
+
+      .identity-block {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr);
+        align-items: center;
+        gap: 22px;
+        min-height: 132px;
+        background: linear-gradient(180deg, #071222 0%, #0a1727 62%, #0c1724 100%);
+      }
+
+      #logoBox {
+        justify-self: start;
+        align-self: center;
+      }
+
+      #logoNegocio {
+        width: 90px;
+        height: 90px;
+      }
+
+      .title-details-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+        padding: 6px 3%;
+        text-align: center;
+      }
+
+      .negocio-premium-top-text {
+        order: 1;
+        width: 100%;
+        max-width: 780px;
+        color: #f8f7f2;
+        font-size: clamp(24px, 3.2vw, 40px);
+        font-weight: 750;
+        line-height: 1.12;
+        letter-spacing: -0.025em;
+        text-wrap: balance;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+
+      #codigo {
+        order: 2;
+        margin: 9px 0 0;
+        color: #c8a96b;
+        font-size: clamp(12px, 1.35vw, 15px);
+        font-weight: 750;
+        line-height: 1.2;
+        letter-spacing: 0.075em;
+        word-break: break-word;
+      }
+
+      .white-sheet {
+        background:
+          radial-gradient(circle at 8% 0%, rgba(200, 169, 107, 0.07), transparent 30%),
+          linear-gradient(180deg, #0c1724 0%, #0b121a 12%, #090a0c 34%, #090a0c 100%);
+        border-top: 0;
+        border-radius: 0;
+      }
+
+      .negocio-galeria {
+        padding-block: 2px;
+        background: linear-gradient(145deg, rgba(7, 18, 34, 0.48), rgba(9, 10, 12, 0.82));
+        border-radius: 18px;
+      }
+
+      .negocio-galeria img,
+      .negocio-galeria img:first-child {
+        flex-basis: 82%;
+        width: 82%;
+        height: clamp(340px, 46vw, 390px);
+        object-fit: contain;
+        object-position: center;
+        background: linear-gradient(145deg, #0a1625, #090a0c);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+      }
+    }
+
+    @media (min-width: 981px) {
+      .identity-block {
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 28px;
+        min-height: 146px;
+      }
+
+      .title-details-header {
+        padding-left: 4%;
+        padding-right: 4%;
+      }
+
+      .negocio-galeria img,
+      .negocio-galeria img:first-child {
+        flex-basis: 84%;
+        width: 84%;
+        height: min(430px, 42vw);
+      }
+    }
   </style>
 </head>
 

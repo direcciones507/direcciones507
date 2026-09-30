@@ -962,6 +962,88 @@
         border-radius: 0 0 30px 30px;
       }
     }
+
+    /* ===== TABLET + DESKTOP: JERARQUÍA PÚBLICA DEL NEGOCIO =====
+       Identidad → fotos/estado → información → redes → acciones. */
+    @media (min-width: 768px) {
+      .card {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .code-header { order: 1; }
+      .identity-block { order: 2; }
+      .white-sheet { order: 3; }
+      .main-nav-grid { order: 4; }
+      .premium-footer { order: 5; }
+
+      .white-sheet:has(#premiumGalleryContainer[style*="display: block"]) #premiumGalleryContainer,
+      .white-sheet:not(:has(#premiumGalleryContainer[style*="display: block"])) #premiumGalleryContainer {
+        grid-column: 1 / 13;
+        grid-row: 1;
+        width: 100%;
+        padding: 0;
+      }
+
+      /* Los tres elementos conservan sus enlaces y listeners, pero participan
+         individualmente en el grid para colocar Teléfono con la información. */
+      .actions-triple-row {
+        display: contents;
+      }
+
+      #btnHorario {
+        grid-column: 1 / 5;
+        grid-row: 2;
+      }
+
+      #btnCall {
+        grid-column: 5 / 9;
+        grid-row: 2;
+      }
+
+      #btnRef {
+        grid-column: 9 / 13;
+        grid-row: 2;
+      }
+
+      #codigoPostalContainer {
+        grid-column: 1 / 13;
+        grid-row: 3;
+      }
+
+      .social-quad-row {
+        grid-column: 1 / 13 !important;
+        grid-row: 4;
+        margin: 0;
+      }
+
+      #btnGoogleSecundario {
+        grid-column: 1 / 7;
+        grid-row: 5;
+      }
+
+      #btnShare {
+        grid-column: 7 / 13;
+        grid-row: 5;
+      }
+
+      .double-row-buttons {
+        grid-column: 1 / 13 !important;
+        grid-row: 6;
+        margin: 0;
+      }
+
+      .seo-text {
+        grid-column: 1 / 13;
+        grid-row: 7;
+      }
+
+      .main-nav-grid {
+        margin: 0;
+        background: linear-gradient(180deg, #090a0c 0%, #050b14 100%);
+        border-top: 1px solid rgba(200, 169, 107, 0.18);
+      }
+    }
   </style>
 </head>
 

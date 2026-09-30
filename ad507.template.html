@@ -619,8 +619,11 @@
     .commercial-description-text {
       margin: 0;
       color: #f3f0e8;
-      font-size: 15px;
-      line-height: 1.7;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(16px, 1.7vw, 20px);
+      font-weight: 400;
+      line-height: 1.65;
+      letter-spacing: 0.01em;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
@@ -1029,14 +1032,25 @@
       .commercial-description.is-visible {
         display: block;
         grid-column: 1 / 13;
-        grid-row: 4;
-        padding: 20px 22px;
-        border: 1px solid rgba(200, 169, 107, 0.26);
-        border-left: 3px solid #c8a96b;
-        border-radius: 16px;
+        grid-row: 2;
+        padding: clamp(20px, 3vw, 28px);
+        border: 1px solid rgba(200, 169, 107, 0.22);
+        border-left: 2px solid rgba(200, 169, 107, 0.8);
+        border-radius: 18px;
         background:
-          linear-gradient(135deg, rgba(20, 31, 47, 0.96), rgba(14, 16, 20, 0.98));
-        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+          radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.08), transparent 38%),
+          linear-gradient(135deg, rgba(16, 31, 50, 0.98), rgba(13, 17, 23, 0.98));
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
+      }
+
+      .white-sheet:has(.commercial-description.is-visible) #btnHorario,
+      .white-sheet:has(.commercial-description.is-visible) #btnCall,
+      .white-sheet:has(.commercial-description.is-visible) #btnRef {
+        grid-row: 3;
+      }
+
+      .white-sheet:has(.commercial-description.is-visible) #codigoPostalContainer {
+        grid-row: 4;
       }
 
       .social-quad-row {

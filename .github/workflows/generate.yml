@@ -76,7 +76,7 @@ jobs:
 
       - name: Download codes
         run: |
-          curl -fL "https://script.google.com/macros/s/AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq/exec?action=list" -o codes.json
+          curl -fL "https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec?action=list" -o codes.json
 
           echo "=== TOTAL CODIGOS ==="
           jq '.codes | length' codes.json

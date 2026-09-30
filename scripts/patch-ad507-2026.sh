@@ -2,13 +2,21 @@
 set -euo pipefail
 
 NEW_WEBAPP_URL="https://script.google.com/macros/s/AKfycbwGtlH6FVh80hlT-9gzhVbgxpFHRnerep5NGULSSRuoF62iWB3q2hmICMlAMS9nwQyq/exec"
+AD507_WEBAPP_URL="https://script.google.com/macros/s/AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ/exec"
 
 # Actualiza cualquier URL antigua de Apps Script en las fuentes mantenidas.
-for file in index.html ad507.template.html verificar.html; do
+# index.html y verificar.html conservan el WebApp histórico general.
+for file in index.html verificar.html; do
   [ -f "$file" ] || continue
   sed -E -i "s#https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec#$NEW_WEBAPP_URL#g" "$file"
   sed -i 's/action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}/action=track\&code=${encodeURIComponent(CODIGO_ACTUAL)}\&event=${plataforma}/g' "$file"
 done
+
+# La plantilla AD507 usa su propio WebApp general. No debe heredar NEW_WEBAPP_URL.
+if [ -f "ad507.template.html" ]; then
+  sed -E -i "s#https://script\.google\.com/macros/s/[A-Za-z0-9_-]+/exec#$AD507_WEBAPP_URL#g" "ad507.template.html"
+  sed -i 's/action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}/action=track\&code=${encodeURIComponent(CODIGO_ACTUAL)}\&event=${plataforma}/g' "ad507.template.html"
+fi
 
 # Corrige favicon y OpenGraph de la plantilla SEO antes de generar cada código.
 python3 - <<'PY'

@@ -1357,6 +1357,50 @@
         height: clamp(260px, 24vw, 320px);
       }
     }
+
+    /* Identidad y acciones: corrección visual global, sin alterar distribución. */
+    .identity-block { position: relative; isolation: isolate; overflow: hidden; }
+    .identity-watermark {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0.07;
+      filter: brightness(0) invert(1);
+      pointer-events: none;
+      user-select: none;
+      z-index: -1;
+    }
+    .identity-watermark[hidden] { display: none; }
+    .verified-badge-top .verified-title-sub { color: #ffffff; }
+    .identity-block #codigo { color: #d9c69c; }
+    .white-sheet .btn-action-triple,
+    .white-sheet .accordion-item,
+    .white-sheet .qr-box {
+      background: #ffffff;
+      border-color: #dce3ec;
+      color: #152238;
+    }
+    .white-sheet .accordion-item:hover { background: #f4f7fb; border-color: #bcc9db; }
+    .white-sheet .btn-action-triple p,
+    .white-sheet .accordion-label { color: #475569; }
+    .white-sheet .accordion-value,
+    .white-sheet .qr-box h3 { color: #152238; }
+    .white-sheet .accordion-arrow-right { color: #526278; }
+    .white-sheet .accordion-icon-left {
+      background: #ffffff;
+      border-color: #dce3ec;
+      color: #253449;
+    }
+    #btnGoogleSecundario i { color: #b45309; }
+    #btnCall i { color: #15803d; }
+    #btnShare i { color: #7c3aed; }
+    #btnQR .accordion-icon-left i { color: #172033; }
+    #btnStats .accordion-icon-left i { color: #4338ca; }
+    #btnHorario .accordion-icon-left i { color: #253449; }
+    #codigoPostalContainer .accordion-icon-left i { color: #0f766e; }
+    .white-sheet #btnRef .accordion-icon-left i { color: #be123c; }
   </style>
 </head>
 
@@ -1388,6 +1432,7 @@
   </div>
 
   <div class="identity-block">
+    <img id="identityWatermark" class="identity-watermark" alt="" aria-hidden="true" hidden>
     <div id="logoBox">
       <img id="logoNegocio" src="" alt="Logo del negocio">
     </div>
@@ -1713,6 +1758,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
       if(data.logo){
       document.getElementById('logoNegocio').src = normalizarImagenDrive(data.logo);
+      const watermark = document.getElementById('identityWatermark');
+      watermark.onerror = () => { watermark.hidden = true; };
+      watermark.onload = () => { watermark.hidden = false; };
+      watermark.src = document.getElementById('logoNegocio').src;
       document.getElementById('logoBox').style.display = 'block';
       }
 

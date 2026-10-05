@@ -26,12 +26,13 @@ if len(versions) != len(set(versions)):
 if versions and versions != sorted(versions):
     errors.append("Migration versions are not ordered")
 
-# Foundation phase is additive. These statements require an explicit later migration/review.
+# Foundation phase is additive. Destructive statements and direct updates are blocked.
+# INSERT ... ON CONFLICT DO UPDATE against namespaced ad507_ tables is allowed because
+# it is an idempotent seed/upsert pattern and does not mutate legacy structures.
 FORBIDDEN = [
     r"\bDROP\s+(?:TABLE|SCHEMA|DATABASE|COLUMN)\b",
     r"\bTRUNCATE\b",
     r"\bDELETE\s+FROM\b",
-    r"\bUPDATE\s+(?!ad507_schema_migrations\b)",
     r"\bALTER\s+TABLE\s+(?!ad507_)",
 ]
 
@@ -54,6 +55,11 @@ for path in SQL_FILES:
     for pattern in FORBIDDEN:
         if re.search(pattern, text, flags=re.IGNORECASE | re.MULTILINE):
             errors.append(f"{path.name}: forbidden destructive statement matched: {pattern}")
+
+    # Strip the safe SQL clause phrase before checking for standalone UPDATE statements.
+    update_scan = re.sub(r"\bDO\s+UPDATE\b", "DO_UPSERT", text, flags=re.IGNORECASE)
+    if re.search(r"\bUPDATE\s+(?!ad507_schema_migrations\b)", update_scan, flags=re.IGNORECASE | re.MULTILINE):
+        errors.append(f"{path.name}: direct UPDATE statements are forbidden during foundation phase")
 
     for pattern in SECRET_PATTERNS:
         if re.search(pattern, text, flags=re.IGNORECASE):

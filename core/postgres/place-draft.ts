@@ -5,6 +5,7 @@ export type PlaceDraftInput = {
   latitude: number;
   longitude: number;
   phone?: string | null;
+  landlinePhone?: string | null;
   hours?: string | null;
 };
 
@@ -16,6 +17,7 @@ export type ValidatedPlaceDraft = {
   latitude: number;
   longitude: number;
   phone: string | null;
+  landlinePhone: string | null;
   hours: string | null;
 };
 
@@ -41,6 +43,9 @@ export function validatePlaceDraft(input: PlaceDraftInput):
   const phone = cleanText(input.phone, 40);
   if (phone === null) return { ok: false, code: "INVALID_REQUEST", field: "phone" };
 
+  const landlinePhone = cleanText(input.landlinePhone, 40);
+  if (landlinePhone === null) return { ok: false, code: "INVALID_REQUEST", field: "landlinePhone" };
+
   const hours = cleanText(input.hours, 180);
   if (hours === null) return { ok: false, code: "INVALID_REQUEST", field: "hours" };
 
@@ -63,6 +68,7 @@ export function validatePlaceDraft(input: PlaceDraftInput):
       latitude,
       longitude,
       phone: phone || null,
+      landlinePhone: landlinePhone || null,
       hours: hours || null,
     },
   };

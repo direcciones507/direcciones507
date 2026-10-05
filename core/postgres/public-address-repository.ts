@@ -12,6 +12,7 @@ export type PublicAddressRecord = {
   commercialDescription: string | null;
   coordinates: { latitude: number | null; longitude: number | null };
   phone: string | null;
+  landlinePhone: string | null;
   hours: string | null;
   plan: { code: string; name: string } | null;
   capabilities: Record<string, unknown>;
@@ -35,6 +36,7 @@ type AddressRow = {
   latitude: string | number | null;
   longitude: string | number | null;
   phone: string | null;
+  landline_phone: string | null;
   hours: string | null;
   plan_code: string | null;
   plan_name: string | null;
@@ -92,6 +94,7 @@ export async function getPublicAddressByCode(
       a.latitude,
       a.longitude,
       a.phone,
+      a.landline_phone,
       a.hours,
       p.code AS plan_code,
       p.name AS plan_name
@@ -152,6 +155,7 @@ export async function getPublicAddressByCode(
       longitude: numberOrNull(row.longitude),
     },
     phone: row.phone,
+    landlinePhone: row.landline_phone,
     hours: row.hours,
     plan: row.plan_code && row.plan_name ? { code: row.plan_code, name: row.plan_name } : null,
     capabilities: capabilityMap,

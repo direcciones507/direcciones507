@@ -7,6 +7,7 @@ export type CreatedPlaceDraft = { code: string; status: 'DRAFT' };
 /**
  * Creates a PLACE only as DRAFT. Publication is deliberately a separate operation.
  * The database UNIQUE constraint remains the final authority for code uniqueness.
+ * landline_phone belongs to the future migration schema and is not applied to production here.
  */
 export async function createPlaceDraft(
   sql: SqlExecutor,
@@ -23,11 +24,11 @@ export async function createPlaceDraft(
       const rows = await sql<{ code: string; status: 'DRAFT' }>`
         INSERT INTO ad507.addresses (
           code, address_type, status, name, reference, description,
-          latitude, longitude, phone, hours
+          latitude, longitude, phone, landline_phone, hours
         ) VALUES (
           ${code}, 'PLACE', 'DRAFT', ${validated.value.name}, ${validated.value.reference},
           ${validated.value.description}, ${validated.value.latitude}, ${validated.value.longitude},
-          ${validated.value.phone}, ${validated.value.hours}
+          ${validated.value.phone}, ${validated.value.landlinePhone}, ${validated.value.hours}
         )
         RETURNING code, status
       `;

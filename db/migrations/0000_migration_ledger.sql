@@ -1,6 +1,8 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS ad507_schema_migrations (
+CREATE SCHEMA IF NOT EXISTS ad507;
+
+CREATE TABLE IF NOT EXISTS ad507.schema_migrations (
   version text PRIMARY KEY,
   checksum_sha256 text NOT NULL,
   description text NOT NULL,
@@ -10,7 +12,7 @@ CREATE TABLE IF NOT EXISTS ad507_schema_migrations (
   metadata jsonb NOT NULL DEFAULT '{}'::jsonb
 );
 
-COMMENT ON TABLE ad507_schema_migrations IS
+COMMENT ON TABLE ad507.schema_migrations IS
   'Direcciones507 forward-only migration ledger. Contains migration metadata only; never store secrets here.';
 
 COMMIT;

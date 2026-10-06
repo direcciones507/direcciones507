@@ -2,10 +2,6 @@
   "name": "ad507-core-shadow",
   "private": true,
   "type": "module",
-  "scripts": {
-    "start": "bun ../shadow-runtime.ts"
-  },
-  "dependencies": {
-    "postgres": "3.4.7"
-  }
+  "scripts": { "start": "bun shadow-runtime.ts" },
+  "dependencies": { "postgres": "3.4.7" }
 }

@@ -1,6 +1,8 @@
 import { SQL } from 'bun';
 import { evaluateCoreReadiness } from './core-readiness';
 import { evaluateCutoverGate } from './cutover-gate';
+import { clearSessionCookie, currentUser, hasRole } from './auth';
+import { googleCallback, googleLogin } from './google-auth';
 
 const port = Number(process.env.PORT ?? '3000');
 const databaseUrl = process.env.DATABASE_URL?.trim();
@@ -10,6 +12,7 @@ if (!databaseUrl) {
 }
 
 const sql = new SQL(databaseUrl);
+const sessionSecret = process.env.AD507_SESSION_SECRET?.trim();
 
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
@@ -49,6 +52,33 @@ Bun.serve({
         service: 'ad507-core-shadow',
         mode: 'shadow',
       });
+    }
+
+    if (req.method === 'GET' && url.pathname === '/auth/google/login') {
+      return googleLogin(process.env);
+    }
+
+    if (req.method === 'GET' && url.pathname === '/auth/google/callback') {
+      return googleCallback(req, sql, process.env);
+    }
+
+    if (req.method === 'POST' && url.pathname === '/auth/logout') {
+      return new Response(null, { status: 204, headers: { 'set-cookie': clearSessionCookie() } });
+    }
+
+    if (req.method === 'GET' && url.pathname === '/v1/auth/me') {
+      if (!sessionSecret) return json(503, { ok: false, error: 'AUTH_NOT_CONFIGURED' });
+      const user = await currentUser(req, sql, sessionSecret);
+      if (!user) return json(401, { ok: false, error: 'UNAUTHENTICATED' });
+      return json(200, { ok: true, user });
+    }
+
+    if (req.method === 'GET' && url.pathname === '/v1/admin/session-check') {
+      if (!sessionSecret) return json(503, { ok: false, error: 'AUTH_NOT_CONFIGURED' });
+      const user = await currentUser(req, sql, sessionSecret);
+      if (!user) return json(401, { ok: false, error: 'UNAUTHENTICATED' });
+      if (!hasRole(user, 'ADMIN')) return json(403, { ok: false, error: 'FORBIDDEN' });
+      return json(200, { ok: true, authorized: true, user: { id: user.id, email: user.email, roles: user.roles } });
     }
 
     if (req.method === 'GET' && url.pathname === '/ready') {

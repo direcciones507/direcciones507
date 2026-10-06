@@ -1,4 +1,4 @@
-import postgres from 'postgres';
+import { SQL } from 'bun';
 import { evaluateCoreReadiness } from './core-readiness';
 import { evaluateCutoverGate } from './cutover-gate';
 
@@ -9,10 +9,7 @@ if (!databaseUrl) {
   throw new Error('MISSING_DATABASE_URL');
 }
 
-const sql = postgres(databaseUrl, {
-  max: 2,
-  application_name: 'ad507-core-shadow',
-});
+const sql = new SQL(databaseUrl);
 
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
@@ -26,9 +23,14 @@ function json(status: number, body: Record<string, unknown>) {
 
 async function databaseReady() {
   try {
-    const rows = await sql.unsafe(
-      "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='ad507' AND table_name='schema_migrations') AS ledger_exists",
-    );
+    const rows = await sql`
+      SELECT EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'ad507'
+          AND table_name = 'schema_migrations'
+      ) AS ledger_exists
+    `;
     return rows[0]?.ledger_exists === true;
   } catch {
     return false;

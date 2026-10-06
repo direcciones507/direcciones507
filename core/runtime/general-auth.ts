@@ -138,7 +138,9 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       const user = await currentUser(req);
       if (!user) return respond(401, { ok: false, error: 'UNAUTHENTICATED' });
       if (url.pathname === '/v1/admin/session-check' && !user.roles.includes('ADMIN')) return respond(403, { ok: false, error: 'FORBIDDEN' });
-      return respond(200, { ok: true, user });
+      return respond(200, url.pathname === '/v1/admin/session-check'
+        ? { ok: true, authorized: true, user: { id: user.id, email: user.email, roles: user.roles } }
+        : { ok: true, user });
     } catch { return respond(503, { ok: false, error: 'AUTH_UNAVAILABLE' }, callback ? [clearState()] : []); }
   }
   return { configured: !!cfg, handle };

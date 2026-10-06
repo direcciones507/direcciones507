@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import EmbeddedPostgres from 'embedded-postgres';
 import postgres from 'postgres';
 import { createGeneralAuth } from '../general-auth';
+import { prepareMigration0005 } from '../scripts/prepare-0005';
 
 const root = new URL('../../../', import.meta.url);
 const dir = mkdtempSync(join(tmpdir(), 'ad507-auth-test-'));
@@ -107,7 +108,9 @@ test('existing canonical ADMIN role is read from PostgreSQL', async () => {
   expect(done.status).toBe(302);
   const cookie = session(done);
   expect((await (await auth.handle(request('/v1/auth/me', { cookie })))!.json()).user.roles).toEqual(['ADMIN']);
-  expect((await auth.handle(request('/v1/admin/session-check', { cookie })))!.status).toBe(200);
+  const admin = (await auth.handle(request('/v1/admin/session-check', { cookie })))!;
+  expect(admin.status).toBe(200);
+  expect(await admin.json()).toEqual({ ok: true, authorized: true, user: { id: adminId, email: 'admin@example.test', roles: ['ADMIN'] } });
   await sql.unsafe("UPDATE ad507.users SET status='DISABLED' WHERE id=$1::uuid", [adminId]);
   expect((await auth.handle(request('/v1/auth/me', { cookie })))!.status).toBe(401);
 });
@@ -152,4 +155,21 @@ test('Railway TLS termination accepts the configured host and denies arbitrary h
   expect((await auth.handle(new Request('http://ad507-core-production.up.railway.app/v1/auth/me', { headers: { 'x-forwarded-proto': 'https' } })))!.status).toBe(401);
   expect((await auth.handle(new Request('http://ad507-core-production.up.railway.app/v1/auth/me')))!.status).toBe(400);
   expect((await auth.handle(new Request('https://evil.test/v1/auth/me', { headers: { 'x-forwarded-proto': 'https' } })))!.status).toBe(400);
+});
+test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner creates schema and ledger together, rejects repeat', async () => {
+  await sql.unsafe('CREATE DATABASE ad507_migration_runner_test');
+  const database = new URL(process.env.AD507_TEST_DATABASE_URL ?? `postgres://postgres:${password}@127.0.0.1:55439/postgres`);
+  database.pathname = '/ad507_migration_runner_test';
+  const isolated = postgres(database.toString(), { max: 1 });
+  try {
+    for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql']) await isolated.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
+    await isolated.unsafe("INSERT INTO ad507.schema_migrations(version,checksum_sha256,description,applied_by) SELECT v,repeat('0',64),'isolated test fixture',current_user FROM unnest(ARRAY['0000','0001','0002','0003','0004']) v");
+    const script = prepareMigration0005('a'.repeat(40)).split('\n').filter(line => !line.startsWith('\\')).join('\n');
+    await isolated.unsafe(script);
+    expect((await isolated.unsafe("SELECT version FROM ad507.schema_migrations WHERE version='0005'"))).toHaveLength(1);
+    expect((await isolated.unsafe("SELECT to_regclass('ad507.auth_sessions') IS NOT NULL AS present"))[0].present).toBe(true);
+    await expect(isolated.unsafe(script)).rejects.toThrow('0005_ALREADY_APPLIED');
+    await isolated.unsafe('ROLLBACK');
+    expect((await isolated.unsafe("SELECT count(*)::int AS n FROM ad507.schema_migrations WHERE version='0005'"))[0].n).toBe(1);
+  } finally { await isolated.end(); }
 });

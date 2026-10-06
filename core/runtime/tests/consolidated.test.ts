@@ -160,7 +160,7 @@ test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner crea
   await sql.unsafe('CREATE DATABASE ad507_migration_runner_test');
   const database = new URL(process.env.AD507_TEST_DATABASE_URL ?? `postgres://postgres:${password}@127.0.0.1:55439/postgres`);
   database.pathname = '/ad507_migration_runner_test';
-  const isolated = postgres(database.toString(), { max: 1 });
+  const isolated = postgres(database.toString(), { max: 1, connect_timeout: 5, connection: { statement_timeout: '10000' } });
   try {
     for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql']) await isolated.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
     await isolated.unsafe("INSERT INTO ad507.schema_migrations(version,checksum_sha256,description,applied_by) SELECT v,repeat('0',64),'isolated test fixture',current_user FROM unnest(ARRAY['0000','0001','0002','0003','0004']) v");
@@ -171,5 +171,5 @@ test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner crea
     await expect(isolated.unsafe(script)).rejects.toThrow('0005_ALREADY_APPLIED');
     await isolated.unsafe('ROLLBACK');
     expect((await isolated.unsafe("SELECT count(*)::int AS n FROM ad507.schema_migrations WHERE version='0005'"))[0].n).toBe(1);
-  } finally { await isolated.end(); }
-});
+  } finally { await isolated.end({ timeout: 1 }); }
+}, 30000);

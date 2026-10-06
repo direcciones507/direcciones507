@@ -1,0 +1,33 @@
+name: Consolidated Core compatibility
+on:
+  push:
+    branches: ["feat/core-consolidated-oauth-20261006"]
+  pull_request:
+    paths: ["core/runtime/**", "db/migrations/0005_general_google_auth.sql", ".github/workflows/test-consolidated-core.yml"]
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.1
+        env:
+          POSTGRES_PASSWORD: isolated-test-only
+          POSTGRES_DB: postgres
+        ports: ["55439:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+      - run: python scripts/validate-migrations.py
+      - run: bun install --frozen-lockfile
+        working-directory: core/runtime
+      - run: bun run check:legacy
+        working-directory: core/runtime
+      - run: bun test tests
+        working-directory: core/runtime
+        env:
+          AD507_TEST_DATABASE_URL: postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres

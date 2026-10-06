@@ -168,7 +168,9 @@ test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner crea
     await isolated.unsafe(script);
     expect((await isolated.unsafe("SELECT version FROM ad507.schema_migrations WHERE version='0005'"))).toHaveLength(1);
     expect((await isolated.unsafe("SELECT to_regclass('ad507.auth_sessions') IS NOT NULL AS present"))[0].present).toBe(true);
-    await expect(isolated.unsafe(script)).rejects.toThrow('0005_ALREADY_APPLIED');
+    let repeatedError = '';
+    try { await isolated.unsafe(script); } catch (error) { repeatedError = String(error); }
+    expect(repeatedError).toContain('0005_ALREADY_APPLIED');
     await isolated.unsafe('ROLLBACK');
     expect((await isolated.unsafe("SELECT count(*)::int AS n FROM ad507.schema_migrations WHERE version='0005'"))[0].n).toBe(1);
   } finally { await isolated.end({ timeout: 1 }); }

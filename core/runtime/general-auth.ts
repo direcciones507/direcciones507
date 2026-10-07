@@ -143,5 +143,5 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         : { ok: true, user });
     } catch { return respond(503, { ok: false, error: 'AUTH_UNAVAILABLE' }, callback ? [clearState()] : []); }
   }
-  return { configured: !!cfg, handle };
+  return { configured: !!cfg, handle, currentUser };
 }

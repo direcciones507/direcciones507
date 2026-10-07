@@ -228,7 +228,7 @@ test('user panel isolates canonical ownership, orders and capabilities; logout/r
   expect(data.addresses.map((a: any) => a.code)).toEqual(['AD507-TESTPLACE']);
   expect(data.addresses[0].capabilities.maps).toBe(true);
   expect(data.orders.map((o: any) => o.amountCents)).toEqual([100]);
-  expect(data.actions).toEqual({ prepareRequest: true, submitRequest: false, checkout: false });
+  expect(data.actions).toEqual({ prepareRequest: true, submitRequest: true, checkout: false });
   const admin = await fixtureSession(adminId, 'admin@example.test', 'admin-sub');
   expect((await (await runtimeGet('/v1/user/panel', admin)).json()).addresses).toHaveLength(0);
   const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
@@ -250,6 +250,6 @@ test('ADMIN and user panel client scripts parse; submission and payment remain d
     const script = html.match(/<script>([\s\S]*?)<\/script>/)![1];
     expect(() => new Function(script)).not.toThrow();
   }
-  expect(userPanelHtml).toContain('id="send" type="button" disabled');
+  expect(userPanelHtml).toContain('id="send" type="button">Enviar solicitud');
   expect(userPanelHtml).toContain('aún no se han enviado ni guardado');
 });

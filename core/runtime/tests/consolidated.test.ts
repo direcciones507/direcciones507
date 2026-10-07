@@ -233,7 +233,7 @@ test('user panel isolates canonical ownership, orders and capabilities; logout/r
   expect((await (await runtimeGet('/v1/user/panel', admin)).json()).addresses).toHaveLength(0);
   const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
   expect(panel.headers.get('x-robots-tag')).toBe('noindex, nofollow');
-  expect(await panel.text()).toContain('Enviar solicitud · Próximamente');
+  expect(await panel.text()).toContain('id="send" type="button">Enviar solicitud');
   const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { cookie: client } });
   expect(redirect.status).toBe(302); expect(redirect.headers.get('location')).toBe('/panel');
   const logout = await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
@@ -244,12 +244,13 @@ test('user panel isolates canonical ownership, orders and capabilities; logout/r
   expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
 });
 
-test('ADMIN and user panel client scripts parse; submission and payment remain disabled', async () => {
+test('ADMIN and user panel client scripts parse; request submission enabled and payment remains disabled', async () => {
   const adminHtml = await (await runtimeGet('/admin')).text();
   for (const html of [adminHtml, userPanelHtml]) {
     const script = html.match(/<script>([\s\S]*?)<\/script>/)![1];
     expect(() => new Function(script)).not.toThrow();
   }
   expect(userPanelHtml).toContain('id="send" type="button">Enviar solicitud');
-  expect(userPanelHtml).toContain('aún no se han enviado ni guardado');
+  expect(userPanelHtml).toContain('Revisa los datos y presiona Enviar solicitud.');
+  expect(userPanelHtml).toContain('Continuar al pago · Próximamente');
 });

@@ -2,9 +2,6 @@ import type { Sql } from 'postgres';
 import type { createGeneralAuth } from './general-auth';
 
 const USER_PANEL_SUBMISSION_ENABLED = false;
-const PANEL_IMAGE_MAX_BYTES = 8 * 1024 * 1024;
-const PANEL_IMAGE_TYPES = ['image/jpeg','image/png','image/webp'];
-
 // Canonical Google identity and ownership only. This panel never activates Residential OWNER.
 export async function userPanelData(sql: Sql, user: { id: string; roles: string[] }) {
   const addresses = await sql.unsafe(`SELECT a.id::text,a.code,a.name,a.address_type AS "addressType",a.status,o.ownership_role AS "ownershipRole",p.code AS "planCode",p.name AS "planName",COALESCE((SELECT jsonb_object_agg(c.capability,c.value_json) FROM ad507.plan_capabilities c WHERE c.plan_id=p.id),'{}'::jsonb) AS capabilities FROM ad507.address_ownership o JOIN ad507.addresses a ON a.id=o.address_id LEFT JOIN ad507.plans p ON p.id=a.plan_id WHERE o.user_id=$1::uuid ORDER BY a.updated_at DESC,a.id LIMIT 500`, [user.id]);

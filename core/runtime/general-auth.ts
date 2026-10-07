@@ -117,7 +117,11 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
           // Google is not authoritative for arbitrary third-party email addresses.
           const domain = p.email!.split('@')[1]?.toLowerCase();
           if (domain !== 'gmail.com' && !(p.hd && p.hd.toLowerCase() === domain)) return null;
-          const users = await tx.unsafe("SELECT id::text AS id,email FROM ad507.users WHERE lower(email)=lower($1) AND status='ACTIVE' FOR UPDATE", [p.email!]);
+          let users = await tx.unsafe("SELECT id::text AS id,email FROM ad507.users WHERE lower(email)=lower($1) AND status='ACTIVE' FOR UPDATE", [p.email!]);
+          if (users.length === 0) {
+            users = await tx.unsafe("INSERT INTO ad507.users(email,status) VALUES(lower($1),'ACTIVE') RETURNING id::text AS id,email", [p.email!]);
+            await tx.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT') ON CONFLICT DO NOTHING", [users[0].id]);
+          }
           if (users.length !== 1) return null;
           const binding = await tx.unsafe('INSERT INTO ad507.google_identities(google_sub,user_id) VALUES($1,$2::uuid) ON CONFLICT DO NOTHING RETURNING user_id', [p.sub!, users[0].id]);
           return binding.length === 1 ? users[0] : null;

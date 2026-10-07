@@ -340,7 +340,7 @@
 
     /* BLOQUE DE ENLACES SEO */
     .seo-pages-buttons-container { display: flex; gap: 12px; width: 100%; margin-top: 25px; margin-bottom: 35px; justify-content: center; align-items: stretch; flex-wrap: nowrap; }
-    .btn-seo-page-link { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 20px; border-radius: 18px; color: #ffffff; font-weight: 800; font-size: 13px; text-decoration: none; text-transform: uppercase; cursor: pointer; text-align: center; position: relative; overflow: hidden; backdrop-filter: blur(12px); transition: all 0.30s ease; letter-spacing: 0.3px; }
+    .btn-seo-page-link { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 20px 24px; border-radius: 18px; color: #ffffff; font-weight: 800; font-size: 13px; line-height: 1.35; text-decoration: none; text-transform: uppercase; cursor: pointer; text-align: left; position: relative; overflow: hidden; backdrop-filter: blur(12px); transition: all 0.30s ease; letter-spacing: 0.3px; }
     .btn-seo-page-link:first-child { background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(6,182,212,0.12)); border: 1px solid rgba(59,130,246,0.45); box-shadow: 0 0 25px rgba(59,130,246,0.18); }
     .btn-seo-page-link:last-child { background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(6,182,212,0.12)); border: 1px solid rgba(6,182,212,0.45); box-shadow: 0 0 25px rgba(6,182,212,0.15); }
     .btn-seo-page-link:hover { transform: translateY(-3px) scale(1.01); filter: brightness(1.08); }
@@ -389,7 +389,7 @@
       .nav-menu { display: none; }
       .mobile-account-link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; white-space: nowrap; padding: 10px 13px; font-size: 11px !important; }
     }
-    @media (max-width: 640px) { .features-grid-view { grid-template-columns: 1fr !important; } .main-hero-title { font-size: 32px; } .seo-pages-buttons-container { flex-direction: row; gap: 8px; } .btn-seo-page-link { padding: 14px 9px; font-size: 10px; gap: 7px; } .btn-seo-page-link i { font-size: 15px; } .free-address-card { padding: 22px 18px; } .free-address-card h3 { font-size: 24px; } .free-address-actions { grid-template-columns: 1fr; } .free-address-btn { width: 100%; } }
+    @media (max-width: 640px) { .features-grid-view { grid-template-columns: 1fr !important; } .main-hero-title { font-size: 32px; } .seo-pages-buttons-container { flex-direction: row; gap: 8px; } .btn-seo-page-link { padding: 16px 12px; font-size: 10.5px; gap: 8px; line-height: 1.35; } .btn-seo-page-link i { font-size: 15px; } .free-address-card { padding: 22px 18px; } .free-address-card h3 { font-size: 24px; } .free-address-actions { grid-template-columns: 1fr; } .free-address-btn { width: 100%; } }
   
     /* Acceso residencial permanente por QR + PIN */
     .residential-pin-overlay { position:fixed; inset:0; z-index:1000000; display:none; align-items:center; justify-content:center; padding:22px; background:rgba(3,7,18,.97); backdrop-filter:blur(12px); }
@@ -671,20 +671,20 @@
     </div>
   </section>
 
-  <main class="container" style="max-width: 540px; margin: 0 auto;" id="seoHomeButtonsContainer">
+  <main class="container" style="max-width: 760px; margin: 0 auto;" id="seoHomeButtonsContainer">
     <div class="seo-pages-buttons-container">
       <a href="https://direcciones507.com/ubicacion-exacta-panama.html" class="btn-seo-page-link" target="_blank">
-        <i class="fa-solid fa-building"></i> <strong>Ubicación exacta en Panamá para negocios y residencias (¡Dale Clic!)</strong>
+        <i class="fa-solid fa-building"></i> <strong>Ubicación exacta en Panamá<br><span style="font-weight:600; opacity:.82; text-transform:none;">Para negocios y residencias · Ver más</span></strong>
       </a>
       <a href="https://direcciones507.com/direccion-digital-panama.html" class="btn-seo-page-link" target="_blank">
-        <i class="fa-solid fa-qrcode"></i> <strong>Dirección digital en Panamá con QR (¡Dale Clic!)</strong>
+        <i class="fa-solid fa-qrcode"></i> <strong>Dirección digital con QR<br><span style="font-weight:600; opacity:.82; text-transform:none;">Conoce cómo funciona · Ver más</span></strong>
       </a>
     </div>
   </main>
 
   <section class="counters-bar-section" id="globalMetricsFooterRow">
     <div class="container" style="display:flex; justify-content:center;">
-      <div class="counter-block-node" style="width:min(100%,560px); justify-content:center; padding:24px 28px;">
+      <div class="counter-block-node" style="width:min(100%,680px); justify-content:center; padding:26px 32px; background:linear-gradient(135deg,rgba(8,145,178,.22),rgba(37,99,235,.18)); border:1px solid rgba(34,211,238,.38); box-shadow:0 12px 32px rgba(6,182,212,.12);">
         <div class="counter-icon-node"><i class="fa-solid fa-globe"></i></div>
         <div class="counter-metrics-data"><h4 style="font-size:24px;">Todo Panamá</h4><p style="font-size:14px;">Cobertura a nivel nacional</p></div>
       </div>

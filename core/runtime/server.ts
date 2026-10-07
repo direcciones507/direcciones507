@@ -9,6 +9,15 @@ const adminHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><m
 startLegacyCore(async req => {
   const url = new URL(req.url);
   if (req.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin/')) return new Response(adminHtml, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'", 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } });
+  if (req.method === 'GET' && url.pathname === '/v1/admin/addresses') {
+    try {
+      const user = await auth.currentUser(req);
+      if (!user) return Response.json({ ok: false, error: 'UNAUTHENTICATED' }, { status: 401, headers: { 'cache-control': 'no-store' } });
+      if (!user.roles.includes('ADMIN')) return Response.json({ ok: false, error: 'FORBIDDEN' }, { status: 403, headers: { 'cache-control': 'no-store' } });
+      const rows = await sql.unsafe(`SELECT a.id::text,a.code,a.address_type AS "addressType",a.status,a.name,a.reference,a.description,a.commercial_description AS "commercialDescription",a.latitude,a.longitude,a.phone,a.hours,a.source,p.code AS "planCode",p.name AS "planName",a.created_at AS "createdAt",a.updated_at AS "updatedAt" FROM ad507.addresses a LEFT JOIN ad507.plans p ON p.id=a.plan_id ORDER BY a.updated_at DESC,a.code ASC LIMIT 500`);
+      return Response.json({ ok: true, count: rows.length, addresses: rows }, { headers: { 'cache-control': 'no-store' } });
+    } catch { return Response.json({ ok: false, error: 'ADMIN_ADDRESSES_UNAVAILABLE' }, { status: 503, headers: { 'cache-control': 'no-store' } }); }
+  }
   if (req.method === 'GET' && url.pathname === '/health') return Response.json({ ok: true, service: 'ad507-core' }, { headers: { 'cache-control': 'no-store' } });
   if (req.method === 'GET' && url.pathname === '/ready') {
     try {

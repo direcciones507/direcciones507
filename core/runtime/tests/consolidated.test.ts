@@ -22,7 +22,7 @@ beforeAll(async () => {
   if (!external) { await pg.initialise(); await pg.start(); }
   const database = external ?? `postgres://postgres:${password}@127.0.0.1:55439/postgres`;
   sql = postgres(database, { max: 1 });
-  for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql', '0005_general_google_auth.sql']) await sql.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
+  for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql', '0002_plan_catalog.sql', '0003_plan_capabilities.sql', '0005_general_google_auth.sql']) await sql.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
   await sql.unsafe(readFileSync(new URL('db/migrations/0005_general_google_auth.sql', root), 'utf8'));
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'client@gmail.com'),($2::uuid,'admin@example.test')", [clientId, adminId]);
   await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')", [clientId, adminId]);
@@ -175,3 +175,33 @@ test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner crea
     expect((await isolated.unsafe("SELECT count(*)::int AS n FROM ad507.schema_migrations WHERE version='0005'"))[0].n).toBe(1);
   } finally { await isolated.end({ timeout: 1 }); }
 }, 30000);
+
+async function runtimeGet(path: string, cookie?: string) {
+  return fetch('http://127.0.0.1:55440' + path, { headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', ...(cookie ? { cookie } : {}) } });
+}
+async function fixtureSession(id: string, email: string, sub: string) {
+  await sql.unsafe("UPDATE ad507.users SET status='ACTIVE' WHERE id=$1::uuid", [id]);
+  const auth = createGeneralAuth(sql, env, google({ sub, email, email_verified: true }));
+  const flow = await login(auth);
+  return session((await auth.handle(request(flow.path, { cookie: flow.cookie })))!);
+}
+test('all six ADMIN views use real PostgreSQL and deny anonymous and CLIENT sessions', async () => {
+  const admin = await fixtureSession(adminId, 'admin@example.test', 'admin-sub');
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  await sql.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name) VALUES('AD507-TESTPLACE','PLACE','PENDING_REVIEW','Place fixture'),('AD507-TESTBUSINESS','BUSINESS','DRAFT','Business fixture')");
+  for (const key of ['addresses','requests','users','places','plans','stats']) {
+    const path = '/v1/admin/' + key;
+    expect((await runtimeGet(path)).status).toBe(401);
+    expect((await runtimeGet(path, client)).status).toBe(403);
+    const res = await runtimeGet(path, admin);
+    expect(res.status).toBe(200); expect(res.headers.get('cache-control')).toBe('no-store');
+    const data = await res.json(); expect(data.ok).toBe(true);
+    if (key === 'requests') expect(data.requests.map((a: any) => a.code)).toEqual(['AD507-TESTPLACE']);
+    if (key === 'places') expect(data.places.map((a: any) => a.addressType)).toEqual(['PLACE']);
+    if (key === 'users') expect(data.users.find((u: any) => u.id === adminId).roles).toEqual(['ADMIN']);
+    if (key === 'plans') { expect(data.plans).toHaveLength(5); expect(data.plans.find((p: any) => p.code === 'BUSINESS_FREE').capabilities.maps).toBe(true); }
+    if (key === 'stats') { expect(data.totals.addresses).toBe(2); expect(data.totals.requests).toBe(1); expect(data.totals.places).toBe(1); expect(data.totals.plans).toBe(5); expect(data.totals.paidOrders).toBe(0); }
+  }
+  const html = await (await runtimeGet('/admin')).text();
+  for (const key of ['addresses','requests','users','places','plans','stats']) expect(html).toContain('id="' + key + 'Tile"');
+});

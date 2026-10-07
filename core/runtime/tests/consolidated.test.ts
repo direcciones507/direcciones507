@@ -115,10 +115,15 @@ test('existing canonical ADMIN role is read from PostgreSQL', async () => {
   await sql.unsafe("UPDATE ad507.users SET status='DISABLED' WHERE id=$1::uuid", [adminId]);
   expect((await auth.handle(request('/v1/auth/me', { cookie })))!.status).toBe(401);
 });
-test('unknown/unverified/third-party/rebound identities fail without creating users', async () => {
+test('verified Google users self-provision as CLIENT; unsafe or rebound identities still fail', async () => {
   const before = (await sql.unsafe('SELECT count(*)::int AS n FROM ad507.users'))[0].n;
+  const newcomer = createGeneralAuth(sql, env, google({ sub: 'unknown-sub', email: 'missing@gmail.com', email_verified: true }));
+  const newFlow = await login(newcomer), newDone = (await newcomer.handle(request(newFlow.path, { cookie: newFlow.cookie })))!;
+  expect(newDone.status).toBe(302);
+  const created = await sql.unsafe("SELECT u.id::text AS id,u.status,ur.role FROM ad507.users u JOIN ad507.user_roles ur ON ur.user_id=u.id WHERE lower(u.email)='missing@gmail.com'");
+  expect(created).toHaveLength(1); expect(created[0].status).toBe('ACTIVE'); expect(created[0].role).toBe('CLIENT');
+  expect(await sql.unsafe("SELECT google_sub FROM ad507.google_identities WHERE user_id=$1::uuid", [created[0].id])).toHaveLength(1);
   for (const profile of [
-    { sub: 'unknown-sub', email: 'missing@gmail.com', email_verified: true },
     { sub: 'bad-sub', email: 'client@gmail.com', email_verified: false },
     { sub: 'replacement-sub', email: 'client@gmail.com', email_verified: true },
     { sub: 'third-party-sub', email: 'admin@example.test', email_verified: true },
@@ -127,7 +132,7 @@ test('unknown/unverified/third-party/rebound identities fail without creating us
     const auth = createGeneralAuth(sql, env, google(profile)), flow = await login(auth);
     expect((await auth.handle(request(flow.path, { cookie: flow.cookie })))!.status).toBe(403);
   }
-  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.users'))[0].n).toBe(before);
+  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.users'))[0].n).toBe(before + 1);
 });
 test('invalid, missing, expired, mismatched and replayed state fail; failures consume state', async () => {
   const auth = createGeneralAuth(sql, env, google({ sub: 'client-sub', email: 'client@gmail.com', email_verified: true }));

@@ -122,6 +122,7 @@
     .nav-menu a { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; }
     .nav-menu a:hover, .nav-menu a.active { color: var(--cyan-brand); }
     .btn-nav-action { background: linear-gradient(135deg, #0891b2, #0284c7); color: #fff !important; padding: 10px 20px; border-radius: 8px; font-size: 12px !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2); }
+    .mobile-account-link { display: none; }
 
     /* ===== SECCIONES DESPLEGABLES ===== */
     .dropdown-section { display: none; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-glow); padding: 48px 0; animation: slideDown 0.4s ease-out; width: 100%; }
@@ -386,6 +387,7 @@
       .btn-search-trigger { width: 100%; border-radius: 12px; }
       .features-grid-view { grid-template-columns: repeat(2, 1fr) !important; }
       .nav-menu { display: none; }
+      .mobile-account-link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; white-space: nowrap; padding: 10px 13px; font-size: 11px !important; }
     }
     @media (max-width: 640px) { .features-grid-view { grid-template-columns: 1fr !important; } .main-hero-title { font-size: 32px; } .seo-pages-buttons-container { grid-template-columns: 1fr; flex-direction: column; gap: 10px; } .free-address-card { padding: 22px 18px; } .free-address-card h3 { font-size: 24px; } .free-address-actions { grid-template-columns: 1fr; } .free-address-btn { width: 100%; } }
   
@@ -447,6 +449,7 @@
         </div>
       </a>
       
+      <a href="https://ad507-core-production.up.railway.app/panel" class="btn-nav-action mobile-account-link"><i class="fa-solid fa-user"></i> Mi cuenta</a>
       <nav>
         <ul class="nav-menu">
           <li><a onclick="toggleSeccion('secInicio')" id="lnkInicio" class="active">Inicio</a></li>

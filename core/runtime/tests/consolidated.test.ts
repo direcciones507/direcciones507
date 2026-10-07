@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import EmbeddedPostgres from 'embedded-postgres';
 import postgres from 'postgres';
 import { createGeneralAuth } from '../general-auth';
+import { userPanelHtml } from '../user-panel';
 import { prepareMigration0005 } from '../scripts/prepare-0005';
 
 const root = new URL('../../../', import.meta.url);
@@ -204,4 +205,46 @@ test('all six ADMIN views use real PostgreSQL and deny anonymous and CLIENT sess
   }
   const html = await (await runtimeGet('/admin')).text();
   for (const key of ['addresses','requests','users','places','plans','stats']) expect(html).toContain('id="' + key + 'Tile"');
+});
+
+test('user panel isolates canonical ownership, orders and capabilities; logout/reentry uses real sessions', async () => {
+  const otherId = '33333333-3333-4333-8333-333333333333';
+  await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'other@example.test')", [otherId]);
+  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) SELECT id,$1::uuid FROM ad507.addresses WHERE code='AD507-TESTPLACE'", [clientId]);
+  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) SELECT id,$1::uuid FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'", [otherId]);
+  await sql.unsafe("UPDATE ad507.addresses SET plan_id=(SELECT id FROM ad507.plans WHERE code='BUSINESS_FREE') WHERE code='AD507-TESTPLACE'");
+  await sql.unsafe("INSERT INTO ad507.orders(user_id,amount_cents) VALUES($1::uuid,100),($2::uuid,900)", [clientId, otherId]);
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  expect((await runtimeGet('/v1/user/panel')).status).toBe(401);
+  const res = await runtimeGet('/v1/user/panel?user_id=' + otherId, client);
+  expect(res.status).toBe(200); expect(res.headers.get('cache-control')).toBe('no-store');
+  const data = await res.json();
+  expect(data.user.id).toBe(clientId);
+  expect(data.addresses.map((a: any) => a.code)).toEqual(['AD507-TESTPLACE']);
+  expect(data.addresses[0].capabilities.maps).toBe(true);
+  expect(data.orders.map((o: any) => o.amountCents)).toEqual([100]);
+  expect(data.actions).toEqual({ prepareRequest: true, submitRequest: false, checkout: false });
+  const admin = await fixtureSession(adminId, 'admin@example.test', 'admin-sub');
+  expect((await (await runtimeGet('/v1/user/panel', admin)).json()).addresses).toHaveLength(0);
+  const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
+  expect(panel.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+  expect(await panel.text()).toContain('Enviar solicitud · Próximamente');
+  const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { cookie: client } });
+  expect(redirect.status).toBe(302); expect(redirect.headers.get('location')).toBe('/panel');
+  const logout = await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
+  expect(logout.status).toBe(204);
+  expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
+  const renewed = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  expect((await runtimeGet('/v1/user/panel', renewed)).status).toBe(200);
+  expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
+});
+
+test('ADMIN and user panel client scripts parse; submission and payment remain disabled', async () => {
+  const adminHtml = await (await runtimeGet('/admin')).text();
+  for (const html of [adminHtml, userPanelHtml]) {
+    const script = html.match(/<script>([\s\S]*?)<\/script>/)![1];
+    expect(() => new Function(script)).not.toThrow();
+  }
+  expect(userPanelHtml).toContain('id="send" type="button" disabled');
+  expect(userPanelHtml).toContain('aún no se han enviado ni guardado');
 });

@@ -95,7 +95,13 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       }
       if (callback) {
         const state = url.searchParams.get('state'), binding = readCookie(req, 'ad507_oauth_state');
-        const fail = (status: number, error: string) => respond(status, { ok: false, error }, [clearState()]);
+        const fail = (status: number, error: string) => {
+          if (error === 'INVALID_OAUTH_STATE') {
+            const html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Direcciones507</title><style>body{margin:0;font-family:system-ui;background:#f4f6f9;color:#12213a;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box}.card{max-width:460px;background:#fff;padding:28px;border-radius:18px;box-shadow:0 8px 28px #10244a18;text-align:center}a{display:inline-block;margin-top:14px;background:#0b57d0;color:#fff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700}</style></head><body><main class="card"><h1>Acceso ya utilizado</h1><p>Este enlace de acceso ya fue procesado. Tu sesión puede seguir activa.</p><a href="/panel">Volver a Mi cuenta</a></main></body></html>';
+            return new Response(html, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'set-cookie': clearState(), 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+          }
+          return respond(status, { ok: false, error }, [clearState()]);
+        };
         if (url.searchParams.getAll('state').length !== 1 || !state || !binding || !/^[A-Za-z0-9_-]{43}$/.test(state) || !/^[A-Za-z0-9_-]{43}$/.test(binding)) return fail(400, 'INVALID_OAUTH_STATE');
         // Atomic database consumption works across replicas and even when Google fails.
         const consumed = await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier", [hash(state), hash(binding)]);

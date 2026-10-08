@@ -295,6 +295,10 @@ test('landline schema proposal persists both contacts without backfill in the is
   await sql.unsafe("UPDATE ad507.addresses SET phone=$1,landline_phone=$2 WHERE code='AD507-TESTBUSINESS'", ['+50769991234','+5079981234']);
   const row = (await sql.unsafe("SELECT phone,landline_phone FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0];
   expect(row).toEqual({ phone:'+50769991234',landline_phone:'+5079981234' });
+  // Existing Place drafts preserve formatted local numbers; the proposal must accept that contract.
+  await sql.unsafe("UPDATE ad507.addresses SET landline_phone=$1 WHERE code='AD507-TESTBUSINESS'", ['998-1234']);
+  expect((await sql.unsafe("SELECT phone,landline_phone FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0]).toEqual({phone:'+50769991234',landline_phone:'998-1234'});
+  await sql.unsafe("UPDATE ad507.addresses SET landline_phone=$1 WHERE code='AD507-TESTBUSINESS'", ['+5079981234']);
   let rejected = false;
   try { await sql.unsafe("UPDATE ad507.addresses SET landline_phone='javascript:evil' WHERE code='AD507-TESTBUSINESS'"); } catch { rejected = true; }
   expect(rejected).toBe(true);

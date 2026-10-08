@@ -237,7 +237,7 @@ test('user panel isolates canonical ownership and orders without internal capabi
   const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
   expect(panel.headers.get('x-robots-tag')).toBe('noindex, nofollow');
   expect(await panel.text()).toContain('id="send" type="button" disabled>Enviar solicitud');
-  const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { cookie: client } });
+  const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', cookie: client } });
   expect(redirect.status).toBe(302); expect(redirect.headers.get('location')).toBe('/panel');
   const logout = await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
   expect(logout.status).toBe(204);

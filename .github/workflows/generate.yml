@@ -208,6 +208,7 @@ jobs:
       - name: Copy root files
         run: |
             cp index.html out/index.html
+            cp manifest.webmanifest out/manifest.webmanifest
           
             echo "=== COPIANDO PAGINAS HTML SEO ==="
             find . -maxdepth 1 -name "*.html" \

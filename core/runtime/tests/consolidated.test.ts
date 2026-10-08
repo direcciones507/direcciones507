@@ -212,7 +212,7 @@ test('all six ADMIN views use real PostgreSQL and deny anonymous and CLIENT sess
   for (const key of ['addresses','requests','users','places','plans','stats']) expect(html).toContain('id="' + key + 'Tile"');
 });
 
-test('user panel isolates canonical ownership, orders and capabilities; logout/reentry uses real sessions', async () => {
+test('user panel isolates canonical ownership and orders without internal capabilities; logout/reentry uses real sessions', async () => {
   const otherId = '33333333-3333-4333-8333-333333333333';
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'other@example.test')", [otherId]);
   await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) SELECT id,$1::uuid FROM ad507.addresses WHERE code='AD507-TESTPLACE'", [clientId]);
@@ -224,16 +224,19 @@ test('user panel isolates canonical ownership, orders and capabilities; logout/r
   const res = await runtimeGet('/v1/user/panel?user_id=' + otherId, client);
   expect(res.status).toBe(200); expect(res.headers.get('cache-control')).toBe('no-store');
   const data = await res.json();
-  expect(data.user.id).toBe(clientId);
+  expect(data.user.email).toBe('client@gmail.com');
+  expect(data.user).not.toHaveProperty('id');
+  expect(data.user).not.toHaveProperty('roles');
   expect(data.addresses.map((a: any) => a.code)).toEqual(['AD507-TESTPLACE']);
-  expect(data.addresses[0].capabilities.maps).toBe(true);
+  expect(data.addresses[0]).not.toHaveProperty('capabilities');
+  expect(data.addresses[0]).not.toHaveProperty('ownershipRole');
   expect(data.orders.map((o: any) => o.amountCents)).toEqual([100]);
-  expect(data.actions).toEqual({ prepareRequest: true, submitRequest: true, checkout: false });
+  expect(data.actions).toEqual({ prepareRequest: true, submitRequest: false, checkout: false });
   const admin = await fixtureSession(adminId, 'admin@example.test', 'admin-sub');
   expect((await (await runtimeGet('/v1/user/panel', admin)).json()).addresses).toHaveLength(0);
   const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
   expect(panel.headers.get('x-robots-tag')).toBe('noindex, nofollow');
-  expect(await panel.text()).toContain('id="send" type="button">Enviar solicitud');
+  expect(await panel.text()).toContain('id="send" type="button" disabled>Enviar solicitud');
   const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { cookie: client } });
   expect(redirect.status).toBe(302); expect(redirect.headers.get('location')).toBe('/panel');
   const logout = await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
@@ -244,13 +247,64 @@ test('user panel isolates canonical ownership, orders and capabilities; logout/r
   expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
 });
 
-test('ADMIN and user panel client scripts parse; request submission enabled and payment remains disabled', async () => {
+test('ADMIN and user panel client scripts parse; request submission and payment remain disabled', async () => {
   const adminHtml = await (await runtimeGet('/admin')).text();
   for (const html of [adminHtml, userPanelHtml]) {
-    const script = html.match(/<script>([\s\S]*?)<\/script>/)![1];
+    const script = html.match(/<script[^>]*>([\s\S]*?)<\/script>/)![1];
     expect(() => new Function(script)).not.toThrow();
   }
-  expect(userPanelHtml).toContain('id="send" type="button">Enviar solicitud');
-  expect(userPanelHtml).toContain('Revisa los datos y presiona Enviar solicitud.');
+  expect(userPanelHtml).toContain('id="send" type="button" disabled>Enviar solicitud');
+  expect(userPanelHtml).toContain('El envío y el pago aún no están habilitados.');
   expect(userPanelHtml).toContain('Continuar al pago · Próximamente');
+});
+
+
+test('pre-migration panel rejects every write method and preserves database counts', async () => {
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  const count = async () => (await sql.unsafe('SELECT (SELECT count(*) FROM ad507.addresses)::int AS addresses,(SELECT count(*) FROM ad507.address_ownership)::int AS ownership,(SELECT count(*) FROM ad507.orders)::int AS orders,(SELECT count(*) FROM ad507.audit_log)::int AS audit'))[0];
+  const before = await count();
+  for (const method of ['POST','PUT','PATCH','DELETE']) {
+    const res = await fetch('http://127.0.0.1:55440/v1/user/requests', { method, headers: { cookie: client, origin, 'content-type': 'application/json' }, body: JSON.stringify({ addressType: 'RESIDENTIAL', planCode: 'RESIDENTIAL', name: 'Must never exist', checkout: true, owner: true }) });
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toBe('USER_PANEL_SUBMISSION_NOT_ENABLED');
+    expect((await fetch('http://127.0.0.1:55440/v1/user/panel', {method, headers:{cookie:client}})).status).toBe(405);
+  }
+  expect(await count()).toEqual(before);
+  const panel = await runtimeGet('/panel');
+  const csp = panel.headers.get('content-security-policy')!;
+  expect(csp).toContain("form-action 'none'");
+  expect(csp).toMatch(/script-src 'nonce-[a-f0-9]+'/);
+  expect(csp).not.toContain("script-src 'unsafe-inline'");
+  const html = await panel.text();
+  expect(html).toMatch(/<script nonce="[a-f0-9]+">/);
+  expect(html).not.toContain('Administración');
+});
+
+test('panel sessions reject a wrong host, duplicate cookie and cross-site read', async () => {
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  const auth = createGeneralAuth(sql, env, google({}));
+  expect(await auth.currentUser(new Request('https://evil.test/v1/user/panel',{headers:{cookie:client}}))).toBeNull();
+  expect((await runtimeGet('/v1/user/panel',client+'; '+client)).status).toBe(401);
+  const res = await fetch('http://127.0.0.1:55440/v1/user/panel',{headers:{host:'ad507-core-production.up.railway.app','x-forwarded-proto':'https',cookie:client,origin:'https://evil.test','sec-fetch-site':'cross-site'}});
+  expect(res.status).toBe(403);
+});
+
+test('landline schema proposal persists both contacts without backfill in the isolated fixture only', async () => {
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/landline.sql', import.meta.url), 'utf8'));
+  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.addresses WHERE landline_phone IS NOT NULL'))[0].n).toBe(0);
+  await sql.unsafe("UPDATE ad507.addresses SET phone=$1,landline_phone=$2 WHERE code='AD507-TESTBUSINESS'", ['+50769991234','+5079981234']);
+  const row = (await sql.unsafe("SELECT phone,landline_phone FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0];
+  expect(row).toEqual({ phone:'+50769991234',landline_phone:'+5079981234' });
+  let rejected = false;
+  try { await sql.unsafe("UPDATE ad507.addresses SET landline_phone='javascript:evil' WHERE code='AD507-TESTBUSINESS'"); } catch { rejected = true; }
+  expect(rejected).toBe(true);
+  expect((await sql.unsafe("SELECT landline_phone FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0].landline_phone).toBe('+5079981234');
+});
+
+test('authenticated panel reads are rate limited without enabling writes', async () => {
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  let limited: Response | null = null;
+  for(let i=0;i<61;i++) { const res = await runtimeGet('/v1/user/panel',client); if(res.status===429) {limited=res;break;} expect(res.status).toBe(200); }
+  expect(limited?.status).toBe(429);
+  expect(limited?.headers.get('retry-after')).toBe('60');
 });

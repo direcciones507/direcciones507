@@ -62,6 +62,8 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   const clearState = () => cookie('ad507_oauth_state', '', 0);
   async function currentUser(req: Request) {
     if (!cfg) return null;
+    const url = new URL(req.url);
+    if (url.host !== new URL(cfg.origin).host || (url.protocol !== 'https:' && req.headers.get('x-forwarded-proto') !== 'https')) return null;
     const token = readCookie(req, 'ad507_session');
     const p = token ? await verify(token, cfg.secret) : null;
     if (!p) return null;

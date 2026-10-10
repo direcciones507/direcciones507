@@ -156,3 +156,44 @@ No se eliminó ni duplicó un publicador. Se detectó divergencia de fuentes y s
 Checklist físico conservado: sesión/permisos Android/tablet/iPhone, cinco planes, recarga/reintentos, R2 privado y fallos, revisión/rechazo/aprobación, reserva concurrente real con autoridad histórica, publicación con enlaces/QR/datos/propietario/medios correctos y compatibilidad Residential OWNER/PIN. No hay prueba nueva de publicación pública ni destructiva con clientes reales.
 
 Producción conserva Core e43bec48-2518-41bc-814a-a99da78eb6c4 y Postgres 86a92993-f580-42d8-9706-61976bd8e03d, sin staged. PR permanece borrador y solicitudes cerradas. No se declara el sistema terminado.
+
+## Bloque 4 — cierre de los bloqueos documentados (10 octubre 2026)
+
+El propietario confirma como autoridad histórica el Máster anterior, ID `1l0QlB8Y_3qE_SN2KuygiepsAKgxwhFvc53YOrCEd8YQ`, pestaña `direcciones`, y señala PLANES como candidato oficial vinculado. Esta confirmación identifica el recurso que debe verificarse; no acredita por sí misma un project ID, deployment ID, versión o contrato de reserva.
+
+### Diferencia 23 / 40: evidencia adicional de solo lectura
+
+Comparación exacta de los conjuntos normalizados: el endpoint de `generate.yml` contiene los mismos 40 códigos que A3:A42 del Máster. La fuente compartida por index/auto-sync es un subconjunto: 23 comunes, cero exclusivos y 17 ausentes. No hay códigos exclusivos de la lista de 23 en estas lecturas; esto no demuestra que ambos deployments pertenezcan al mismo proyecto.
+
+| Metadatos de las respuestas reales | Lista index/auto-sync | Lista generate |
+| --- | --- | --- |
+| Negocio | 12 | 14 |
+| Premium | 9 | 9 |
+| Premium Pro | 2 | 2 |
+| Residencial | 0 | 7 |
+| Persona | 0 | 8 |
+| público e indexable explícitos | 23 | Campos ausentes |
+
+Los 23 indican tipo NEGOCIO, `publico=true`, `indexable=true`; 21 declaran compatibilidad LEGACY y dos NUEVO. Los 17 ausentes se clasifican en la lista anterior como siete Residencial, ocho Persona y **dos Negocio**. La lectura acotada de D/AZ del Máster confirma los siete planes Residencial; ocho filas tienen Plan vacío (cuatro con tipo RESIDENCIAL y cuatro sin tipo), y dos tienen Plan Negocio con tipo vacío. Por tanto, hay evidencia de una vista pública y un listado general, pero **la causa de excluir esos dos Negocio sigue sin verificar**: no se atribuye toda la diferencia a privacidad ni se cambian fuentes para compensarla.
+
+Solo se leyeron códigos, encabezados, plan y tipo; sin OWNER/PIN, teléfonos, ubicaciones, datos privados, imágenes ni escrituras. No se usa un listado público como registro completo de reservas ni se infiere un consecutivo libre.
+
+### Cambios seguros realizados
+
+Se amplía el diagnóstico manual existente `integration-preflight.ts`, sin otra ruta/servicio: compara intersección y exclusiones, resume planes y flags públicos con categorías fijas y no imprime códigos ni valores desconocidos del proveedor. Una entrada inválida impide confirmar la comparación. `coverage.verified` acredita únicamente el cálculo de conjuntos válidos; `allocationVerified` y `publicationVerified` siguen siendo false. La prueba adicional cubre un subconjunto público con exclusión de Negocio, normalización, metadatos desconocidos y ausencia de datos de clientes en la salida.
+
+Sin cambios de runtime, adaptador R2, migraciones, tablas, contador, contrato canónico ni workflows de publicación. Se preservan `canonical:null` y solicitudes cerradas. Archivos modificados: este informe, `core/runtime/scripts/integration-preflight.ts` y `core/runtime/tests/integration-preflight.test.ts`.
+
+### Bloqueos restantes y acción específica
+
+1. **PLANES:** el acceso al panel Apps Script desde este navegador redirige a la página informativa sin proyecto abierto; el acceso Google devuelve HTTP 502 con Connection refused incluso tras un único reintento. No es evidencia de inexistencia del script ni de un bloqueo antibot. Hace falta el enlace del **proyecto PLANES vinculado al Máster**, su ID y la pantalla de Administrar implementaciones con deployment ID/versión/URL activos, más acceso de lectura a su fuente sin secretos. Con esa fuente se verificará openById/hoja, acción list/filtros (incluidos los dos Negocio), LockService y reserva/publicación idempotentes. No publicar ni modificar PLANES para obtener esta evidencia.
+2. **PostgreSQL:** sigue sin credencial SQL segura disponible (`AD507_AUDIT_DATABASE_URL` ausente); el acceso OAuth conocido solo expone nombres de variables, no SQL ni SSH. Proporcionar acceso de solo lectura por un canal seguro, o ejecutar el comando ya implementado `bun scripts/integration-preflight.ts postgres` dentro de un contexto autenticado y entregar únicamente su JSON sanitizado. No pegar una conexión ni contraseña en chat. La auditoría del esquema vivo no se ejecutó y las propuestas no se aplicaron.
+3. **R2:** no hay credencial de auditoría Cloudflare accesible ni evidencia nueva de revocación del ID expuesto. Hace falta comprobante de revocación y reemplazo, fecha/identificador no secreto y permisos limitados al bucket privado `direcciones507-media`, o acceso de lectura a esos metadatos. No sustituir esta prueba por variables configuradas; sin cargas, borrados o cambios de secretos.
+
+La conexión definitiva al asignador/publicador se detiene únicamente por contrato e identidad no verificables. Las garantías y recuperación de solicitudes ya implementadas se conservan, sin contador alternativo. Pendiente probar físicamente reserva concurrente real, recuperación/publicación, enlaces/QR, propietario/OWNER/PIN y archivos privados tras resolver estos accesos y obtener autorización separada para operaciones de producción.
+
+### Pruebas y disposición del PR
+
+Local: cinco pruebas del diagnóstico, cero fallos, 39 assertions; bundle server aprobado y diff sin errores. Diagnóstico real ejecutado: ambos GET action=list exitosos, comparación 23/0/17 y conteos anteriores, sin asignación/publicación. CI previo cb50ec0: Actions #63 SUCCESS, 61 pruebas, cero fallos, 747 assertions con PostgreSQL 18.1 y Docker. El resultado del nuevo SHA se registra en el PR al completar.
+
+PR #51 continúa abierto en borrador, técnicamente preparado para revisar estas comprobaciones y los bloqueos, **no para autorizar todavía la integración de producción**. Sin merge, despliegue, solicitudes públicas, SQL real, cambios históricos, Máster, Apps Script, QR/enlaces, R2, secretos, facturación o DNS.

@@ -55,6 +55,8 @@ export function publicationSources(root=new URL('../../../',import.meta.url)) {
 
 export async function inspectPublicationSources(http:typeof fetch=fetch) {
   const sources=publicationSources();
+  // Code sets remain local: diagnostics expose coverage counts, never customer records.
+  const registries=new Map<string,Set<string>>();
   const results=await Promise.all([...new Set(sources.map(s=>s.url))].map(async url=>{
     try{
       const response=await http(url+'?action=list',{method:'GET',redirect:'follow',signal:AbortSignal.timeout(15000)});
@@ -64,10 +66,31 @@ export async function inspectPublicationSources(http:typeof fetch=fetch) {
       try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>256000){await reader.cancel();throw Error('SOURCE_TOO_LARGE');}chunks.push(value);}}finally{reader.releaseLock();}
       const payload=JSON.parse(Buffer.concat(chunks).toString('utf8'));
       if(!Array.isArray(payload.codes)||payload.codes.length>10000)throw Error('SOURCE_INVALID');
-      return {url,ok:true,...inspectHistoricalCodes(payload.codes)};
+      const audit=inspectHistoricalCodes(payload.codes);
+      if(audit.invalid===0)registries.set(url,new Set(payload.codes.map((item:any)=>normalizeAd507Code(typeof item==='string'?item:item.codigo)!)));
+      const plans={residential:0,person:0,business:0,premium:0,premiumPro:0,place:0,other:0};
+      const visibility={publicAndIndexable:0,explicitlyRestricted:0,unspecified:0};
+      for(const item of payload.codes){
+        const row=typeof item==='object'&&item!==null?item:{};
+        const plan=typeof row.plan==='string'?row.plan.trim().toUpperCase().replace(/\s+/g,' '):'';
+        const planKeys:Record<string,keyof typeof plans>={RESIDENCIAL:'residential',PERSONA:'person',NEGOCIO:'business',PREMIUM:'premium','PREMIUM PRO':'premiumPro',LUGAR:'place'};
+        const key=Object.hasOwn(planKeys,plan)?planKeys[plan]:'other';
+        plans[key]++;
+        if(row.publico===true&&row.indexable===true)visibility.publicAndIndexable++;
+        else if(row.publico===false||row.indexable===false)visibility.explicitlyRestricted++;
+        else visibility.unspecified++;
+      }
+      return {url,ok:true,...audit,plans,visibility};
     }catch{return {url,ok:false,error:'SOURCE_NOT_VERIFIED'};}
   }));
-  return {sources,results,sameRegistry:results.every(r=>r.ok)&&new Set(results.map(r=>'registryFingerprint'in r?r.registryFingerprint:null)).size===1,allocationVerified:false,publicationVerified:false};
+  const urls=[...new Set(sources.map(s=>s.url))];
+  const coverage=urls.flatMap((left,i)=>urls.slice(i+1).map(right=>{
+    const a=registries.get(left),b=registries.get(right);
+    if(!a||!b)return {left,right,verified:false as const};
+    const shared=[...a].filter(code=>b.has(code)).length;
+    return {left,right,verified:true as const,shared,leftOnly:a.size-shared,rightOnly:b.size-shared};
+  }));
+  return {sources,results,coverage,sameRegistry:results.every(r=>r.ok)&&new Set(results.map(r=>'registryFingerprint'in r?r.registryFingerprint:null)).size===1,allocationVerified:false,publicationVerified:false};
 }
 
 if(import.meta.main){

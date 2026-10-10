@@ -17,8 +17,24 @@ test('source preflight only reads list and distinguishes matching or divergent r
   let calls=0;
   const http=(async(url:any,init:any)=>{calls++;expect(String(url)).toEndWith('?action=list');expect(init.method).toBe('GET');return Response.json({codes:calls===1?['AD507-0001']:['AD507-0001','AD507-0002']});})as typeof fetch;
   const divergent=await inspectPublicationSources(http);expect(calls).toBe(2);expect(divergent.sameRegistry).toBe(false);expect(divergent.publicationVerified).toBe(false);
+  expect(divergent.coverage[0]).toMatchObject({verified:true,shared:1,leftOnly:0,rightOnly:1});
   const same=await inspectPublicationSources((async()=>Response.json({codes:['AD507-0001']}))as typeof fetch);
   expect(same.sameRegistry).toBe(true);expect(same.allocationVerified).toBe(false);expect(same.publicationVerified).toBe(false);
+});
+
+test('source coverage distinguishes a public subset without claiming a filter, allocator or deployed script identity',async()=>{
+  let calls=0;
+  const result=await inspectPublicationSources((async()=>Response.json({codes:++calls===1?
+    [{codigo:'AD507-FIXTURE',plan:' Premium Pro ',publico:true,indexable:true}]:
+    [{codigo:' ad507-fixture ',plan:'Premium Pro'},{codigo:'AD507-0002',plan:'Residencial'},{codigo:'AD507-0003',plan:'Negocio'},
+     {codigo:'AD507-0004',plan:'constructor'},{codigo:'AD507-0005',plan:'private-customer-value',publico:false,indexable:true}]}))as typeof fetch);
+  expect(result.coverage[0]).toMatchObject({verified:true,shared:1,leftOnly:0,rightOnly:4});
+  expect(result.results[0]).toMatchObject({plans:{premiumPro:1},visibility:{publicAndIndexable:1}});
+  expect(result.results[1]).toMatchObject({plans:{residential:1,business:1,other:2},visibility:{explicitlyRestricted:1,unspecified:4}});
+  const output=JSON.stringify(result);expect(output).not.toContain('AD507-FIXTURE');expect(output).not.toContain('private-customer-value');
+  expect(result.sameRegistry).toBe(false);expect(result.allocationVerified).toBe(false);expect(result.publicationVerified).toBe(false);
+  const invalid=await inspectPublicationSources((async()=>Response.json({codes:['invalid']}))as typeof fetch);
+  expect(invalid.coverage[0]).toMatchObject({verified:false});
 });
 
 test('source audit rejects login HTML, malformed JSON, oversized responses and upstream details',async()=>{

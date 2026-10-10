@@ -11,6 +11,8 @@ export async function inspectCanonicalSchema(sql:Sql) {
   return sql.begin('isolation level repeatable read read only',async tx=>{
     await tx.unsafe("SET LOCAL statement_timeout='10s'");
     await tx.unsafe("SET LOCAL lock_timeout='2s'");
+    const flags=await tx.unsafe("SELECT current_setting('transaction_read_only') AS read_only");
+    if(flags[0]?.read_only!=='on')throw Error('READ_ONLY_REQUIRED');
     const columns=await tx.unsafe("SELECT table_name,column_name,data_type,is_nullable FROM information_schema.columns WHERE table_schema='ad507' ORDER BY table_name,ordinal_position");
     const constraints=await tx.unsafe("SELECT c.conname AS name,t.relname AS relation,c.contype AS type,c.convalidated AS validated,pg_get_constraintdef(c.oid) AS definition FROM pg_constraint c JOIN pg_class t ON t.oid=c.conrelid JOIN pg_namespace n ON n.oid=t.relnamespace WHERE n.nspname='ad507' ORDER BY t.relname,c.conname");
     const indexes=await tx.unsafe("SELECT tablename,indexname,indexdef FROM pg_indexes WHERE schemaname='ad507' ORDER BY tablename,indexname");

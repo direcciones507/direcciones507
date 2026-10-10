@@ -484,7 +484,6 @@ test('read-only preflight inventories canonical schema and repeated proposals pr
   await sql.unsafe(readFileSync(new URL('../schema-proposals/landline.sql',import.meta.url),'utf8'));
   await sql.unsafe(readFileSync(new URL('../schema-proposals/requests.sql',import.meta.url),'utf8'));
   expect(await sql.unsafe("SELECT id::text,code,source FROM ad507.addresses WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
-  await expect(sql.begin('read only',async tx=>tx.unsafe("UPDATE ad507.addresses SET name='forbidden' WHERE false"))).rejects.toThrow();
   const connection=await sql.reserve();
   try{
     await connection.unsafe('BEGIN');
@@ -492,4 +491,11 @@ test('read-only preflight inventories canonical schema and repeated proposals pr
     await expect(connection.unsafe(readFileSync(new URL('../schema-proposals/requests.sql',import.meta.url),'utf8'))).rejects.toThrow('REQUEST_COLUMN_COLLISION');
   }finally{await connection.unsafe('ROLLBACK');connection.release();}
   expect((await sql.unsafe("SELECT data_type FROM information_schema.columns WHERE table_schema='ad507' AND table_name='address_media' AND column_name='upload_status'"))[0].data_type).toBe('text');
+  // Explicit reserved connection keeps the intentionally aborted test transaction
+  // separate from the shared pool and releases it before subsequent fixture reads.
+  const readOnly=await sql.reserve();
+  try{
+    await readOnly.unsafe('BEGIN READ ONLY');
+    await expect(readOnly.unsafe("UPDATE ad507.addresses SET name='forbidden' WHERE false")).rejects.toThrow();
+  }finally{await readOnly.unsafe('ROLLBACK');readOnly.release();}
 });

@@ -6,6 +6,15 @@ import { normalizeAd507Code } from '../../postgres/public-address-repository';
 const sha=(value:string)=>createHash('sha256').update(value).digest('hex');
 const required=['users','user_roles','plans','plan_capabilities','addresses','address_ownership','address_media','address_socials','audit_log','schema_migrations','auth_sessions','google_identities','oauth_transactions'];
 
+// Owner-selected PLANES, verified through its Master container and deployment UI.
+// This is read-audit identity evidence, never a runtime allocator/publisher.
+export const PLANES_AUTHORITY=Object.freeze({
+  name:'PLANES',masterId:'1l0QlB8Y_3qE_SN2KuygiepsAKgxwhFvc53YOrCEd8YQ',sheet:'direcciones',
+  projectId:'1A6hGG0gTBwZ6L6yHOqrf9k7Q7KtUa8MonInL3Nmsh8JSG0Bll_n8Tj4Z',
+  deploymentId:'AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ',
+  reviewedVersion:44,reviewedAt:'2026-10-10',reservationSupported:false,publicationWriteSupported:false,
+});
+
 /** Operator-only read audit; no routes, allocator, publisher or startup side effects. */
 export async function inspectCanonicalSchema(sql:Sql) {
   return sql.begin('isolation level repeatable read read only',async tx=>{
@@ -55,9 +64,12 @@ export function publicationSources(root=new URL('../../../',import.meta.url)) {
 
 export async function inspectPublicationSources(http:typeof fetch=fetch) {
   const sources=publicationSources();
-  // Code sets remain local: diagnostics expose coverage counts, never customer records.
-  const registries=new Map<string,Set<string>>();
-  const results=await Promise.all([...new Set(sources.map(s=>s.url))].map(async url=>{
+  const authorityUrl=`https://script.google.com/macros/s/${PLANES_AUTHORITY.deploymentId}/exec`;
+  // Existing legacy reader references are configuration only, never authority candidates.
+  // No fallback, probing or comparison calls to a different Apps Script.
+  const references=sources.map(s=>({path:s.path,usesOfficialAuthority:s.url===authorityUrl}));
+  const urls=sources.some(s=>s.url===authorityUrl)?[authorityUrl]:[];
+  const results=await Promise.all(urls.map(async url=>{
     try{
       const response=await http(url+'?action=list',{method:'GET',redirect:'follow',signal:AbortSignal.timeout(15000)});
       if(!response.ok||!response.headers.get('content-type')?.includes('application/json'))throw Error('SOURCE_UNAVAILABLE');
@@ -65,9 +77,8 @@ export async function inspectPublicationSources(http:typeof fetch=fetch) {
       const chunks:Uint8Array[]=[];let size=0;
       try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>256000){await reader.cancel();throw Error('SOURCE_TOO_LARGE');}chunks.push(value);}}finally{reader.releaseLock();}
       const payload=JSON.parse(Buffer.concat(chunks).toString('utf8'));
-      if(!Array.isArray(payload.codes)||payload.codes.length>10000)throw Error('SOURCE_INVALID');
+      if(payload.ok!==true||!Array.isArray(payload.codes)||payload.codes.length>10000)throw Error('SOURCE_INVALID');
       const audit=inspectHistoricalCodes(payload.codes);
-      if(audit.invalid===0)registries.set(url,new Set(payload.codes.map((item:any)=>normalizeAd507Code(typeof item==='string'?item:item.codigo)!)));
       const plans={residential:0,person:0,business:0,premium:0,premiumPro:0,place:0,other:0};
       const visibility={publicAndIndexable:0,explicitlyRestricted:0,unspecified:0};
       for(const item of payload.codes){
@@ -83,14 +94,9 @@ export async function inspectPublicationSources(http:typeof fetch=fetch) {
       return {url,ok:true,...audit,plans,visibility};
     }catch{return {url,ok:false,error:'SOURCE_NOT_VERIFIED'};}
   }));
-  const urls=[...new Set(sources.map(s=>s.url))];
-  const coverage=urls.flatMap((left,i)=>urls.slice(i+1).map(right=>{
-    const a=registries.get(left),b=registries.get(right);
-    if(!a||!b)return {left,right,verified:false as const};
-    const shared=[...a].filter(code=>b.has(code)).length;
-    return {left,right,verified:true as const,shared,leftOnly:a.size-shared,rightOnly:b.size-shared};
-  }));
-  return {sources,results,coverage,sameRegistry:results.every(r=>r.ok)&&new Set(results.map(r=>'registryFingerprint'in r?r.registryFingerprint:null)).size===1,allocationVerified:false,publicationVerified:false};
+  return {authority:PLANES_AUTHORITY,references,results,
+    configurationVerified:urls.length===1,error:urls.length===0?'OFFICIAL_AUTHORITY_NOT_REFERENCED':undefined,
+    allocationVerified:false,publicationVerified:false};
 }
 
 if(import.meta.main){

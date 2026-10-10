@@ -197,3 +197,51 @@ La conexión definitiva al asignador/publicador se detiene únicamente por contr
 Local: cinco pruebas del diagnóstico, cero fallos, 39 assertions; bundle server aprobado y diff sin errores. Diagnóstico real ejecutado: ambos GET action=list exitosos, comparación 23/0/17 y conteos anteriores, sin asignación/publicación. CI previo cb50ec0: Actions #63 SUCCESS, 61 pruebas, cero fallos, 747 assertions con PostgreSQL 18.1 y Docker. El resultado del nuevo SHA se registra en el PR al completar.
 
 PR #51 continúa abierto en borrador, técnicamente preparado para revisar estas comprobaciones y los bloqueos, **no para autorizar todavía la integración de producción**. Sin merge, despliegue, solicitudes públicas, SQL real, cambios históricos, Máster, Apps Script, QR/enlaces, R2, secretos, facturación o DNS.
+
+## Continuación — PLANES oficial y PostgreSQL real (10 octubre 2026)
+
+Esta sección reemplaza el estado de acceso y candidatura de los bloques anteriores. El propietario ha elegido definitivamente PLANES dentro del proyecto Direcciones 507. No se consideran otros scripts como autoridades ni se repiten sus consultas.
+
+### Evidencia real de PLANES
+
+Se abrió el proyecto desde Extensiones → Apps Script del Máster oficial, y se verificó su contenedor en Información general. Project ID: `1A6hGG0gTBwZ6L6yHOqrf9k7Q7KtUa8MonInL3Nmsh8JSG0Bll_n8Tj4Z`. Su título técnico visible es «Proyecto sin título»; la identidad PLANES se acredita por el contenedor y la decisión del propietario. Administrar implementaciones confirma versión **44**, del 1 octubre 2026, deployment `AKfycbwwQ-NbswfDshMBTgFh9ziG-a_nh94PGuPECBsccL1GVSm7TDdbMhVYIXDQUlqIzJSlCQ`, ya referenciado en generate.yml. La fuente actual y la fuente de esa versión coinciden exactamente (Código.gs, 410 líneas). No hubo edición, restauración ni despliegue.
+
+La fuente contiene doGet y acciones list, stats y track. list lee la pestaña direcciones del contenedor activo, admite códigos con expresión `^AD507-[A-Z0-9]+$` y usa Persona cuando el plan está vacío. No filtra por público/indexable. Esto confirma que el listado oficial general de 40 no equivale a la vista pública de 23 ya comparada en el bloque anterior; no se vuelve a consultar ni investigar la otra fuente. La exclusión específica de dos Negocio no se presume resuelta.
+
+**No hay doPost, LockService, reserva, requestId/idempotencia ni inserción de direcciones.** Hay cero activadores visibles. El código de consulta puede añadir encabezados de contadores mediante ensureCounterColumns_; stats/track también tienen efectos de escritura. Por eso únicamente action=list es admisible para el diagnóstico de lectura. PLANES no ofrece actualmente el contrato de reserva/publicación requerido por el nuevo flujo. No se inventaron endpoints ni se conectó un POST supuesto.
+
+### PostgreSQL real: acceso de solo lectura completado
+
+Se utilizó la consola ya autenticada del servicio PostgreSQL Railway, mediante psql local y variables existentes sin leer sus valores. PGOPTIONS impuso default_transaction_read_only=on, statement_timeout=10000 y lock_timeout=2000; cada consulta usó BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY y ROLLBACK. Se consultaron los catálogos y agregados del diagnóstico existente; el CLI TypeScript no se ejecutó porque no se copió una URL de conexión ni se desplegó código. No se obtuvo una huella completa exportable del esquema.
+
+Resultados reales:
+
+- transaction_read_only=on. Las trece tablas requeridas existen, sin incompatibilidades en los tipos de fundamento comprobados.
+- Las seis migraciones 0000–0005 constan en schema_migrations y sus checksums coinciden con SHA256 de los archivos del repositorio.
+- Faltan exactamente las ocho columnas preparadas: addresses.landline_phone, request_key_hash, request_payload_hash, request_data, review_decision, reviewed_by, publication_receipt; address_media.upload_status. addresses.code sigue NOT NULL.
+- addresses contiene **0 registros**, sin códigos nulos, inválidos o duplicados normalizados. El registro histórico del Máster no está importado en esta tabla.
+- UNIQUE(code), checks de código/tipo/estado/coordenadas y FK canónicas de propietarios, medios, socials, planes y roles presentes. 481 constraints en ad507, cero sin validar; ese total incluye tablas adicionales que no se tocaron. Índices existentes de código, id, plan y tipo/estado; aún no existen los índices de solicitud propuestos.
+
+Las propuestas landline.sql y requests.sql se conservan pendientes, fuera del runner automático. No se aplicó DDL ni se alteraron datos históricos. UNIQUE de PostgreSQL por sí solo no protege frente a los códigos del Máster.
+
+### Cambios y conexiones conservadas
+
+El diagnóstico manual existente queda limitado al deployment oficial PLANES: identidad/version auditadas, una única lectura action=list, respuesta ok=true obligatoria y ningún fallback a otros scripts. Las referencias históricas index/auto-sync se leen solo como configuración; permanecen sin cambios operativos. allocationVerified y publicationVerified permanecen false. Las pruebas verifican esa exclusividad, fallos cerrados y ausencia de datos de clientes en el informe.
+
+Se reutilizan request-workflow, validación, autorización, tablas canónicas, bloqueo transaccional, reserva persistida y recuperación existentes, así como el adaptador privado R2 y su bloqueo de rotación. No se agregan tablas, rutas, contadores ni publicadores. canonical:null y solicitudes públicas deshabilitadas se mantienen. Archivos de esta continuación: integration-preflight.ts, integration-preflight.test.ts y este informe.
+
+### Bloqueos actuales e intervención exacta
+
+1. **Contrato de escritura ausente en PLANES, comprobado en fuente/version desplegada.** Hace falta autorización específica para adaptar esa misma autoridad histórica: reserva por identificador estable de solicitud, bloqueo compartido con todos los canales, comprobación de todo el registro histórico y aliases, reutilización de la misma reserva en reintentos y publicación que devuelva recibo verificable. No se propone otro contador. El mayor código/listado observado no autoriza asignación. Esta adaptación no se implementa sobre Apps Script ni Máster sin permiso.
+2. **SQL pendiente de autorización, ya no de acceso.** Revisar/aprobar la aplicación controlada de las propuestas existentes y su reversión antes de integrar producción. Nada aplicado.
+3. **R2 pendiente de comprobación.** El acceso Google elegido para Cloudflare fue ventas@direcciones507.com. La revisión automática rechazó solicitar su contraseña porque exige autorización explícita para esa cuenta. No se reintentó ni se eludió el rechazo. Hace falta confirmar esa cuenta para continuar la auditoría de lectura, y después verificar revocación del identificador expuesto, reemplazo y permisos restringidos al bucket privado. No hay evidencia de rotación; no hubo cargas ni cambios de secretos.
+
+Railway muestra una advertencia de suscripción vencida; los servicios inspeccionados siguen disponibles. No se cambió facturación ni se atribuye a esa advertencia un bloqueo SQL: las consultas funcionaron.
+
+### Validación y disposición
+
+Las pruebas completas y Docker del SHA de esta continuación se registran en el PR al finalizar Actions. Ejecución local de la suite: 38 pass, 1 fallo de inicialización de embedded-postgres por imposibilidad de crear el usuario del sistema, 189 assertions; no es evidencia de aprobación de las pruebas PostgreSQL locales. Las cinco pruebas específicas del diagnóstico pasan. CI utiliza PostgreSQL 18.1 aislado para completar la verificación real del código.
+
+Checklist pendiente, con autorización posterior: migraciones en contexto controlado; reserva concurrente real y reintentos frente a PLANES adaptado; aprobación/rechazo y recuperación de publicación; enlace permanente y escaneo QR; propietario/OWNER/PIN e información histórica conservados; imágenes privadas tras acreditar rotación; cinco planes y permisos desde dispositivos reales. No se sustituyen estas pruebas por fixtures.
+
+PR #51 continúa borrador: preparado para revisión de los cambios seguros, **no para autorizar integración de producción todavía**. No hubo merge, despliegue, habilitación pública, modificación del Máster/Apps Script/direcciones/QR/OWNER/PIN/DNS, migración o escritura productiva, cargas R2, cambio de credenciales o facturación.

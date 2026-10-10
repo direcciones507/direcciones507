@@ -2,25 +2,23 @@ import { describe, expect, test } from 'bun:test';
 import { mediaCountAllowed } from '../panel-preparation';
 import { r2Settings } from '../r2-storage';
 
-describe('Media quotas (total images including logo)', () => {
-  test('Lugar exactly one photo', () => {
-    expect(mediaCountAllowed('PLACE', 'PLACE', 1)).toBe(true);
-    expect(mediaCountAllowed('PLACE', 'PLACE', 0)).toBe(false);
-    expect(mediaCountAllowed('PLACE', 'PLACE', 2)).toBe(false);
+describe('Gallery limits (logo and cover are separate)', () => {
+  test('Lugar uses its cover field, not gallery', () => {
+    expect(mediaCountAllowed('PLACE', 'PLACE', 0)).toBe(true);
+    expect(mediaCountAllowed('PLACE', 'PLACE', 1)).toBe(false);
   });
-  test('Negocio Gratis and Premium exactly one logo', () => {
+  test('Negocio Gratis and Premium have no gallery', () => {
     for (const plan of ['BUSINESS_FREE', 'BUSINESS_PREMIUM']) {
-      expect(mediaCountAllowed('BUSINESS', plan, 1)).toBe(true);
-      expect(mediaCountAllowed('BUSINESS', plan, 0)).toBe(false);
-      expect(mediaCountAllowed('BUSINESS', plan, 2)).toBe(false);
+      expect(mediaCountAllowed('BUSINESS', plan, 0)).toBe(true);
+      expect(mediaCountAllowed('BUSINESS', plan, 1)).toBe(false);
     }
   });
-  test('Premium Pro exactly one logo and five photos', () => {
-    expect(mediaCountAllowed('BUSINESS', 'BUSINESS_PREMIUM_PRO', 6)).toBe(true);
-    expect(mediaCountAllowed('BUSINESS', 'BUSINESS_PREMIUM_PRO', 5)).toBe(false);
-    expect(mediaCountAllowed('BUSINESS', 'BUSINESS_PREMIUM_PRO', 7)).toBe(false);
+  test('Premium Pro permits up to five gallery photos', () => {
+    expect(mediaCountAllowed('BUSINESS', 'BUSINESS_PREMIUM_PRO', 0)).toBe(true);
+    expect(mediaCountAllowed('BUSINESS', 'BUSINESS_PREMIUM_PRO', 5)).toBe(true);
+    expect(mediaCountAllowed('BUSINESS', 'BUSINESS_PREMIUM_PRO', 6)).toBe(false);
   });
-  test('Residencial does not use business image quotas', () => {
+  test('Residential has no gallery', () => {
     expect(mediaCountAllowed('RESIDENTIAL', 'RESIDENTIAL', 0)).toBe(true);
     expect(mediaCountAllowed('RESIDENTIAL', 'RESIDENTIAL', 1)).toBe(false);
   });

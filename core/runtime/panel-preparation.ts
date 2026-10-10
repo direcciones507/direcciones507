@@ -27,9 +27,9 @@ export function mediaCountAllowed(type: string, plan: string, count: number): bo
   if (type === 'BUSINESS') return count <= (plan === 'BUSINESS_PREMIUM_PRO' ? 5 : 0);
   return type === 'RESIDENTIAL' && count === 0;
 }
-/** Adapter seam, without implementation, credentials or network connection. */
+/** Shared private-storage contract implemented by r2-storage; no public URLs. */
 export interface PreparedMediaStorage {
-  storeOptimized(input: { bytes: Uint8Array; mime: 'image/jpeg' | 'image/png' | 'image/webp'; ownerId: string; addressId: string }): Promise<{ storageKey: string }>;
+  storeOptimized(input: { bytes: Uint8Array; mime: string; ownerId: string; addressId: string; role: 'logo' | 'photo' }): Promise<{ storageKey: string; bucket: string }>;
 }
 
 /** Server-side media policy; browser validation alone is not authoritative. */

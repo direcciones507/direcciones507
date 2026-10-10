@@ -1,67 +1,93 @@
-# PR #51 — auditoría de integración definitiva
+# PR #51 — integración y cierre operativo
 
-Referencia auditada: `0e211e8634eeffc06266f3fe5d8929903b786773`, base `5a0682ba162f440639b3dd2db14430c712ad3c9a`. Fecha: 2026-10-10.
+Fecha: 2026-10-10. Base revisada: `f560c8fa790f981497de02180f578c014c6d9802`; rama `feat/r2-storage-adapter-20261010`, PR base `feat/admin-ui-20261006`.
 
 ## Dictamen
 
-Integración incompleta. No habilitar solicitudes reales, aprobar merge o desplegar con este diagnóstico. El PR contiene preparación y un adaptador privado, no el recorrido completo solicitado.
+**El cierre operativo no está completo.** El incremento implementa almacenamiento privado seguro y asociación recuperable sobre las tablas canónicas, con pruebas aisladas. No habilita solicitudes, aprobación, publicación ni cargas reales. CI verde valida este incremento; no certifica el recorrido pendiente.
 
-## Evidencia por componente
+## Auditoría y duplicaciones
 
-| Componente existente | Estado comprobado | Conexión pendiente |
-| --- | --- | --- |
-| `core/runtime/general-auth.ts` | Google, sesiones PostgreSQL, roles, revocación y control de origen implementados | Prueba física del usuario/administrador; no reimplementar identidad |
-| `core/runtime/server.ts` | Entrada canónica; conserva extensión anterior, panel y consultas ADMIN | Administración no tiene una acción de aprobación de solicitudes nuevas |
-| `core/runtime/user-panel.ts` | Formulario/previsualización y lecturas por propietario | `USER_PANEL_SUBMISSION_ENABLED=false`; `/v1/user/requests` devuelve 503 para todo método; no hay escritor activo |
-| `request-validation.ts` / `panel-preparation.ts` | Contratos de datos, teléfonos y cantidades por tipo/plan | Conectar al servidor; validar cantidades de archivos efectivamente procesados, no números declarados por el cliente |
-| `r2-storage.ts` | Firma SigV4 y PUT privado con filtro de firmas de imagen | No decodifica/recodifica, no GET autorizado, no DELETE/limpieza ni asociación transaccional |
-| `PreparedMediaStorage.storeOptimized` | Interfaz preparatoria | No implementación. `storePrivate` es otro contrato; aún no están unificados |
-| `db/migrations/0000..0005` | Esquema canónico versionado presente en repositorio | No se pudo comparar contra la base viva ni comprobar su ledger desde esta sesión |
-| `core/runtime/schema-proposals/landline.sql` | Propuesta sin registrar | No es una migración aplicada; `place-create-repository.ts` ya espera `landline_phone` |
-| `place-create-repository.ts` | Creador de borradores PLACE con UNIQUE y reintentos | No es creador general ni controla idempotencia de solicitudes; no está conectado a `server.ts` |
-| `place-moderation-repository.ts` | Transición de estado PLACE con estado esperado | No conecta la aprobación administrativa general ni la publicación pública |
-| `publication-repository.ts` | Consulta de metadatos de registros ACTIVE | No es un publicador ni un asignador de códigos |
-| `.github/workflows/generate.yml` | Publicador existente: lista Apps Script → plantilla → páginas | No ingiere altas aprobadas de PostgreSQL |
+Se revisaron README, documentos de arquitectura/runbooks/reviews, migraciones 0000–0005, PR #51, autenticación, formularios, administración, repositorios PostgreSQL, plantilla y publicador existente.
 
-## Duplicaciones e incompatibilidades
+| Componente | Evidencia / decisión |
+| --- | --- |
+| `server.ts`, `general-auth.ts` | Entrada e identidad canónicas. Se conservan sin crear otra autenticación ni administrador. |
+| `user-panel.ts` | Formulario y lecturas por propietario. Envío permanece deshabilitado. Textos Lugar corregidos a exactamente una foto. |
+| `panel-preparation.ts`, `request-validation.ts` | Reutilizados. La nueva frontera de archivos calcula cuotas desde partes reales, ignorando cantidades declaradas. |
+| `storeOptimized` / `storePrivate` | Unificados: son la misma función, no dos cargadores. Ambos procesan y almacenan WebP privado. |
+| `ad507.address_media`, `address_ownership`, `audit_log` | Reutilizados para intención durable, permisos y auditoría. No se agregó ninguna tabla o migración. |
+| `core/postgres/shadow-runtime.ts` | Conserva rutas propias; no se conecta el flujo nuevo al shadow. |
+| `place-create-repository.ts` | Creador PLACE preparatorio desconectado. No se convirtió en un segundo creador general. |
+| `publication-repository.ts` | Describe ACTIVE; no publica ni reserva códigos. |
+| `.github/workflows/generate.yml` | Publicador canónico Apps Script → plantilla → páginas. Permanece intacto. |
 
-- `core/postgres/shadow-runtime.ts` conserva rutas OAuth y comprobación ADMIN propias; `core/runtime/server.ts` con `general-auth.ts` es el arranque canónico. No conectar el flujo nuevo al shadow ni crear otro panel.
-- `storeOptimized` es una interfaz y `storePrivate` un adaptador aún no conectado; son contratos solapados, no dos flujos de carga activos. No se afirma que estén corregidos/unificados.
-- `generatePlaceCodeCandidate` produce `AD507-<slug>-<sufijo>`. El publicador actual filtra `^AD507-[A-Z0-9]+$`, que excluye los guiones internos. Conectar ambos sin resolver ese contrato descartaría códigos nuevos.
-- El UNIQUE de `ad507.addresses.code` evita colisiones en esa tabla, pero por sí solo no reserva códigos contra el listado/maestro anterior. No inventar un contador independiente. El código del asignador del sistema anterior no está incluido en este repositorio; hay que identificar su autoridad y su reserva antes de garantizar unicidad entre sistemas.
-- No se encontró tabla de solicitudes idempotentes en las migraciones revisadas. `addresses` ya conserva DRAFT/PENDING_REVIEW; la decisión de persistencia debe ampliar la arquitectura canónica, sin registrar la misma solicitud simultáneamente en dos sistemas.
+Incompatibilidades pendientes:
 
-## Servicio real observado (solo lectura)
+- `generatePlaceCodeCandidate` produce guiones internos que el filtro del workflow actual no acepta.
+- UNIQUE en `ad507.addresses` solo protege esa tabla; no reserva códigos contra el Excel/Apps Script anterior.
+- No se encontró la fuente/contrato del asignador canónico anterior dentro del repositorio. No se inventó otro contador.
+- No hay implementación integrada de solicitudes idempotentes y aprobación/publicación. `addresses` ya posee DRAFT/PENDING_REVIEW; no duplicar solicitudes en una segunda tabla por comodidad.
+- `landline.sql` es una propuesta, no prueba de aplicación en producción.
 
-Railway `amused-enchantment` / `production`: `ad507-core`, PostgreSQL y shadow en SUCCESS; sin cambios pendientes. El Core despliega `direcciones507/direcciones507`, rama `feat/admin-ui-20261006`, raíz `/core/runtime`, comando `bun server.ts`. No utiliza la rama del PR #51. El último deployment observado del Core fue `e43bec48-2518-41bc-814a-a99da78eb6c4`.
+## Implementación real de este incremento
 
-R2 tiene los cuatro nombres de variables configurados. Eso no confirma valores, bucket privado, permisos, revocación o rotación. La conexión Railway entrega nombres de variables pero oculta valores (`valuesRedacted=true`); no hay acceso SQL de lectura disponible aquí. El esquema vivo y el ledger quedan **no verificados**, no aprobados por inferencia.
+1. `image-processing.ts`: Sharp 0.34.5 fijado y lock actualizado. Decodifica JPG/PNG/WebP completos; rechaza MIME falso, corrupción, animación, >8 MiB, >16 millones de píxeles o dimensión >8192. Reorienta, reduce a 2048 px y recodifica a WebP sin EXIF/GPS/XMP/ICC.
+2. `r2-storage.ts`: un solo cargador; firma privada compartida PUT/GET/DELETE; sin URLs públicas; evita redirecciones; errores de transporte sanitizados; descarga acotada aun sin Content-Length. El bucket exacto y la confirmación explícita de rotación siguen siendo obligatorios.
+3. `r2-media-authorization.ts`: autorización ligada al actor autenticado y las tablas existentes. Revalida usuario ACTIVE, CLIENT/ADMIN, propiedad OWNER, estado y asociación del objeto. Otro cliente, Residential y registros antiguos no acceden por este mecanismo. ADMIN puede revisar archivos asociados; no obtiene permisos de carga/borrado por ser ADMIN.
+4. `request-media.ts`: composición única PostgreSQL/R2. Bloquea la dirección con FOR UPDATE, revalida permiso, comprueba cuotas, registra archivo y auditoría en una transacción **antes** de PUT. La clave es estable por dirección/rol/contenido optimizado. Reintentos concurrentes conservan una sola asociación y un solo evento.
+5. Ante timeout de PUT, se conserva la intención y su storage_key: incluso si R2 recibió el archivo, queda rastreable. Un fallo de registro impide PUT. No se simula atomicidad SQL/R2. El borrado privado es una primitiva; el procedimiento/estado de recuperación, revisión de cargas completas y limpieza final aún deben conectarse al escritor administrativo antes de activar el flujo.
+6. `validateRequestFiles`: las cuotas se calculan desde archivos efectivos: Residential cero; Lugar una foto; Gratis/Premium un logo y cero galería; Pro un logo y hasta cinco fotos. El decoder del cargador sigue siendo obligatorio; la inspección de firma no lo sustituye.
 
-## Corrección segura incorporada
+Estos módulos aún no se invocan desde rutas de envío reales. No se declara completada la aprobación, publicación o recuperación operativa.
 
-`r2Settings` exige `AD507_R2_CREDENTIAL_ROTATION_CONFIRMED=true` y el bucket exacto `direcciones507-media`. La construcción directa del adaptador también rechaza ausencia de confirmación u otro bucket. No se configuró esa variable, no se modificaron credenciales y no se contactó R2. Este indicador debe establecerlo un operador después de verificar revocación de la credencial expuesta y su reemplazo; no es una comprobación automática de Cloudflare ni debe autocompletarse.
+## Archivos modificados
 
-Pruebas locales con Bun 1.4.0: 13/13 para R2 y política de medios, incluyendo rotación ausente/falsa, otro bucket y construcción directa. Bundle del adaptador aprobado. Sin cargas ni datos reales. El chequeo CI del PR debe comprobarse para el SHA resultante; CI verde no certifica el flujo completo ausente.
+- `core/runtime/package.json`, `bun.lock`
+- `core/runtime/panel-preparation.ts`, `request-validation.ts`, `user-panel.ts`, `r2-storage.ts`
+- Nuevos: `image-processing.ts`, `r2-media-authorization.ts`, `request-media.ts`
+- `core/runtime/tests/request-validation.test.ts`, `consolidated.test.ts`
+- Nuevo: `core/runtime/tests/image-processing.test.ts`
+- Este informe.
 
-## Recursos y decisiones necesarios para completar una única arquitectura
+## Verificación
 
-1. Evidencia de rotación R2: credencial expuesta revocada, reemplazo autorizado para el bucket privado existente. No enviar claves en el PR ni en mensajes.
-2. Acceso de introspección SQL de solo lectura o salida redacted de columnas/constraints/ledger de `ad507`, para contrastar las migraciones reales; no requiere copiar registros de clientes.
-3. Fuente del asignador canónico AD507 anterior y contrato de reserva/consulta. No reemplazarlo con otro contador ni asumir que UNIQUE en una base evita colisiones con el maestro.
-4. Resolver en el publicador existente la incorporación de registros PostgreSQL aprobados y la compatibilidad del formato de códigos. No crear otro generador ni modificar las páginas antiguas como efecto de pruebas.
-5. Después de esos contratos: integrar envío/idempotencia/estados al panel existente, procesamiento confiable de imágenes, asociación/limpieza recuperable, revisión ADMIN y publicación canónica. Las escrituras SQL y el almacenamiento R2 no comparten una transacción: requieren compensación persistente y reintento; no afirmar atomicidad distribuida ficticia.
+- Bun 1.4.0, instalación frozen-lockfile, validación de seis migraciones y verificación exacta del snapshot legacy.
+- Bundles del servidor, adaptador R2 y composición de medios: aprobados.
+- Pruebas de JPG/PNG/WebP reales, metadatos privados, corrupción, animación, bombas de píxeles, cuotas de los cinco productos, scopes, stream acotado, reintentos, asociación previa y errores sin revelar detalles upstream.
+- Pruebas SQL aisladas de usuarios/roles/propiedad/archivos asociados y persistencia previa a PUT.
+- Localmente PGlite valida SQL y el driver real. Dos casos necesitan PostgreSQL nativo: el runner de migraciones usa bases separadas (PGlite comparte instancia) y la concurrencia transaccional de conexiones (limitación del multiplexor PGlite). No se cambió ni omitió ningún caso en la suite comprometida; CI ejecuta la suite completa en PostgreSQL 18.1.
+- El resultado de GitHub Actions y el SHA exacto se registran en el cuerpo del PR después de ejecutarse; no inferir aprobación por resultados del SHA anterior.
 
-## Checklist de validación todavía pendiente
+No confundir concurrencia de archivos/intent con unicidad global de códigos AD507: esta última sigue bloqueada.
 
-- [ ] Flujo completo residencial, lugar, gratis, premium y pro; las cantidades por sí solas no prueban subidas.
-- [ ] PostgreSQL nativo aislado: escrituras, reintentos y concurrencia de solicitud/aprobación.
-- [ ] Decodificación y recodificación de JPG/PNG/WebP, límites de bytes/píxeles, archivo inválido y limpieza tras fallos.
-- [ ] R2 privado: carga y recuperación autorizadas, denegación a otro usuario, metadatos sin credenciales.
-- [ ] ADMIN revisa datos/medios y aprueba; cliente no publica.
-- [ ] Unicidad AD507 entre el sistema anterior y nuevo; una solicitud repetida genera una sola dirección.
-- [ ] Publicación mediante el mecanismo existente y enlaces/QR conservados.
-- [ ] CI del SHA final y compatibilidad del snapshot anterior.
-- [ ] Pruebas físicas móvil/tablet/desktop, Google/logout, cada formulario, vista ADMIN, imágenes y enlaces/QR.
-- [ ] Migración individual posterior: código/enlace original, captura previa, comparación, aprobación y reversión por dirección. Sin migración masiva.
+## Recursos reales observados (solo lectura)
 
-Ninguna tabla, registro histórico, página publicada, DNS, Excel, Apps Script, configuración Railway o rama de producción fue modificada por esta revisión. El flujo sigue sin habilitarse. Esta auditoría identifica un bloqueo de integración; no equivale a un cierre operativo.
+Railway: `amused-enchantment` / production `909fdec4-8930-4405-ae53-6e8fb0d3f901`. Core, PostgreSQL, shadow y n8n: SUCCESS; sin cambios staged. Core conserva rama `feat/admin-ui-20261006`, deployment `e43bec48-2518-41bc-814a-a99da78eb6c4`.
+
+La conexión entrega nombres de variables, no valores (`valuesRedacted=true`). No se obtuvo acceso SQL al esquema/ledger vivo. Las cuatro variables R2 están nombradas; `AD507_R2_CREDENTIAL_ROTATION_CONFIRMED` no figura. No se comprobó en Cloudflare la revocación, privacidad o permisos del bucket. No se configuró el indicador ni se contactó R2.
+
+## Bloqueos para completar el recorrido
+
+1. Introspección SQL de solo lectura: columnas, constraints, índices y ledger reales de `ad507`, sin registros privados. Ninguna escritura de producción antes de esa verificación.
+2. Evidencia de revocación de la credencial R2 expuesta y reemplazo limitado al bucket privado existente. No enviar claves por chat/PR.
+3. Fuente y contrato de reserva del asignador AD507 anterior; garantía de unicidad entre ambas fuentes.
+4. Incorporar las altas PostgreSQL aprobadas al publicador existente, preservando formato, resolución de datos, páginas antiguas y Residential/OWNER. No basta agregar códigos al listado si la ficha todavía consulta datos antiguos.
+5. Integrar escritor de solicitudes, idempotencia, campos completos de formulario, revisión de archivos completos, estados, rechazo/aprobación y recuperación durable. No establecer ACTIVE como sustituto de publicar.
+
+## Pruebas físicas pendientes
+
+- [ ] Android/tablet/iPhone: Google/login/logout y permisos CLIENT/ADMIN.
+- [ ] Recorrido completo de Residential, Lugar, Gratis, Premium y Pro.
+- [ ] Persistencia después de recarga y reintento de solicitud.
+- [ ] R2 real privado: autorización, aislamiento, procesamiento y recuperación de fallos.
+- [ ] ADMIN revisa datos/archivos, rechaza/aprueba; cliente no publica.
+- [ ] Reserva de códigos concurrente contra la autoridad anterior.
+- [ ] Publicación canónica; enlaces, QR y datos de direcciones anteriores intactos.
+- [ ] Residential OWNER/PIN e invitados mediante el proceso existente.
+
+Migración posterior individual: capturar ficha/código/enlace/QR y respaldo; validar destino y reserva; comparar campo por campo; aprobar una sola dirección; conservar reversión de su autoridad de lectura. No ejecutar migración masiva ni registrar la misma alta en ambos sistemas.
+
+## Producción
+
+Sin merge ni despliegue. Sin escrituras SQL reales, cargas/borrados R2, cambios de variables, credenciales, Excel, Apps Script, DNS/Namecheap, páginas, clientes o QR. Producción conserva su configuración y despliegue observados. PR #51 permanece en borrador y no está listo para cierre operativo.

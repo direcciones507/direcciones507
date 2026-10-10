@@ -1,4 +1,4 @@
-import { prepareContacts, validateRequestMedia } from './panel-preparation';
+import { inspectImage, prepareContacts, validateRequestMedia } from './panel-preparation';
 
 export type RequestDraft = {
   type: 'RESIDENTIAL' | 'PLACE' | 'BUSINESS';
@@ -42,4 +42,20 @@ export function validateRequestDraft(raw: unknown): RequestDraft {
       !validateRequestMedia(type, plan, { logos: m.logos, placePhotos: m.placePhotos, galleryPhotos: m.galleryPhotos })) throw new Error('INVALID_MEDIA');
   return { type, plan, name, reference, description, latitude, longitude, phone, landlinePhone,
     media: { logos: m.logos, placePhotos: m.placePhotos, galleryPhotos: m.galleryPhotos } };
+}
+
+export type RequestFile = { role: 'logo' | 'photo'; bytes: Uint8Array; mime: string };
+
+/** Upload boundary: media quotas come from the actual parts, never client-declared counts. */
+export function validateRequestFiles(raw: unknown, files: RequestFile[]): RequestDraft {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Array.isArray(files) || files.length > 6) throw new Error('INVALID_REQUEST');
+  const value = raw as Record<string, unknown>;
+  for (const file of files) {
+    if (!file || !['logo', 'photo'].includes(file.role) || !(file.bytes instanceof Uint8Array) ||
+      !inspectImage(file.bytes, file.mime, file.bytes.length)) throw new Error('INVALID_IMAGE');
+  }
+  const logos = files.filter(file => file.role === 'logo').length;
+  const photos = files.length - logos;
+  return validateRequestDraft({ ...value, media: { logos, placePhotos: value.type === 'PLACE' ? photos : 0,
+    galleryPhotos: value.type === 'PLACE' ? 0 : photos } });
 }

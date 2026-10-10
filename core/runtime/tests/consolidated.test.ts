@@ -12,6 +12,7 @@ const root = new URL('../../../', import.meta.url);
 const dir = mkdtempSync(join(tmpdir(), 'ad507-auth-test-'));
 const password = crypto.randomUUID();
 const pg = new EmbeddedPostgres({ databaseDir: join(dir, 'db'), user: 'postgres', password, port: 55439, persistent: false, createPostgresUser: true, onLog: () => {}, onError: () => {} });
+let isolatedDatabase: string;
 let sql: ReturnType<typeof postgres>, runtime: ReturnType<typeof Bun.spawn>;
 const origin = 'https://ad507-core-production.up.railway.app';
 const env = { AD507_GOOGLE_CLIENT_ID: 'test-client', AD507_GOOGLE_CLIENT_SECRET: crypto.randomUUID(), AD507_SESSION_SECRET: crypto.randomUUID() + crypto.randomUUID(), AD507_GOOGLE_REDIRECT_URI: origin + '/auth/google/callback', AD507_AUTH_SUCCESS_URL: '/', AD507_PUBLIC_BASE_URL: origin };
@@ -22,6 +23,7 @@ beforeAll(async () => {
   if (external && !['127.0.0.1', 'localhost'].includes(new URL(external).hostname)) throw new Error('TEST_DATABASE_MUST_BE_LOCAL');
   if (!external) { await pg.initialise(); await pg.start(); }
   const database = external ?? `postgres://postgres:${password}@127.0.0.1:55439/postgres`;
+  isolatedDatabase = database;
   sql = postgres(database, { max: 1 });
   for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql', '0002_plan_catalog.sql', '0003_plan_capabilities.sql', '0005_general_google_auth.sql']) await sql.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
   await sql.unsafe(readFileSync(new URL('db/migrations/0005_general_google_auth.sql', root), 'utf8'));
@@ -311,4 +313,73 @@ test('authenticated panel reads are rate limited without enabling writes', async
   for(let i=0;i<61;i++) { const res = await runtimeGet('/v1/user/panel',client); if(res.status===429) {limited=res;break;} expect(res.status).toBe(200); }
   expect(limited?.status).toBe(429);
   expect(limited?.headers.get('retry-after')).toBe('60');
+});
+
+test('R2 scope reuses canonical roles, ownership and linked media with no legacy access', async () => {
+  const { createMediaAuthorizer } = await import('../r2-media-authorization');
+  const owner = crypto.randomUUID(), stranger = crypto.randomUUID(), reviewer = crypto.randomUUID(), addressId = crypto.randomUUID();
+  await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'media-owner@example.test'),($2::uuid,'media-stranger@example.test'),($3::uuid,'media-reviewer@example.test')",[owner,stranger,reviewer]);
+  await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'CLIENT'),($3::uuid,'ADMIN')",[owner,stranger,reviewer]);
+  await sql.unsafe("INSERT INTO ad507.addresses(id,code,address_type,status,name,source) VALUES($1::uuid,'AD507-MEDIATEST','BUSINESS','DRAFT','Isolated fixture','USER_REQUEST')",[addressId]);
+  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)",[addressId,owner]);
+  const key=`addresses/${addressId}/logo/${'a'.repeat(64)}.webp`;
+  await sql.unsafe("INSERT INTO ad507.address_media(address_id,media_type,storage_key) VALUES($1::uuid,'LOGO',$2)",[addressId,key]);
+  const ownerAuth = createMediaAuthorizer(sql,owner), strangerAuth=createMediaAuthorizer(sql,stranger), adminAuth=createMediaAuthorizer(sql,reviewer);
+  const scope={ownerId:owner,addressId,role:'logo' as const,storageKey:key};
+  expect(await ownerAuth({...scope,action:'upload'})).toBe(true);
+  expect(await ownerAuth({...scope,action:'read'})).toBe(true);
+  expect(await ownerAuth({...scope,action:'delete'})).toBe(true);
+  expect(await strangerAuth({...scope,ownerId:stranger,action:'read'})).toBe(false);
+  expect(await strangerAuth({...scope,action:'upload'})).toBe(false);
+  expect(await adminAuth({...scope,ownerId:reviewer,action:'read'})).toBe(true);
+  expect(await adminAuth({...scope,ownerId:reviewer,action:'delete'})).toBe(false);
+  expect(await ownerAuth({...scope,storageKey:key.replace('/logo/','/photo/'),action:'read'})).toBe(false);
+  await sql.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW' WHERE id=$1::uuid",[addressId]);
+  expect(await ownerAuth({...scope,action:'upload'})).toBe(false);
+  expect(await ownerAuth({...scope,action:'delete'})).toBe(false);
+  expect(await adminAuth({...scope,ownerId:reviewer,action:'read'})).toBe(true);
+  await sql.unsafe("UPDATE ad507.users SET status='BLOCKED' WHERE id=$1::uuid",[owner]);
+  expect(await ownerAuth({...scope,action:'read'})).toBe(false);
+  await sql.unsafe("UPDATE ad507.addresses SET source='LEGACY' WHERE id=$1::uuid",[addressId]);
+  expect(await adminAuth({...scope,ownerId:reviewer,action:'read'})).toBe(false);
+  await sql.unsafe("UPDATE ad507.addresses SET source='USER_REQUEST',address_type='RESIDENTIAL' WHERE id=$1::uuid",[addressId]);
+  expect(await adminAuth({...scope,ownerId:reviewer,action:'read'})).toBe(false);
+});
+
+test('media associations commit before PUT; concurrent retries, quotas and timeout recovery', async () => {
+  const { createRequestMediaStorage } = await import('../request-media');
+  const sharp = (await import('sharp')).default;
+  const owner=crypto.randomUUID(), addressId=crypto.randomUUID();
+  await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'media-recovery@example.test')",[owner]);
+  await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
+  await sql.unsafe("INSERT INTO ad507.addresses(id,code,address_type,status,name,source,plan_id) SELECT $1::uuid,'AD507-MEDIARECOVERY','BUSINESS','DRAFT','Isolated fixture','USER_REQUEST',id FROM ad507.plans WHERE code='BUSINESS_FREE'",[addressId]);
+  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)",[addressId,owner]);
+  const db=postgres(isolatedDatabase,{max:4});
+  let calls=0, fail=true;
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  const storage=createRequestMediaStorage(db,owner,settings,(async (url,init)=>{
+    calls++;
+    const key=new URL(String(url)).pathname.replace('/direcciones507-media/','');
+    expect((await sql.unsafe('SELECT storage_key FROM ad507.address_media WHERE address_id=$1::uuid AND storage_key=$2',[addressId,key])).length).toBe(1);
+    expect(init!.method).toBe('PUT');
+    if(fail) throw new Error('ambiguous timeout with secret upstream details');
+    return new Response(null,{status:200});
+  }) as typeof fetch);
+  const bytes=await sharp({create:{width:8,height:8,channels:3,background:'red'}}).png().toBuffer();
+  const input={ownerId:owner,addressId,role:'logo' as const,bytes,mime:'image/png'};
+  try {
+    await expect(storage.storeOptimized(input)).rejects.toThrow('R2_REQUEST_FAILED');
+    expect((await sql.unsafe('SELECT storage_key FROM ad507.address_media WHERE address_id=$1::uuid',[addressId])).length).toBe(1);
+    fail=false;
+    const repeated=await Promise.all(Array.from({length:6},()=>storage.storeOptimized(input)));
+    expect(new Set(repeated.map(r=>r.storageKey)).size).toBe(1);
+    expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.address_media WHERE address_id=$1::uuid',[addressId]))[0].n).toBe(1);
+    expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE actor_user_id=$1::uuid AND action='MEDIA_UPLOAD_INTENT'",[owner]))[0].n).toBe(1);
+    const different=await sharp({create:{width:8,height:8,channels:3,background:'blue'}}).png().toBuffer();
+    await expect(storage.storeOptimized({...input,bytes:different})).rejects.toThrow('MEDIA_LIMIT_EXCEEDED');
+    expect(calls).toBe(7);
+    await sql.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW' WHERE id=$1::uuid",[addressId]);
+    await expect(storage.storeOptimized(input)).rejects.toThrow('MEDIA_FORBIDDEN');
+    expect(calls).toBe(7);
+  } finally { await db.end(); }
 });

@@ -22,12 +22,12 @@ test('image content, MIME and exact size limits agree; forged MIME, empty files 
   expect(inspectImage(png,'image/svg+xml',12)).toBe(false);
   expect(inspectImage(new Uint8Array(),'image/png',0)).toBe(false);
 });
-test('Lugar requires a photograph; Pro allows five, and other plans cannot gain galleries', () => {
+test('Lugar requires one photograph; Premium Pro requires six images including logo', () => {
   expect(mediaCountAllowed('PLACE','',0)).toBe(false);
   expect(mediaCountAllowed('PLACE','',1)).toBe(true);
-  expect(mediaCountAllowed('BUSINESS','BUSINESS_PREMIUM_PRO',5)).toBe(true);
-  expect(mediaCountAllowed('BUSINESS','BUSINESS_PREMIUM_PRO',6)).toBe(false);
-  for(const plan of ['BUSINESS_FREE','BUSINESS_PREMIUM']) expect(mediaCountAllowed('BUSINESS',plan,1)).toBe(false);
+  expect(mediaCountAllowed('BUSINESS','BUSINESS_PREMIUM_PRO',5)).toBe(false);
+  expect(mediaCountAllowed('BUSINESS','BUSINESS_PREMIUM_PRO',6)).toBe(true);
+  for(const plan of ['BUSINESS_FREE','BUSINESS_PREMIUM']) expect(mediaCountAllowed('BUSINESS',plan,1)).toBe(true);
   expect(mediaCountAllowed('RESIDENTIAL','RESIDENTIAL',1)).toBe(false);
 });
 

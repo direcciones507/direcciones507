@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { mediaCountAllowed, validateRequestMedia } from '../panel-preparation';
-import { r2Settings } from '../r2-storage';
+import { r2Settings, signedR2Put } from '../r2-storage';
 
 describe('Gallery limits (logo and cover are separate)', () => {
   test('Lugar uses its cover field, not gallery', () => {
@@ -57,5 +57,26 @@ describe('Server-side request media policy', () => {
   test('residential has no uploaded media', () => {
     expect(validateRequestMedia('RESIDENTIAL', 'RESIDENTIAL', { logos: 0, placePhotos: 0, galleryPhotos: 0 })).toBe(true);
     expect(validateRequestMedia('RESIDENTIAL', 'RESIDENTIAL', { logos: 1, placePhotos: 0, galleryPhotos: 0 })).toBe(false);
+  });
+});
+
+describe('Private R2 request signing', () => {
+  const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test-access', secretAccessKey: 'test-secret' };
+  test('signs private uploads deterministically and never exposes credentials in URL', () => {
+    const bytes = new TextEncoder().encode('test-content');
+    const signed = signedR2Put(settings, 'addresses/123/logo/sample.png', bytes, 'image/png', new Date('2026-10-10T12:00:00.000Z'));
+    const repeat = signedR2Put(settings, 'addresses/123/logo/sample.png', bytes, 'image/png', new Date('2026-10-10T12:00:00.000Z'));
+    expect(signed).toEqual(repeat);
+    expect(signed.url).toContain('/direcciones507-media/addresses/123/logo/sample.png');
+    expect(signed.url).not.toContain('test-secret');
+    expect(signed.headers.authorization).toContain('AWS4-HMAC-SHA256');
+    expect(signed.headers.authorization).not.toContain('test-secret');
+    expect(signed.headers['x-amz-content-sha256']).toHaveLength(64);
+  });
+  test('signature changes when payload changes', () => {
+    const date = new Date('2026-10-10T12:00:00.000Z');
+    const a = signedR2Put(settings, 'addresses/123/logo/sample.png', new Uint8Array([1]), 'image/png', date);
+    const b = signedR2Put(settings, 'addresses/123/logo/sample.png', new Uint8Array([2]), 'image/png', date);
+    expect(a.headers.authorization).not.toBe(b.headers.authorization);
   });
 });

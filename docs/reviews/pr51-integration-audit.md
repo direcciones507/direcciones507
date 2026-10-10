@@ -116,3 +116,43 @@ Antes de aplicar SQL: introspectar esquema/ledger vivo, respaldo, comparación d
 Local: 53 pruebas aprobadas, cero fallos, 658 assertions en PGlite con driver PostgreSQL. Tres casos requieren PostgreSQL nativo (runner en bases independientes y concurrencia de archivos/solicitudes); permanecen completos en CI. Bundle Bun aprobado. CI prueba suite íntegra, PostgreSQL 18.1 y Docker; resultado del SHA final en PR.
 
 `REQUEST_WORKFLOW_ENABLED=false` mantiene rutas/botones cerrados, sin variable para activar solicitudes. Pendientes: esquema vivo, registro histórico completo, contrato/código del asignador-publicador anterior, revocación R2 comprobada y pruebas físicas listadas arriba. Producción no recibió escrituras, cargas, despliegue, merge ni cambios de configuración.
+
+## Bloque 3 — comprobación real y preparación de cierre (10 octubre 2026)
+
+### Cuatro verificaciones críticas
+
+| Verificación | Evidencia real | Estado y límite |
+| --- | --- | --- |
+| PostgreSQL canónico | Railway Postgres SUCCESS; proxy existente activo. `/ready` real HTTP 200 con database/authConfigured true. | Conectividad y readiness de identidad verificadas; columnas, FK, índices y ledger vivo aún no inspeccionados. OAuth Railway devuelve nombres con valuesRedacted=true, sin credencial SQL. |
+| Registro/asignador AD507 | Máster A3:A2008: 40 códigos no vacíos, sin colisiones al normalizar; mayor numérico 0038. A3:A42 conserva fórmulas basadas en ROW()-2 y nombres manuales. | No acredita el último consecutivo reservado ni todas las fuentes históricas. Las filas 39/40 usan nombres; no inferir que 0039 esté libre. Fuente/LockService/contrato de reserva de Apps Script no accesibles; asignación real bloqueada. |
+| Publicador | index y auto-sync consultan un Apps Script que responde 23 códigos, mayor numérico 0035; generate.yml consulta otro que responde 40, mayor 0038. Ambos HTTP 200 y JSON válidos. Fonda Tatiana pública HTTP 200, HTML con referencias QR. | Publicador general de GitHub Pages y lector dinámico identificados. Listados diferentes pueden corresponder a filtros/versiones; no se sustituyeron endpoints ni se disparó generación. No hay contrato verificado para consumir solicitudes PostgreSQL/R2 nuevas. Publicación nueva bloqueada. |
+| R2 | Core mantiene nombres de cuatro variables R2; indicador de rotación no configurado. | Bucket/permisos/revocación no verificables sin acceso Cloudflare; la existencia de variables no demuestra revocación. Sin contacto R2, cargas, borrados ni cambios de secretos. |
+
+Máster: https://docs.google.com/spreadsheets/d/1l0QlB8Y_3qE_SN2KuygiepsAKgxwhFvc53YOrCEd8YQ/edit . La búsqueda Drive de proyectos Apps Script no devuelve resultados; esto no demuestra que el script vinculado no exista. No se leyeron nombres/teléfonos de clientes para estas verificaciones.
+
+### Trabajo implementado y componentes reutilizados
+
+- `core/runtime/scripts/integration-preflight.ts`: comando administrativo manual `sources` o `postgres`; sin rutas públicas, startup, asignador ni publicador alternativos. Descubre URLs en archivos mantenidos, hace únicamente GET action=list, limita tiempo/bytes, resume colisiones normalizadas, mayor numérico y hash del conjunto. Reutiliza `normalizeAd507Code` de `core/postgres/public-address-repository.ts`. Nunca transforma ese mayor código ni la igualdad de fuentes en autorización para asignar/publicar.
+- Modo PostgreSQL: conexión dedicada mediante `AD507_AUDIT_DATABASE_URL`, transacción REPEATABLE READ READ ONLY, límites de consulta/lock; consulta catálogo, constraints, índices, versiones/checksums y conteos agregados de códigos. No lee perfiles, PIN, tokens ni credenciales; no expone URL ni errores upstream. Produce huella del esquema para revisar la migración con evidencia exacta cuando exista acceso.
+- Propuestas `landline.sql`/`requests.sql`: añaden límites DDL y rechazo explícito de tipos incompatibles antes de mutar. Conservan propuestas pendientes, sin registro automático ni ejecución. No se modificaron migraciones históricas ni el runner existente.
+- `tests/integration-preflight.test.ts` y `tests/consolidated.test.ts`: verificación de fuentes, duplicados normalizados, fallos/HTML/body excesivo, lectura SQL, repetición de propuestas conservando códigos, READ ONLY efectivo y rollback ante colisión de tipo.
+
+No se eliminó ni duplicó un publicador. Se detectó divergencia de fuentes y se conservó el funcionamiento histórico hasta verificar sus filtros/contrato. `core/postgres/publication-handler.ts` es metadata de lectura futura, no un escritor/publicador ya conectado; no se confundió con publicación real.
+
+### Verificación ejecutada
+
+- Lectura real Máster y fórmulas; ambas fuentes Apps Script HTTP 200; preflight sources ejecutado contra esas fuentes definitivas (23 y 40, hashes diferentes, cero duplicados internos).
+- Core real /health y /ready HTTP 200; /v1/admin/requests y /v1/user/panel anónimos HTTP 401. No se inició OAuth ni se creó sesión de cliente de prueba.
+- Ficha histórica Fonda Tatiana HTTP 200. Referencia QR presente no demuestra escaneo físico, propietario ni funcionamiento de imágenes; esas pruebas permanecen pendientes. La ruta residencial 0001 devolvió 404 en lectura sin sesión; no se alteró ni se diagnosticó como regresión únicamente por esa respuesta.
+- Local: cuatro pruebas de preflight aprobadas, cero fallos, 29 assertions; seis migraciones originales validadas, snapshot legacy exacto y bundle Bun aprobados. Suite completa PostgreSQL/Docker/CI del SHA final registrada en PR al completar.
+
+### Intervención necesaria del propietario
+
+1. Acceso SQL de solo lectura mediante mecanismo seguro o ejecución del preflight en un contexto ya autenticado, entregando únicamente el informe de esquema. No enviar DATABASE_URL/contraseñas por chat. La conexión OAuth actual no permite introspección ni SSH.
+2. Fuente accesible del Apps Script vinculado y versión de deployment activa, reglas/registro de reservas incluyendo aliases históricos y todos los canales. Confirmar cuál contrato de lectura/publicación usa cada listado y cómo una misma reserva sobrevive reintentos.
+3. Evidencia Cloudflare de revocación del ID antiguo, reemplazo y permisos limitados al bucket privado; acceso de lectura a configuración/auditoría sin exponer valores de claves. No activar el indicador basándose solamente en variables presentes.
+4. Después de resolver accesos: autorización separada para aplicar SQL, integrar/desplegar y publicar una prueba controlada. Nada de eso queda autorizado ni ejecutado en este bloque.
+
+Checklist físico conservado: sesión/permisos Android/tablet/iPhone, cinco planes, recarga/reintentos, R2 privado y fallos, revisión/rechazo/aprobación, reserva concurrente real con autoridad histórica, publicación con enlaces/QR/datos/propietario/medios correctos y compatibilidad Residential OWNER/PIN. No hay prueba nueva de publicación pública ni destructiva con clientes reales.
+
+Producción conserva Core e43bec48-2518-41bc-814a-a99da78eb6c4 y Postgres 86a92993-f580-42d8-9706-61976bd8e03d, sin staged. PR permanece borrador y solicitudes cerradas. No se declara el sistema terminado.

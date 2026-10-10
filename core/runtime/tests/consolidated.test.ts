@@ -472,3 +472,24 @@ test('request routes default closed and development context validates authentica
   const forbidden=new Request(origin+'/v1/admin/requests/'+crypto.randomUUID()+'/approve',{method:'POST',headers:{origin}});expect((await handleRequestRoutes(forbidden,context))!.status).toBe(403);
   expect((await runtimeGet('/v1/user/requests')).status).toBe(503);
 });
+
+test('read-only preflight inventories canonical schema and repeated proposals preserve existing codes',async()=>{
+  const {inspectCanonicalSchema}=await import('../scripts/integration-preflight');
+  const before=await sql.unsafe("SELECT id::text,code,source FROM ad507.addresses WHERE source<>'USER_REQUEST' ORDER BY id");
+  const report=await inspectCanonicalSchema(sql);
+  expect(report.readOnly).toBe(true);expect(report.missingTables).toEqual([]);expect(report.missingRequestColumns).toEqual([]);
+  expect(report.schemaFingerprint).toMatch(/^[a-f0-9]{64}$/);expect(report.allocationVerified).toBe(false);expect(report.publicationVerified).toBe(false);
+  expect(report.constraints.some(c=>c.name==='addresses_code_key'&&c.type==='u')).toBe(true);
+  expect(JSON.stringify(report)).not.toContain('request-owner@example.test');
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/landline.sql',import.meta.url),'utf8'));
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/requests.sql',import.meta.url),'utf8'));
+  expect(await sql.unsafe("SELECT id::text,code,source FROM ad507.addresses WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
+  await expect(sql.begin('read only',async tx=>tx.unsafe("UPDATE ad507.addresses SET name='forbidden' WHERE false"))).rejects.toThrow();
+  const connection=await sql.reserve();
+  try{
+    await connection.unsafe('BEGIN');
+    await connection.unsafe('ALTER TABLE ad507.address_media ALTER COLUMN upload_status TYPE varchar(20)');
+    await expect(connection.unsafe(readFileSync(new URL('../schema-proposals/requests.sql',import.meta.url),'utf8'))).rejects.toThrow('REQUEST_COLUMN_COLLISION');
+  }finally{await connection.unsafe('ROLLBACK');connection.release();}
+  expect((await sql.unsafe("SELECT data_type FROM information_schema.columns WHERE table_schema='ad507' AND table_name='address_media' AND column_name='upload_status'"))[0].data_type).toBe('text');
+});

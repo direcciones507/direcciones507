@@ -1,6 +1,21 @@
 -- Development preparation only. Not applied on startup or to production.
 -- Requires live schema/ledger review and the migration runner before release.
 BEGIN;
+SET LOCAL lock_timeout='5s';
+SET LOCAL statement_timeout='60s';
+-- Refuse drift instead of silently reusing incompatible IF NOT EXISTS columns.
+DO $$ BEGIN
+ IF EXISTS (
+  SELECT 1 FROM (VALUES ('addresses','id','uuid'),('addresses','code','text'),('addresses','status','text'),('addresses','source','text'),('users','id','uuid'),('address_media','address_id','uuid')) expected(relation,name,kind)
+  LEFT JOIN information_schema.columns c ON c.table_schema='ad507' AND c.table_name=expected.relation AND c.column_name=expected.name
+  WHERE c.data_type IS DISTINCT FROM expected.kind
+ ) THEN RAISE EXCEPTION 'REQUEST_FOUNDATION_SCHEMA_NOT_VERIFIED'; END IF;
+ IF EXISTS (
+  SELECT 1 FROM (VALUES ('addresses','request_key_hash','text'),('addresses','request_payload_hash','text'),('addresses','request_data','jsonb'),('addresses','review_decision','text'),('addresses','reviewed_by','uuid'),('addresses','publication_receipt','text'),('address_media','upload_status','text')) expected(relation,name,kind)
+  JOIN information_schema.columns c ON c.table_schema='ad507' AND c.table_name=expected.relation AND c.column_name=expected.name
+  WHERE c.data_type<>expected.kind
+ ) THEN RAISE EXCEPTION 'REQUEST_COLUMN_COLLISION'; END IF;
+END $$;
 ALTER TABLE ad507.addresses ALTER COLUMN code DROP NOT NULL;
 ALTER TABLE ad507.addresses ADD COLUMN IF NOT EXISTS request_key_hash text;
 ALTER TABLE ad507.addresses ADD COLUMN IF NOT EXISTS request_payload_hash text;

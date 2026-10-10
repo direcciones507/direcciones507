@@ -22,11 +22,11 @@ export function inspectImage(bytes: Uint8Array, mime: string, size: number): boo
 }
 export function mediaCountAllowed(type: string, plan: string, count: number): boolean {
   if (!Number.isInteger(count) || count < 0) return false;
-  if (type === 'PLACE') return count >= 1;
-  if (type === 'BUSINESS') return count <= (plan === 'BUSINESS_PREMIUM_PRO' ? 5 : 0);
+  if (type === 'PLACE') return count === 1;
+  if (type === 'BUSINESS') return count === (plan === 'BUSINESS_PREMIUM_PRO' ? 6 : 1);
   return type === 'RESIDENTIAL' && count === 0;
 }
 /** Adapter seam, without implementation, credentials or network connection. */
 export interface PreparedMediaStorage {
-  storeOptimized(input: { bytes: Uint8Array; mime: 'image/jpeg' | 'image/png' | 'image/webp'; ownerId: string; addressId: string }): Promise<{ storageKey: string; publicUrl: string }>;
+  storeOptimized(input: { bytes: Uint8Array; mime: 'image/jpeg' | 'image/png' | 'image/webp'; ownerId: string; addressId: string }): Promise<{ storageKey: string }>;
 }

@@ -72,7 +72,8 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const rows=await sql.unsafe(`SELECT a.id::text,a.code,a.address_type AS type,a.status,a.name,a.reference,a.description,a.commercial_description AS \"commercialDescription\",a.latitude,a.longitude,a.phone,a.landline_phone AS \"landlinePhone\",a.hours,a.review_decision AS review,a.request_data AS extras FROM ad507.addresses a JOIN ad507.users u ON u.id=$1::uuid AND u.status='ACTIVE' WHERE a.id=$2::uuid AND a.source='USER_REQUEST' AND (EXISTS(SELECT 1 FROM ad507.user_roles r WHERE r.user_id=u.id AND r.role='ADMIN') OR EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=u.id))`,[actorId,addressId]);
       if(!rows.length)throw Error('REQUEST_NOT_FOUND');
       const media=await sql.unsafe('SELECT id::text,media_type AS type,position,upload_status AS status FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position,id',[addressId]);
-      return {...rows[0],media};
+      const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
+      return {...rows[0],media,socials};
     },
     async review(actorId:string,addressId:string,decision:'APPROVED'|'REJECTED') {
       if(!uuid.test(addressId)||!['APPROVED','REJECTED'].includes(decision))throw Error('INVALID_REQUEST');

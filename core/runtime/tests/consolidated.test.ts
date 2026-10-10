@@ -406,6 +406,7 @@ test('request lifecycle persists all five products, deduplicates and separates m
     expect((await repo.submit(owner,'different-'+key,raw,p.files)).id).toBe(created.id);
     await expect(repo.submit(owner,key,{...raw,name:'different'},p.files)).rejects.toThrow('IDEMPOTENCY_CONFLICT');
     const read=await repo.read(owner,created.id);expect(read.name).toBe(raw.name);expect(read.phone).toBe('+50761234567');expect(read.landlinePhone).toBe('+5079981234');expect(read.extras.email).toBe('customer@example.test');expect(read.media.every(m=>m.status==='READY')).toBe(true);
+    expect(read.socials).toEqual(p.plan==='BUSINESS_PREMIUM_PRO'?[{platform:'instagram',url:'https://www.instagram.com/test/'}]:[]);
     expect(JSON.stringify(read)).not.toContain('request_key_hash');
     await expect(repo.read(outsider,created.id)).rejects.toThrow('REQUEST_NOT_FOUND');
     await expect(repo.review(owner,created.id,'APPROVED')).rejects.toThrow('FORBIDDEN');

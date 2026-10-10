@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { mediaCountAllowed, validateRequestMedia } from '../panel-preparation';
-import { r2Settings, signedR2Put } from '../r2-storage';
+import { createR2Storage, r2Settings, signedR2Put } from '../r2-storage';
 
 describe('Gallery limits (logo and cover are separate)', () => {
   test('Lugar uses its cover field, not gallery', () => {
@@ -26,6 +26,7 @@ describe('Gallery limits (logo and cover are separate)', () => {
 
 describe('R2 configuration', () => {
   const env = {
+    AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: 'true',
     R2_ACCOUNT_ID: 'a'.repeat(32),
     R2_BUCKET: 'direcciones507-media',
     R2_ACCESS_KEY_ID: 'fake-access-key',
@@ -37,6 +38,17 @@ describe('R2 configuration', () => {
   test('fails closed if credentials or account ID are missing', () => {
     expect(r2Settings({ ...env, R2_SECRET_ACCESS_KEY: '' })).toBeNull();
     expect(r2Settings({ ...env, R2_ACCOUNT_ID: 'not-an-account-id' })).toBeNull();
+  });
+  test('credentials alone never enable uploads before confirmed rotation', () => {
+    for (const confirmation of [undefined, '', 'false', 'TRUE']) {
+      expect(r2Settings({ ...env, AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: confirmation })).toBeNull();
+    }
+    expect(r2Settings({ ...env, R2_BUCKET: 'another-private-bucket' })).toBeNull();
+  });
+  test('direct adapter construction cannot omit the rotation gate', () => {
+    const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test', secretAccessKey: 'test' };
+    expect(() => createR2Storage(settings as any)).toThrow('R2_ROTATION_NOT_CONFIRMED');
+    expect(() => createR2Storage({ ...settings, rotationConfirmed: true, bucket: 'other' })).toThrow('R2_ROTATION_NOT_CONFIRMED');
   });
 });
 
@@ -61,7 +73,7 @@ describe('Server-side request media policy', () => {
 });
 
 describe('Private R2 request signing', () => {
-  const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test-access', secretAccessKey: 'test-secret' };
+  const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test-access', secretAccessKey: 'test-secret', rotationConfirmed: true as const };
   test('signs private uploads deterministically and never exposes credentials in URL', () => {
     const bytes = new TextEncoder().encode('test-content');
     const signed = signedR2Put(settings, 'addresses/123/logo/sample.png', bytes, 'image/png', new Date('2026-10-10T12:00:00.000Z'));
@@ -80,3 +92,4 @@ describe('Private R2 request signing', () => {
     expect(a.headers.authorization).not.toBe(b.headers.authorization);
   });
 });
+

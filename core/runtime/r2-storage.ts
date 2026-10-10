@@ -2,6 +2,7 @@ import { createHash, createHmac, randomUUID } from 'node:crypto';
 import { inspectImage } from './panel-preparation';
 
 export type R2Settings = {
+  rotationConfirmed: true;
   accountId: string;
   bucket: string;
   accessKeyId: string;
@@ -10,12 +11,15 @@ export type R2Settings = {
 
 /** Server-only configuration. Missing or malformed values disable uploads. */
 export function r2Settings(env: Record<string, string | undefined>): R2Settings | null {
+  // Credential presence is not evidence that the previously exposed key was revoked.
+  // Set only after an operator verifies revocation and replacement; never auto-set.
+  if (env.AD507_R2_CREDENTIAL_ROTATION_CONFIRMED !== 'true') return null;
   const accountId = env.R2_ACCOUNT_ID?.trim() ?? '';
   const bucket = env.R2_BUCKET?.trim() ?? '';
   const accessKeyId = env.R2_ACCESS_KEY_ID?.trim() ?? '';
   const secretAccessKey = env.R2_SECRET_ACCESS_KEY?.trim() ?? '';
-  if (!/^[a-f0-9]{32}$/i.test(accountId) || !/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(bucket) || !accessKeyId || !secretAccessKey) return null;
-  return { accountId, bucket, accessKeyId, secretAccessKey };
+  if (!/^[a-f0-9]{32}$/i.test(accountId) || bucket !== 'direcciones507-media' || !accessKeyId || !secretAccessKey) return null;
+  return { accountId, bucket, accessKeyId, secretAccessKey, rotationConfirmed: true };
 }
 
 const hash = (input: string | Uint8Array) => createHash('sha256').update(input).digest('hex');
@@ -47,6 +51,7 @@ export function signedR2Put(settings: R2Settings, key: string, bytes: Uint8Array
 }
 
 export function createR2Storage(settings: R2Settings) {
+  if (settings.rotationConfirmed !== true || settings.bucket !== 'direcciones507-media') throw new Error('R2_ROTATION_NOT_CONFIRMED');
   return {
     /** Private object upload; no public link or public bucket exposure. */
     async storePrivate(input: { bytes: Uint8Array; mime: string; ownerId: string; addressId: string; role: 'logo' | 'photo' }) {
@@ -61,3 +66,4 @@ export function createR2Storage(settings: R2Settings) {
     },
   };
 }
+

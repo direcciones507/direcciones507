@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import EmbeddedPostgres from 'embedded-postgres';
 import postgres from 'postgres';
 import { createGeneralAuth } from '../general-auth';
+import { userPanelHtml } from '../user-panel';
 import { prepareMigration0005 } from '../scripts/prepare-0005';
 
 const root = new URL('../../../', import.meta.url);
@@ -22,7 +23,7 @@ beforeAll(async () => {
   if (!external) { await pg.initialise(); await pg.start(); }
   const database = external ?? `postgres://postgres:${password}@127.0.0.1:55439/postgres`;
   sql = postgres(database, { max: 1 });
-  for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql', '0005_general_google_auth.sql']) await sql.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
+  for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql', '0002_plan_catalog.sql', '0003_plan_capabilities.sql', '0005_general_google_auth.sql']) await sql.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
   await sql.unsafe(readFileSync(new URL('db/migrations/0005_general_google_auth.sql', root), 'utf8'));
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'client@gmail.com'),($2::uuid,'admin@example.test')", [clientId, adminId]);
   await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')", [clientId, adminId]);
@@ -114,10 +115,15 @@ test('existing canonical ADMIN role is read from PostgreSQL', async () => {
   await sql.unsafe("UPDATE ad507.users SET status='DISABLED' WHERE id=$1::uuid", [adminId]);
   expect((await auth.handle(request('/v1/auth/me', { cookie })))!.status).toBe(401);
 });
-test('unknown/unverified/third-party/rebound identities fail without creating users', async () => {
+test('verified Google users self-provision as CLIENT; unsafe or rebound identities still fail', async () => {
   const before = (await sql.unsafe('SELECT count(*)::int AS n FROM ad507.users'))[0].n;
+  const newcomer = createGeneralAuth(sql, env, google({ sub: 'unknown-sub', email: 'missing@gmail.com', email_verified: true }));
+  const newFlow = await login(newcomer), newDone = (await newcomer.handle(request(newFlow.path, { cookie: newFlow.cookie })))!;
+  expect(newDone.status).toBe(302);
+  const created = await sql.unsafe("SELECT u.id::text AS id,u.status,ur.role FROM ad507.users u JOIN ad507.user_roles ur ON ur.user_id=u.id WHERE lower(u.email)='missing@gmail.com'");
+  expect(created).toHaveLength(1); expect(created[0].status).toBe('ACTIVE'); expect(created[0].role).toBe('CLIENT');
+  expect(await sql.unsafe("SELECT google_sub FROM ad507.google_identities WHERE user_id=$1::uuid", [created[0].id])).toHaveLength(1);
   for (const profile of [
-    { sub: 'unknown-sub', email: 'missing@gmail.com', email_verified: true },
     { sub: 'bad-sub', email: 'client@gmail.com', email_verified: false },
     { sub: 'replacement-sub', email: 'client@gmail.com', email_verified: true },
     { sub: 'third-party-sub', email: 'admin@example.test', email_verified: true },
@@ -126,7 +132,7 @@ test('unknown/unverified/third-party/rebound identities fail without creating us
     const auth = createGeneralAuth(sql, env, google(profile)), flow = await login(auth);
     expect((await auth.handle(request(flow.path, { cookie: flow.cookie })))!.status).toBe(403);
   }
-  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.users'))[0].n).toBe(before);
+  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.users'))[0].n).toBe(before + 1);
 });
 test('invalid, missing, expired, mismatched and replayed state fail; failures consume state', async () => {
   const auth = createGeneralAuth(sql, env, google({ sub: 'client-sub', email: 'client@gmail.com', email_verified: true }));
@@ -175,3 +181,134 @@ test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner crea
     expect((await isolated.unsafe("SELECT count(*)::int AS n FROM ad507.schema_migrations WHERE version='0005'"))[0].n).toBe(1);
   } finally { await isolated.end({ timeout: 1 }); }
 }, 30000);
+
+async function runtimeGet(path: string, cookie?: string) {
+  return fetch('http://127.0.0.1:55440' + path, { headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', ...(cookie ? { cookie } : {}) } });
+}
+async function fixtureSession(id: string, email: string, sub: string) {
+  await sql.unsafe("UPDATE ad507.users SET status='ACTIVE' WHERE id=$1::uuid", [id]);
+  const auth = createGeneralAuth(sql, env, google({ sub, email, email_verified: true }));
+  const flow = await login(auth);
+  return session((await auth.handle(request(flow.path, { cookie: flow.cookie })))!);
+}
+test('all six ADMIN views use real PostgreSQL and deny anonymous and CLIENT sessions', async () => {
+  const admin = await fixtureSession(adminId, 'admin@example.test', 'admin-sub');
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  await sql.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name) VALUES('AD507-TESTPLACE','PLACE','PENDING_REVIEW','Place fixture'),('AD507-TESTBUSINESS','BUSINESS','DRAFT','Business fixture')");
+  for (const key of ['addresses','requests','users','places','plans','stats']) {
+    const path = '/v1/admin/' + key;
+    expect((await runtimeGet(path)).status).toBe(401);
+    expect((await runtimeGet(path, client)).status).toBe(403);
+    const res = await runtimeGet(path, admin);
+    expect(res.status).toBe(200); expect(res.headers.get('cache-control')).toBe('no-store');
+    const data = await res.json(); expect(data.ok).toBe(true);
+    if (key === 'requests') expect(data.requests.map((a: any) => a.code)).toEqual(['AD507-TESTPLACE']);
+    if (key === 'places') expect(data.places.map((a: any) => a.addressType)).toEqual(['PLACE']);
+    if (key === 'users') expect(data.users.find((u: any) => u.id === adminId).roles).toEqual(['ADMIN']);
+    if (key === 'plans') { expect(data.plans).toHaveLength(5); expect(data.plans.find((p: any) => p.code === 'BUSINESS_FREE').capabilities.maps).toBe(true); }
+    if (key === 'stats') { expect(data.totals.addresses).toBe(2); expect(data.totals.requests).toBe(1); expect(data.totals.places).toBe(1); expect(data.totals.plans).toBe(5); expect(data.totals.paidOrders).toBe(0); }
+  }
+  const html = await (await runtimeGet('/admin')).text();
+  for (const key of ['addresses','requests','users','places','plans','stats']) expect(html).toContain('id="' + key + 'Tile"');
+});
+
+test('user panel isolates canonical ownership and orders without internal capabilities; logout/reentry uses real sessions', async () => {
+  const otherId = '33333333-3333-4333-8333-333333333333';
+  await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'other@example.test')", [otherId]);
+  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) SELECT id,$1::uuid FROM ad507.addresses WHERE code='AD507-TESTPLACE'", [clientId]);
+  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) SELECT id,$1::uuid FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'", [otherId]);
+  await sql.unsafe("UPDATE ad507.addresses SET plan_id=(SELECT id FROM ad507.plans WHERE code='BUSINESS_FREE') WHERE code='AD507-TESTPLACE'");
+  await sql.unsafe("INSERT INTO ad507.orders(user_id,amount_cents) VALUES($1::uuid,100),($2::uuid,900)", [clientId, otherId]);
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  expect((await runtimeGet('/v1/user/panel')).status).toBe(401);
+  const res = await runtimeGet('/v1/user/panel?user_id=' + otherId, client);
+  expect(res.status).toBe(200); expect(res.headers.get('cache-control')).toBe('no-store');
+  const data = await res.json();
+  expect(data.user.email).toBe('client@gmail.com');
+  expect(data.user).not.toHaveProperty('id');
+  expect(data.user).not.toHaveProperty('roles');
+  expect(data.addresses.map((a: any) => a.code)).toEqual(['AD507-TESTPLACE']);
+  expect(data.addresses[0]).not.toHaveProperty('capabilities');
+  expect(data.addresses[0]).not.toHaveProperty('ownershipRole');
+  expect(data.orders.map((o: any) => o.amountCents)).toEqual([100]);
+  expect(data.actions).toEqual({ prepareRequest: true, submitRequest: false, checkout: false });
+  const admin = await fixtureSession(adminId, 'admin@example.test', 'admin-sub');
+  expect((await (await runtimeGet('/v1/user/panel', admin)).json()).addresses).toHaveLength(0);
+  const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
+  expect(panel.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+  expect(await panel.text()).toContain('id="send" type="button" disabled>Enviar solicitud');
+  const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', cookie: client } });
+  expect(redirect.status).toBe(302); expect(redirect.headers.get('location')).toBe('/panel');
+  const logout = await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
+  expect(logout.status).toBe(204);
+  expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
+  const renewed = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  expect((await runtimeGet('/v1/user/panel', renewed)).status).toBe(200);
+  expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
+});
+
+test('ADMIN and user panel client scripts parse; request submission and payment remain disabled', async () => {
+  const adminHtml = await (await runtimeGet('/admin')).text();
+  for (const html of [adminHtml, userPanelHtml]) {
+    const script = html.match(/<script[^>]*>([\s\S]*?)<\/script>/)![1];
+    expect(() => new Function(script)).not.toThrow();
+  }
+  expect(userPanelHtml).toContain('id="send" type="button" disabled>Enviar solicitud');
+  expect(userPanelHtml).toContain('El envío y el pago aún no están habilitados.');
+  expect(userPanelHtml).toContain('Continuar al pago · Próximamente');
+});
+
+
+test('pre-migration panel rejects every write method and preserves database counts', async () => {
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  const count = async () => (await sql.unsafe('SELECT (SELECT count(*) FROM ad507.addresses)::int AS addresses,(SELECT count(*) FROM ad507.address_ownership)::int AS ownership,(SELECT count(*) FROM ad507.orders)::int AS orders,(SELECT count(*) FROM ad507.audit_log)::int AS audit'))[0];
+  const before = await count();
+  for (const method of ['POST','PUT','PATCH','DELETE']) {
+    const res = await fetch('http://127.0.0.1:55440/v1/user/requests', { method, headers: { cookie: client, origin, 'content-type': 'application/json' }, body: JSON.stringify({ addressType: 'RESIDENTIAL', planCode: 'RESIDENTIAL', name: 'Must never exist', checkout: true, owner: true }) });
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toBe('USER_PANEL_SUBMISSION_NOT_ENABLED');
+    expect((await fetch('http://127.0.0.1:55440/v1/user/panel', {method, headers:{cookie:client}})).status).toBe(405);
+  }
+  expect(await count()).toEqual(before);
+  const panel = await runtimeGet('/panel');
+  const csp = panel.headers.get('content-security-policy')!;
+  expect(csp).toContain("form-action 'none'");
+  expect(csp).toMatch(/script-src 'nonce-[a-f0-9]+'/);
+  expect(csp).not.toContain("script-src 'unsafe-inline'");
+  const html = await panel.text();
+  expect(html).toMatch(/<script nonce="[a-f0-9]+">/);
+  expect(html).not.toContain('Administración');
+});
+
+test('panel sessions reject a wrong host, duplicate cookie and cross-site read', async () => {
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  const auth = createGeneralAuth(sql, env, google({}));
+  expect(await auth.currentUser(new Request('https://evil.test/v1/user/panel',{headers:{cookie:client}}))).toBeNull();
+  expect((await runtimeGet('/v1/user/panel',client+'; '+client)).status).toBe(401);
+  const res = await fetch('http://127.0.0.1:55440/v1/user/panel',{headers:{host:'ad507-core-production.up.railway.app','x-forwarded-proto':'https',cookie:client,origin:'https://evil.test','sec-fetch-site':'cross-site'}});
+  expect(res.status).toBe(403);
+});
+
+test('landline schema proposal persists both contacts without backfill in the isolated fixture only', async () => {
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/landline.sql', import.meta.url), 'utf8'));
+  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.addresses WHERE landline_phone IS NOT NULL'))[0].n).toBe(0);
+  await sql.unsafe("UPDATE ad507.addresses SET phone=$1,landline_phone=$2 WHERE code='AD507-TESTBUSINESS'", ['+50769991234','+5079981234']);
+  const row = (await sql.unsafe("SELECT phone,landline_phone FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0];
+  expect(row).toEqual({ phone:'+50769991234',landline_phone:'+5079981234' });
+  // Existing Place drafts preserve formatted local numbers; the proposal must accept that contract.
+  await sql.unsafe("UPDATE ad507.addresses SET landline_phone=$1 WHERE code='AD507-TESTBUSINESS'", ['998-1234']);
+  expect((await sql.unsafe("SELECT phone,landline_phone FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0]).toEqual({phone:'+50769991234',landline_phone:'998-1234'});
+  await sql.unsafe("UPDATE ad507.addresses SET landline_phone=$1 WHERE code='AD507-TESTBUSINESS'", ['+5079981234']);
+  let rejected = false;
+  try { await sql.unsafe("UPDATE ad507.addresses SET landline_phone='javascript:evil' WHERE code='AD507-TESTBUSINESS'"); } catch { rejected = true; }
+  expect(rejected).toBe(true);
+  expect((await sql.unsafe("SELECT landline_phone FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0].landline_phone).toBe('+5079981234');
+});
+
+test('authenticated panel reads are rate limited without enabling writes', async () => {
+  const client = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
+  let limited: Response | null = null;
+  for(let i=0;i<61;i++) { const res = await runtimeGet('/v1/user/panel',client); if(res.status===429) {limited=res;break;} expect(res.status).toBe(200); }
+  expect(limited?.status).toBe(429);
+  expect(limited?.headers.get('retry-after')).toBe('60');
+});

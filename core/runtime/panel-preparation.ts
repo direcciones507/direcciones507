@@ -22,8 +22,9 @@ export function inspectImage(bytes: Uint8Array, mime: string, size: number): boo
 }
 export function mediaCountAllowed(type: string, plan: string, count: number): boolean {
   if (!Number.isInteger(count) || count < 0) return false;
-  if (type === 'PLACE') return count === 1;
-  if (type === 'BUSINESS') return count === (plan === 'BUSINESS_PREMIUM_PRO' ? 6 : 1);
+  // count is gallery-only; logo and cover are validated separately.
+  if (type === 'PLACE') return count === 0;
+  if (type === 'BUSINESS') return count <= (plan === 'BUSINESS_PREMIUM_PRO' ? 5 : 0);
   return type === 'RESIDENTIAL' && count === 0;
 }
 /** Adapter seam, without implementation, credentials or network connection. */

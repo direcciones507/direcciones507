@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { mediaCountAllowed } from '../panel-preparation';
+import { mediaCountAllowed, validateRequestMedia } from '../panel-preparation';
 import { r2Settings } from '../r2-storage';
 
 describe('Gallery limits (logo and cover are separate)', () => {
@@ -37,5 +37,25 @@ describe('R2 configuration', () => {
   test('fails closed if credentials or account ID are missing', () => {
     expect(r2Settings({ ...env, R2_SECRET_ACCESS_KEY: '' })).toBeNull();
     expect(r2Settings({ ...env, R2_ACCOUNT_ID: 'not-an-account-id' })).toBeNull();
+  });
+});
+
+describe('Server-side request media policy', () => {
+  test('Lugar requires exactly one photo', () => {
+    expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos: 1, galleryPhotos: 0 })).toBe(true);
+    expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos: 0, galleryPhotos: 0 })).toBe(false);
+    expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos: 2, galleryPhotos: 0 })).toBe(false);
+  });
+  test('business requires one logo and restricts galleries by plan', () => {
+    expect(validateRequestMedia('BUSINESS', 'BUSINESS_FREE', { logos: 1, placePhotos: 0, galleryPhotos: 0 })).toBe(true);
+    expect(validateRequestMedia('BUSINESS', 'BUSINESS_FREE', { logos: 0, placePhotos: 0, galleryPhotos: 0 })).toBe(false);
+    expect(validateRequestMedia('BUSINESS', 'BUSINESS_FREE', { logos: 1, placePhotos: 0, galleryPhotos: 1 })).toBe(false);
+    expect(validateRequestMedia('BUSINESS', 'BUSINESS_PREMIUM_PRO', { logos: 1, placePhotos: 0, galleryPhotos: 5 })).toBe(true);
+    expect(validateRequestMedia('BUSINESS', 'BUSINESS_PREMIUM_PRO', { logos: 1, placePhotos: 0, galleryPhotos: 6 })).toBe(false);
+    expect(validateRequestMedia('BUSINESS', 'INVALID', { logos: 1, placePhotos: 0, galleryPhotos: 0 })).toBe(false);
+  });
+  test('residential has no uploaded media', () => {
+    expect(validateRequestMedia('RESIDENTIAL', 'RESIDENTIAL', { logos: 0, placePhotos: 0, galleryPhotos: 0 })).toBe(true);
+    expect(validateRequestMedia('RESIDENTIAL', 'RESIDENTIAL', { logos: 1, placePhotos: 0, galleryPhotos: 0 })).toBe(false);
   });
 });

@@ -488,7 +488,8 @@ test('read-only preflight inventories canonical schema and repeated proposals pr
   try{
     await connection.unsafe('BEGIN');
     await connection.unsafe('ALTER TABLE ad507.address_media ALTER COLUMN upload_status TYPE varchar(20)');
-    await expect(connection.unsafe(readFileSync(new URL('../schema-proposals/requests.sql',import.meta.url),'utf8'))).rejects.toThrow('REQUEST_COLUMN_COLLISION');
+    const collision=async()=>{await connection.unsafe(readFileSync(new URL('../schema-proposals/requests.sql',import.meta.url),'utf8'));};
+    await expect(collision()).rejects.toThrow('REQUEST_COLUMN_COLLISION');
   }finally{await connection.unsafe('ROLLBACK');connection.release();}
   expect((await sql.unsafe("SELECT data_type FROM information_schema.columns WHERE table_schema='ad507' AND table_name='address_media' AND column_name='upload_status'"))[0].data_type).toBe('text');
   // Explicit reserved connection keeps the intentionally aborted test transaction
@@ -496,6 +497,7 @@ test('read-only preflight inventories canonical schema and repeated proposals pr
   const readOnly=await sql.reserve();
   try{
     await readOnly.unsafe('BEGIN READ ONLY');
-    await expect(readOnly.unsafe("UPDATE ad507.addresses SET name='forbidden' WHERE false")).rejects.toThrow();
+    const forbidden=async()=>{await readOnly.unsafe("UPDATE ad507.addresses SET name='forbidden' WHERE false");};
+    await expect(forbidden()).rejects.toThrow();
   }finally{await readOnly.unsafe('ROLLBACK');readOnly.release();}
 });

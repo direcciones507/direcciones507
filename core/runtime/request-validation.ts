@@ -10,6 +10,7 @@ export type RequestDraft = {
   longitude: number;
   phone: string | null;
   landlinePhone: string | null;
+  email: string; hours: string; commercialDescription: string; namedCode: string; postalCode: string; postalZone: string; socials: Record<string,string>;
   media: { logos: number; placePhotos: number; galleryPhotos: number };
 };
 
@@ -34,13 +35,25 @@ export function validateRequestDraft(raw: unknown): RequestDraft {
   const latitude = value.latitude, longitude = value.longitude;
   if (typeof latitude !== 'number' || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
       typeof longitude !== 'number' || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw new Error('INVALID_COORDINATES');
+  for (const key of ['phone','landlinePhone']) if(value[key]!=null && typeof value[key]!=='string') throw new Error('INVALID_PHONE');
   const { phone, landlinePhone } = prepareContacts(value.phone, value.landlinePhone);
   const media = value.media;
   if (!media || typeof media !== 'object' || Array.isArray(media)) throw new Error('INVALID_MEDIA');
   const m = media as Record<string, unknown>;
   if (typeof m.logos !== 'number' || typeof m.placePhotos !== 'number' || typeof m.galleryPhotos !== 'number' ||
       !validateRequestMedia(type, plan, { logos: m.logos, placePhotos: m.placePhotos, galleryPhotos: m.galleryPhotos })) throw new Error('INVALID_MEDIA');
-  return { type, plan, name, reference, description, latitude, longitude, phone, landlinePhone,
+  const email=field('email',160,false),hours=field('hours',300,false),commercialDescription=field('commercialDescription',3000,false),namedCode=field('namedCode',80,false),postalCode=field('postalCode',20,false),postalZone=field('postalZone',120,false);
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('INVALID_EMAIL');
+  const premium=type==='BUSINESS'&&plan!=='BUSINESS_FREE';
+  if((commercialDescription&&plan!=='BUSINESS_PREMIUM_PRO')||(!premium&&(namedCode||postalCode||postalZone)))throw Error('CAPABILITY_VIOLATION');
+  const socials: Record<string,string>={};
+  for(const [platform,host]of Object.entries({instagram:'instagram.com',facebook:'facebook.com',tiktok:'tiktok.com'})){
+    const text=field(platform,300,false);if(!text)continue;if(!premium)throw Error('CAPABILITY_VIOLATION');
+    let url: URL;try{url=new URL(text);}catch{throw Error('INVALID_SOCIAL_URL');}
+    if(url.protocol!=='https:'||url.username||url.password||url.port||!(url.hostname===host||url.hostname==='www.'+host))throw Error('INVALID_SOCIAL_URL');
+    socials[platform]=url.href;
+  }
+  return { type, plan, name, reference, description, email,hours,commercialDescription,namedCode,postalCode,postalZone,socials, latitude, longitude, phone, landlinePhone,
     media: { logos: m.logos, placePhotos: m.placePhotos, galleryPhotos: m.galleryPhotos } };
 }
 

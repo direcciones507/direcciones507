@@ -91,3 +91,28 @@ Migración posterior individual: capturar ficha/código/enlace/QR y respaldo; va
 ## Producción
 
 Sin merge ni despliegue. Sin escrituras SQL reales, cargas/borrados R2, cambios de variables, credenciales, Excel, Apps Script, DNS/Namecheap, páginas, clientes o QR. Producción conserva su configuración y despliegue observados. PR #51 permanece en borrador y no está listo para cierre operativo.
+
+## Bloque 2 — preparación implementada (10 octubre 2026)
+
+Actualiza el bloqueo 5 anterior: escritor, formulario multipart, idempotencia, revisión, aprobación/rechazo y recuperación están implementados. El cierre operativo sigue pendiente de esquema vivo y proveedor canónico verificado de reserva/publicación.
+
+- `request-repository.ts` reutiliza usuarios, roles, planes, direcciones, propietarios, redes, medios y auditoría existentes; no crea tablas ni asignador. DRAFT → PENDING_REVIEW → ARCHIVED (rechazo), o PENDING_REVIEW aprobada → ACTIVE solo tras confirmación del publicador. Campos base en columnas canónicas; extras asociados a la misma solicitud.
+- `request-routes.ts`, `server.ts`, `request-admin-ui.ts`: ruta de solicitudes existente y operaciones del administrador existente; autenticación, autorización vigente, origen, límites multipart, rate limit y errores sanitizados. No crea un segundo panel.
+- `user-panel.ts`, `request-validation.ts`: formulario y campos del cliente conectados; idempotencia por usuario/clave/huella, conflictos explícitos y transacciones con locks PostgreSQL.
+- `request-media.ts`, `r2-storage.ts`: reutilizan procesamiento y adaptador anteriores; añaden PENDING/READY durable para impedir aprobación tras PUT fallido. Asociación previa y recuperación sin borrar enlaces inciertos. Duplicados equivalentes se rechazan antes de insertar.
+- `schema-proposals/requests.sql`: propuesta transaccional/repetible, solo probada en base aislada; mantiene UNIQUE y permite códigos NULL únicamente para solicitudes nuevas. No está en el runner ni se aplica al iniciar. `landline.sql` admite repetición segura, sin backfill ni reemplazo del validador anterior.
+- `tests/consolidated.test.ts`: cinco productos, permisos, persistencia, duplicados, aprobación/rechazo, PUT fallido, recuperación, concurrencia, colisión histórica y reintentos de publicación. R2 y proveedor canónico son fixtures simulados; no validan autoridades reales.
+
+### Autoridad histórica
+
+Lectura limitada del máster real `AD507_MASTER_PANAMA_PLANES_2026`, pestaña `direcciones`: A3:A2008 contiene 40 códigos no vacíos, sin duplicados en ese rango. A3:A8 muestra códigos numéricos derivados de `CONCAT("AD507-";TEXT(ROW()-2;"0000"))` y un código nominal manual. La posición de fila no garantiza reserva concurrente ni cobertura de todas las fuentes. Los 2000 códigos de `codes.json` no prueban asignaciones históricas. No se editó el máster ni Apps Script; no se obtuvo el script vinculado.
+
+Runtime mantiene `canonical:null`. La interfaz exige registro histórico verificado, reserva idempotente por ID y publicación confirmada con comprobante. Conserva el código reservado si falla publicación y serializa reintentos con conexión reservada/lock. UNIQUE protege códigos presentes en PostgreSQL, sin sustituir garantía global del proveedor anterior. No se implementó un contador alternativo ni se alteró el workflow de generación.
+
+### Reversión y pruebas pendientes
+
+Antes de aplicar SQL: introspectar esquema/ledger vivo, respaldo, comparación de constraints, prueba en copia y incorporación al runner existente. Reversión de aplicación: cerrar solicitudes, volver a versión anterior y conservar columnas/datos/auditorías/enlaces para recuperación. Restaurar `code NOT NULL` solo tras comprobar cero NULL; si existen, detener ese DDL sin inventar códigos ni borrar solicitudes. Un fallo antes de COMMIT revierte la propuesta íntegra.
+
+Local: 53 pruebas aprobadas, cero fallos, 658 assertions en PGlite con driver PostgreSQL. Tres casos requieren PostgreSQL nativo (runner en bases independientes y concurrencia de archivos/solicitudes); permanecen completos en CI. Bundle Bun aprobado. CI prueba suite íntegra, PostgreSQL 18.1 y Docker; resultado del SHA final en PR.
+
+`REQUEST_WORKFLOW_ENABLED=false` mantiene rutas/botones cerrados, sin variable para activar solicitudes. Pendientes: esquema vivo, registro histórico completo, contrato/código del asignador-publicador anterior, revocación R2 comprobada y pruebas físicas listadas arriba. Producción no recibió escrituras, cargas, despliegue, merge ni cambios de configuración.

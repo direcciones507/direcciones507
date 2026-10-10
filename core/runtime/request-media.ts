@@ -23,13 +23,20 @@ export function createRequestMediaStorage(sql: Sql, actorId: string, settings: R
       const limit = scope.role === 'logo' ? (row.address_type === 'BUSINESS' ? 1 : 0)
         : row.address_type === 'PLACE' ? 1 : row.plan === 'BUSINESS_PREMIUM_PRO' ? 5 : 0;
       if (row.count >= limit) throw new Error('MEDIA_LIMIT_EXCEEDED');
-      const inserted = await tx.unsafe(`INSERT INTO ad507.address_media(address_id,media_type,storage_key,position,is_primary)
-        VALUES($1::uuid,$2,$3,$4,$5) RETURNING id::text`, [scope.addressId, mediaType, scope.storageKey, row.count, row.count === 0]);
+      const inserted = await tx.unsafe(`INSERT INTO ad507.address_media(address_id,media_type,storage_key,position,is_primary,upload_status)
+        VALUES($1::uuid,$2,$3,$4,$5,'PENDING') RETURNING id::text`, [scope.addressId, mediaType, scope.storageKey, row.count, row.count === 0]);
       await tx.unsafe(`INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id)
         VALUES($1::uuid,'USER','MEDIA_UPLOAD_INTENT','ADDRESS_MEDIA',$2)`, [actorId, inserted[0].id]);
     });
   };
   // Failed PUT leaves its private storage_key linked for bounded, explicit recovery.
   // Never delete the link on timeout: the upstream object may already have been written.
-  return createR2Storage(settings, { authorize, registerIntent, fetch: http });
+  const completeIntent: MediaIntent = async scope => {
+    await sql.begin(async tx=>{
+      await tx.unsafe('SELECT id FROM ad507.addresses WHERE id=$1::uuid FOR UPDATE',[scope.addressId]);
+      if(!await createMediaAuthorizer(tx as unknown as Sql,actorId)({...scope,action:'upload'}))throw Error('MEDIA_FORBIDDEN');
+      await tx.unsafe("UPDATE ad507.address_media SET upload_status='READY' WHERE address_id=$1::uuid AND storage_key=$2",[scope.addressId,scope.storageKey]);
+    });
+  };
+  return createR2Storage(settings, { authorize, registerIntent, completeIntent, fetch: http });
 }

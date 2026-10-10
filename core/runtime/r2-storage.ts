@@ -63,7 +63,7 @@ export type MediaIntent = (scope: MediaScope & { storageKey: string }) => Promis
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 
 /** No route is enabled by constructing this adapter. Authorization must be bound to the authenticated actor. */
-export function createR2Storage(settings: R2Settings, options?: { authorize: MediaAuthorization; registerIntent: MediaIntent; fetch?: typeof fetch }) {
+export function createR2Storage(settings: R2Settings, options?: { authorize: MediaAuthorization; registerIntent: MediaIntent; completeIntent?: MediaIntent; fetch?: typeof fetch }) {
   if (settings.rotationConfirmed !== true || settings.bucket !== 'direcciones507-media') throw new Error('R2_ROTATION_NOT_CONFIRMED');
   if (!r2Settings({ AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: 'true', R2_ACCOUNT_ID: settings.accountId,
     R2_BUCKET: settings.bucket, R2_ACCESS_KEY_ID: settings.accessKeyId, R2_SECRET_ACCESS_KEY: settings.secretAccessKey })) throw new Error('INVALID_R2_SETTINGS');
@@ -91,6 +91,7 @@ export function createR2Storage(settings: R2Settings, options?: { authorize: Med
     await options.registerIntent({ ownerId: input.ownerId, addressId: input.addressId, role: input.role, storageKey: key });
     const response = await send('PUT', key, processed.bytes);
     if (!response.ok) throw new Error('R2_UPLOAD_FAILED');
+    await options.completeIntent?.({ ownerId: input.ownerId, addressId: input.addressId, role: input.role, storageKey: key });
     return { storageKey: key, bucket: settings.bucket };
   };
   return {

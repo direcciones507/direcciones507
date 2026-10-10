@@ -27,6 +27,8 @@ beforeAll(async () => {
   sql = postgres(database, { max: 1 });
   for (const file of ['0000_migration_ledger.sql', '0001_core_foundation.sql', '0002_plan_catalog.sql', '0003_plan_capabilities.sql', '0005_general_google_auth.sql']) await sql.unsafe(readFileSync(new URL('db/migrations/' + file, root), 'utf8'));
   await sql.unsafe(readFileSync(new URL('db/migrations/0005_general_google_auth.sql', root), 'utf8'));
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/landline.sql', import.meta.url), 'utf8'));
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/requests.sql', import.meta.url), 'utf8'));
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'client@gmail.com'),($2::uuid,'admin@example.test')", [clientId, adminId]);
   await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')", [clientId, adminId]);
   runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: '55440', DATABASE_URL: database, AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
@@ -382,4 +384,90 @@ test('media associations commit before PUT; concurrent retries, quotas and timeo
     await expect(storage.storeOptimized(input)).rejects.toThrow('MEDIA_FORBIDDEN');
     expect(calls).toBe(7);
   } finally { await db.end(); }
+});
+
+test('request lifecycle persists all five products, deduplicates and separates moderation from publication', async () => {
+  const {createRequestRepository}=await import('../request-repository');
+  const sharp=(await import('sharp')).default;
+  const owner=crypto.randomUUID(), reviewer=crypto.randomUUID(), outsider=crypto.randomUUID();
+  for(const [id,email,role]of [[owner,'request-owner@example.test','CLIENT'],[reviewer,'request-admin@example.test','ADMIN'],[outsider,'request-outsider@example.test','CLIENT']]){await sql.unsafe('INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)',[id,email]);await sql.unsafe('INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,$2)',[id,role]);}
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  let failUploads=false;
+  const repo=createRequestRepository(sql,{r2:settings,fetch:(async()=>{if(failUploads)throw Error('private upstream detail');return new Response(null,{status:200});}) as typeof fetch});
+  const png=await sharp({create:{width:12,height:12,channels:3,background:'red'}}).png().toBuffer();
+  const logo={role:'logo' as const,bytes:png,mime:'image/png'},photo={...logo,role:'photo' as const};
+  const base={type:'BUSINESS',plan:'BUSINESS_FREE',name:'Full request',reference:'Near park',description:'Description',latitude:8.1,longitude:-80.9,phone:'61234567',landlinePhone:'9981234',email:'customer@example.test',hours:'8 a 5'};
+  const products=[{type:'RESIDENTIAL',plan:'RESIDENTIAL',files:[]},{type:'PLACE',plan:'PLACE',files:[photo]},{type:'BUSINESS',plan:'BUSINESS_FREE',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',files:[logo,photo]}];
+  for(const [i,p]of products.entries()){
+    const raw={...base,type:p.type,plan:p.plan,name:base.name+i,...(p.plan==='BUSINESS_PREMIUM_PRO'?{commercialDescription:'Commercial text',namedCode:'Test name',postalCode:'0901',instagram:'https://www.instagram.com/test/'}:{})};
+    const key='request-key-'+String(i).padStart(20,'0'),created=await repo.submit(owner,key,raw,p.files);
+    expect(created.status).toBe('PENDING_REVIEW');expect(created.code).toBeNull();
+    expect((await repo.submit(owner,key,raw,p.files)).id).toBe(created.id);
+    expect((await repo.submit(owner,'different-'+key,raw,p.files)).id).toBe(created.id);
+    await expect(repo.submit(owner,key,{...raw,name:'different'},p.files)).rejects.toThrow('IDEMPOTENCY_CONFLICT');
+    const read=await repo.read(owner,created.id);expect(read.name).toBe(raw.name);expect(read.phone).toBe('+50761234567');expect(read.landlinePhone).toBe('+5079981234');expect(read.extras.email).toBe('customer@example.test');expect(read.media.every(m=>m.status==='READY')).toBe(true);
+    expect(JSON.stringify(read)).not.toContain('request_key_hash');
+    await expect(repo.read(outsider,created.id)).rejects.toThrow('REQUEST_NOT_FOUND');
+    await expect(repo.review(owner,created.id,'APPROVED')).rejects.toThrow('FORBIDDEN');
+    expect((await repo.review(reviewer,created.id,'APPROVED')).decision).toBe('APPROVED');
+    expect((await repo.review(reviewer,created.id,'APPROVED')).decision).toBe('APPROVED');
+    await expect(repo.review(reviewer,created.id,'REJECTED')).rejects.toThrow('INVALID_STATE_TRANSITION');
+    await expect(repo.publish(reviewer,created.id)).rejects.toThrow('CANONICAL_PUBLICATION_NOT_READY');
+    expect((await repo.read(reviewer,created.id)).status).toBe('PENDING_REVIEW');
+  }
+  expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE actor_user_id=$1::uuid AND action='REQUEST_CREATED'",[owner]))[0].n).toBe(5);
+  const rejected=await repo.submit(owner,'reject-000000000000000000',{...base,name:'Rejected'},[logo]);
+  expect((await repo.review(reviewer,rejected.id,'REJECTED')).status).toBe('ARCHIVED');
+  expect((await repo.review(reviewer,rejected.id,'REJECTED')).status).toBe('ARCHIVED');
+  await expect(repo.review(reviewer,rejected.id,'APPROVED')).rejects.toThrow('INVALID_STATE_TRANSITION');
+  failUploads=true;
+  const recovering=await repo.submit(owner,'recover-00000000000000000',{...base,name:'Recover'},[logo]);
+  expect(recovering.status).toBe('DRAFT');expect(recovering.error).toBe('MEDIA_UPLOAD_RETRY_REQUIRED');
+  expect((await repo.read(owner,recovering.id)).media[0].status).toBe('PENDING');
+  await expect(repo.review(reviewer,recovering.id,'APPROVED')).rejects.toThrow('INVALID_STATE_TRANSITION');
+  failUploads=false;
+  expect((await repo.submit(owner,'recover-00000000000000000',{...base,name:'Recover'},[logo])).status).toBe('PENDING_REVIEW');
+  expect((await repo.read(owner,recovering.id)).media).toHaveLength(1);
+  const before=(await sql.unsafe("SELECT count(*)::int AS n FROM ad507.addresses WHERE source='USER_REQUEST'"))[0].n;
+  await expect(repo.submit(owner,'invalid-00000000000000000',base,[{...logo,bytes:png.subarray(0,12)}])).rejects.toThrow('INVALID_IMAGE');
+  expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.addresses WHERE source='USER_REQUEST'"))[0].n).toBe(before);
+  await expect(repo.review(reviewer,(await sql.unsafe("SELECT id::text FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0].id,'APPROVED')).rejects.toThrow('REQUEST_NOT_FOUND');
+});
+
+test('native request concurrency and canonical-provider recovery never allocate independently', async () => {
+  const {createRequestRepository}=await import('../request-repository');
+  const owner=(await sql.unsafe("SELECT id::text FROM ad507.users WHERE email='request-owner@example.test'"))[0].id,reviewer=(await sql.unsafe("SELECT id::text FROM ad507.users WHERE email='request-admin@example.test'"))[0].id;
+  const db=postgres(isolatedDatabase,{max:8});
+  const reserved=new Map<string,string>(),published=new Map<string,string>();let reserveCalls=0,publishCalls=0,fail=true;
+  const canonical={historicalRegistryVerified:true as const,reserve:async({id}:{id:string})=>{reserveCalls++;if(!reserved.has(id))reserved.set(id,'AD507-ISOLATED'+String(reserved.size+1));return reserved.get(id)!;},publish:async({id}:{id:string})=>{publishCalls++;if(fail)throw Error('upstream failure');if(!published.has(id))published.set(id,'isolated-receipt-'+id);return {confirmed:true as const,receipt:published.get(id)!};}};
+  const repo=createRequestRepository(db,{r2:null,canonical}),raw={type:'RESIDENTIAL',name:'Concurrent fixture',reference:'Park',latitude:8,longitude:-80};
+  try{
+    const attempts=await Promise.all(Array.from({length:8},(_,i)=>repo.submit(owner,'parallel-key-'+String(i).padStart(16,'0'),raw,[])));
+    expect(new Set(attempts.map(r=>r.id)).size).toBe(1);expect(attempts.every(r=>r.status==='PENDING_REVIEW')).toBe(true);
+    const id=attempts[0].id;await expect(repo.publish(reviewer,id)).rejects.toThrow('APPROVAL_REQUIRED');expect(reserveCalls).toBe(0);
+    await repo.review(reviewer,id,'APPROVED');await expect(repo.publish(reviewer,id)).rejects.toThrow('upstream failure');
+    expect((await repo.read(owner,id)).status).toBe('PENDING_REVIEW');expect((await repo.read(owner,id)).code).toBe('AD507-ISOLATED1');
+    fail=false;const results=await Promise.all(Array.from({length:5},()=>repo.publish(reviewer,id)));
+    expect(results.every(r=>r.status==='ACTIVE')).toBe(true);expect(reserveCalls).toBe(1);expect(publishCalls).toBe(2);expect(published.size).toBe(1);
+    expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='REQUEST_PUBLISHED'",[id]))[0].n).toBe(1);
+    const collision=await repo.submit(owner,'collision-0000000000000000',{...raw,name:'Collision'},[]);await repo.review(reviewer,collision.id,'APPROVED');
+    const bad=createRequestRepository(db,{r2:null,canonical:{...canonical,reserve:async()=> 'AD507-TESTBUSINESS'}});
+    await expect(bad.publish(reviewer,collision.id)).rejects.toThrow();expect((await repo.read(owner,collision.id)).code).toBeNull();expect(publishCalls).toBe(2);
+    await expect(createRequestRepository(db,{r2:null}).publish(reviewer,collision.id)).rejects.toThrow('CANONICAL_PUBLICATION_NOT_READY');
+  }finally{await db.end();}
+});
+
+test('request routes default closed and development context validates authentication, CSRF and multipart', async () => {
+  const {handleRequestRoutes}=await import('../request-routes');const {createRequestRepository}=await import('../request-repository');
+  const owner=(await sql.unsafe("SELECT id::text FROM ad507.users WHERE email='request-owner@example.test'"))[0].id;
+  const repository=createRequestRepository(sql,{r2:null});let user:any={id:owner,roles:['CLIENT']};
+  const context={enabled:true,sql,auth:{currentUser:async()=>user},repository,r2:null};
+  const req=(originHeader:string=origin)=>{const body=new FormData();body.append('payload',JSON.stringify({type:'RESIDENTIAL',name:'Multipart fixture',reference:'Park',latitude:8,longitude:-80}));return new Request(origin+'/v1/user/requests',{method:'POST',headers:{origin:originHeader,'idempotency-key':'multipart-0000000000000000'},body});};
+  expect((await handleRequestRoutes(req(),{...context,enabled:false}))!.status).toBe(503);
+  expect((await handleRequestRoutes(req('https://evil.test'),context))!.status).toBe(403);
+  user=null;expect((await handleRequestRoutes(req(),context))!.status).toBe(401);
+  user={id:owner,roles:['OPERATOR']};expect((await handleRequestRoutes(req(),context))!.status).toBe(403);
+  user={id:owner,roles:['CLIENT']};const response=(await handleRequestRoutes(req(),context))!;expect(response.status).toBe(200);expect((await response.json()).request.status).toBe('PENDING_REVIEW');
+  const forbidden=new Request(origin+'/v1/admin/requests/'+crypto.randomUUID()+'/approve',{method:'POST',headers:{origin}});expect((await handleRequestRoutes(forbidden,context))!.status).toBe(403);
+  expect((await runtimeGet('/v1/user/requests')).status).toBe(503);
 });

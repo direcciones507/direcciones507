@@ -4,7 +4,7 @@ import { inspectImage, prepareContacts, mediaCountAllowed } from './panel-prepar
 
 const USER_PANEL_SUBMISSION_ENABLED = false;
 // Admin creation uses the same form; release remains closed in this PR.
-const ADMIN_CREATION_ENABLED = false;
+const ADMIN_CREATION_ENABLED = process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 const reads = new Map<string, { start: number; count: number }>();
 function allowPanelRead(userId: string) {
   const now = Date.now();

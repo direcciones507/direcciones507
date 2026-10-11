@@ -50,6 +50,8 @@ test('server country/territory validation and international phones preserve Pana
   expect(data.phone).toBe(expected);expect(data.countryCode).toBe(countryCode);expect(data.territory.city).toBe('Ciudad');
  }
  expect(prepareContacts('+573001234567',null,'506').phone).toBe('+573001234567');
+ expect(prepareContacts('573001234567',null,'57').phone).toBe('+573001234567');
+ expect(prepareContacts('50688888888',null,'506').phone).toBe('+50688888888');
  expect(()=>validateRequestDraft({...draft,countryCode:'CO',region:42})).toThrow('INVALID_REGION');
  for(const c of ['PE','EC','XX',null])expect(()=>requestCountry(c)).toThrow('INVALID_COUNTRY');
  for(const c of Object.keys(COUNTRIES).filter(c=>!['PA','PE','EC'].includes(c)))expect(()=>assertCountryCommerce(c)).toThrow('COUNTRY_NOT_ENABLED');

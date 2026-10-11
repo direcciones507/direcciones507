@@ -7,7 +7,7 @@ DO $$ BEGIN
   RAISE EXCEPTION 'PAYMENT_FOUNDATION_REQUIRED';
  END IF;
 END $$;
-ALTER TABLE ad507.orders ADD CONSTRAINT core_paypal_order_binding_check CHECK(provider IS DISTINCT FROM 'PAYPAL' OR (user_id IS NOT NULL AND address_id IS NOT NULL AND payment_plan IS NOT NULL AND payment_environment='test' AND provider_order_id IS NOT NULL AND operation_key IS NOT NULL AND amount_cents>0 AND currency='USD'));
+ALTER TABLE ad507.orders ADD CONSTRAINT core_paypal_order_binding_check CHECK(provider IS DISTINCT FROM 'PAYPAL' OR (user_id IS NOT NULL AND address_id IS NOT NULL AND payment_plan IS NOT NULL AND payment_environment IS NOT NULL AND payment_environment='test' AND provider_order_id IS NOT NULL AND operation_key IS NOT NULL AND amount_cents>0 AND currency='USD'));
 CREATE UNIQUE INDEX core_paypal_operation_uidx ON ad507.orders(operation_key) WHERE provider='PAYPAL';
 CREATE UNIQUE INDEX core_paypal_reference_uidx ON ad507.orders(payment_environment,provider_reference) WHERE provider='PAYPAL' AND provider_reference IS NOT NULL;
 -- One immutable intent per address/environment across methods, even after timeouts/cancellation.

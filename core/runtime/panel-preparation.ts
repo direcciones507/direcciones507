@@ -7,7 +7,7 @@ export function prepareContacts(phone: unknown, landlinePhone: unknown, prefix =
     if (!/^[+\d\s().-]+$/.test(text)) throw new Error('INVALID_PHONE');
     let digits = text.replace(/\D/g, '');
     if (prefix === '507') { if (digits.length === 7 || digits.length === 8) digits = '507' + digits; }
-    else if (!text.startsWith('+')) digits = prefix + digits;
+    else if (!text.startsWith('+') && !(digits.startsWith(prefix) && digits.length >= 10)) digits = prefix + digits;
     if (digits.length < 10 || digits.length > 15) throw new Error('INVALID_PHONE');
     return '+' + digits;
   };

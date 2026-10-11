@@ -1,3 +1,4 @@
+import {requestCountry} from './country-configuration';
 import { createHash } from 'node:crypto';
 import { signedR2Request } from './r2-signing';
 import type { PreparedMediaStorage } from './panel-preparation';
@@ -30,7 +31,7 @@ export function signedR2Put(settings: R2Settings, key: string, bytes: Uint8Array
   return signedR2Request(settings, 'PUT', key, bytes, mime, date);
 }
 
-export type MediaScope = { ownerId: string; addressId: string; role: 'logo' | 'photo' };
+export type MediaScope = { ownerId: string; addressId: string; role: 'logo' | 'photo'; countryCode?: string };
 export type MediaAuthorization = (scope: MediaScope & { action: 'upload' | 'read' | 'delete'; storageKey?: string }) => Promise<boolean>;
 export type MediaIntent = (scope: MediaScope & { storageKey: string }) => Promise<void>;
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
@@ -45,7 +46,8 @@ export function createR2Storage(settings: R2Settings, options?: { authorize: Med
   const http = options.fetch ?? fetch;
   async function authorize(scope: MediaScope, action: 'upload' | 'read' | 'delete', storageKey?: string) {
     if (!uuid.test(scope.ownerId) || !uuid.test(scope.addressId) || !['logo', 'photo'].includes(scope.role)) throw new Error('INVALID_MEDIA_OWNER');
-    if (storageKey && !new RegExp('^addresses/' + scope.addressId + '/' + scope.role + '/[a-f0-9]{64}\\.webp$').test(storageKey)) throw new Error('INVALID_STORAGE_KEY');
+    if(scope.countryCode)requestCountry(scope.countryCode);
+    if (storageKey && !new RegExp('^(?:countries/(?:CO|CR|GT|SV|HN|NI|MX)/)?addresses/' + scope.addressId + '/' + scope.role + '/[a-f0-9]{64}\\.webp$').test(storageKey)) throw new Error('INVALID_STORAGE_KEY');
     if (!await options!.authorize({ ...scope, action, storageKey })) throw new Error('MEDIA_FORBIDDEN');
   }
   async function send(method: 'PUT' | 'GET' | 'DELETE', key: string, bytes = new Uint8Array()) {
@@ -59,12 +61,13 @@ export function createR2Storage(settings: R2Settings, options?: { authorize: Med
     await authorize(input, 'upload');
     const processed = await optimizeRequestImage(input.bytes, input.mime);
     // Stable address/role/content key makes identical upload retries target one object.
-    const key = `addresses/${input.addressId}/${input.role}/${hash(processed.bytes)}.webp`;
+    const country=input.countryCode?requestCountry(input.countryCode):'PA';
+    const key = (country==='PA'?'':'countries/'+country+'/')+`addresses/${input.addressId}/${input.role}/${hash(processed.bytes)}.webp`;
     // Persist the association BEFORE PUT: an ambiguous timeout still has a durable recovery key.
-    await options.registerIntent({ ownerId: input.ownerId, addressId: input.addressId, role: input.role, storageKey: key });
+    await options.registerIntent({ ownerId: input.ownerId, addressId: input.addressId, role: input.role, countryCode:input.countryCode, storageKey: key });
     const response = await send('PUT', key, processed.bytes);
     if (!response.ok) throw new Error('R2_UPLOAD_FAILED');
-    await options.completeIntent?.({ ownerId: input.ownerId, addressId: input.addressId, role: input.role, storageKey: key });
+    await options.completeIntent?.({ ownerId: input.ownerId, addressId: input.addressId, role: input.role, countryCode:input.countryCode, storageKey: key });
     return { storageKey: key, bucket: settings.bucket };
   };
   return {

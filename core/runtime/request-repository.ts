@@ -111,7 +111,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       });
       if(request.status!=='DRAFT')return {id:request.id,status:request.status,code:request.code,review:request.review_decision};
       try {
-        if(files.length){const storage=createRequestMediaStorage(sql,actorId,options.r2!,options.fetch);for(const file of [...preparedFiles].sort((a,b)=>a.role==='logo'?-1:b.role==='logo'?1:0))await storage.storeOptimized({...file,ownerId:actorId,addressId:request.id});}
+        if(files.length){const storage=createRequestMediaStorage(sql,actorId,options.r2!,options.fetch);for(const file of [...preparedFiles].sort((a,b)=>a.role==='logo'?-1:b.role==='logo'?1:0))await storage.storeOptimized({...file,ownerId:actorId,addressId:request.id,countryCode:data.countryCode});}
         return await sql.begin(async tx=>{
           if(admin){const roles=await tx.unsafe("SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role IN ('ADMIN','COMMERCIAL') LIMIT 1",[actorId]);if(!roles.length)throw Error('FORBIDDEN');}else await actor(tx,actorId,'CLIENT');const row=await owned(tx,actorId,request.id);
           if(row.status==='DRAFT'){await complete(tx,row);await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',updated_at=now() WHERE id=$1::uuid",[row.id]);await audit(tx,actorId,'REQUEST_SUBMITTED',row.id,admin);}

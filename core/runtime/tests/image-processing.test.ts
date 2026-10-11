@@ -48,6 +48,13 @@ test('both storage names use one uploader; repeated/concurrent uploads target on
   expect(calls[0].init.redirect).toBe('error');
   expect(JSON.stringify(results)).not.toContain('https:');
 });
+test('new foreign keys use country/address scope while Panama retries preserve existing object keys',async()=>{
+ const intents:any[]=[];const storage=createR2Storage(settings,{registerIntent:async s=>{intents.push(s);},authorize:async()=>true,fetch:(async()=>new Response(null,{status:200})) as typeof fetch});
+ const input={...scope,bytes:await image().png().toBuffer(),mime:'image/png'};
+ const old=await storage.storeOptimized(input),pa=await storage.storeOptimized({...input,countryCode:'PA'}),co=await storage.storeOptimized({...input,countryCode:'CO'});
+ expect(pa.storageKey).toBe(old.storageKey);expect(co.storageKey).toBe('countries/CO/'+old.storageKey);expect(intents.at(-1).countryCode).toBe('CO');
+ await expect(storage.storeOptimized({...input,countryCode:'ZZ'})).rejects.toThrow('INVALID_COUNTRY');
+});
 test('authorization, UUID and object scope fail closed before every network operation', async () => {
   let network = 0;
   const storage = createR2Storage(settings,{registerIntent:async()=>{},authorize:async()=>false,fetch:(async()=>{network++;throw Error();}) as typeof fetch});

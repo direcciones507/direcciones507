@@ -30,7 +30,7 @@ export function mediaCountAllowed(type: string, plan: string, count: number): bo
 }
 /** Shared private-storage contract implemented by r2-storage; no public URLs. */
 export interface PreparedMediaStorage {
-  storeOptimized(input: { bytes: Uint8Array; mime: string; ownerId: string; addressId: string; role: 'logo' | 'photo' }): Promise<{ storageKey: string; bucket: string }>;
+  storeOptimized(input: { bytes: Uint8Array; mime: string; ownerId: string; addressId: string; role: 'logo' | 'photo'; countryCode?: string }): Promise<{ storageKey: string; bucket: string }>;
 }
 
 /** Server-side media policy; browser validation alone is not authoritative. */

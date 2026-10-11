@@ -657,3 +657,38 @@ test('individual commercial staging, verified cutover and rollback preserve orig
     }
   }finally{await db.end({timeout:1});}
 },30000);
+
+
+test('payment preparation reuses orders: immutable amount, ownership, late IPN and idempotent audit',async()=>{
+  const {createPaymentRepository,requireConfirmedPayment}=await import('../payment-repository');
+  const {createHmac}=await import('node:crypto');
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/payments.sql',import.meta.url),'utf8'));
+  const config={environment:'test' as const,merchantId:'isolated',domain:'https://example.test',ipnUrl:'https://example.test/ipn',secret:Buffer.from('isolated-key.metadata').toString('base64')};
+  const db=postgres(isolatedDatabase,{max:4}),repo=createPaymentRepository(db,config);
+  const make=async(plan:string)=>{
+    const rows=await db.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source,request_key_hash,request_data) VALUES(NULL,'BUSINESS','PENDING_REVIEW','Private payment test','USER_REQUEST',$1,$2::jsonb) RETURNING id",[crypto.randomUUID(),db.json({plan})]);
+    await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[rows[0].id,clientId]);return rows[0].id;
+  };
+  const signed=(orderId:string,status:string)=>new URLSearchParams({orderId,status,domain:config.domain,hash:createHmac('sha256','isolated-key').update(orderId+status+config.domain).digest('hex')});
+  try{
+    const address=await make('BUSINESS_PREMIUM');
+    const [a,b]=await Promise.all([repo.prepare(clientId,address,'payment-test-key-0001'),repo.prepare(clientId,address,'payment-test-key-0001')]);
+    expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(1999);
+    await expect(repo.prepare(clientId,address,'payment-test-key-0002')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+    await expect(repo.read(adminId,a.order.id)).rejects.toThrow('PAYMENT_NOT_FOUND');
+    await expect(repo.confirm(signed(a.order.provider_order_id,'E'))).rejects.toThrow('PAYMENT_PROVIDER_REFERENCE_REQUIRED');
+    await repo.registerProviderOrder(a.order.id,'isolated-provider-transaction');
+    await repo.confirm(signed(a.order.provider_order_id,'R'));
+    const paid=await Promise.all([repo.confirm(signed(a.order.provider_order_id,'E')),repo.confirm(signed(a.order.provider_order_id,'E'))]);
+    expect(paid.filter(p=>!p.unchanged)).toHaveLength(1);
+    expect((await repo.read(clientId,a.order.id)).status).toBe('PAID');
+    const requestRow=(await db.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[address]))[0];
+    await requireConfirmedPayment(db,requestRow,'test');await expect(requireConfirmedPayment(db,requestRow,'production')).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');
+    expect((await repo.confirm(signed(a.order.provider_order_id,'C'))).status).toBe('PAID');
+    expect((await db.unsafe('SELECT status FROM ad507.addresses WHERE id=$1::uuid',[address]))[0].status).toBe('PENDING_REVIEW');
+    expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='YAPPY_PAYMENT_CONFIRMED'",[a.order.id]))[0].n).toBe(2);
+    const free=await make('BUSINESS_FREE');expect(await repo.prepare(clientId,free,'payment-free-key-0001')).toEqual({required:false,amountCents:0});
+    expect((await db.unsafe('SELECT id FROM ad507.orders WHERE address_id=$1::uuid',[free])).length).toBe(0);
+    await expect(createPaymentRepository(db,{...config,environment:'production'}).read(clientId,a.order.id)).rejects.toThrow('PAYMENT_NOT_FOUND');
+  }finally{await db.end();}
+});

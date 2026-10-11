@@ -5,6 +5,7 @@ import { createRequestMediaStorage } from './request-media';
 import { optimizeRequestImage } from './image-processing';
 import type { R2Settings } from './r2-storage';
 import { validateHistoricalSnapshot, snapshotHash, verifyHistoricalPhotos, verifyMigrationBridge, verifyHistoricalCodePresent } from './commercial-migration';
+import { requireConfirmedPayment } from './payment-repository';
 
 const digest=(value:string|Uint8Array)=>createHash('sha256').update(value).digest('hex');
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
@@ -14,7 +15,7 @@ export type CanonicalPublication = {
   reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string})=>Promise<string>;
   publish: (request:{id:string;code:string;type:string})=>Promise<{confirmed:true;receipt:string}>;
 };
-export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null}) {
+export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production'}) {
   const actor=async(tx:any,id:string,role:string)=>{
     const users=await tx.unsafe(`SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role=$2`,[id,role]);
     if(!users.length)throw Error('FORBIDDEN');
@@ -172,6 +173,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         if(row.status==='ACTIVE'&&row.publication_receipt)return {id:row.id,code:row.code,status:'ACTIVE',receipt:row.publication_receipt};
         if((row.status!=='PENDING_REVIEW'&&!(row.status==='SUSPENDED'&&row.request_data?.migration))||row.review_decision!=='APPROVED')throw Error('APPROVAL_REQUIRED');
         await complete(session,row);
+        if(options.paymentEnvironment)await requireConfirmedPayment(session,row,options.paymentEnvironment);
         if(row.request_data?.migration){await historicalIntegrity(session,row);await verifyHistoricalCodePresent(row.code,options.fetch);await verifyMigrationBridge(row,options.fetch);const proof=await verifyHistoricalPhotos(row.legacy_payload,options.fetch);if(snapshotHash(proof)!==snapshotHash(row.request_data.migration.photoProof))throw Error('HISTORICAL_MEDIA_UNVERIFIED');}
         const code=row.code??await options.canonical.reserve({id:row.id,type:row.address_type,plan:row.request_data.plan,name:row.name,requestedName:row.request_data.namedCode});
         if(!/^AD507-[A-Z0-9_-]+$/.test(code))throw Error('CANONICAL_CODE_INVALID');
@@ -186,6 +188,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           const current=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid FOR UPDATE",[row.id]);
           if(!['PENDING_REVIEW',...(row.request_data?.migration?['SUSPENDED']:[])].includes(current[0]?.status)||current[0]?.review_decision!=='APPROVED')throw Error('PUBLICATION_STATE_CONFLICT');
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
+          if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
           await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}

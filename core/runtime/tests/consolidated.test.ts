@@ -358,7 +358,7 @@ test('media associations commit before PUT; concurrent retries, quotas and timeo
   await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)",[addressId,owner]);
   const db=postgres(isolatedDatabase,{max:4});
   let calls=0, fail=true;
-  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   const storage=createRequestMediaStorage(db,owner,settings,(async (url,init)=>{
     calls++;
     const key=new URL(String(url)).pathname.replace('/direcciones507-media/','');
@@ -391,7 +391,7 @@ test('request lifecycle persists all five products, deduplicates and separates m
   const sharp=(await import('sharp')).default;
   const owner=crypto.randomUUID(), reviewer=crypto.randomUUID(), outsider=crypto.randomUUID();
   for(const [id,email,role]of [[owner,'request-owner@example.test','CLIENT'],[reviewer,'request-admin@example.test','ADMIN'],[outsider,'request-outsider@example.test','CLIENT']]){await sql.unsafe('INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)',[id,email]);await sql.unsafe('INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,$2)',[id,role]);}
-  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   let failUploads=false;
   const repo=createRequestRepository(sql,{r2:settings,fetch:(async()=>{if(failUploads)throw Error('private upstream detail');return new Response(null,{status:200});}) as typeof fetch});
   const png=await sharp({create:{width:12,height:12,channels:3,background:'red'}}).png().toBuffer();
@@ -507,7 +507,7 @@ test('ADMIN creates without client identity; transfer and reversal only change o
   const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
   const sharp=(await import('sharp')).default;
   const db=postgres(isolatedDatabase,{max:8});
-  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
   const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
   const file={role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:12,height:12,channels:3,background:'green'}}).png().toBuffer()};
@@ -610,7 +610,7 @@ test('new publication HTTP serves the existing template and PostgreSQL API; hist
 test('ADMIN five products reuse quotas and concurrent distinct reservations have unique codes',async()=>{
   const {createRequestRepository}=await import('../request-repository');const {createNewAddressPublication}=await import('../new-address-publication');
   const sharp=(await import('sharp')).default;const db=postgres(isolatedDatabase,{max:8});
-  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
   const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
   const png=await sharp({create:{width:8,height:8,channels:3,background:'yellow'}}).png().toBuffer();const logo={role:'logo' as const,bytes:png,mime:'image/png'},photo={...logo,role:'photo' as const};

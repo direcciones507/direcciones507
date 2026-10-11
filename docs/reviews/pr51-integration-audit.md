@@ -1,5 +1,8 @@
 # PR #51 — integración y cierre operativo
 
+> Current R2 correction, 2026-10-11: the rotation requirement below is historical and superseded. Its original exposure assertion is not supported by an identified incident. `AD507_R2_CONFIGURATION_VERIFIED` now requires explicit attestation of the current configuration, backed by the operator-confirmed active token, bucket-scoped Object Read & Write, configured Railway variables and passed real write/read/delete test. No test is repeated and no production flag is set. See pr51-closeout-20261011.md for evidence and boundaries.
+
+
 Fecha: 2026-10-10. Base revisada: `f560c8fa790f981497de02180f578c014c6d9802`; rama `feat/r2-storage-adapter-20261010`, PR base `feat/admin-ui-20261006`.
 
 ## Dictamen

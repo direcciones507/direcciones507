@@ -4,7 +4,7 @@ import type { PreparedMediaStorage } from './panel-preparation';
 import { optimizeRequestImage, MAX_IMAGE_BYTES } from './image-processing';
 
 export type R2Settings = {
-  rotationConfirmed: true;
+  configurationVerified: true;
   accountId: string;
   bucket: string;
   accessKeyId: string;
@@ -13,15 +13,15 @@ export type R2Settings = {
 
 /** Server-only configuration. Missing or malformed values disable uploads. */
 export function r2Settings(env: Record<string, string | undefined>): R2Settings | null {
-  // Credential presence is not evidence that the previously exposed key was revoked.
-  // Set only after an operator verifies revocation and replacement; never auto-set.
-  if (env.AD507_R2_CREDENTIAL_ROTATION_CONFIRMED !== 'true') return null;
+  // Set only after an operator verifies the configured account/bucket, permissions
+  // and successful private R2 roundtrip; never auto-set from credential presence.
+  if (env.AD507_R2_CONFIGURATION_VERIFIED !== 'true') return null;
   const accountId = env.R2_ACCOUNT_ID?.trim() ?? '';
   const bucket = env.R2_BUCKET?.trim() ?? '';
   const accessKeyId = env.R2_ACCESS_KEY_ID?.trim() ?? '';
   const secretAccessKey = env.R2_SECRET_ACCESS_KEY?.trim() ?? '';
   if (!/^[a-f0-9]{32}$/i.test(accountId) || bucket !== 'direcciones507-media' || !accessKeyId || !secretAccessKey) return null;
-  return { accountId, bucket, accessKeyId, secretAccessKey, rotationConfirmed: true };
+  return { accountId, bucket, accessKeyId, secretAccessKey, configurationVerified: true };
 }
 
 const hash = (input: string | Uint8Array) => createHash('sha256').update(input).digest('hex');
@@ -37,8 +37,8 @@ const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 
 /** No route is enabled by constructing this adapter. Authorization must be bound to the authenticated actor. */
 export function createR2Storage(settings: R2Settings, options?: { authorize: MediaAuthorization; registerIntent: MediaIntent; completeIntent?: MediaIntent; fetch?: typeof fetch }) {
-  if (settings.rotationConfirmed !== true || settings.bucket !== 'direcciones507-media') throw new Error('R2_ROTATION_NOT_CONFIRMED');
-  if (!r2Settings({ AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: 'true', R2_ACCOUNT_ID: settings.accountId,
+  if (settings.configurationVerified !== true || settings.bucket !== 'direcciones507-media') throw new Error('R2_CONFIGURATION_NOT_VERIFIED');
+  if (!r2Settings({ AD507_R2_CONFIGURATION_VERIFIED: 'true', R2_ACCOUNT_ID: settings.accountId,
     R2_BUCKET: settings.bucket, R2_ACCESS_KEY_ID: settings.accessKeyId, R2_SECRET_ACCESS_KEY: settings.secretAccessKey })) throw new Error('INVALID_R2_SETTINGS');
   if (!options || typeof options.authorize !== 'function') throw new Error('MEDIA_AUTHORIZATION_REQUIRED');
   if (typeof options.registerIntent !== 'function') throw new Error('MEDIA_INTENT_REQUIRED');

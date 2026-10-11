@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import { optimizeRequestImage, MAX_IMAGE_BYTES } from '../image-processing';
 import { createR2Storage } from '../r2-storage';
 
-const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test', secretAccessKey: 'test', rotationConfirmed: true as const };
+const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test', secretAccessKey: 'test', configurationVerified: true as const };
 const scope = { ownerId: '11111111-1111-4111-8111-111111111111', addressId: '22222222-2222-4222-8222-222222222222', role: 'logo' as const };
 const image = () => sharp({ create: { width: 24, height: 16, channels: 4, background: '#0b57d0' } });
 

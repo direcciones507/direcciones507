@@ -10,7 +10,7 @@ test('public R2 media reads bytes without upload intents and rejects inactive re
     expect(query.startsWith('SELECT')).toBe(true);
     return active?[{id,storage_key:key,media_type:'LOGO'}]:[];
   }} as any;
-  const r2={rotationConfirmed:true as const,accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test'};
+  const r2={configurationVerified:true as const,accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test'};
   const bytes=new TextEncoder().encode('RIFFxxxxWEBPtest');
   const http=(async(_url:any,init:any)=>{methods.push(init.method);return new Response(bytes,{headers:{'content-type':'image/webp'}});}) as typeof fetch;
   const request=()=>new Request(`https://direcciones507.com/v1/addresses/AD507-N123/media/${mediaId}`);

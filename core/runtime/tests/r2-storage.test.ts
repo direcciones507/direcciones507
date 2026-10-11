@@ -26,7 +26,7 @@ describe('Gallery limits (logo and cover are separate)', () => {
 
 describe('R2 configuration', () => {
   const env = {
-    AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: 'true',
+    AD507_R2_CONFIGURATION_VERIFIED: 'true',
     R2_ACCOUNT_ID: 'a'.repeat(32),
     R2_BUCKET: 'direcciones507-media',
     R2_ACCESS_KEY_ID: 'fake-access-key',
@@ -39,16 +39,22 @@ describe('R2 configuration', () => {
     expect(r2Settings({ ...env, R2_SECRET_ACCESS_KEY: '' })).toBeNull();
     expect(r2Settings({ ...env, R2_ACCOUNT_ID: 'not-an-account-id' })).toBeNull();
   });
-  test('credentials alone never enable uploads before confirmed rotation', () => {
+  test('credentials alone never enable uploads before verified configuration', () => {
     for (const confirmation of [undefined, '', 'false', 'TRUE']) {
-      expect(r2Settings({ ...env, AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: confirmation })).toBeNull();
+      expect(r2Settings({ ...env, AD507_R2_CONFIGURATION_VERIFIED: confirmation })).toBeNull();
     }
     expect(r2Settings({ ...env, R2_BUCKET: 'another-private-bucket' })).toBeNull();
   });
-  test('direct adapter construction cannot omit the rotation gate', () => {
+  test('obsolete rotation confirmation never enables unverified configuration', () => {
+    const { AD507_R2_CONFIGURATION_VERIFIED: _, ...credentials } = env;
+    expect(r2Settings({ ...credentials, AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: 'true' })).toBeNull();
+    expect(r2Settings({ ...credentials, AD507_R2_CONFIGURATION_VERIFIED: 'false', AD507_R2_CREDENTIAL_ROTATION_CONFIRMED: 'true' })).toBeNull();
+  });
+  test('direct adapter construction cannot omit the configuration verification gate', () => {
     const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test', secretAccessKey: 'test' };
-    expect(() => createR2Storage(settings as any)).toThrow('R2_ROTATION_NOT_CONFIRMED');
-    expect(() => createR2Storage({ ...settings, rotationConfirmed: true, bucket: 'other' })).toThrow('R2_ROTATION_NOT_CONFIRMED');
+    expect(() => createR2Storage(settings as any)).toThrow('R2_CONFIGURATION_NOT_VERIFIED');
+    expect(() => createR2Storage({ ...settings, rotationConfirmed: true } as any)).toThrow('R2_CONFIGURATION_NOT_VERIFIED');
+    expect(() => createR2Storage({ ...settings, configurationVerified: true, bucket: 'other' })).toThrow('R2_CONFIGURATION_NOT_VERIFIED');
   });
 });
 
@@ -73,7 +79,7 @@ describe('Server-side request media policy', () => {
 });
 
 describe('Private R2 request signing', () => {
-  const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test-access', secretAccessKey: 'test-secret', rotationConfirmed: true as const };
+  const settings = { accountId: 'a'.repeat(32), bucket: 'direcciones507-media', accessKeyId: 'test-access', secretAccessKey: 'test-secret', configurationVerified: true as const };
   test('signs private uploads deterministically and never exposes credentials in URL', () => {
     const bytes = new TextEncoder().encode('test-content');
     const signed = signedR2Put(settings, 'addresses/123/logo/sample.png', bytes, 'image/png', new Date('2026-10-10T12:00:00.000Z'));

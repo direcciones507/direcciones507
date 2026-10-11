@@ -42,7 +42,7 @@ Para resolver conectividad deben ser true: ok, write.ok, read.ok, delete.ok y ab
 - NETWORK_OR_TLS_ERROR/NETWORK_TIMEOUT: revisar salida de red/TLS del servicio; no atribuirlo a permisos Cloudflare.
 - cleanupRequired=true: queda pendiente confirmar/eliminar **solo objectKey indicado**; no repetir indefinidamente la prueba. No borrar otras claves.
 
-El diagnóstico no requiere ni altera AD507_R2_CREDENTIAL_ROTATION_CONFIRMED. Ese gate preexistente sigue cerrando el adaptador de la aplicación: conectividad satisfactoria no equivale a habilitar publicación comercial.
+El diagnóstico no requiere ni altera AD507_R2_CONFIGURATION_VERIFIED. El control de confirmación explícita sigue cerrando el adaptador si falta; conectividad satisfactoria no activa publicación comercial. El operador confirmó la prueba real aprobada el 11 de octubre: no repetirla para esta corrección. La evidencia y la sustitución del requisito de rotación no acreditada están documentadas en pr51-closeout-20261011.md.
 
 ## AD507 y PostgreSQL
 

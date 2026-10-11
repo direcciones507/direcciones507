@@ -1,3 +1,44 @@
-# Release checks
+# Checklist maestro de cierre — Direcciones507 + LATAM
 
-Do not deploy until canonical code allocation and publication have been verified.
+Actualizado 11 octubre 2026. Este es el checklist de release existente, ampliado documentalmente; no añade funcionalidades ni un segundo sistema. No desplegar hasta verificar asignación de códigos y publicación canónica. PR51:7535f2cdaa38b475538769fa5d90c31a38134713; PR52 funcional:9735178634d467551fe1f05e4c26c8a698158fc4. Un cambio posterior solo documental no altera estos resultados ni acredita otra ejecución de pruebas.
+
+**VERDE:** hecho concreto con evidencia. **AMARILLO:** preparado, pendiente de prueba/autorización. **ROJO:** bloqueo de la acción indicada. Un VERDE de CI no sustituye una validación productiva.
+
+|Punto|Estado|Evidencia y alcance exacto|Acción pendiente / responsable|
+|---|---|---|---|
+|Una arquitectura y unión de PR|VERDE|Unión Git sin conflictos; revisión combinada de PR52, Actions38178311749 SUCCESS118/0. Mismo ADMIN/auth/PG/requests/orders/R2/publicación|Integración posterior autorizada; no merge realizado|
+|PR51 regresiones|VERDE|HEAD7535f2c, Actions38176202779 SUCCESS96/0; fallo del fixture histórico corregido sin abrir gates|Mantener HEAD hasta autorización|
+|Código nuevo y unicidad en PG aislado|AMARILLO|UUID canónico inyectivo, UNIQUE(code), normalización, hashes, locks, concurrencia y rechazoSQL de duplicados probados|No implica ausencia de colisiones en registros externos|
+|Exclusividad histórica y cotejo real|ROJO|Preflight autorizado existente: SOURCE_NOT_VERIFIED, allocationVerified=false. Falta contrato completo de emisores y comparación conPGreal|Propietario/operador: lista completa y contrato de solo lectura que excluya namespaceAD507-N[32hex]; diagnósticoPG. No modificarPLANES/Excel/AppsScript|
+|PropuestasSQL y orden|AMARILLO|landline→requests→countries→scalability-indexes; tipos/constraints/índices probados enPG18.1 aislado. Payments/paypal separados y apagados|Cotejar ledger/esquema real, asignar versiones libres, recuperación acreditada y autorización completa antes deDDL|
+|Esquema productivo|ROJO|ServicioSUCCESS y /ready200 acreditan disponibilidad/contrato de readiness, no columnas de propuestas. No hay JSON del diagnóstico real; conector sinSSH/SQL y CLIlocal ausente|Ejecutar postgres-diagnostic.mjs existente en réplicaad507-core mediante acceso autorizado; READONLY, sin publicarenv/filas personales|
+|Backup11octubre11:39Panamá|AMARILLO|Evidencia previa de snapshot exitoso245MB; no se creó otro. No es prueba de integridad/restauración|ObtenerUUID/estado/expiración del snapshot existente desdeBackups sinRestore|
+|Recuperación del snapshot real|ROJO|No restaurada. Sin destino descartable autorizado; restore estándar reemplaza montaje y redeploy productivo|Railway debe acreditar exportación/clonación aislada soportada. Autorizar costo/destino antes de recursos; no mover volumenlive|
+|R2 configuración y roundtrip real|VERDE|Evidencia aportada por propietario: token activo direcciones507-r2-railway, ObjectRead&Write enbucketdirecciones507-media,4variables y write/read/delete aprobados|No repetir roundtrip ni inventar exposición/rotación; gate aún no configurado enproducción|
+|R2 compatibilidad y permisos|AMARILLO|CI: clavesPA antiguas conservadas, país extranjero/UUID, propiedad, roles, linkedmedia, intent/reintento privado. Archivos/objetos reales sin cambios|VERDE limitado a contratoCI y preservación; comprobar release real tras autorización|
+|Entrega QR/canonical|AMARILLO|Renderer existente usaURLcanónica; pruebasPA/CO/CR y URLoriginal del traslado. Actions118/0|Payload probado, sin crear ficha/QR/registro real; routing productivo pendiente|
+|País/navegación/formulario|AMARILLO|PA por defecto, selector sincronizado, datos/Files conservados al navegar dentro del documento, validación servidor y foreigngates probados|No acredita transferencia de sesión/Files entrehosts|
+|Routing507 y URLs históricas|ROJO|DNS507 permaneceGitHubPages; Railwaycustomdomain sin verificar. Backend no acredita reemplazar todos los archivosPages|Autorizar/verificar routing selectivo existente antes de cambiarDNS. No redirectglobal, no tocarindexhistórico|
+|direcciones.lat adquirido|VERDE|Confirmación expresa del propietario en encargo de cierre|No equivale aTLS/DNS/hostRailway conectado|
+|Conexiónlat/DNS preparados|AMARILLO|Mismo servicio/puerto8080 identificado. lat no está registrado; no hayCNAME/TXT propios emitidos|Autorizar registro de hostname en servicio existente para obtener valores específicos; DNS aún prohibido. No copiarTXT507|
+|OAuth / Mi cuenta Panamá (CI)|AMARILLO|Mismoauth, sesiones, identidad, rolesADMIN, CSRF y ownership enActions; no se duplican cuentas|Origen productivo/callback efectivo se revisa en activación; valores secretos no publicados|
+|OAuth / Mi cuenta entre dominios|ROJO|Auth actual mono-origen/callback; cookiehost-only, no sesión compartida acreditada. No se eludeCSRF/CORS|Resolver configuración del mismoauth e ingreso autorizado en amboshosts y validarlo antes deLATAM, sin otroauth ni tokens porURL|
+|Natalie — preservación existente|VERDE|check-legacy exige extracción exacta de snapshot salvoextensionseam. CI verifica rutasSESSION_ROUTE/CONVERSATION_ROUTE/ROUTE conservadas; dispatch negativo session/query aislado. Fuentes: core-runtime-baseline.md y core-oauth-cutover.md|No implica conversación real ni capacidad nueva; fuentelegacy no modificada|
+|Natalie — validación productiva positiva|AMARILLO|No se generaron conversaciones/sesiones reales. Esas llamadas pueden escribir auditoría/estado y consumir proveedor, por eso no son diagnóstico read-only|Reutilizar capturas existentes o autorización específica con registro designado y presupuesto si aplica; no disparar llamadas nuevas para marcarverde|
+|Natalie — reportes previstos|AMARILLO|seo-intelligence.md permite lectura de KPIs, periodos, interacciones y anomalías mediante contratos aprobados; prohíbe SQL/secrets/OWNER/PIN. Es arquitectura documentada, no integración nueva comprobada|Mantener frontera aprobada; no implementar herramientas/reportes nuevos en este cierre ni convertir previsiones en tareas duplicadas|
+|Escalabilidad medida|VERDE|Benchmark aislado1k/10k/100k; pool2 y paginación porcursor. Resultados y límites enPR52|Solo filas/consultas sintéticas. Un millón es proyección; cargaHTTP/media sostenida pendiente antes de promesas de capacidad|
+|Pagos apagados en el código candidato|VERDE|Yappy/PayPal reales desactivados; pruebas deconfirmación/idempotencia y pago sin publicación automática|No activar cobros ni pedir credenciales de pago en este cierre|
+|EstadoRailway vigente|VERDE|ad507-core deploye43bec48 SUCCESS, sinstaged; servicioactual conserva feat/admin-ui-20261006. Lectura deestado11octubre|No confundir condeploydePR51/52; ninguno desplegado|
+|Integración/DDL/deploy/activación|AMARILLO|Procedimiento preparado en reporte de cierre; código yDocker deCI aprobados|Autorización expresa separada; resolverROJOS relevantes antes deactivación|
+
+## Natalie: responsabilidades existentes, sin ampliaciones
+
+Fuentes: docs/architecture/core-runtime-baseline.md (sesión/conversación/query actuales), docs/architecture/core-api-contracts.md (lector público no debe llamarNatalie síncronamente), docs/architecture/seo-intelligence.md secciónNatalie reporting boundary (reportes mediante contratos de lectura aprobados), docs/runbooks/core-oauth-cutover.md (no llamarNatalie como prueba read-only porque escribe/cuesta).
+
+No se le asigna reservar códigos, aprobar migraciones, restaurar respaldos, cambiarDNS, modificarPLANES, publicar negocios ni confirmar pagos. Esas responsabilidades no están acreditadas en los documentos. No se crea checklist paralelo deNatalie ni se añaden funciones. Se conserva su papel existente y se señalan las capacidades de reportes solo como previstas.
+
+## Paso indispensable de acceso
+
+El conectorRailway actual permite configuración/estado/logs, pero no ejecutar el diagnóstico ni consultar backups; CLIlocal ausente. No sustituirlo por endpoint nuevo, cambio destartCommand, servicio temporal facturable ni lectura de secretos. Para avanzar en lectura real deBackups y comprobar opciones de acceso aldiagnóstico, hace falta autorización de fallback al navegadorRailway (solo lectura). Esto no autorizaRestore, staging, DNS, SQLDDL, pago, login por credenciales inventadas ni despliegue. Si tampoco hay ejecución/clone soportados en laUI, mantener esas partesROJAS y entregar la operación exacta aloperador, sin simular evidencia.
+
+Reporte/procedimiento existente: docs/reviews/final-platform-closeout-20261011.md y descripción actual dePR52. Este checklist registra hechos; no elimina controles preventivos para obtener unverde ficticio.

@@ -22,7 +22,7 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       try{while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.length;if(bytes>256000){await reader.cancel();throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');}chunks.push(value);}}finally{reader.releaseLock();}
       const body=Buffer.concat(chunks).toString('utf8');
       const data=JSON.parse(body);
-      if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/.test(v.codigo)))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
+      if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/i.test(v.codigo.trim())))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
       const code='AD507-N'+id.replaceAll('-','').toUpperCase();
       if(data.codes.some((v:any)=>v.codigo.trim().toUpperCase()===code))throw Error('CANONICAL_CODE_COLLISION');
       const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);

@@ -30,12 +30,12 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       return code;
     },
     async publish({id,code,type}) {
-      if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       // The existing PostgreSQL reader is the new system's publication destination.
       // No call to PLANES writes, GitHub Pages, Drive, DNS or historical generators.
       if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
-      const rows=await sql.unsafe("SELECT id FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status='PENDING_REVIEW' AND review_decision='APPROVED'",[id,code]);
+      const rows=await sql.unsafe("SELECT id,request_data FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
+      if(!rows[0].request_data?.migration&&!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       return {confirmed:true,receipt:'postgres:'+id+':'+code};
     },
   };
@@ -45,9 +45,10 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   const record=await getPublicAddressByCode(sql as any,code);if(!record)return null;
   const rows=await sql.unsafe("SELECT a.id::text,a.request_data FROM ad507.addresses a WHERE a.code=$1 AND a.source='USER_REQUEST' AND a.publication_receipt IS NOT NULL",[record.code]);
   if(!rows.length)return null;
-  const media=await sql.unsafe("SELECT id::text,media_type FROM ad507.address_media WHERE address_id=$1::uuid AND upload_status='READY' ORDER BY position,id",[rows[0].id]);
-  const urls=media.map((m:any)=>({type:m.media_type,url:origin+'/v1/addresses/'+record.code+'/media/'+m.id}));
-  return {...record,url:origin+'/'+record.code+'/',media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{postalCode:rows[0].request_data?.postalCode??null}};
+  const media=await sql.unsafe("SELECT id::text,media_type,url FROM ad507.address_media WHERE address_id=$1::uuid AND upload_status='READY' ORDER BY position,id",[rows[0].id]);
+  const urls=media.map((m:any)=>({type:m.media_type,url:m.url??origin+'/v1/addresses/'+record.code+'/media/'+m.id}));
+  const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
+  return {...record,url:historical?.originalUrl??origin+'/'+record.code+'/',media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{postalCode:rows[0].request_data?.postalCode??null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
@@ -65,14 +66,14 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
 export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
   if(context.enabled&&req.method==='GET'){
-    const publicMatch=url.pathname.match(/^\/(AD507-[A-Z0-9]+)\/$/);
-    const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD507-[A-Z0-9]+)$/);
+    const publicMatch=url.pathname.match(/^\/(AD507-[A-Z0-9_-]+)\/$/);
+    const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD507-[A-Z0-9_-]+)$/);
     if(publicMatch||apiMatch){
       try{const record=await newPublicAddress(sql,(publicMatch??apiMatch)![1],url.origin);
-        if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store'}});
+        if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
       }catch{return Response.json({ok:false,error:'PUBLICATION_UNAVAILABLE'},{status:503});}
     }
-    const mediaMatch=url.pathname.match(/^\/v1\/addresses\/(AD507-[A-Z0-9]+)\/media\/([a-f0-9-]{36})$/);
+    const mediaMatch=url.pathname.match(/^\/v1\/addresses\/(AD507-[A-Z0-9_-]+)\/media\/([a-f0-9-]{36})$/);
     if(mediaMatch){
       if(!context.r2)return new Response(null,{status:503});
       try{const rows=await sql.unsafe("SELECT a.id::text,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);

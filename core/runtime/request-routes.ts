@@ -3,6 +3,7 @@ import type { createGeneralAuth } from './general-auth';
 import type { createRequestRepository } from './request-repository';
 import { createRequestMediaStorage } from './request-media';
 import type { R2Settings } from './r2-storage';
+import { renderCommercialBridge } from './commercial-migration';
 import type { RequestFile } from './request-validation';
 
 // Release gate: remains false in this PR. No environment variable can enable public writes.
@@ -32,10 +33,11 @@ export async function parseRequestForm(req:Request) {
 }
 export async function handleRequestRoutes(req:Request,context:{enabled:boolean;sql:Sql;auth:Pick<ReturnType<typeof createGeneralAuth>,'currentUser'>;repository:ReturnType<typeof createRequestRepository>;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null> {
   const url=new URL(req.url),adminCreate=url.pathname==='/v1/admin/requests'&&req.method==='POST',submit=url.pathname==='/v1/user/requests'||adminCreate;
-  const action=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/(approve|reject|publish|transfer)$/);
+  const action=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/(approve|reject|publish|transfer|rollback)$/);
+  const bridge=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/bridge$/);
   const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/);
   const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
-  if(!submit&&!action&&!detail&&!media)return null;
+  if(!submit&&!action&&!detail&&!media&&!bridge)return null;
   const respond=(status:number,value:unknown)=>Response.json(value,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
   if(!context.enabled)return respond(503,{ok:false,error:'USER_PANEL_SUBMISSION_NOT_ENABLED'});
   if(req.method!==(submit||action?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
@@ -45,7 +47,9 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     if(!user.roles.includes(submit&&!adminCreate?'CLIENT':'ADMIN'))return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [id,item]of limits)if(now-item.at>60000)limits.delete(id);
     const item=limits.get(user.id);if(item&&++item.count>20||!item&&limits.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)limits.set(user.id,{at:now,count:1});
+    if(adminCreate&&req.headers.get('content-type')?.startsWith('application/json')){const body=JSON.parse((await readRequestBody(req,64000)).toString('utf8'));if(!body||Object.keys(body).length!==1||!body.historicalSnapshot)throw Error('INVALID_REQUEST');return respond(200,{ok:true,request:await context.repository.stageHistorical(user.id,req.headers.get('idempotency-key')??'',body.historicalSnapshot)});}
     if(submit){const {raw,files}=await parseRequestForm(req);return respond(200,{ok:true,request:await context.repository[adminCreate?'createAdmin':'submit'](user.id,req.headers.get('idempotency-key')??'',raw,files)});}
+    if(bridge){await context.repository.read(user.id,bridge[1]);const rows=await context.sql.unsafe("SELECT legacy_payload FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' AND request_data->>'origin'='HISTORICAL_IMPORT'",[bridge[1]]);if(!rows.length)throw Error('REQUEST_NOT_FOUND');return new Response(renderCommercialBridge(rows[0].legacy_payload,bridge[1],url.origin),{headers:{'content-type':'text/html; charset=utf-8','content-disposition':'attachment; filename="'+rows[0].legacy_payload.code+'.html"','cache-control':'no-store','x-content-type-options':'nosniff'}});}
     if(detail)return respond(200,{ok:true,request:await context.repository.read(user.id,detail[1])});
     if(media){
       if(!context.r2)throw Error('R2_NOT_READY');
@@ -61,12 +65,12 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
       const body=JSON.parse(text);if(!body||typeof body.expectedOwner!=='string'||typeof body.targetId!=='string'||Object.keys(body).some(k=>!['expectedOwner','targetId'].includes(k)))throw Error('INVALID_REQUEST');
       return respond(200,{ok:true,request:await context.repository.transfer(user.id,action[1],body.expectedOwner,body.targetId)});
     }
-    const result=action![2]==='publish'?await context.repository.publish(user.id,action![1]):await context.repository.review(user.id,action![1],action![2]==='approve'?'APPROVED':'REJECTED');
+    const result=action![2]==='rollback'?await context.repository.rollbackHistorical(user.id,action![1]):action![2]==='publish'?await context.repository.publish(user.id,action![1]):await context.repository.review(user.id,action![1],action![2]==='approve'?'APPROVED':'REJECTED');
     return respond(200,{ok:true,request:result});
   } catch(error){
     const name=error instanceof Error?error.message:'';
     const status=name==='FORBIDDEN'?403:name==='REQUEST_NOT_FOUND'?404:['IDEMPOTENCY_CONFLICT','INVALID_STATE_TRANSITION','APPROVAL_REQUIRED','MEDIA_INCOMPLETE','CANONICAL_CODE_COLLISION','OWNERSHIP_CONFLICT'].includes(name)?409:['R2_NOT_READY','CANONICAL_PUBLICATION_NOT_READY','HISTORICAL_NAMESPACE_NOT_VERIFIED','HISTORICAL_REGISTRY_UNAVAILABLE','RESIDENTIAL_PUBLICATION_NOT_READY'].includes(name)?503:400;
-    const safe=/^(INVALID_[A-Z_]+|CAPABILITY_VIOLATION|IDEMPOTENCY_CONFLICT|DUPLICATE_MEDIA|PLAN_NOT_FOUND|REQUEST_NOT_FOUND|FORBIDDEN|PAYLOAD_TOO_LARGE|R2_NOT_READY|CANONICAL_PUBLICATION_NOT_READY|INVALID_STATE_TRANSITION|APPROVAL_REQUIRED|MEDIA_INCOMPLETE|CANONICAL_CODE_COLLISION|HISTORICAL_NAMESPACE_NOT_VERIFIED|HISTORICAL_REGISTRY_UNAVAILABLE|RESIDENTIAL_PUBLICATION_NOT_READY|OWNERSHIP_CONFLICT|ADMIN_CREATION_REQUIRED)$/.test(name)?name:'REQUEST_OPERATION_FAILED';
+    const safe=/^(INVALID_[A-Z_]+|CAPABILITY_VIOLATION|IDEMPOTENCY_CONFLICT|DUPLICATE_MEDIA|PLAN_NOT_FOUND|REQUEST_NOT_FOUND|FORBIDDEN|PAYLOAD_TOO_LARGE|R2_NOT_READY|CANONICAL_PUBLICATION_NOT_READY|INVALID_STATE_TRANSITION|APPROVAL_REQUIRED|MEDIA_INCOMPLETE|CANONICAL_CODE_COLLISION|HISTORICAL_NAMESPACE_NOT_VERIFIED|HISTORICAL_REGISTRY_UNAVAILABLE|RESIDENTIAL_PUBLICATION_NOT_READY|OWNERSHIP_CONFLICT|ADMIN_CREATION_REQUIRED|HISTORICAL_DATA_CHANGED|HISTORICAL_MEDIA_UNVERIFIED|HISTORICAL_RESOURCE_UNAVAILABLE|MIGRATION_BRIDGE_NOT_VERIFIED|HISTORICAL_RESTORE_REQUIRED)$/.test(name)?name:'REQUEST_OPERATION_FAILED';
     return respond(status,{ok:false,error:safe});
   }
 }

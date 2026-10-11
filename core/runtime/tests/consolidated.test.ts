@@ -626,3 +626,34 @@ test('ADMIN five products reuse quotas and concurrent distinct reservations have
     for(const r of created){await repo.transfer(adminId,r.id,adminId,clientId);expect((await repo.read(clientId,r.id)).ownerId).toBe(clientId);await repo.transfer(adminId,r.id,clientId,adminId);}
   }finally{await db.end();}
 });
+
+test('individual commercial staging, verified cutover and rollback preserve original codes and legacy snapshots',async()=>{
+  const {createRequestRepository}=await import('../request-repository');const {createNewAddressPublication,newPublicAddress,handleNewPublicRoutes}=await import('../new-address-publication');
+  const {renderCommercialBridge}=await import('../commercial-migration');const sharp=(await import('sharp')).default;
+  const png=await sharp({create:{width:5,height:5,channels:3,background:'blue'}}).png().toBuffer();
+  const db=postgres(isolatedDatabase,{max:8});const snapshots:any[]=[];const bridges=new Map<string,string>();let listed=true,changed=false;
+  const http=(async(url:any)=>{const target=String(url);if(target.includes('action=list'))return Response.json({ok:true,codes:listed?snapshots.map(s=>({codigo:s.code})):[]});if(target.endsWith('.png'))return new Response(changed?await sharp(png).negate().png().toBuffer():png,{headers:{'content-type':'image/png'}});return new Response(bridges.get(target)??'old page',{headers:{'content-type':'text/html'}});}) as typeof fetch;
+  const repo=createRequestRepository(db,{r2:null,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:http})});
+  try{
+    for(const [i,plan]of ['BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE'].entries()){
+      const code='AD507-HISTORICAL'+i,s={version:44,code,publicUrl:'https://direcciones507.com/'+code.toLowerCase()+'/',coreOrigin:origin,type:plan==='PLACE'?'PLACE':'BUSINESS',plan,name:'Original commercial '+i,reference:'Original reference',latitude:8.123456,longitude:-80.123456,phone:'+507 6000-0000',media:plan==='PLACE'?[{type:'IMAGE',url:'https://direcciones507.com/assets/place.png'}]:[{type:'LOGO',url:'https://direcciones507.com/assets/logo.png'},{type:'IMAGE',url:'https://direcciones507.com/assets/photo.png'}],socials:plan==='PLACE'?{}:{instagram:'https://instagram.com/original'},OWNER:'private-original-owner',PIN:'private-original-pin'};
+      snapshots.push(s);await expect(repo.stageHistorical(clientId,'historical-client-000000'+i,s)).rejects.toThrow('FORBIDDEN');
+      const key='historical-admin-0000000'+i,created=(await Promise.all([repo.stageHistorical(adminId,key,s),repo.stageHistorical(adminId,key,s)]))[0];
+      expect((await repo.stageHistorical(adminId,key,s)).id).toBe(created.id);expect(created.code).toBe(code);await expect(repo.stageHistorical(adminId,key,{...s,name:'Changed'})).rejects.toThrow('IDEMPOTENCY_CONFLICT');
+      await expect(repo.publish(adminId,created.id)).rejects.toThrow('APPROVAL_REQUIRED');await repo.review(adminId,created.id,'APPROVED');
+      await expect(repo.publish(adminId,created.id)).rejects.toThrow('MIGRATION_BRIDGE_NOT_VERIFIED');expect(await newPublicAddress(db,code,origin)).toBeNull();
+      bridges.set(s.publicUrl,renderCommercialBridge(s,created.id,origin));const published=await Promise.all([repo.publish(adminId,created.id),repo.publish(adminId,created.id)]);expect(published.every(p=>p.code===code&&p.status==='ACTIVE')).toBe(true);
+      const pub=await newPublicAddress(db,code,origin);expect(pub?.url).toBe(s.publicUrl);expect(pub?.media.map(m=>m.url)).toEqual(s.media.map(m=>m.url));expect(JSON.stringify(pub)).not.toContain('private-original');
+      if(plan!=='PLACE')expect(pub?.socials).toEqual([{platform:'instagram',url:'https://instagram.com/original'}]);
+      const response=await handleNewPublicRoutes(new Request(origin+'/v1/addresses/'+code),{enabled:true,sql:db,r2:null});expect(response?.headers.get('access-control-allow-origin')).toBe('https://direcciones507.com');
+      const before=(await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id]))[0].row;
+      await repo.transfer(adminId,created.id,adminId,clientId);expect((await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id]))[0].row).toEqual(before);
+      await expect(repo.rollbackHistorical(clientId,created.id)).rejects.toThrow('FORBIDDEN');listed=false;await expect(repo.rollbackHistorical(adminId,created.id)).rejects.toThrow('HISTORICAL_RESTORE_REQUIRED');expect((await repo.read(adminId,created.id)).status).toBe('ACTIVE');listed=true;
+      expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');expect(await newPublicAddress(db,code,origin)).toBeNull();expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');
+      changed=true;await expect(repo.publish(adminId,created.id)).rejects.toThrow('HISTORICAL_MEDIA_UNVERIFIED');changed=false;expect((await repo.publish(adminId,created.id)).code).toBe(code);
+      const final=(await db.unsafe('SELECT legacy_payload,code FROM ad507.addresses WHERE id=$1::uuid',[created.id]))[0];expect(final.legacy_payload).toEqual(s);expect(final.code).toBe(code);
+      expect((await db.unsafe("SELECT id FROM ad507.audit_log WHERE entity_id=$1 AND action='HISTORICAL_PUBLICATION_ROLLED_BACK'",[created.id])).length).toBe(1);
+      await db.unsafe("UPDATE ad507.addresses SET name='Unreviewed change' WHERE id=$1::uuid",[created.id]);await expect(repo.rollbackHistorical(adminId,created.id)).rejects.toThrow('HISTORICAL_DATA_CHANGED');
+    }
+  }finally{await db.end({timeout:1});}
+},30000);

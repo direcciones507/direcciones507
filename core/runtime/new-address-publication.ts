@@ -11,10 +11,12 @@ import { readFileSync } from 'node:fs';
  */
 export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
-    historicalRegistryVerified:true,
+    historicalRegistryVerified:options.namespaceExclusive,
     async reserve({id}) {
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
-      if(!/^[a-f0-9-]{36}$/.test(id))throw Error('INVALID_REQUEST');
+      // Canonical UUID layout makes removing separators injective: malformed
+      // IDs must not collapse onto another request's code or shorten the suffix.
+      if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id))throw Error('INVALID_REQUEST');
       const response=await (options.fetch??fetch)(`https://script.google.com/macros/s/${PLANES_AUTHORITY.deploymentId}/exec?action=list`,{signal:AbortSignal.timeout(15000)});
       if(!response.ok||!response.headers.get('content-type')?.includes('application/json'))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
       const reader=response.body?.getReader();if(!reader)throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');

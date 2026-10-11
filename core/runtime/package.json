@@ -3,12 +3,19 @@
   "private": true,
   "type": "module",
   "packageManager": "bun@1.4.0",
-  "engines": { "bun": "1.4.0" },
+  "engines": {
+    "bun": "1.4.0"
+  },
   "scripts": {
     "start": "bun server.ts",
     "test": "bun test tests",
     "check:legacy": "bun scripts/check-legacy.ts"
   },
-  "dependencies": { "postgres": "3.4.7" },
-  "devDependencies": { "embedded-postgres": "18.1.0-beta.15" }
+  "dependencies": {
+    "postgres": "3.4.7",
+    "sharp": "0.34.5"
+  },
+  "devDependencies": {
+    "embedded-postgres": "18.1.0-beta.15"
+  }
 }

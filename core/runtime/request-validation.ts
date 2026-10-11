@@ -1,0 +1,74 @@
+import { inspectImage, prepareContacts, validateRequestMedia } from './panel-preparation';
+
+export type RequestDraft = {
+  type: 'RESIDENTIAL' | 'PLACE' | 'BUSINESS';
+  plan: string;
+  name: string;
+  reference: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  phone: string | null;
+  landlinePhone: string | null;
+  email: string; hours: string; commercialDescription: string; namedCode: string; postalCode: string; postalZone: string; socials: Record<string,string>;
+  media: { logos: number; placePhotos: number; galleryPhotos: number };
+};
+
+/** Strict server contract for new address requests. Never creates or publishes an address. */
+export function validateRequestDraft(raw: unknown): RequestDraft {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('INVALID_REQUEST');
+  const value = raw as Record<string, unknown>;
+  const type = value.type;
+  if (type !== 'RESIDENTIAL' && type !== 'PLACE' && type !== 'BUSINESS') throw new Error('INVALID_TYPE');
+  const plan = type === 'RESIDENTIAL' ? 'RESIDENTIAL' : type === 'PLACE' ? 'PLACE' : value.plan;
+  if (typeof plan !== 'string') throw new Error('INVALID_PLAN');
+  if (type === 'BUSINESS' && !['BUSINESS_FREE', 'BUSINESS_PREMIUM', 'BUSINESS_PREMIUM_PRO'].includes(plan)) throw new Error('INVALID_PLAN');
+  const field = (key: string, max: number, required: boolean) => {
+    if (value[key] !== undefined && typeof value[key] !== 'string') throw new Error('INVALID_' + key.toUpperCase());
+    const result = String(value[key] ?? '').trim();
+    if (result.length > max || (required && !result)) throw new Error('INVALID_' + key.toUpperCase());
+    return result;
+  };
+  const name = field('name', 160, true);
+  const reference = field('reference', 1000, true);
+  const description = field('description', 4000, false);
+  const latitude = value.latitude, longitude = value.longitude;
+  if (typeof latitude !== 'number' || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+      typeof longitude !== 'number' || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw new Error('INVALID_COORDINATES');
+  for (const key of ['phone','landlinePhone']) if(value[key]!=null && typeof value[key]!=='string') throw new Error('INVALID_PHONE');
+  const { phone, landlinePhone } = prepareContacts(value.phone, value.landlinePhone);
+  const media = value.media;
+  if (!media || typeof media !== 'object' || Array.isArray(media)) throw new Error('INVALID_MEDIA');
+  const m = media as Record<string, unknown>;
+  if (typeof m.logos !== 'number' || typeof m.placePhotos !== 'number' || typeof m.galleryPhotos !== 'number' ||
+      !validateRequestMedia(type, plan, { logos: m.logos, placePhotos: m.placePhotos, galleryPhotos: m.galleryPhotos })) throw new Error('INVALID_MEDIA');
+  const email=field('email',160,false),hours=field('hours',300,false),commercialDescription=field('commercialDescription',3000,false),namedCode=field('namedCode',80,false),postalCode=field('postalCode',20,false),postalZone=field('postalZone',120,false);
+  if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('INVALID_EMAIL');
+  const premium=type==='BUSINESS'&&plan!=='BUSINESS_FREE';
+  if((commercialDescription&&plan!=='BUSINESS_PREMIUM_PRO')||(!premium&&(namedCode||postalCode||postalZone)))throw Error('CAPABILITY_VIOLATION');
+  const socials: Record<string,string>={};
+  for(const [platform,host]of Object.entries({instagram:'instagram.com',facebook:'facebook.com',tiktok:'tiktok.com'})){
+    const text=field(platform,300,false);if(!text)continue;if(!premium)throw Error('CAPABILITY_VIOLATION');
+    let url: URL;try{url=new URL(text);}catch{throw Error('INVALID_SOCIAL_URL');}
+    if(url.protocol!=='https:'||url.username||url.password||url.port||!(url.hostname===host||url.hostname==='www.'+host))throw Error('INVALID_SOCIAL_URL');
+    socials[platform]=url.href;
+  }
+  return { type, plan, name, reference, description, email,hours,commercialDescription,namedCode,postalCode,postalZone,socials, latitude, longitude, phone, landlinePhone,
+    media: { logos: m.logos, placePhotos: m.placePhotos, galleryPhotos: m.galleryPhotos } };
+}
+
+export type RequestFile = { role: 'logo' | 'photo'; bytes: Uint8Array; mime: string };
+
+/** Upload boundary: media quotas come from the actual parts, never client-declared counts. */
+export function validateRequestFiles(raw: unknown, files: RequestFile[]): RequestDraft {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Array.isArray(files) || files.length > 6) throw new Error('INVALID_REQUEST');
+  const value = raw as Record<string, unknown>;
+  for (const file of files) {
+    if (!file || !['logo', 'photo'].includes(file.role) || !(file.bytes instanceof Uint8Array) ||
+      !inspectImage(file.bytes, file.mime, file.bytes.length)) throw new Error('INVALID_IMAGE');
+  }
+  const logos = files.filter(file => file.role === 'logo').length;
+  const photos = files.length - logos;
+  return validateRequestDraft({ ...value, media: { logos, placePhotos: value.type === 'PLACE' ? photos : 0,
+    galleryPhotos: value.type === 'PLACE' ? 0 : photos } });
+}

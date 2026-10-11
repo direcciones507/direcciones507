@@ -22,9 +22,9 @@ test('image content, MIME and exact size limits agree; forged MIME, empty files 
   expect(inspectImage(png,'image/svg+xml',12)).toBe(false);
   expect(inspectImage(new Uint8Array(),'image/png',0)).toBe(false);
 });
-test('Lugar requires a photograph; Pro allows five, and other plans cannot gain galleries', () => {
-  expect(mediaCountAllowed('PLACE','',0)).toBe(false);
-  expect(mediaCountAllowed('PLACE','',1)).toBe(true);
+test('Gallery quota excludes separate logo and cover inputs', () => {
+  expect(mediaCountAllowed('PLACE','',0)).toBe(true);
+  expect(mediaCountAllowed('PLACE','',1)).toBe(false);
   expect(mediaCountAllowed('BUSINESS','BUSINESS_PREMIUM_PRO',5)).toBe(true);
   expect(mediaCountAllowed('BUSINESS','BUSINESS_PREMIUM_PRO',6)).toBe(false);
   for(const plan of ['BUSINESS_FREE','BUSINESS_PREMIUM']) expect(mediaCountAllowed('BUSINESS',plan,1)).toBe(false);
@@ -40,4 +40,11 @@ test('rendered coordinate parser preserves regex escapes and geographical bounds
   expect(parse('91, -80')).toBeNull();
   expect(parse('8, -181')).toBeNull();
   expect(parse('nonsense')).toBeNull();
+});
+
+test('form review requires a place photo and a business logo before submission', async () => {
+  const { userPanelHtml } = await import('../user-panel');
+  expect(userPanelHtml).toContain("requestType==='PLACE'&&galleryCount!==1");
+  expect(userPanelHtml).toContain("requestType==='BUSINESS'&&$('logo').files.length!==1");
+  expect(userPanelHtml).toContain("requestType==='PLACE'?0:galleryCount");
 });

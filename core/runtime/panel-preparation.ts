@@ -22,11 +22,22 @@ export function inspectImage(bytes: Uint8Array, mime: string, size: number): boo
 }
 export function mediaCountAllowed(type: string, plan: string, count: number): boolean {
   if (!Number.isInteger(count) || count < 0) return false;
-  if (type === 'PLACE') return count >= 1;
+  // count is gallery-only; logo and cover are validated separately.
+  if (type === 'PLACE') return count === 0;
   if (type === 'BUSINESS') return count <= (plan === 'BUSINESS_PREMIUM_PRO' ? 5 : 0);
   return type === 'RESIDENTIAL' && count === 0;
 }
-/** Adapter seam, without implementation, credentials or network connection. */
+/** Shared private-storage contract implemented by r2-storage; no public URLs. */
 export interface PreparedMediaStorage {
-  storeOptimized(input: { bytes: Uint8Array; mime: 'image/jpeg' | 'image/png' | 'image/webp'; ownerId: string; addressId: string }): Promise<{ storageKey: string; publicUrl: string }>;
+  storeOptimized(input: { bytes: Uint8Array; mime: string; ownerId: string; addressId: string; role: 'logo' | 'photo' }): Promise<{ storageKey: string; bucket: string }>;
+}
+
+/** Server-side media policy; browser validation alone is not authoritative. */
+export function validateRequestMedia(type: string, plan: string, media: { logos: number; placePhotos: number; galleryPhotos: number }): boolean {
+  const { logos, placePhotos, galleryPhotos } = media;
+  if (![logos, placePhotos, galleryPhotos].every(n => Number.isInteger(n) && n >= 0)) return false;
+  if (type === 'RESIDENTIAL') return logos === 0 && placePhotos === 0 && galleryPhotos === 0;
+  if (type === 'PLACE') return logos === 0 && placePhotos === 1 && galleryPhotos === 0;
+  if (type !== 'BUSINESS' || !['BUSINESS_FREE', 'BUSINESS_PREMIUM', 'BUSINESS_PREMIUM_PRO'].includes(plan)) return false;
+  return logos === 1 && placePhotos === 0 && mediaCountAllowed(type, plan, galleryPhotos);
 }

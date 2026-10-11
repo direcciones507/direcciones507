@@ -2,7 +2,7 @@ import type { Sql } from 'postgres';
 import type { createGeneralAuth } from './general-auth';
 import { inspectImage, prepareContacts, mediaCountAllowed } from './panel-preparation';
 
-const USER_PANEL_SUBMISSION_ENABLED = false;
+const USER_PANEL_SUBMISSION_ENABLED = process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 // Admin creation uses the same form and follows the explicit commercial release switch.
 const ADMIN_CREATION_ENABLED = process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 const reads = new Map<string, { start: number; count: number }>();

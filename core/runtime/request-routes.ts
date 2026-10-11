@@ -44,7 +44,8 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
   try {
     if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==url.origin)||(req.headers.has('origin')&&req.headers.get('origin')!==url.origin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
-    if(!user.roles.includes(submit&&!adminCreate?'CLIENT':'ADMIN'))return respond(403,{ok:false,error:'FORBIDDEN'});
+    const canCreateCommercial=adminCreate&&user.roles.includes('COMMERCIAL');
+    if(!user.roles.includes(submit&&!adminCreate?'CLIENT':'ADMIN')&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [id,item]of limits)if(now-item.at>60000)limits.delete(id);
     const item=limits.get(user.id);if(item&&++item.count>20||!item&&limits.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)limits.set(user.id,{at:now,count:1});
     if(adminCreate&&req.headers.get('content-type')?.startsWith('application/json')){const body=JSON.parse((await readRequestBody(req,64000)).toString('utf8'));if(!body||Object.keys(body).length!==1||!body.historicalSnapshot)throw Error('INVALID_REQUEST');return respond(200,{ok:true,request:await context.repository.stageHistorical(user.id,req.headers.get('idempotency-key')??'',body.historicalSnapshot)});}

@@ -45,7 +45,7 @@ export async function handleUserPanel(req: Request, sql: Sql, auth: ReturnType<t
     const adminMode=url.searchParams.get('adminCreate')==='1';
     if(adminMode&&!user.roles.includes('ADMIN'))return Response.json({ok:false,error:'FORBIDDEN'},{status:403});
     const data=await userPanelData(sql,user as {id:string;roles:string[]});
-    if(adminMode)data.actions.submitRequest=ADMIN_CREATION_ENABLED;
+    if(adminMode)data.actions.submitRequest=ADMIN_CREATION_ENABLED && user.roles.includes('ADMIN');
     return Response.json({ ok: true, user: { displayName: user.displayName, email: user.email }, ...data }, { headers: { 'cache-control': 'no-store' } });
   } catch { return Response.json({ ok: false, error: 'USER_PANEL_UNAVAILABLE' }, { status: 503, headers: { 'cache-control': 'no-store' } }); }
 }

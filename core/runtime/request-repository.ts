@@ -29,8 +29,11 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
     const expected=row.request_data.media;
     if(files.some((m:any)=>m.upload_status!=='READY')||files.filter((m:any)=>m.media_type==='LOGO').length!==expected.logos||files.filter((m:any)=>m.media_type==='IMAGE').length!==expected.placePhotos+expected.galleryPhotos)throw Error('MEDIA_INCOMPLETE');
   };
-  return {
-    async submit(actorId:string,key:string,raw:unknown,files:RequestFile[]) {
+  const repository = {
+    async createAdmin(actorId:string,key:string,raw:unknown,files:RequestFile[]) {
+      return repository.submit(actorId,key,raw,files,true);
+    },
+    async submit(actorId:string,key:string,raw:unknown,files:RequestFile[],admin=false) {
       if(!uuid.test(actorId)||!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       const data=validateRequestFiles(raw,files);
       // Reject duplicate gallery parts before persisting an impossible required count.
@@ -41,7 +44,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       if(new Set(preparedFiles.map(f=>f.role+':'+digest(f.bytes))).size!==preparedFiles.length)throw Error('DUPLICATE_MEDIA');
       const keyHash=digest(actorId+':'+key),payloadHash=digest(actorId+':'+JSON.stringify({data,files:fingerprints.sort()}));
       const request=await sql.begin(async tx=>{
-        await actor(tx,actorId,'CLIENT');
+        await actor(tx,actorId,admin?'ADMIN':'CLIENT');
         await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[keyHash]);
         await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[payloadHash]);
         const existing=await tx.unsafe('SELECT id::text FROM ad507.addresses WHERE request_key_hash=$1 OR request_payload_hash=$2 ORDER BY (request_key_hash=$1) DESC NULLS LAST LIMIT 1',[keyHash,payloadHash]);
@@ -49,21 +52,21 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         const plan=await tx.unsafe("SELECT id FROM ad507.plans WHERE code=$1 AND status='ACTIVE'",[data.plan]);
         if(data.type!=='PLACE'&&!plan.length)throw Error('PLAN_NOT_FOUND');
         const rows=await tx.unsafe(`INSERT INTO ad507.addresses(code,address_type,status,plan_id,name,reference,description,commercial_description,latitude,longitude,phone,landline_phone,hours,source,request_key_hash,request_payload_hash,request_data)
-          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,postalCode:data.postalCode,postalZone:data.postalZone})]);
+          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,postalCode:data.postalCode,postalZone:data.postalZone,...(admin?{createdByAdmin:actorId}:{})})]);
         const row=rows[0];await tx.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[row.id,actorId]);
         for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[row.id,platform,url]);
-        await audit(tx,actorId,'REQUEST_CREATED',row.id);return row;
+        await audit(tx,actorId,admin?'ADMIN_ADDRESS_CREATED':'REQUEST_CREATED',row.id,admin);return row;
       });
       if(request.status!=='DRAFT')return {id:request.id,status:request.status,code:request.code,review:request.review_decision};
       try {
         if(files.length){const storage=createRequestMediaStorage(sql,actorId,options.r2!,options.fetch);for(const file of [...preparedFiles].sort((a,b)=>a.role==='logo'?-1:b.role==='logo'?1:0))await storage.storeOptimized({...file,ownerId:actorId,addressId:request.id});}
         return await sql.begin(async tx=>{
-          await actor(tx,actorId,'CLIENT');const row=await owned(tx,actorId,request.id);
-          if(row.status==='DRAFT'){await complete(tx,row);await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',updated_at=now() WHERE id=$1::uuid",[row.id]);await audit(tx,actorId,'REQUEST_SUBMITTED',row.id);}
+          await actor(tx,actorId,admin?'ADMIN':'CLIENT');const row=await owned(tx,actorId,request.id);
+          if(row.status==='DRAFT'){await complete(tx,row);await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',updated_at=now() WHERE id=$1::uuid",[row.id]);await audit(tx,actorId,'REQUEST_SUBMITTED',row.id,admin);}
           return {id:row.id,status:row.status==='DRAFT'?'PENDING_REVIEW':row.status,code:row.code,review:row.review_decision};
         });
       } catch(error){
-        const latest=await sql.begin(async tx=>{await actor(tx,actorId,'CLIENT');return owned(tx,actorId,request.id);});
+        const latest=await sql.begin(async tx=>{await actor(tx,actorId,admin?'ADMIN':'CLIENT');return owned(tx,actorId,request.id);});
         if(latest.status!=='DRAFT')return {id:latest.id,status:latest.status,code:latest.code,review:latest.review_decision};
         return {id:request.id,status:'DRAFT',code:null,error:error instanceof Error&&['MEDIA_INCOMPLETE','MEDIA_LIMIT_EXCEEDED','MEDIA_FORBIDDEN'].includes(error.message)?error.message:'MEDIA_UPLOAD_RETRY_REQUIRED'};}
     },
@@ -71,9 +74,30 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       if(!uuid.test(addressId))throw Error('REQUEST_NOT_FOUND');
       const rows=await sql.unsafe(`SELECT a.id::text,a.code,a.address_type AS type,a.status,a.name,a.reference,a.description,a.commercial_description AS \"commercialDescription\",a.latitude,a.longitude,a.phone,a.landline_phone AS \"landlinePhone\",a.hours,a.review_decision AS review,a.request_data AS extras FROM ad507.addresses a JOIN ad507.users u ON u.id=$1::uuid AND u.status='ACTIVE' WHERE a.id=$2::uuid AND a.source='USER_REQUEST' AND (EXISTS(SELECT 1 FROM ad507.user_roles r WHERE r.user_id=u.id AND r.role='ADMIN') OR EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=u.id))`,[actorId,addressId]);
       if(!rows.length)throw Error('REQUEST_NOT_FOUND');
+      const owners=await sql.unsafe("SELECT user_id::text FROM ad507.address_ownership WHERE address_id=$1::uuid AND ownership_role='OWNER'",[addressId]);
       const media=await sql.unsafe('SELECT id::text,media_type AS type,position,upload_status AS status FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position,id',[addressId]);
       const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
-      return {...rows[0],media,socials};
+      return {...rows[0],ownerId:owners.length===1?owners[0].user_id:null,media,socials};
+    },
+    async transfer(actorId:string,addressId:string,expectedOwner:string,targetId:string) {
+      if(![actorId,addressId,expectedOwner,targetId].every(id=>uuid.test(id)))throw Error('INVALID_REQUEST');
+      return sql.begin(async tx=>{
+        await actor(tx,actorId,'ADMIN');
+        const rows=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' FOR UPDATE",[addressId]);
+        const row=rows[0];if(!row)throw Error('REQUEST_NOT_FOUND');
+        if(!row.request_data?.createdByAdmin)throw Error('ADMIN_CREATION_REQUIRED');
+        if(row.status==='DRAFT')throw Error('MEDIA_INCOMPLETE');
+        // Reversal can only restore the creator; normal transfer requires an active CLIENT.
+        await actor(tx,targetId,targetId===row.request_data.createdByAdmin?'ADMIN':'CLIENT');
+        const owners=await tx.unsafe("SELECT user_id::text FROM ad507.address_ownership WHERE address_id=$1::uuid AND ownership_role='OWNER'",[addressId]);
+        if(owners.length!==1)throw Error('OWNERSHIP_CONFLICT');
+        if(owners[0].user_id===targetId)return {id:addressId,ownerId:targetId,unchanged:true};
+        if(owners[0].user_id!==expectedOwner)throw Error('OWNERSHIP_CONFLICT');
+        await tx.unsafe("DELETE FROM ad507.address_ownership WHERE address_id=$1::uuid AND ownership_role='OWNER'",[addressId]);
+        await tx.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id,ownership_role) VALUES($1::uuid,$2::uuid,'OWNER') ON CONFLICT(address_id,user_id) DO UPDATE SET ownership_role='OWNER'",[addressId,targetId]);
+        await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,before_json,after_json) VALUES($1::uuid,'ADMIN','ADDRESS_OWNERSHIP_TRANSFERRED','ADDRESS',$2,$3::jsonb,$4::jsonb)",[actorId,addressId,tx.json({ownerId:expectedOwner}),tx.json({ownerId:targetId})]);
+        return {id:addressId,ownerId:targetId,unchanged:false};
+      });
     },
     async review(actorId:string,addressId:string,decision:'APPROVED'|'REJECTED') {
       if(!uuid.test(addressId)||!['APPROVED','REJECTED'].includes(decision))throw Error('INVALID_REQUEST');
@@ -120,4 +144,5 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       } finally {await session.unsafe('SELECT pg_advisory_unlock(hashtextextended($1,0))',['publish:'+addressId]).catch(()=>{});session.release();}
     },
   };
+  return repository;
 }

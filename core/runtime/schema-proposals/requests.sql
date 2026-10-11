@@ -24,6 +24,7 @@ ALTER TABLE ad507.addresses ADD COLUMN IF NOT EXISTS review_decision text;
 ALTER TABLE ad507.addresses ADD COLUMN IF NOT EXISTS reviewed_by uuid REFERENCES ad507.users(id);
 ALTER TABLE ad507.addresses ADD COLUMN IF NOT EXISTS publication_receipt text;
 ALTER TABLE ad507.address_media ADD COLUMN IF NOT EXISTS upload_status text NOT NULL DEFAULT 'READY';
+CREATE UNIQUE INDEX IF NOT EXISTS core_addresses_normalized_code_uidx ON ad507.addresses(upper(trim(code))) WHERE code IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS core_requests_key_uidx ON ad507.addresses(request_key_hash) WHERE request_key_hash IS NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS core_requests_payload_uidx ON ad507.addresses(request_payload_hash) WHERE request_payload_hash IS NOT NULL;
 DO $$ BEGIN

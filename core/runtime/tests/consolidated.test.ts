@@ -501,3 +501,106 @@ test('read-only preflight inventories canonical schema and repeated proposals pr
     await expect(forbidden()).rejects.toThrow();
   }finally{await readOnly.unsafe('ROLLBACK');readOnly.release();}
 });
+
+test('ADMIN creates without client identity; transfer and reversal only change ownership and audit',async()=>{
+  const {createRequestRepository}=await import('../request-repository');
+  const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
+  const sharp=(await import('sharp')).default;
+  const db=postgres(isolatedDatabase,{max:8});
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
+  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
+  const file={role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:12,height:12,channels:3,background:'green'}}).png().toBuffer()};
+  const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'ADMIN temporary address',reference:'Near park',latitude:8.1,longitude:-80.9};
+  try{
+    const created=await repo.createAdmin(adminId,'admin-create-0000000000001',raw,[file]);
+    expect(created.status).toBe('PENDING_REVIEW');
+    expect((await repo.read(adminId,created.id)).ownerId).toBe(adminId);
+    expect((await repo.createAdmin(adminId,'admin-create-0000000000001',raw,[file])).id).toBe(created.id);
+    await expect(repo.createAdmin(clientId,'admin-create-0000000000002',raw,[file])).rejects.toThrow('FORBIDDEN');
+    await expect(repo.publish(adminId,created.id)).rejects.toThrow('APPROVAL_REQUIRED');
+    await repo.review(adminId,created.id,'APPROVED');
+    const results=await Promise.all(Array.from({length:4},()=>repo.publish(adminId,created.id)));
+    expect(new Set(results.map(r=>r.code)).size).toBe(1);
+    expect(results.every(r=>r.status==='ACTIVE')).toBe(true);
+    expect(results[0].code).toBe('AD507-N'+created.id.replaceAll('-','').toUpperCase());
+    const pub=await newPublicAddress(db,results[0].code,origin);expect(pub?.name).toBe(raw.name);
+    expect(JSON.stringify(pub)).not.toContain('storageKey');expect(JSON.stringify(pub)).not.toContain('createdByAdmin');
+    const html=renderNewPublicAddress(pub!);expect(html).toContain(raw.name);expect(html).toContain('const data = {');
+    for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
+    const before=await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id]);
+    const media=await db.unsafe('SELECT to_jsonb(m) AS row FROM ad507.address_media m WHERE address_id=$1::uuid',[created.id]);
+    await expect(repo.transfer(clientId,created.id,adminId,clientId)).rejects.toThrow('FORBIDDEN');
+    await expect(repo.transfer(adminId,created.id,adminId,crypto.randomUUID())).rejects.toThrow('FORBIDDEN');
+    const transfers=await Promise.all(Array.from({length:4},()=>repo.transfer(adminId,created.id,adminId,clientId)));
+    expect(transfers.filter(t=>!t.unchanged)).toHaveLength(1);
+    expect((await repo.read(clientId,created.id)).ownerId).toBe(clientId);
+    const events=await db.unsafe("SELECT before_json,after_json FROM ad507.audit_log WHERE entity_id=$1 AND action='ADDRESS_OWNERSHIP_TRANSFERRED'",[created.id]);
+    expect(events).toHaveLength(1);expect(events[0].before_json.ownerId).toBe(adminId);expect(events[0].after_json.ownerId).toBe(clientId);
+    await expect(repo.transfer(adminId,created.id,adminId,adminId)).rejects.toThrow('OWNERSHIP_CONFLICT');
+    await repo.transfer(adminId,created.id,clientId,adminId);
+    await expect(repo.read(clientId,created.id)).rejects.toThrow('REQUEST_NOT_FOUND');
+    expect(await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id])).toEqual(before);
+    expect(await db.unsafe('SELECT to_jsonb(m) AS row FROM ad507.address_media m WHERE address_id=$1::uuid',[created.id])).toEqual(media);
+    const disabled=createNewAddressPublication(db,{namespaceExclusive:false,fetch:http});
+    await expect(disabled.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).rejects.toThrow('HISTORICAL_NAMESPACE_NOT_VERIFIED');
+    const collision=createNewAddressPublication(db,{namespaceExclusive:true,fetch:(async()=>Response.json({ok:true,codes:[{codigo:results[0].code}]})) as typeof fetch});
+    await expect(collision.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).rejects.toThrow('CANONICAL_CODE_COLLISION');
+    const residential=await repo.createAdmin(adminId,'admin-residential-00000001',{type:'RESIDENTIAL',name:'New residential',reference:'Park',latitude:8,longitude:-80},[]);
+    await repo.review(adminId,residential.id,'APPROVED');await expect(repo.publish(adminId,residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');
+    expect(await newPublicAddress(db,(await repo.read(adminId,residential.id)).code,origin)).toBeNull();
+    await expect(repo.transfer(adminId,(await db.unsafe("SELECT id::text FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0].id,adminId,clientId)).rejects.toThrow('REQUEST_NOT_FOUND');
+  }finally{await db.end();}
+});
+
+test('ADMIN creation reuses the multipart route; transfer protects CSRF and expected owner',async()=>{
+  const {handleRequestRoutes}=await import('../request-routes');const {createRequestRepository}=await import('../request-repository');
+  const {adminCreationHtml}=await import('../user-panel');
+  let user:any={id:adminId,roles:['ADMIN']};const context={enabled:true,sql,auth:{currentUser:async()=>user},repository:createRequestRepository(sql,{r2:null}),r2:null};
+  const form=()=>{const body=new FormData();body.append('payload',JSON.stringify({type:'RESIDENTIAL',name:'Route admin address',reference:'Park',latitude:8,longitude:-80}));return new Request(origin+'/v1/admin/requests',{method:'POST',headers:{origin,'idempotency-key':'admin-route-0000000000001'},body});};
+  const response=(await handleRequestRoutes(form(),context))!;expect(response.status).toBe(200);const id=(await response.json()).request.id;
+  user={id:clientId,roles:['CLIENT']};expect((await handleRequestRoutes(form(),context))!.status).toBe(403);
+  user={id:adminId,roles:['ADMIN']};
+  const transfer=new Request(origin+'/v1/admin/requests/'+id+'/transfer',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({expectedOwner:adminId,targetId:clientId})});
+  expect((await handleRequestRoutes(transfer,context))!.status).toBe(200);
+  const denied=new Request(origin+'/v1/admin/requests/'+id+'/transfer',{method:'POST',headers:{origin:'https://evil.test','content-type':'application/json'},body:'{}'});
+  expect((await handleRequestRoutes(denied,context))!.status).toBe(403);
+  const html=adminCreationHtml();expect(html).toContain("fetch('/v1/admin/requests'");expect(html).toContain('/v1/user/panel?adminCreate=1');
+  for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
+});
+
+test('eight-column controlled migration rollback preserves historical rows and rejects new data',async()=>{
+  const name='ad507_rollback_'+crypto.randomUUID().replaceAll('-','');
+  await sql.unsafe('CREATE DATABASE '+name);
+  const url=new URL(isolatedDatabase);url.pathname='/'+name;const db=postgres(url.href,{max:1});
+  try{
+    for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql'])await db.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
+    await db.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source) VALUES('AD507-OLD','BUSINESS','ACTIVE','Untouched historical','LEGACY')");
+    const before=await db.unsafe('SELECT code,name,source,status FROM ad507.addresses');
+    for(const file of ['landline.sql','requests.sql'])await db.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));
+    const columns=await db.unsafe("SELECT column_name FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses' AND column_name IN ('landline_phone','request_key_hash','request_payload_hash','request_data','review_decision','reviewed_by','publication_receipt')");expect(columns).toHaveLength(7);
+    await db.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'));
+    expect(await db.unsafe('SELECT code,name,source,status FROM ad507.addresses')).toEqual(before);
+    expect((await db.unsafe("SELECT is_nullable FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses' AND column_name='code'"))[0].is_nullable).toBe('NO');
+    for(const file of ['landline.sql','requests.sql'])await db.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));
+    await db.unsafe("UPDATE ad507.addresses SET request_data='{}'::jsonb WHERE code='AD507-OLD'");
+    await expect(db.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'))).rejects.toThrow('ROLLBACK_REQUIRES_DATA_PRESERVATION');await db.unsafe('ROLLBACK');
+    expect((await db.unsafe("SELECT request_data FROM ad507.addresses WHERE code='AD507-OLD'"))[0].request_data).toEqual({});
+  }finally{await db.end();await sql.unsafe('DROP DATABASE '+name);}
+});
+
+test('new publication HTTP serves the existing template and PostgreSQL API; historical routes remain separate',async()=>{
+  const {handleNewPublicRoutes}=await import('../new-address-publication');
+  const code=(await sql.unsafe("SELECT code FROM ad507.addresses WHERE name='ADMIN temporary address'"))[0].code;
+  const server=Bun.serve({port:0,hostname:'127.0.0.1',fetch:async req=>(await handleNewPublicRoutes(req,{enabled:true,sql,r2:null}))??new Response(null,{status:404})});
+  try{
+    const base='http://127.0.0.1:'+server.port;
+    const html=await fetch(base+'/'+code+'/');expect(html.status).toBe(200);const text=await html.text();expect(text).toContain('ADMIN temporary address');expect(text).not.toContain('{{CANONICAL}}');
+    expect(text).toContain(base+'/'+code+'/');
+    const api=await fetch(base+'/v1/addresses/'+code);expect(api.status).toBe(200);expect((await api.json()).address.code).toBe(code);
+    expect((await fetch(base+'/AD507-TESTBUSINESS/')).status).toBe(404);
+    const privatePhoto=(await sql.unsafe("SELECT m.id::text FROM ad507.address_media m JOIN ad507.addresses a ON a.id=m.address_id WHERE a.code=$1",[code]))[0].id;
+    expect((await fetch(base+'/v1/addresses/'+code+'/media/'+privatePhoto)).status).toBe(503);
+    expect(await handleNewPublicRoutes(new Request(base+'/'+code+'/'),{enabled:false,sql,r2:null})).toBeNull();
+  }finally{server.stop(true);}
+});

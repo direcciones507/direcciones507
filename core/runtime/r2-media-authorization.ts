@@ -17,7 +17,7 @@ export function createMediaAuthorizer(sql: Sql, actorId: string): MediaAuthoriza
     // Never read, upload or delete legacy/Residential media through the new request flow.
     if (!row || row.source !== 'USER_REQUEST' || row.address_type === 'RESIDENTIAL') return false;
     if (scope.action === 'read') return row.linked === true && (row.owner === true || row.admin === true);
-    if (row.status !== 'DRAFT' || row.owner !== true || row.client !== true) return false;
+    if (row.status !== 'DRAFT' || row.owner !== true || (row.client !== true && row.admin !== true)) return false;
     if (scope.action === 'delete') return row.linked === true;
     return row.address_type === 'BUSINESS' || (row.address_type === 'PLACE' && scope.role === 'photo');
   };

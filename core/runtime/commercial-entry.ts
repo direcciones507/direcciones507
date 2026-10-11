@@ -30,6 +30,7 @@ export function initializeCommercialNavigation(){
    // Changing geography does not erase family/business data or selected photos.
    formCountry.value=country;formCountry.dispatchEvent(new Event('change'));
  };
+ formCountry.addEventListener('change',()=>{if(select.value!==formCountry.value){select.value=formCountry.value;select.dispatchEvent(new Event('change'));}});
  select.onchange=()=>{const u=new URL(location.href);u.searchParams.set('country',select.value);history.pushState({},'',u.pathname+u.search);refresh();};
  document.querySelectorAll<HTMLAnchorElement>('[data-commercial-country]').forEach(a=>a.onclick=e=>{e.preventDefault();select.value=a.dataset.commercialCountry!;select.dispatchEvent(new Event('change'));});
  addEventListener('popstate',()=>{const c=new URL(location.href).searchParams.get('country')??'PA';if(Array.from(select.options).some(o=>o.value===c))select.value=c;else select.value='PA';refresh();});

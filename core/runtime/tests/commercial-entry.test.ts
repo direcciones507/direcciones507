@@ -21,7 +21,7 @@ test('one shared interface prepares both exact domains, defaults Panama and fail
 });
 
 test('in-document country navigation preserves fields and selected photo objects through back/forward',()=>{
- const listeners:any={},selectors:any={},input={value:'Panamá',file:{name:'logo.png'}},country:any={value:'PA',dispatchEvent:()=>{}};
+ const listeners:any={},selectors:any={},input={value:'Panamá',file:{name:'logo.png'}},country:any={value:'PA',dispatchEvent:()=>{},addEventListener:(event:string,handler:any)=>listeners.formCountry=handler};
  const select:any={value:'PA',options:[{value:'PA'},{value:'CO'}],selectedOptions:[{textContent:'Colombia'}],dispatchEvent:()=>select.onchange()};
  selectors.commercialCountry=select;selectors.countryCode=country;selectors.commercialIdentity={};selectors.commercialAvailability={};
  const link:any={dataset:{commercialCountry:'CO'}},doc={getElementById:(id:string)=>selectors[id],querySelectorAll:()=>[link]};
@@ -29,7 +29,7 @@ test('in-document country navigation preserves fields and selected photo objects
  const run=new Function('document','location','history','addEventListener','Event','return ('+initializeCommercialNavigation.toString()+')()');
  run(doc,loc,history,(event:string,handler:any)=>listeners[event]=handler,Event);expect(country.value).toBe('PA');
  const file=input.file;link.onclick({preventDefault(){}});expect(country.value).toBe('CO');expect(loc.href).toBe('https://direcciones507.com/?country=CO');expect(input.value).toBe('Panamá');expect(input.file).toBe(file);
- loc.href='https://direcciones507.com/?country=PA';listeners.popstate();expect(country.value).toBe('PA');expect(input.file).toBe(file);
+ loc.href='https://direcciones507.com/?country=PA';listeners.popstate();expect(country.value).toBe('PA');expect(input.file).toBe(file);country.value='CO';listeners.formCountry();expect(select.value).toBe('CO');expect(input.file).toBe(file);
 });
 
 test('keyset options bound result sizes and bind cursors to country/list without trusting client SQL',()=>{

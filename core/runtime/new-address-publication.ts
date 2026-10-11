@@ -64,6 +64,9 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   if(!record.extras.historical)template=prepareCountryTemplate(template,record.extras.countryCode);
   const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc(record.description??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
+  // QR/share/copy must use the stored canonical URL, even on a preview host.
+  // Only adapts this renderer; the historical template/files stay untouched.
+  template=template.replaceAll('window.location.href',JSON.stringify(record.url).replaceAll('<','\\u003c'));
   template=template.replace('const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);\n      const data = await response.json();','const data = '+JSON.stringify(data).replaceAll('<','\\u003c')+';');
   template=template.replace("if(window.location.protocol === 'file:') return;","return; // New records do not write historical counters.");
   template=template.replace("document.getElementById('btnStats').addEventListener('click', async function(){","document.getElementById('btnStats').hidden=true; document.getElementById('btnStats').addEventListener('click', async function(){return;");

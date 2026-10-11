@@ -32,7 +32,7 @@ beforeAll(async () => {
   await sql.unsafe(readFileSync(new URL('../schema-proposals/countries.sql', import.meta.url), 'utf8'));
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'client@gmail.com'),($2::uuid,'admin@example.test')", [clientId, adminId]);
   await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')", [clientId, adminId]);
-  runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: '55440', DATABASE_URL: database, AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
+  runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: '55440', DATABASE_URL: database, AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true', AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
   for (let i = 0; i < 100; i++) {
     try { if ((await fetch('http://127.0.0.1:55440/health')).ok) return; } catch {}
     await new Promise(r => setTimeout(r, 50));
@@ -66,7 +66,7 @@ async function login(auth: ReturnType<typeof createGeneralAuth>) {
 test('exact extraction and all 12 Residential routes/handlers survive', () => {
   const snapshot = readFileSync(new URL('../legacy.snapshot.txt', import.meta.url), 'utf8').trimEnd();
   const legacy = readFileSync(new URL('../legacy.ts', import.meta.url), 'utf8').trimEnd();
-  const expected = snapshot.replace('Bun.serve({ hostname:', 'export function startLegacyCore(extension: (req: Request) => Promise<Response | null>) { return Bun.serve({ hostname:').replace('async fetch(req) { const startedAt', 'async fetch(req) { const added = await extension(req); if (added) return added; const startedAt').replace('}); audit("controlled_private_listener_ready"', '}); } audit("controlled_private_listener_ready"');
+  const expected = snapshot.replace('Bun.serve({ hostname:', 'export function startLegacyCore(extension: (req: Request) => Promise<Response | null>) { if (process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED === "true") NATALIE_ALLOWED_ORIGINS.add("https://direcciones.lat"); return Bun.serve({ hostname:').replace('async fetch(req) { const startedAt', 'async fetch(req) { const added = await extension(req); if (added) return added; const startedAt').replace('}); audit("controlled_private_listener_ready"', '}); } audit("controlled_private_listener_ready"');
   expect(legacy).toBe(expected);
   const routes = [...snapshot.matchAll(/const (RESIDENTIAL_\w*ROUTE)\s*=\s*"([^"]+)"/g)];
   expect(routes.length).toBe(12);
@@ -779,3 +779,48 @@ test('PayPal sandbox shares orders/audit: concurrent intent, private ownership, 
     expect((await db.unsafe('SELECT status,provider_reference FROM ad507.orders WHERE id=$1::uuid',[pending.order.id]))[0]).toMatchObject({status:'PENDING',provider_reference:'INITIALIZING:'+pending.order.id});
   }finally{await db.end();}
 },30000);
+
+test('one OAuth authenticates the same identity on both explicit domains with origin-bound state and cookies',async()=>{
+ const pa='https://direcciones507.com',lat='https://direcciones.lat';
+ const auth=createGeneralAuth(sql,{...env,AD507_GOOGLE_REDIRECT_URI:pa+'/auth/google/callback',AD507_PUBLIC_BASE_URL:pa,AD507_AUTH_SUCCESS_URL:'/panel',AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:lat+'/auth/google/callback',AD507_AUTH_SUCCESS_URL_LATAM:'/panel'},google({sub:'dual-origin-sub',email:'dual-origin-client@gmail.com',email_verified:true}));
+ const begin=async(host:string)=>{
+  const r=(await auth.handle(new Request(host+'/auth/google/login')))!;expect(r.status).toBe(302);
+  const u=new URL(r.headers.get('location')!);expect(u.searchParams.get('redirect_uri')).toBe(host+'/auth/google/callback');
+  expect(r.headers.get('set-cookie')).not.toContain('Domain=');
+  return {state:u.searchParams.get('state')!,binding:binding(r)};
+ };
+ const flow=await begin(pa);
+ const mismatched=(await auth.handle(new Request(lat+'/auth/google/callback?state='+flow.state+'&code=test',{headers:{cookie:flow.binding}})))!;
+ expect(mismatched.status).toBe(400);
+ const complete=async(host:string,f:any)=> (await auth.handle(new Request(host+'/auth/google/callback?state='+f.state+'&code=test',{headers:{cookie:f.binding}})))!;
+ const panama=await complete(pa,flow),international=await complete(lat,await begin(lat));
+ expect(panama.status).toBe(302);expect(international.status).toBe(302);
+ expect(international.headers.get('location')).toBe(lat+'/panel');
+ const get=async(host:string,cookie:string)=> (await auth.handle(new Request(host+'/v1/auth/me',{headers:{cookie}})))!;
+ const a=await (await get(pa,session(panama))).json(),b=await(await get(lat,session(international))).json();
+ expect(a.user.id).toBe(b.user.id);expect(a.user.roles).toEqual(['CLIENT']);
+ // Existing primary sessions had no origin claim: retain them only on the primary host.
+ const {createHash,createHmac,randomBytes}=await import('node:crypto');
+ const oldSid=randomBytes(32).toString('base64url'),oldExp=Math.floor(Date.now()/1000)+600;
+ await sql.unsafe('INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))',[createHash('sha256').update(oldSid).digest('hex'),a.user.id,oldExp]);
+ const oldBody=Buffer.from(JSON.stringify({uid:a.user.id,email:a.user.email,sid:oldSid,exp:oldExp})).toString('base64url');
+ const oldCookie='ad507_session='+oldBody+'.'+createHmac('sha256',env.AD507_SESSION_SECRET).update(oldBody).digest('base64url');
+ expect((await get(pa,oldCookie)).status).toBe(200);expect((await get(lat,oldCookie)).status).toBe(401);
+
+ expect((await get(lat,session(panama))).status).toBe(401);expect((await get(pa,session(international))).status).toBe(401);
+ expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.google_identities WHERE google_sub='dual-origin-sub'"))[0].n).toBe(1);
+ const csrf=(await auth.handle(new Request(lat+'/auth/logout',{method:'POST',headers:{cookie:session(international),origin:pa}})))!;expect(csrf.status).toBe(403);
+ const logout=(await auth.handle(new Request(lat+'/auth/logout',{method:'POST',headers:{cookie:session(international),origin:lat}})))!;expect(logout.status).toBe(204);
+ expect((await get(lat,session(international))).status).toBe(401);expect((await get(pa,session(panama))).status).toBe(200);
+});
+
+
+test('existing Natalie backend allows only exact verified LATAM origin in isolated CORS preflight, without session/provider calls',async()=>{
+ for(const route of ['controlled-session','controlled-conversation']){
+  const url='http://127.0.0.1:55440/internal/v1/natalie/'+route;
+  const allowed=await fetch(url,{method:'OPTIONS',headers:{origin:'https://direcciones.lat'}});
+  expect(allowed.status).toBe(204);expect(allowed.headers.get('access-control-allow-origin')).toBe('https://direcciones.lat');
+  const denied=await fetch(url,{method:'OPTIONS',headers:{origin:'https://direcciones.lat.evil.test'}});
+  expect(denied.status).toBe(403);expect(denied.headers.get('access-control-allow-origin')).toBeNull();
+ }
+});

@@ -9,9 +9,9 @@ test('one shared interface prepares both exact domains, defaults Panama and fail
  for(const host of ['direcciones507.com','direcciones.lat']){
    const u=new URL('https://'+host+'/');expect(commercialEntryContext(u).country).toBe('PA');
    const html=commercialEntryHtml(host==='direcciones.lat',u);expect(html).toContain('Direcciones LATAM');expect(html).toContain('Direcciones507');expect(html).toContain('id="requestForm"');
-   expect(html).toContain('href="https://'+host+'/"');
+   expect(html).toContain('href="'+(host==='direcciones.lat'?'https://direcciones.lat/':'https://direcciones507.com/commercial/panama')+'"');
    for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
-   expect(sharedCommercialRoot(new Request(u),{})).toBe(false);expect(sharedCommercialRoot(new Request(u),env)).toBe(true);
+   expect(sharedCommercialRoot(new Request(u),{})).toBe(false);expect(sharedCommercialRoot(new Request(u),env)).toBe(host==='direcciones.lat');
  }
  expect(sharedCommercialRoot(new Request('https://direcciones.lat/'),{AD507_SHARED_COMMERCIAL_ENTRY_ENABLED:'true'})).toBe(false);
  for(const path of ['/AD507-0038/','/assets/icon.png','/auth/google/callback','/admin'])expect(sharedCommercialRoot(new Request('https://direcciones507.com'+path),env)).toBe(false);
@@ -110,4 +110,28 @@ test('existing OAuth is single-origin: LATAM cannot reuse Panama cookies or over
   expect(r!.status).toBe(400);expect((await r!.json()).error).toBe('AUTH_ORIGIN_DENIED');
  }
  expect(reads).toBe(0);expect(googleCalls).toBe(0);
+});
+
+
+test('same Natalie widget is prepared for LATAM only after exact verified-domain opt-in',()=>{
+ const old=process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED;
+ try{
+  process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED='true';
+  const html=commercialEntryHtml(true,new URL('https://direcciones.lat/'));
+  expect(html).toContain('const SESSION_ENDPOINT = CORE');expect(html).not.toContain('id="natalieLauncher" disabled');
+  expect(html).toContain("location.replace('/')");
+  expect(commercialEntryHtml(true,new URL('https://direcciones.lat.evil.test/'))).toContain('id="natalieLauncher" disabled');
+ }finally{if(old===undefined)delete process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED;else process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED=old;}
+});
+
+
+test('additional OAuth config fails closed on unverified domain, malformed callbacks or redirect-host overrides',async()=>{
+ const {createGeneralAuth}=await import('../general-auth');const db={unsafe:async()=>{throw Error('UNEXPECTED_DATABASE');}} as any;
+ const base={AD507_GOOGLE_CLIENT_ID:'test',AD507_GOOGLE_CLIENT_SECRET:'test',AD507_SESSION_SECRET:'x'.repeat(64),AD507_GOOGLE_REDIRECT_URI:'https://direcciones507.com/auth/google/callback',AD507_PUBLIC_BASE_URL:'https://direcciones507.com',AD507_AUTH_SUCCESS_URL:'/panel'};
+ for(const callback of ['http://direcciones.lat/auth/google/callback','https://direcciones.lat.evil.test/auth/google/callback','https://user:password@direcciones.lat/auth/google/callback','https://direcciones.lat/not-callback']){
+  const auth=createGeneralAuth(db,{...base,AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:callback});
+  expect((await auth.handle(new Request('https://direcciones.lat/auth/google/login')))!.status).toBe(400);
+ }
+ const wrongSuccess=createGeneralAuth(db,{...base,AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:'https://direcciones.lat/auth/google/callback',AD507_AUTH_SUCCESS_URL_LATAM:'https://evil.test/'});
+ expect((await wrongSuccess.handle(new Request('https://direcciones.lat/auth/google/login')))!.status).toBe(400);
 });

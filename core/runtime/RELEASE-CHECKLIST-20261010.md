@@ -139,3 +139,46 @@ OAuth real: una configuración de redirect/success/origen; cookies host-only Sec
 ### Autorizaciones mínimas y estado de entrega
 
 No pedir otra autorización para revisar fuentes o el diagnóstico ya completado: falta acceso de lectura aPLANES, no permiso deSQL. Snapshot requiere respuesta de soporte/método aislado y luego presupuesto autorizado si aplica. WidgetPA queda preparado enPR52; ensayo productivo con estado/proveedor y activaciónCORSLATAM necesitan autorización posterior. DNS/configuraciónOAuth/DDL/merge/deploy permanecen prohibidos. PR51 intacto; no nuevoADMIN/auth/DB/almacenamiento/publicador ni pagos activados. CI final de esta preparación se registra en descripción dePR52.
+
+
+## Continuación autorizada desde6c345e8 — preparación aislada de OAuth y Natalie
+
+Esta sección actualiza los puntos pendientes y sustituye el requisito anterior de raíz comercial507: la instrucción más reciente exige CONSERVAR la página principal histórica. No se ejecutó de nuevo el diagnósticoPostgreSQL ni se releyó el maestro.
+
+|Punto pendiente|Estado actual y evidencia|Qué falta realmente|
+|---|---|---|
+|Lectura PLANES/emisores|ROJO: además de Necesitas acceso en editor, fetch autorizado del proyecto medianteDrive devolvió403/FORBIDDEN. No .gs en repo ni fuentes deversión44/triggers accesibles|Cuenta con permiso Lector sobre proyecto1A6hGG0gTBwZ6L6yHOqrf9k7Q7KtUa8MonInL3Nmsh8JSG0Bll_n8Tj4Z. No hace falta permisoEditor niDeploy. Triggers deotros usuarios pueden requerir evidencia/exportación delpropietario de cada trigger; lectura no garantiza inventario completo|
+|Exclusividad futura|ROJO: snapshot40/PG0 y pruebas N32/PLACE conservados. No fuentes suficientes para generadores/triggers/manuales|Revisión/exportación de funciones emisoras y canales manuales, contrato probado de exclusiónN32 y lectorcanónico válido. No activar gate por estadística actual|
+|Snapshot11octubre|ROJO: consulta oficial confirma Restore estándar, no clonación/exportación aislada de ESE snapshot. API documenta List/Create/Restore/Lock/Delete, sin procedimiento de exportación acreditado|Respuesta de soporte sobre extracción/clon aislado y costo concreto. No ejecutar mutationRestore ni montar volumenlive para investigar|
+|Natalie en dos entradas|AMARILLO: mismo widget ybackend preparados para507 yLATAM, con gateexacto AD507_INTERNATIONAL_DOMAIN_VERIFIED. Mismo scriptHTTPS, sesióncontrolada, identidad, provider ylímites. No llamadas reales|DNS/TLS/origen verificado y aprobación de activación posterior; prueba positiva designada sin afirmar alcanceprivado/datosentre dispositivos. No nuevoasistente|
+|OAuth dosdominios|AMARILLO: un createGeneralAuth, mismoGoogleclient/secreto/DB/roles, callbacks explícitos y estado/token vinculadoaorigen; LATAM cerrado por defecto|Registrar callbacklat en elmismoGoogleOAuthclient, configurar variables solo tras autorización, validar físicamente. NoSSO automático ni compartir cookies entre dominios|
+|Raíz507 y entradaLATAM|VERDE de preservación, AMARILLO deactivación: raíz507 nunca interceptada por sharedCommercialRoot. EntradaLATAM comparte renderer, rootLATAM requieregates. ComercialPA preparado en /commercial/panama concanonicalpropia|Enrutamiento del pathPA mediante frenteexistente ylatmismoservicio; no cambiosDNS/Pages/históricos. No nuevaaplicación ni duplicación|
+
+### OAuth preparado y pruebas que deben pasar
+
+Configuración primaria existente intacta cuando LATAM no está configurado. Segunda configuración solo si AD507_INTERNATIONAL_DOMAIN_VERIFIED=true y AD507_GOOGLE_REDIRECT_URI_LATAM=https://direcciones.lat/auth/google/callback; AD507_AUTH_SUCCESS_URL_LATAM por defecto/predeterminado /panel, validado en el mismoorigen. El mismoclientGoogle debe registrar elcallbacklat antes deactivar. No valoressecretos nuevos, servicios, tablasni migraciones.
+
+El origen se selecciona solo por URLhost exacto y callbackconfigurado; headersproxy no crean destinos. StateLATAM sehashea conorigen; estadosprimarios mantienen hash anterior. Cookies Secure/HttpOnly/SameSite=Lax yhost-only. Tokensnuevos firmados llevanorigen; tokensprimariosanteriores sinorigen continúan aceptados soloenprimario. No se aceptan enLATAM. Roles siguenPostgreSQL yOAuth no otorgaADMIN. Logout/CSRF revoca sesión propia, sin consumir la delotrodominio. MismoGoogleSub resuelve una solaidentidad/usuario enDBcentral, con sesionesseparadas porhost. No afirmar SSOsilencioso o continuidad deFile entrehosts.
+
+Pruebas añadidas enPG aislado: callbacks deamboshosts, login/mismaidentidad/CLIENT, statecruzado rechazado sin consumir primario, cookiecruzada rechazada, compatibilidad de tokenprimarioanterior, replay/CSRF/roles existentes, logout independiente. ConfiguracionesHTTP/userinfo/hostmalicioso/pathincorrecto/redirecciónexterna rechazadas. ProveedorGoogle simulado, no transacciones ni credencialesreales.
+
+### Natalie: configuración de origen dentro del mismo backend
+
+La única modificación delbackendlegacy candidato está en la extensionseam aprobada: al arrancar agrega el origenexacto https://direcciones.lat a NATALIE_ALLOWED_ORIGINS SOLO con AD507_INTERNATIONAL_DOMAIN_VERIFIED=true. check-legacy y su prueba comparan elresto EXACTAMENTE consnapshot; no modificarlegacy.snapshot.txt. Session/conversation/Residential/analytics/knowledge/provider/ratelimits siguenoriginales. Sin wildcardCORS, sinotroauth ni ampliar herramientas/permisos/conocimiento.
+
+Widgetreutilizado paraLATAM conelmismogate; por defecto desactivado. PreflightOPTIONS contra Bun yPG AISLADOS debeaceptar latverificado yrechazar hostparecido para sesión/conversación, sin crear sesiones ni llamarIA. Seconserva scriptHTTPS yfuncionamientoindependiente delteléfono. LogoutdelpanelLATAM retorna asupropiaentrada; panelPA conserva comportamiento. Respuesta real/proveedor no certificada porOPTIONS.
+
+### Recuperación y costo consultados, sin operaciones
+
+Fuentes oficiales adicionales: https://docs.railway.com/integrations/api/manage-volumes y https://docs.railway.com/pricing/plans (Resource usage pricing). Tarifascontainers: volumenUS$0.15/GB-mes; RAMUS$10/GB-mes; CPUUS$20/vCPU-mes; egressUS$0.05/GB. Se factura según uso; no confundir estas tarifas con cotización de recuperar el snapshot. Para ese ensayo no se conoce tamaño final/tiempoCPU/RAM ni método soportado. NO existe precio final acreditado, ni presupuesto aprobado, ni recursoscreados. Los245MB listados no prueban tamañofinalrestaurado ni coste total.
+
+Consulta que necesita respuesta delpropietario/soporte: con losIDs y fecha registrados previamente, confirmar mecanismo soportado de extracción/clon al destinoaislado SIN Restore/montajelive/redeploy; pedir costo y retenciónmínimos. No seenvía mensaje ni secontrata soporte premium en este encargo. Una copia lógica nueva podría ensayarse, pero no verifica elrespaldo11octubre yno se ejecutó.
+
+### Autorizaciones pendientes
+
+1. Facilitar permiso Lector aPLANES o fuenteexportada sinsecretos y evidencia detriggersemisores; noautorizarEditor ni cambioshistóricos.
+2. Obtener procedimiento/cotización deRailway; autorizar operaciónaislada/costo solo después de esa respuesta.
+3. Posteriormente: registrar callbacklat yhostRailway, variables/gates de configuración yDNS/TLS autorizados; validación física deOAuth/Natalie en la plataformaúnica, con presupuestoIA si la prueba tiene consumo.
+4. Solo tras exclusividad/recuperación/routing/verificaciones: DDLordenado/merge/deploy/activación autorizados. Ninguna deestas acciones fue realizada. El diagnósticoREADONLY permanececonsumido, nopermite repetición.
+
+CI final deestecommit y sus límites se registran en el reporte único dePR52; PR51 permanece7535f2c. No declarar operativo lo preparado.

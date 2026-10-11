@@ -3,7 +3,7 @@ import {INITIAL_COUNTRIES,COUNTRIES,requestCountry} from './country-configuratio
 export function commercialEntryContext(url:URL){
  let country='PA';try{country=requestCountry(url.searchParams.get('country')??'PA');}catch{}
  const international=url.hostname==='direcciones.lat'||url.pathname.endsWith('/international');
- return {country,international,canonical:international?'https://direcciones.lat/':'https://direcciones507.com/',
+ return {country,international,canonical:international?'https://direcciones.lat/':'https://direcciones507.com/commercial/panama',
    title:international?'Direcciones LATAM | Direcciones comerciales':'Direcciones LATAM Panamá | Direcciones507',
    description:international?'Una plataforma de direcciones comerciales para Latinoamérica.':'Direcciones507: direcciones comerciales, ubicación, contacto y QR para Panamá.'};
 }
@@ -11,7 +11,7 @@ export function commercialEntryContext(url:URL){
 export function sharedCommercialRoot(req:Request,env:Record<string,string|undefined>){
  const u=new URL(req.url);
  if(req.method!=='GET'||u.pathname!=='/'||env.AD507_SHARED_COMMERCIAL_ENTRY_ENABLED!=='true')return false;
- if(u.hostname==='direcciones507.com')return true;
+ if(u.hostname==='direcciones507.com')return false; // Preserve the historical homepage and its indexation.
  return u.hostname==='direcciones.lat'&&env.AD507_INTERNATIONAL_DOMAIN_VERIFIED==='true';
 }
 export function commercialNavigation(country='PA'){

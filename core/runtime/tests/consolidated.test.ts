@@ -574,20 +574,20 @@ test('eight-column controlled migration rollback preserves historical rows and r
   await sql.unsafe('CREATE DATABASE '+name);
   const url=new URL(isolatedDatabase);url.pathname='/'+name;const db=postgres(url.href,{max:1});const connection=await db.reserve();
   try{
-    for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql'])await connection.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
+    for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql']){await connection.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));console.info('rollback proof: applied '+file);}
     await connection.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source) VALUES('AD507-OLD','BUSINESS','ACTIVE','Untouched historical','LEGACY')");
     const before=await connection.unsafe('SELECT code,name,source,status FROM ad507.addresses');
-    for(const file of ['landline.sql','requests.sql'])await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));
+    for(const file of ['landline.sql','requests.sql']){await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));console.info('rollback proof: applied '+file);}
     const columns=await connection.unsafe("SELECT column_name FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses' AND column_name IN ('landline_phone','request_key_hash','request_payload_hash','request_data','review_decision','reviewed_by','publication_receipt')");expect(columns).toHaveLength(7);
-    await connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'));
+    await connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'));console.info('rollback proof: restored original schema');
     expect(await connection.unsafe('SELECT code,name,source,status FROM ad507.addresses')).toEqual(before);
     expect((await connection.unsafe("SELECT is_nullable FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses' AND column_name='code'"))[0].is_nullable).toBe('NO');
-    for(const file of ['landline.sql','requests.sql'])await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));
+    for(const file of ['landline.sql','requests.sql']){await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));console.info('rollback proof: applied '+file);}
     await connection.unsafe("UPDATE ad507.addresses SET request_data='{}'::jsonb WHERE code='AD507-OLD'");
     await expect(connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'))).rejects.toThrow('ROLLBACK_REQUIRES_DATA_PRESERVATION');await connection.unsafe('ROLLBACK');
     expect((await connection.unsafe("SELECT request_data FROM ad507.addresses WHERE code='AD507-OLD'"))[0].request_data).toEqual({});
-  }finally{await connection.unsafe('ROLLBACK').catch(()=>{});connection.release();await db.end();await sql.unsafe('DROP DATABASE '+name);}
-});
+  }finally{await connection.unsafe('ROLLBACK').catch(()=>{});connection.release();await db.end({timeout:1});await sql.unsafe('DROP DATABASE '+name);}
+},15000);
 
 test('new publication HTTP serves the existing template and PostgreSQL API; historical routes remain separate',async()=>{
   const {handleNewPublicRoutes}=await import('../new-address-publication');

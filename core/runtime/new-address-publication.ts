@@ -17,7 +17,10 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       if(!/^[a-f0-9-]{36}$/.test(id))throw Error('INVALID_REQUEST');
       const response=await (options.fetch??fetch)(`https://script.google.com/macros/s/${PLANES_AUTHORITY.deploymentId}/exec?action=list`,{signal:AbortSignal.timeout(15000)});
       if(!response.ok||!response.headers.get('content-type')?.includes('application/json'))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
-      const body=await response.text();if(body.length>256000)throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
+      const reader=response.body?.getReader();if(!reader)throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
+      const chunks:Uint8Array[]=[];let bytes=0;
+      try{while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.length;if(bytes>256000){await reader.cancel();throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');}chunks.push(value);}}finally{reader.releaseLock();}
+      const body=Buffer.concat(chunks).toString('utf8');
       const data=JSON.parse(body);
       if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/.test(v.codigo)))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
       const code='AD507-N'+id.replaceAll('-','').toUpperCase();
@@ -72,9 +75,9 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
     const mediaMatch=url.pathname.match(/^\/v1\/addresses\/(AD507-[A-Z0-9]+)\/media\/([a-f0-9-]{36})$/);
     if(mediaMatch){
       if(!context.r2)return new Response(null,{status:503});
-      const rows=await sql.unsafe("SELECT a.id::text,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
+      try{const rows=await sql.unsafe("SELECT a.id::text,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
       if(!rows.length)return new Response(null,{status:404});
-      const row=rows[0];try{
+      const row=rows[0];
         const storage=createR2Storage(context.r2,{authorize:async scope=>{
           if(scope.action!=='read'||scope.addressId!==row.id||scope.storageKey!==row.storage_key)return false;
           const active=await sql.unsafe("SELECT id FROM ad507.addresses WHERE id=$1::uuid AND status='ACTIVE' AND source='USER_REQUEST' AND address_type IN ('BUSINESS','PLACE')",[row.id]);return !!active.length;

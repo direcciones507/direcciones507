@@ -584,7 +584,9 @@ test('eight-column controlled migration rollback preserves historical rows and r
     expect((await connection.unsafe("SELECT is_nullable FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses' AND column_name='code'"))[0].is_nullable).toBe('NO');
     for(const file of ['landline.sql','requests.sql']){await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));console.info('rollback proof: applied '+file);}
     await connection.unsafe("UPDATE ad507.addresses SET request_data='{}'::jsonb WHERE code='AD507-OLD'");
-    await expect(connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'))).rejects.toThrow('ROLLBACK_REQUIRES_DATA_PRESERVATION');await connection.unsafe('ROLLBACK');
+    let rollbackError='';
+    try{await connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'));}catch(error){rollbackError=String(error);}finally{await connection.unsafe('ROLLBACK');}
+    expect(rollbackError).toContain('ROLLBACK_REQUIRES_DATA_PRESERVATION');
     expect((await connection.unsafe("SELECT request_data FROM ad507.addresses WHERE code='AD507-OLD'"))[0].request_data).toEqual({});
   }finally{await connection.unsafe('ROLLBACK').catch(()=>{});connection.release();await db.end({timeout:1});await sql.unsafe('DROP DATABASE '+name);}
 },15000);
@@ -603,4 +605,24 @@ test('new publication HTTP serves the existing template and PostgreSQL API; hist
     expect((await fetch(base+'/v1/addresses/'+code+'/media/'+privatePhoto)).status).toBe(503);
     expect(await handleNewPublicRoutes(new Request(base+'/'+code+'/'),{enabled:false,sql,r2:null})).toBeNull();
   }finally{server.stop(true);}
+});
+
+test('ADMIN five products reuse quotas and concurrent distinct reservations have unique codes',async()=>{
+  const {createRequestRepository}=await import('../request-repository');const {createNewAddressPublication}=await import('../new-address-publication');
+  const sharp=(await import('sharp')).default;const db=postgres(isolatedDatabase,{max:8});
+  const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',rotationConfirmed:true as const};
+  const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
+  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
+  const png=await sharp({create:{width:8,height:8,channels:3,background:'yellow'}}).png().toBuffer();const logo={role:'logo' as const,bytes:png,mime:'image/png'},photo={...logo,role:'photo' as const};
+  const products=[{type:'RESIDENTIAL',plan:'RESIDENTIAL',files:[]},{type:'PLACE',plan:'PLACE',files:[photo]},{type:'BUSINESS',plan:'BUSINESS_FREE',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',files:[logo,photo]}];
+  try{
+    const created=[];
+    for(const [i,p]of products.entries()){
+      const r=await repo.createAdmin(adminId,'admin-products-00000000000'+i,{type:p.type,plan:p.plan,name:'ADMIN product '+i,reference:'Park',latitude:8,longitude:-80},p.files);
+      expect(r.status).toBe('PENDING_REVIEW');expect((await repo.read(adminId,r.id)).media).toHaveLength(p.files.length);await repo.review(adminId,r.id,'APPROVED');created.push(r);
+    }
+    const published=await Promise.all(created.slice(1).map(r=>repo.publish(adminId,r.id)));
+    expect(new Set(published.map(r=>r.code)).size).toBe(4);expect(published.every(r=>r.status==='ACTIVE'&&r.code!=='AD507-0038')).toBe(true);
+    for(const r of created){await repo.transfer(adminId,r.id,adminId,clientId);expect((await repo.read(clientId,r.id)).ownerId).toBe(clientId);await repo.transfer(adminId,r.id,clientId,adminId);}
+  }finally{await db.end();}
 });

@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import {adminAddressPage} from './admin-address-pagination';
 import {commercialEntryContext,commercialNavigation,initializeCommercialNavigation} from './commercial-entry';
 import { COUNTRIES, INITIAL_COUNTRIES } from './country-configuration';
@@ -5,6 +6,8 @@ import type { Sql } from 'postgres';
 import type { createGeneralAuth } from './general-auth';
 import { inspectImage, prepareContacts, mediaCountAllowed } from './panel-preparation';
 
+// Static source read once per process; no network, SQL or provider call.
+const NATALIE_SOURCE=readFileSync(new URL('../../index.html',import.meta.url),'utf8');
 const USER_PANEL_SUBMISSION_ENABLED = process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 // Admin creation uses the same form and follows the explicit commercial release switch.
 const ADMIN_CREATION_ENABLED = process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
@@ -36,7 +39,7 @@ export async function handleUserPanel(req: Request, sql: Sql, auth: ReturnType<t
   if (req.method !== 'GET') return Response.json({ ok: false, error: 'METHOD_NOT_ALLOWED' }, { status: 405, headers: { 'cache-control': 'no-store' } });
   if (url.pathname !== '/v1/user/panel') {
     const nonce = crypto.randomUUID().replaceAll('-', '');
-    return new Response((url.pathname.startsWith('/commercial/')?commercialEntryHtml(url.pathname.endsWith('international'),url):userPanelHtml).replace('<script>', '<script nonce="' + nonce + '">'), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-" + nonce + "'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; object-src 'none'; connect-src 'self'", 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' } });
+    return new Response((url.pathname.startsWith('/commercial/')?commercialEntryHtml(url.pathname.endsWith('international'),url):userPanelHtml).replace('<script>', '<script nonce="' + nonce + '">'), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-" + nonce + "'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; object-src 'none'; connect-src 'self'"+(url.pathname.startsWith('/commercial/')?' https://ad507-core-production.up.railway.app':''), 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff', 'x-robots-tag': 'noindex, nofollow' } });
   }
   let foreignOrigin = req.headers.get('sec-fetch-site') === 'cross-site';
   try { if (req.headers.has('origin') && new URL(req.headers.get('origin')!).host !== url.host) foreignOrigin = true; } catch { foreignOrigin = true; }
@@ -55,12 +58,27 @@ export async function handleUserPanel(req: Request, sql: Sql, auth: ReturnType<t
 }
 export function commercialEntryHtml(international=false,url=new URL(international?'https://direcciones.lat/':'https://direcciones507.com/')){
  const context=commercialEntryContext(url);
+ // Reuse the historical widget source, never another conversation implementation.
+ const source=NATALIE_SOURCE;
+ const styleStart=source.indexOf('/* Natalie: conversación conectada');
+ const styleEnd=source.indexOf('</style>',styleStart);
+ const widgetStart=source.indexOf('<button id="natalieLauncher"');
+ const scriptStart=source.indexOf('<script>',widgetStart);
+ const scriptEnd=source.indexOf('</script>',scriptStart);
+ if(styleStart<0||styleEnd<0||widgetStart<0||scriptStart<0||scriptEnd<0)throw Error('EXISTING_NATALIE_WIDGET_REQUIRED');
+ const widget=source.slice(widgetStart,scriptStart);
+ const script=source.slice(scriptStart+8,scriptEnd);
+ // The preserved backend only accepts these origins. LATAM remains blocked.
+ const natalieAllowed=['https://direcciones507.com','https://www.direcciones507.com'].includes(url.origin);
  return userPanelHtml.replace('<title>Direcciones507 | Mi panel</title>','<title>'+context.title+'</title><meta name="description" content="'+context.description+'"><link rel="canonical" href="'+context.canonical+'">')
  .replace('<div class="brand">Direcciones<span>507</span></div>','<div class="brand" style="color:#76aaff">Direcciones LATAM</div>')
  .replace('<main>','<main>'+commercialNavigation(context.country))
  .replace('</main>','<footer class="card" style="color:#0b57d0">Direcciones LATAM · Direcciones507, presencia de Panamá</footer></main>')
  .replace('<script>','<script>const commercialInitialCountry='+JSON.stringify(context.country)+';')
- .replace('load();\n</script>', 'load();('+initializeCommercialNavigation.toString()+')();\n</script>');
+ .replace('load();\n</script>', 'load();('+initializeCommercialNavigation.toString()+')();\n</script>')
+ .replace('</style>',source.slice(styleStart,styleEnd)+'</style>')
+ .replace('</main>','</main>'+(natalieAllowed?widget:widget.replace('id="natalieLauncher"','id="natalieLauncher" disabled title="Natalie pendiente de validación para este dominio"')))
+ .replace('</script>',(natalieAllowed?script:'')+'</script>');
 }
 export function adminCreationHtml(){ return userPanelHtml.replace("let requestType=", "const adminCreation=true;let requestType=").replace("fetch('/v1/user/panel'+(addressCursor?'?cursor='+encodeURIComponent(addressCursor):'')", "fetch('/v1/user/panel?adminCreate=1'+(addressCursor?'&cursor='+encodeURIComponent(addressCursor):'')").replace("fetch('/v1/user/requests'", "fetch('/v1/admin/requests'").replace("Enviar solicitud", "Guardar dirección").replace("Solicitud recibida para revisión.","Dirección guardada bajo tu administración para revisión.").replace('</main>', '<section class="card"><h2>Traslado individual de negocio</h2><p>Pega la exportación verificada de PLANES 44. Conserva el código y los enlaces de imágenes existentes. No cambia la publicación antigua.</p><label for="historicalSnapshot">Snapshot JSON</label><textarea id="historicalSnapshot" rows="12"></textarea><button id="stageHistorical" disabled>Preparar traslado individual</button><p id="historicalResult" role="status"></p></section></main>').replace('</script>', `
 fetch('/v1/user/panel?adminCreate=1',{credentials:'same-origin'}).then(r=>r.json()).then(v=>{document.getElementById('stageHistorical').disabled=!v.actions?.submitRequest}).catch(()=>{});

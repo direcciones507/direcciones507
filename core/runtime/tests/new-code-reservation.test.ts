@@ -45,3 +45,14 @@ test('distinct canonical UUIDs keep distinct codes with exactly 32 hex digits', 
   expect(second).toMatch(/^AD507-N[0-9A-F]{32}$/);
   expect(first).not.toBe(second);
 });
+
+test('existing PLACE emitter cannot enter the new N32 namespace (source contract only)',async()=>{
+ const {generatePlaceCodeCandidate}=await import('../../postgres/place-code');
+ for(const name of ['N'+'A'.repeat(32),'','AD507-N'+id.replaceAll('-',''),'Parque Central']){
+  for(const entropy of ['abcdef','','0'.repeat(32)]){
+   const candidate=generatePlaceCodeCandidate(name,entropy);
+   expect(candidate).not.toMatch(/^AD507-N[0-9A-F]{32}$/);
+   expect(candidate).toMatch(/^AD507-[A-Z0-9-]+-[A-F0-9]{1,6}$/);
+  }
+ }
+});

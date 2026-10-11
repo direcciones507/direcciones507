@@ -30,7 +30,7 @@ const adminHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><m
 
 startLegacyCore(async req => {
   const url = new URL(req.url);
-  if(sharedCommercialRoot(req,process.env)){const nonce=crypto.randomUUID().replaceAll('-','');return new Response(commercialEntryHtml(url.hostname==='direcciones.lat',url).replace('<script>','<script nonce="'+nonce+'">'),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-"+nonce+"'; base-uri 'none'; frame-ancestors 'none'; connect-src 'self'; object-src 'none'"}});}
+  if(sharedCommercialRoot(req,process.env)){const nonce=crypto.randomUUID().replaceAll('-','');return new Response(commercialEntryHtml(url.hostname==='direcciones.lat',url).replace('<script>','<script nonce="'+nonce+'">'),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-"+nonce+"'; base-uri 'none'; frame-ancestors 'none'; connect-src 'self' https://ad507-core-production.up.railway.app; object-src 'none'"}});}
   const paymentPageId=url.pathname.match(/^\/panel\/payments\/([a-f0-9-]{36})$/);
   if(paymentPageId&&req.method==='GET'){
     if(!YAPPY_PAYMENTS_ENABLED||!paymentConfig||!paymentRepository)return new Response('Pago no habilitado',{status:503,headers:{'cache-control':'no-store'}});

@@ -1,6 +1,6 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
-Actualizado 11 octubre 2026. Este es el checklist de release existente, ampliado documentalmente; no añade funcionalidades ni un segundo sistema. No desplegar hasta verificar asignación de códigos y publicación canónica. PR51:7535f2cdaa38b475538769fa5d90c31a38134713; PR52 funcional:9735178634d467551fe1f05e4c26c8a698158fc4. Un cambio posterior solo documental no altera estos resultados ni acredita otra ejecución de pruebas.
+Actualizado 11 octubre 2026. Este es el checklist de release existente, ampliado documentalmente; no añade funcionalidades ni un segundo sistema. No desplegar hasta verificar asignación de códigos y publicación canónica. PR51:7535f2cdaa38b475538769fa5d90c31a38134713; PR52 funcional:9735178634d467551fe1f05e4c26c8a698158fc4. El cierre READ ONLY está en566b231; la preparación posterior reutiliza únicamente el widgetNatalie existente en el renderer comercial, sin alterar backend/históricos. Sus pruebas se registran en PR52.
 
 **VERDE:** hecho concreto con evidencia. **AMARILLO:** preparado, pendiente de prueba/autorización. **ROJO:** bloqueo de la acción indicada. Un VERDE de CI no sustituye una validación productiva.
 
@@ -54,7 +54,7 @@ La autorización posterior y limitada del propietario permitió copiar el bundle
 - VERDE (presencia real): GETdirecciones507.com devolvió200; HTML público contiene elwidgetNatalie, endpointscontrolled-session/controlled-conversation, enlaceForms, WhatsAppcentral y guía de formulario. SHA256 de toda lahomepage difiere delindex de la rama; no se declara igualdad de todas las versiones ni se modifican históricos.
 - AMARILLO (respuesta real): no se abrió elwidgetni se enviómensaje: abrirlo crea sesión mediantePOST y responder utiliza proveedor/auditoría. Mantener prueba positiva pendiente de autorización específica; no marcarrespuestaautomática aprobada solo porHTML.
 - El código existente ofrece conversacióninformativa controlada de3mensajes, USER_IDad507-controlled-user-001 y estado de sesiónenmemoria deldocumento; endpointbackendpermisos/estadoPG conservados. El flujo web usa sesión y peticionesHTTPS; no usaWhatsApp/celular para procesar esas consultas. Eso conserva independencia del teléfono, pero no acredita acceso privado exclusivo delpropietario o continuidaddechat entredispositivos.
-- ROJO antes decambiar raízcomercial (si se exige continuidad deatención): commercialEntryHtml/userPanelHtml y ADMIN actual no incluyen Natalie. Backendpreservado no equivale awidgetconectado enlanuevainterfaz. No se copia/reconstruye ni agregaunwidget enestecierre; resolver la conservación/reutilización del mecanismo existente con alcance autorizado antes deactivar raíz.
+- AMARILLO antes de cambiar raíz comercial: commercialEntryHtml reutiliza ahora el HTML/CSS/JavaScript de Natalie desde index.html intacto. Un solo script con nonce y destinoHTTPS específico en CSP. Backend conservado; no se crea sesión al renderizar. Solo funciona bajo los dos orígenes507 permitidos; prueba positiva real todavía pendiente. userPanelHtml yADMIN no se modifican para incorporar otro asistente.
 - AMARILLO antes deLATAM: NATALIE_ALLOWED_ORIGINS delbackend existente admite507 ywww507, no direcciones.lat. No se cambiaCORS ni se afirmaque funcione enel dominioextranjero.
 - WhatsAppcentral esun enlace decontactomanual; GoogleForms recibe solicitudes medianteflujoexistente; la guía esayudaestática. No hay evidencia aquí derespuestaWhatsApp automática, cobro, aprobación o publicación autónoma porNatalie. Los reportes delpropietario mediantecontratos delectura siguenprevistos, sinSQL/secrets/PIN/OWNER ni herramientasnuevas.
 
@@ -83,8 +83,59 @@ Códigos: total0/uncoded0/noncanonical0/normalized_duplicates0. Comparado con sn
 
 ### Natalie — preparación de reutilización, sin otro asistente
 
-VERDE: backend actual conservado (legacy.ts, sesiones, conversación, permisos y auditoría), independiente del teléfono. AMARILLO: preparación de integración del widget EXISTENTE de index.html en commercialEntryHtml/userPanelHtml, usando sus mismas rutas controlled-session/controlled-conversation y el mismo backend; no añadir otro servicio, identidad, autenticación ni motor. Antes de conectar: preservar contrato de sesión/permisos, confirmar acceso del propietario sin inventar continuidad entre dispositivos, validar origen direcciones.lat en el mecanismo existente y probar conversación con autorización específica si genera estado/costo. No se copia ni modifica index histórico, no se agrega funcionalidad en este diagnóstico. ROJO antes de sustituir raíz si se requiere atención continua: el widget aún no está conectado al renderer nuevo. No afirmar esa integración completada.
+VERDE: backend actual conservado (legacy.ts, sesiones, conversación, permisos y auditoría), independiente del teléfono. AMARILLO: preparación de integración del widget EXISTENTE de index.html en commercialEntryHtml, usando sus mismas rutas controlled-session/controlled-conversation y el mismo backend; no añadir otro servicio, identidad, autenticación ni motor. Antes de conectar: preservar contrato de sesión/permisos, confirmar acceso del propietario sin inventar continuidad entre dispositivos, validar origen direcciones.lat en el mecanismo existente y probar conversación con autorización específica si genera estado/costo. No se copia ni modifica index histórico, no se agrega funcionalidad en este diagnóstico. Estado de ese diagnóstico: no conectado aún. La continuación de este checklist prepara ahora su reutilización en commercialEntryHtml para507; conversación real/activación aún no comprobadas.
 
 ### Siguiente acción y autorizaciones que permanecen
 
 El acceso y cotejo PostgreSQL quedan VERDE. Pendientes reales: contrato de exclusividad futura; restauración aislada verificable del snapshot11octubre; continuidad del widgetNatalie antes de cambiar raíz; routing selectivo que preserve Pages y configuración/validación OAuth de los dos dominios. Solo después: autorización separada para aplicar migraciones ordenadas, configurar hosts, integrar PR51/52 y desplegar. Este diagnóstico no autoriza ninguna de esas acciones.
+
+
+## Cierre de puntos pendientes desde566b231 — sin repetir diagnóstico
+
+### Emisores: alcance comprobado y garantía pendiente
+
+|Canal real existente|Evidencia revisada|Garantía y límite|
+|---|---|---|
+|Nuevo sistema comercial|new-address-publication.ts: UUID canónico→AD507-N[32hex]; snapshot histórico normalizado, lectura PG, rechazo de colisión y gate obligatorio|Idempotencia/locks por solicitud, UNIQUE(code), índice normalizado propuesto y pruebas concurrentes ya existentes. No control sobre escritores externos|
+|Lugares Core anteriores|core/postgres/place-code.ts/place-create-repository.ts: slug limitado24 + guion + sufijohex máximo6, UNIQUE y reintentos acotados|Lenguaje disjunto deN32 sin guion interior; prueba añadida sin alterar este emisor. No acredita activación productiva de esa ruta|
+|Aprovisionamiento residencial|Backendlegacy recibe/valida códigos suministrados; no emite códigos comerciales nuevos|Preservado; origen de esos códigos en PLANES no demostrado por esta ruta|
+|Generación/auto-sync GitHub Pages|generate.yml/auto-sync-ad507.yml leen action=list y copian códigos; patch-ad507-2026.sh adapta plantilla/enlaces|Publicadores/consumidores de códigos, no evidencia de asignación nueva; no alterados|
+|PLANES44, formularios y altas manuales|Proyecto autoridad1A6hGG0gTBwZ6L6yHOqrf9k7Q7KtUa8MonInL3Nmsh8JSG0Bll_n8Tj4Z. Editor real devolvió Acceso denegado / Necesitas acceso en la cuenta disponible. Repositorio no contiene fuentes .gs|ROJO: no se revisó el generador ni triggers/version44 o todos los emisores manuales; no declarar inventario completo ni garantía futura|
+
+Snapshot maestro40códigos y PGtotal0 conservados como evidencia previa, no releídos ni diagnosticados nuevamente. La garantía verificable disponible impide colisiones dentro del nuevo sistema y con el registro histórico consultado en cada reserva, pero exige registro legible vigente y contrato de emisores externos. El lector canónico existente sigue sin validación positiva del contrato action=list; no sustituirlo por un snapshot estático ni afirmar reserva global. Gate AD507_HISTORICAL_NAMESPACE_VERIFIED continúa cerrado.
+
+Acción exacta del propietario: facilitar acceso SOLO lectura al proyecto PLANES identificado mediante una cuenta que ya sea propietaria/autorizada, o exportar únicamente las funciones de asignación/normalización/altas y listado de triggers/emisores de versión44, sin secretos ni datos personales. Incluir las altas manuales autorizadas. Revisar si todas excluyen N32; si no existe exclusión, documentar y comprometer la reserva operacional de ese namespace para todos los emisores, sin editarExcel/AppsScript. Un contrato no probado no se activa. No se pulsó Solicitar acceso ni se enviaron mensajes.
+
+### Recuperación: procedimiento oficial verificado
+
+Fuentes oficiales leídas11octubre:
+- https://docs.railway.com/volumes/backups (How to restore / Caveats).
+- https://docs.railway.com/guides/postgres-backups-restores (capas, PITR y restore drill).
+
+VERDE: mecanismo soportado identificado. Snapshot de volumen se restaura al mismo servicio/proyecto/ambiente; Restore prepara otro volumen en el montaje original y Deploy aplica el cambio/reinicia servicio. No es restauración aislada permitida aquí. La referencia de volúmenes dice que los snapshots posteriores permanecen en el volumen anterior, mientras la guía resume que se eliminan: por esa discrepancia no asumir su conservación sin confirmar con soporte ni ejecutar Restore.
+
+PITR soporta un Postgres hermano sin tocar fuente, pero estaba desactivado: habilitarlo ahora no recupera el snapshot11octubre11:39. Requiere bucket/variables/redeploy y consumo; no habilitado ni recomendado como sustituto de ESTA prueba.
+
+pg_dump custom + pg_restore en destino aislado es el ensayo lógico soportado, pero un dump actual NO verifica el snapshot existente. No se ejecutó pg_dump ni Restore, no se creó base de ensayo en el servidor productivo, servicio, bucket o volumen. No se solicita instalar herramientas para esta revisión.
+
+ROJO (snapshot real): las fuentes/UI no documentan exportación o clonación de ESE snapshot a otro servicio sin sustituir montaje; no inventar esa capacidad. Acción exacta propietario: consultar soporteRailway con proyecto2b6d4e6c-e1d4-471d-a77d-c9bdb711650d, Postgresce124693-1fef-432f-9824-e315d5cabd9d, volumen9cccf287-430d-43f3-8f12-d1cd0d3670bb y snapshot2026-10-11T16:39:30.690Z/245MB: «¿Puede exportarse o clonarse este backup a un destino aislado, sin preparar/reemplazar montajelive ni redesplegar producción? Indiquen procedimiento soportado y costo mínimo del ensayo». No se envió solicitud en nombre del propietario. Antes de cualquier creación: revisar respuesta, presupuesto/retención, autorizar operación concreta; restaurar con misma versiónPG18, verificar ledger/checksums/conteos/restricciones sin PII, registrar tiempos e integridad y cerrar solo destino autorizado. Hasta entonces recuperación ROJO.
+
+### Natalie: reutilización real preparada en código
+
+AMARILLO (preparada, sin despliegue): commercialEntryHtml reutiliza una lectura estática cacheada por proceso del index.html existente los tres fragmentos de widget (estilo/HTML/script), sin clonarlo en otra implementación ni modificarindex. Docker incluye ese archivo solo como fuente estática de extracción; no lo sirve como segunda aplicación. Falta de marcadores rechaza render en vez de fabricar otrochat. Misma identidadcontrolada, endpoints y contrato de sesión; sin DB/proveedor en renderer. Script delwidget se integra dentro del único script de página, conservando nonceCSP. connect-src admite solo self y el hostHTTPSCore que ya usaNatalie; no wildcard ni relajación de roles/CORS/backend.
+
+Panamá ywww507 reutilizan el script exacto; LATAM/preview/hostmalicioso muestran launcherdesactivado y no ejecutan llamadasNatalie porque backend existente no acepta esos orígenes. Se mantiene independencia del teléfono; WhatsApp no participa en sesión/conversación. No se afirma función privada exclusiva delpropietario, historial entre dispositivos ni capacidad LATAM fuera del conocimiento aprobado.
+
+Pruebas: rendererPA/LATAM, unwidget/un script, script original y JavaScript sintácticamente válido, nonce/CSP, cuenta/ADMIN intactos; simulación local de dos consultas con una sesión y respuestas mediante textContent, cero llamadasalproveedor real. Esto es VERDE de contrato aislado, no VERDE de respuesta productiva. Prueba positiva existente sigue AMARILLO: requerirá alcance designado y autorización de consumo/estado si corresponde. LATAM sigue AMARILLO/ROJO antes de activar: mismo backend deberá aprobar origen/escope y conservar límites, sin otra autenticación ni asistente. No alterarlegacy en este encargo.
+
+### Dominios/OAuth: continuidad preparada sin cambios productivos
+
+VERDE de revisión/contrato: sharedCommercialRoot intercepta únicamenteGET / con gates explícitos y hosts exactos; no toma códigos antiguos, assets, APIs o callbacks. Navegación de país permanece en el mismo documento; no promete conservar File/cookie al navegar entre dominios. URLs nuevasPA y extranjeras mantienen los dominios aprobados; QR usa URLcanónica. Códigos históricos y Pages siguen intactos.
+
+ROJO de activación: DNS no enruta por path. No apuntar todo direcciones507.com aCore hasta acreditar cómo se sirven también las rutas/archivos históricos. Reutilizar únicamente el frente de enrutamiento existente si puede hacerlo selectivamente; si no existe, no inventar proxy/infraestructura ni activar raíz. direcciones.lat debe registrarse en el servicio existente para obtener sus propiosCNAME/TXT antes de DNS/TLS; no reutilizar TXT507.
+
+OAuth real: una configuración de redirect/success/origen; cookies host-only Secure HttpOnly SameSite=Lax. general-auth.ts rechaza un host diferente con AUTH_ORIGIN_DENIED incluso con x-forwarded-host falso. Prueba negativa añadida usa authactual y mocks que fallan si se consultaSQL/proveedor. No cambiar producción ni crear SSO/authnuevo; documentado que activarlat DNS no conecta Mi cuenta automáticamente. Se necesita autorizar/verificar la configuración compatible del MISMOauth para amboshosts (callback/state/CSRF/roles/logout), con pruebas aisladas antes de activación. No transportar cookies/tokens porURL ni compartir dominio de cookie entre507.com ylat.
+
+### Autorizaciones mínimas y estado de entrega
+
+No pedir otra autorización para revisar fuentes o el diagnóstico ya completado: falta acceso de lectura aPLANES, no permiso deSQL. Snapshot requiere respuesta de soporte/método aislado y luego presupuesto autorizado si aplica. WidgetPA queda preparado enPR52; ensayo productivo con estado/proveedor y activaciónCORSLATAM necesitan autorización posterior. DNS/configuraciónOAuth/DDL/merge/deploy permanecen prohibidos. PR51 intacto; no nuevoADMIN/auth/DB/almacenamiento/publicador ni pagos activados. CI final de esta preparación se registra en descripción dePR52.

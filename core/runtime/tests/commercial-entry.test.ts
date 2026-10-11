@@ -51,3 +51,63 @@ test('country-bound private media keeps ownership and rejects a foreign object p
  expect(await authorize({...scope,action:'read',storageKey:'countries/CO/addresses/'+scope.addressId+'/logo/'+'a'.repeat(64)+'.webp'})).toBe(true);
  expect(await authorize({...scope,ownerId:scope.addressId,action:'read'})).toBe(false);
 });
+
+test('commercial renderer reuses the exact historical Natalie widget without changing the account or ADMIN form',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const {userPanelHtml,adminCreationHtml,handleUserPanel}=await import('../user-panel');
+ const source=readFileSync(new URL('../../../index.html',import.meta.url),'utf8');
+ const start=source.indexOf('<button id="natalieLauncher"'),jsStart=source.indexOf('<script>',start),jsEnd=source.indexOf('</script>',jsStart);
+ const widget=source.slice(start,jsStart),script=source.slice(jsStart+8,jsEnd);
+ const html=commercialEntryHtml(false,new URL('https://direcciones507.com/commercial/panama'));
+ expect(html).toContain(widget);expect(html).toContain(script);
+ expect((html.match(/id="natalieLauncher"/g)||[]).length).toBe(1);
+ expect((html.match(/<script>/g)||[]).length).toBe(1);
+ expect(userPanelHtml).not.toContain('natalieLauncher');expect(adminCreationHtml()).not.toContain('natalieLauncher');
+ const res=await handleUserPanel(new Request('https://direcciones507.com/commercial/panama'),{} as any,{} as any);
+ expect(res!.headers.get('content-security-policy')).toContain("connect-src 'self' https://ad507-core-production.up.railway.app");
+ const secured=await res!.text();const nonce=secured.match(/<script nonce="([a-f0-9]+)">/)![1];
+ expect(res!.headers.get('content-security-policy')).toContain("script-src 'nonce-"+nonce+"'");
+ expect(secured).not.toContain('<script>');
+});
+
+test('Natalie integration remains non-executable on LATAM and preview origins until the existing backend accepts them',()=>{
+ for(const origin of ['https://direcciones.lat','https://direcciones507.com.evil.test','https://preview.example.test']){
+  const html=commercialEntryHtml(true,new URL(origin+'/commercial/international'));
+  expect(html).toContain('id="natalieLauncher" disabled');
+  expect(html).not.toContain('const SESSION_ENDPOINT = CORE');
+  expect(html).not.toContain('const CONVERSATION_ENDPOINT = CORE');
+ }
+});
+
+test('reused Natalie web script starts no requests on render, reuses one session and safely displays replies (local simulation)',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const source=readFileSync(new URL('../../../index.html',import.meta.url),'utf8');
+ const start=source.indexOf('<script>',source.indexOf('<button id="natalieLauncher"'));
+ const script=source.slice(start+8,source.indexOf('</script>',start));
+ const calls:any[]=[],events:any={},nodes:any={};
+ const make=(id:string)=>nodes[id]={value:'',disabled:false,textContent:'',children:[],classList:{contains:()=>false,toggle(){}},setAttribute(){},focus(){},appendChild(item:any){this.children.push(item)},addEventListener(name:string,fn:any){events[id+':'+name]=fn},querySelector:()=>nodes.send};
+ for(const id of ['natalieLauncher','natalieChat','natalieClose','natalieForm','natalieInput','natalieMessages','natalieStatus','send'])make(id);
+ const doc={getElementById:(id:string)=>nodes[id],createElement:()=>({}),addEventListener(){}};
+ const http=async(url:string,init:any)=>{calls.push({url,init});return Response.json(url.endsWith('controlled-session')?{ok:true,session_id:'11111111-1111-4111-8111-111111111111'}:{ok:true,response:'<img onerror=alert(1)>',message_number:1,status:'active'});};
+ new Function('document','fetch','setTimeout',script)(doc,http,()=>{});
+ expect(calls).toHaveLength(0);
+ for(const query of ['¿Qué es Direcciones507?','¿Cómo solicito mi dirección?']){nodes.natalieInput.value=query;await events['natalieForm:submit']({preventDefault(){}});}
+ expect(calls.filter(c=>c.url.endsWith('controlled-session'))).toHaveLength(1);
+ const messages=calls.filter(c=>c.url.endsWith('controlled-conversation'));expect(messages).toHaveLength(2);
+ for(const c of messages){expect(c.init.headers['x-ad507-session-id']).toBe('11111111-1111-4111-8111-111111111111');expect(c.url).toStartWith('https://ad507-core-production.up.railway.app/');}
+ expect(nodes.natalieMessages.children.some((x:any)=>x.textContent==='<img onerror=alert(1)>')).toBe(true);
+ expect(nodes.natalieMessages.children.every((x:any)=>x.innerHTML===undefined)).toBe(true);
+});
+
+test('existing OAuth is single-origin: LATAM cannot reuse Panama cookies or override callback by proxy headers',async()=>{
+ const {createGeneralAuth}=await import('../general-auth');let reads=0,googleCalls=0;
+ const auth=createGeneralAuth({unsafe:async()=>{reads++;throw Error('UNEXPECTED_DB');}} as any,{
+ AD507_GOOGLE_CLIENT_ID:'isolated',AD507_GOOGLE_CLIENT_SECRET:'isolated',AD507_SESSION_SECRET:'x'.repeat(64),
+ AD507_GOOGLE_REDIRECT_URI:'https://direcciones507.com/auth/google/callback',AD507_AUTH_SUCCESS_URL:'/panel',AD507_PUBLIC_BASE_URL:'https://direcciones507.com',
+ },(async()=>{googleCalls++;throw Error('UNEXPECTED_PROVIDER');}) as typeof fetch);
+ for(const path of ['/auth/google/login','/auth/google/callback','/v1/auth/me']){
+  const r=await auth.handle(new Request('https://direcciones.lat'+path,{headers:{cookie:'ad507_session=synthetic','x-forwarded-host':'direcciones507.com'}}));
+  expect(r!.status).toBe(400);expect((await r!.json()).error).toBe('AUTH_ORIGIN_DENIED');
+ }
+ expect(reads).toBe(0);expect(googleCalls).toBe(0);
+});

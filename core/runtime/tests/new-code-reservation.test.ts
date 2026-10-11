@@ -21,5 +21,27 @@ test('collision checks normalize lowercase historical codes before reserving', a
 
 test('reservation stays blocked until namespace exclusivity is confirmed', async () => {
   const publisher = createNewAddressPublication({} as any, { namespaceExclusive: false });
+  expect(publisher.historicalRegistryVerified).toBe(false);
   expect(publisher.reserve(request)).rejects.toThrow('HISTORICAL_NAMESPACE_NOT_VERIFIED');
+});
+
+test('malformed UUIDs cannot shorten or alias the reserved suffix', async () => {
+  let contacted = false;
+  const publisher = createNewAddressPublication({} as any, { namespaceExclusive: true,
+    fetch: (async () => { contacted = true; throw Error('UNEXPECTED_FETCH'); }) as typeof fetch });
+  for (const invalid of ['-'.repeat(36), 'a'.repeat(36),
+    '123e4567e-89b-42d3-a456-426614174000']) {
+    await expect(publisher.reserve({ ...request, id: invalid })).rejects.toThrow('INVALID_REQUEST');
+  }
+  expect(contacted).toBe(false);
+});
+
+test('distinct canonical UUIDs keep distinct codes with exactly 32 hex digits', async () => {
+  const publisher = createNewAddressPublication({ unsafe: async () => [] } as any,
+    { namespaceExclusive: true, fetch: (async () => Response.json({ok:true,codes:[{codigo:'AD507-0001'}]})) as typeof fetch });
+  const first = await publisher.reserve(request);
+  const second = await publisher.reserve({...request,id:'123e4567-e89b-42d3-a456-426614174001'});
+  expect(first).toMatch(/^AD507-N[0-9A-F]{32}$/);
+  expect(second).toMatch(/^AD507-N[0-9A-F]{32}$/);
+  expect(first).not.toBe(second);
 });

@@ -24,3 +24,31 @@ test('rollback reads only action=list; absent codes and a forged transition page
   await verifyMigrationBridge(row,(async()=>new Response(html,{headers:{'content-type':'text/html'}})) as typeof fetch);
   await expect(verifyMigrationBridge(row,(async()=>new Response(html+'changed',{headers:{'content-type':'text/html'}})) as typeof fetch)).rejects.toThrow('MIGRATION_BRIDGE_NOT_VERIFIED');
 });
+
+test('existing Pages source demonstrates removal/restoration and the two pinned-code exceptions on isolated inputs',()=>{
+  const {readFileSync}=require('node:fs');const workflow=readFileSync(new URL('../../../.github/workflows/generate.yml',import.meta.url),'utf8');
+  const jq=workflow.split("          jq '\n")[1].split("          ' codes.json > codes.public.json")[0];
+  const run=(codes:any[])=>{const p=Bun.spawnSync(['jq',jq],{stdin:Buffer.from(JSON.stringify({ok:true,codes}))});expect(p.exitCode).toBe(0);return JSON.parse(p.stdout.toString()).codes.map((v:any)=>v.codigo);};
+  const present=[{codigo:'AD507-SAFEIMPORT',plan:'Negocio Premium'},{codigo:'AD507-MONASANFRANCISCO',plan:'Negocio'}];
+  expect(run(present)).toContain('AD507-SAFEIMPORT');expect(run(present.filter(v=>v.codigo!=='AD507-SAFEIMPORT'))).not.toContain('AD507-SAFEIMPORT');expect(run(present)).toContain('AD507-SAFEIMPORT');
+  expect(run([])).toContain('AD507-MONASANFRANCISCO');expect(run([])).toContain('AD507-MONACOSTADELESTE');
+});
+test('existing publisher overlay is absent by default and applies only one verified code with both preserved routes',async()=>{
+  const {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync}=await import('node:fs');const {tmpdir}=await import('node:os');const {join}=await import('node:path');const {createHash}=await import('node:crypto');
+  const {applyCommercialCutover}=await import('../../../scripts/apply-commercial-cutover.mjs');const dir=mkdtempSync(join(tmpdir(),'ad507-cutover-'));const out=join(dir,'out');
+  try{
+    expect(applyCommercialCutover(dir,out)).toBe(false);for(const code of [snapshot.code,snapshot.code.toLowerCase()]){mkdirSync(join(out,code),{recursive:true});writeFileSync(join(out,code,'index.html'),'legacy');}
+    mkdirSync(join(dir,'commercial-cutovers'));const html=renderCommercialBridge(snapshot,id,snapshot.coreOrigin);writeFileSync(join(dir,'commercial-cutovers',snapshot.code+'.html'),html);
+    const manifest={version:1,code:snapshot.code,id,snapshotHash:snapshotHash(snapshot),htmlPath:'commercial-cutovers/'+snapshot.code+'.html',htmlSha256:createHash('sha256').update(html).digest('hex')};writeFileSync(join(dir,'commercial-cutover.json'),JSON.stringify(manifest));
+    expect(applyCommercialCutover(dir,out)).toBe(true);for(const code of [snapshot.code,snapshot.code.toLowerCase()])expect(readFileSync(join(out,code,'index.html'),'utf8')).toBe(html);
+    writeFileSync(join(dir,'commercial-cutovers',snapshot.code+'.html'),'changed');expect(()=>applyCommercialCutover(dir,out)).toThrow('INVALID_CUTOVER_ARTIFACT');expect(readFileSync(join(out,snapshot.code,'index.html'),'utf8')).toBe(html);
+  }finally{rmSync(dir,{recursive:true,force:true});}
+});
+test('the generated transport really selects PostgreSQL and returns to PLANES on suspension or failure',async()=>{
+  const html=renderCommercialBridge(snapshot,id,snapshot.coreOrigin),fragment=html.match(/let data;try\{[\s\S]*?data=await response.json\(\);\}/)![0];
+  const execute=new Function('fetch','CODE','WEBAPP_URL','AbortSignal','return (async()=>{'+fragment+';return data;})()');
+  const legacy={ok:true,nombre:'Legacy'},publicAddress={code:snapshot.code,name:'PostgreSQL',coordinates:{latitude:8,longitude:-80},media:[],socials:[],extras:{}};
+  const calls:string[]=[];const http=(active:boolean)=>(async(url:string)=>{calls.push(url);return url.includes('/v1/addresses/')?active?Response.json({ok:true,address:publicAddress}):new Response(null,{status:404}):Response.json(legacy);});
+  expect((await execute(http(true),snapshot.code,'https://script.google.com/official',AbortSignal)).nombre).toBe('PostgreSQL');expect(calls).toHaveLength(1);calls.length=0;
+  expect(await execute(http(false),snapshot.code,'https://script.google.com/official',AbortSignal)).toEqual(legacy);expect(calls).toHaveLength(2);expect(calls[1]).toContain('?code='+snapshot.code);
+});

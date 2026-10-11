@@ -21,7 +21,7 @@ startLegacyCore(async req => {
   const url = new URL(req.url);
   if(req.method==='GET'&&url.pathname==='/admin/create')return new Response(adminCreationHtml(),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex'}});
   const publicResponse=await handleNewPublicRoutes(req,{enabled:commercialWorkflowEnabled,sql,r2:requestR2});if(publicResponse)return publicResponse;
-  const requestResponse = await handleRequestRoutes(req, { enabled: REQUEST_WORKFLOW_ENABLED, sql, auth, repository: requestRepository, r2: requestR2 });
+  const requestResponse = await handleRequestRoutes(req, { enabled: commercialWorkflowEnabled, sql, auth, repository: requestRepository, r2: requestR2 });
   if (requestResponse) return requestResponse;
   const userPanel = await handleUserPanel(req, sql, auth);
   if (userPanel) return userPanel;

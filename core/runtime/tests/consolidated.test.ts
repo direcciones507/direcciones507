@@ -599,7 +599,7 @@ test('new publication HTTP serves the existing template and PostgreSQL API; hist
   try{
     const base='http://127.0.0.1:'+server.port;
     const html=await fetch(base+'/'+code+'/');expect(html.status).toBe(200);const text=await html.text();expect(text).toContain('ADMIN temporary address');expect(text).not.toContain('{{CANONICAL}}');
-    expect(text).toContain(base+'/'+code+'/');
+    expect(text).toContain('https://direcciones507.com/'+code+'/');
     const api=await fetch(base+'/v1/addresses/'+code);expect(api.status).toBe(200);expect((await api.json()).address.code).toBe(code);
     expect((await fetch(base+'/AD507-TESTBUSINESS/')).status).toBe(404);
     const privatePhoto=(await sql.unsafe("SELECT m.id::text FROM ad507.address_media m JOIN ad507.addresses a ON a.id=m.address_id WHERE a.code=$1",[code]))[0].id;
@@ -699,7 +699,7 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
   const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
   const {createPaymentRepository}=await import('../payment-repository');
   const {proposedInternationalCode,INITIAL_COUNTRIES}=await import('../country-configuration');
-  const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:8});
+  const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:8,connection:{statement_timeout:5000,lock_timeout:3000}});
   const files=[{role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:6,height:6,channels:3,background:'blue'}}).png().toBuffer()}];
   const calls:string[]=[];
   const http=(async(url:any,init:any)=>{if(String(url).includes('action=list'))return Response.json({ok:true,codes:[{codigo:'AD507-0038'}]});calls.push(init.method);return new Response(null,{status:200});}) as typeof fetch;
@@ -707,14 +707,17 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
   const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'LATAM isolated',reference:'Park',latitude:8.2,longitude:-80.1,region:'Región',municipality:'Municipio',locality:'Localidad',city:'Ciudad',sector:'Sector'};
   try{
     for(const countryCode of INITIAL_COUNTRIES){
+      console.info('LATAM isolated country '+countryCode);
       const phone=countryCode==='CO'?'3001234567':'88888888';
       const data={...raw,name:'LATAM '+countryCode,countryCode,phone};
       const results=await Promise.all([repo.createAdmin(adminId,'latam-create-key-'+countryCode,data,files),repo.createAdmin(adminId,'latam-create-key-'+countryCode,data,files)]);
+      console.info('LATAM created '+countryCode);
       expect(results[0].id).toBe(results[1].id);expect(results[0].status).toBe('PENDING_REVIEW');
       const read=await repo.read(adminId,results[0].id);expect(read.countryCode).toBe(countryCode);expect(read.extras.countryCode).toBe(countryCode);expect(read.extras.territory.city).toBe('Ciudad');
       expect(read.media).toHaveLength(1);expect(read.media[0].status).toBe('READY');expect(read.media[0].url).toBeNull();
       await expect(repo.read(clientId,results[0].id)).rejects.toThrow('REQUEST_NOT_FOUND');
       await expect(repo.createAdmin(clientId,'latam-forbidden-'+countryCode,data,files)).rejects.toThrow('FORBIDDEN');
+      console.info('LATAM validated '+countryCode);
       await repo.review(adminId,results[0].id,'APPROVED');
       if(countryCode!=='PA'){
         await expect(repo.publish(adminId,results[0].id)).rejects.toThrow('COUNTRY_NOT_ENABLED');
@@ -732,10 +735,12 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
         expect(renderNewPublicAddress(pub!).match(/style="color:#0b57d0">Direcciones LATAM/g)).toHaveLength(2);
       }
     }
+    console.info('LATAM requests complete');
     expect(calls.every(method=>method==='PUT')).toBe(true);
-    await expect(db.unsafe(readFileSync(new URL('../schema-proposals/countries.sql',import.meta.url),'utf8'))).rejects.toThrow('COUNTRY_PROPOSAL_ALREADY_PRESENT_REVIEW_LEDGER');
-    await db.unsafe('ROLLBACK');
-  }finally{await db.end();}
+    const connection=await db.reserve();try{
+      await expect(connection.unsafe(readFileSync(new URL('../schema-proposals/countries.sql',import.meta.url),'utf8'))).rejects.toThrow('COUNTRY_PROPOSAL_ALREADY_PRESENT_REVIEW_LEDGER');
+    }finally{await connection.unsafe('ROLLBACK');connection.release();}
+  }finally{await db.end({timeout:2});}
 },30000);
 
 test('PayPal sandbox shares orders/audit: concurrent intent, private ownership, safe uncertainty, refund and no auto-publication',async()=>{

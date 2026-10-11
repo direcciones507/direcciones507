@@ -63,7 +63,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   return template;
 }
 
-export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null}):Promise<Response|null>{
+export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
   if(context.enabled&&req.method==='GET'){
     const publicMatch=url.pathname.match(/^\/(AD507-[A-Z0-9_-]+)\/$/);
@@ -79,7 +79,7 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
       try{const rows=await sql.unsafe("SELECT a.id::text,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
       if(!rows.length)return new Response(null,{status:404});
       const row=rows[0];
-        const storage=createR2Storage(context.r2,{authorize:async scope=>{
+        const storage=createR2Storage(context.r2,{fetch:context.fetch,registerIntent:async()=>{throw Error('PUBLIC_MEDIA_READ_ONLY');},authorize:async scope=>{
           if(scope.action!=='read'||scope.addressId!==row.id||scope.storageKey!==row.storage_key)return false;
           const active=await sql.unsafe("SELECT id FROM ad507.addresses WHERE id=$1::uuid AND status='ACTIVE' AND source='USER_REQUEST' AND address_type IN ('BUSINESS','PLACE')",[row.id]);return !!active.length;
         }});

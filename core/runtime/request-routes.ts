@@ -6,8 +6,8 @@ import type { R2Settings } from './r2-storage';
 import { renderCommercialBridge } from './commercial-migration';
 import type { RequestFile } from './request-validation';
 
-// Release gate: remains false in this PR. No environment variable can enable public writes.
-export const REQUEST_WORKFLOW_ENABLED=false;
+// Commercial workflow stays off unless production explicitly enables it.
+export const REQUEST_WORKFLOW_ENABLED=process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 const maxBody=49*1024*1024;
 const limits=new Map<string,{at:number;count:number}>();
 async function readRequestBody(req:Request,limit:number) {

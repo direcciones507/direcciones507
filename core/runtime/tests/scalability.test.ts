@@ -15,8 +15,11 @@ test.skipIf(!external)('synthetic 1k/10k/100k real tables, paginated country rea
  try{
   await control.unsafe('CREATE DATABASE '+name);u.pathname='/'+name;
   db=postgres(u.toString(),{max:2,connect_timeout:5,application_name:'latam-synthetic-performance',connection:{statement_timeout:'5000',lock_timeout:'2000'}});
-  for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql'])await db.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
-  for(const file of ['landline.sql','requests.sql','countries.sql','scalability-indexes.sql'])await db.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));
+  const setup=await db.reserve();
+  try{
+   for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql'])await setup.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
+   for(const file of ['landline.sql','requests.sql','countries.sql','scalability-indexes.sql'])await setup.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));
+  }catch(error){await setup.unsafe('ROLLBACK');throw error;}finally{setup.release();}
   const started=performance.now(),results:any[]=[];let previous=0;
   for(const size of [1000,10000,100000]){
    const insertStart=performance.now();

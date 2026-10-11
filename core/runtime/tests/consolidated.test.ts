@@ -29,6 +29,7 @@ beforeAll(async () => {
   await sql.unsafe(readFileSync(new URL('db/migrations/0005_general_google_auth.sql', root), 'utf8'));
   await sql.unsafe(readFileSync(new URL('../schema-proposals/landline.sql', import.meta.url), 'utf8'));
   await sql.unsafe(readFileSync(new URL('../schema-proposals/requests.sql', import.meta.url), 'utf8'));
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/countries.sql', import.meta.url), 'utf8'));
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'client@gmail.com'),($2::uuid,'admin@example.test')", [clientId, adminId]);
   await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')", [clientId, adminId]);
   runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: '55440', DATABASE_URL: database, AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
@@ -633,7 +634,7 @@ test('individual commercial staging, verified cutover and rollback preserve orig
   const png=await sharp({create:{width:5,height:5,channels:3,background:'blue'}}).png().toBuffer();
   const db=postgres(isolatedDatabase,{max:8});const snapshots:any[]=[];const bridges=new Map<string,string>();let listed=true,changed=false;
   const http=(async(url:any)=>{const target=String(url);if(target.includes('action=list'))return Response.json({ok:true,codes:listed?snapshots.map(s=>({codigo:s.code})):[]});if(target.endsWith('.png'))return new Response(changed?await sharp(png).negate().png().toBuffer():png,{headers:{'content-type':'image/png'}});return new Response(bridges.get(target)??'old page',{headers:{'content-type':'text/html'}});}) as typeof fetch;
-  const repo=createRequestRepository(db,{r2:null,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:http})});
+  const repo=createRequestRepository(db,{r2:null,fetch:http,canonical:{...createNewAddressPublication(db,{namespaceExclusive:false,fetch:http}),historicalRegistryVerified:true}});
   try{
     for(const [i,plan]of ['BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE'].entries()){
       const code='AD507-HISTORICAL'+i,s={version:44,code,publicUrl:'https://direcciones507.com/'+code.toLowerCase()+'/',coreOrigin:origin,type:plan==='PLACE'?'PLACE':'BUSINESS',plan,name:'Original commercial '+i,reference:'Original reference',latitude:8.123456,longitude:-80.123456,phone:'+507 6000-0000',media:plan==='PLACE'?[{type:'IMAGE',url:'https://direcciones507.com/assets/place.png'}]:[{type:'LOGO',url:'https://direcciones507.com/assets/logo.png'},{type:'IMAGE',url:'https://direcciones507.com/assets/photo.png'}],socials:plan==='PLACE'?{}:{instagram:'https://instagram.com/original'},OWNER:'private-original-owner',PIN:'private-original-pin'};
@@ -692,3 +693,82 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
     await expect(createPaymentRepository(db,{...config,environment:'production'}).read(clientId,a.order.id)).rejects.toThrow('PAYMENT_NOT_FOUND');
   }finally{await db.end();}
 });
+
+test('LATAM uses existing ADMIN requests, private R2 and PG with country/territory round trip and closed foreign publication',async()=>{
+  const {createRequestRepository}=await import('../request-repository');
+  const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
+  const {createPaymentRepository}=await import('../payment-repository');
+  const {proposedInternationalCode,INITIAL_COUNTRIES}=await import('../country-configuration');
+  const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:8});
+  const files=[{role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:6,height:6,channels:3,background:'blue'}}).png().toBuffer()}];
+  const calls:string[]=[];
+  const http=(async(url:any,init:any)=>{if(String(url).includes('action=list'))return Response.json({ok:true,codes:[{codigo:'AD507-0038'}]});calls.push(init.method);return new Response(null,{status:200});}) as typeof fetch;
+  const repo=createRequestRepository(db,{r2:{accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture',configurationVerified:true},fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
+  const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'LATAM isolated',reference:'Park',latitude:8.2,longitude:-80.1,region:'Región',municipality:'Municipio',locality:'Localidad',city:'Ciudad',sector:'Sector'};
+  try{
+    for(const countryCode of INITIAL_COUNTRIES){
+      const phone=countryCode==='CO'?'3001234567':'88888888';
+      const data={...raw,name:'LATAM '+countryCode,countryCode,phone};
+      const results=await Promise.all([repo.createAdmin(adminId,'latam-create-key-'+countryCode,data,files),repo.createAdmin(adminId,'latam-create-key-'+countryCode,data,files)]);
+      expect(results[0].id).toBe(results[1].id);expect(results[0].status).toBe('PENDING_REVIEW');
+      const read=await repo.read(adminId,results[0].id);expect(read.countryCode).toBe(countryCode);expect(read.extras.countryCode).toBe(countryCode);expect(read.extras.territory.city).toBe('Ciudad');
+      expect(read.media).toHaveLength(1);expect(read.media[0].status).toBe('READY');expect(read.media[0].url).toBeNull();
+      await expect(repo.read(clientId,results[0].id)).rejects.toThrow('REQUEST_NOT_FOUND');
+      await expect(repo.createAdmin(clientId,'latam-forbidden-'+countryCode,data,files)).rejects.toThrow('FORBIDDEN');
+      await repo.review(adminId,results[0].id,'APPROVED');
+      if(countryCode!=='PA'){
+        await expect(repo.publish(adminId,results[0].id)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        await expect(repo.submit(clientId,'latam-client-key-'+countryCode,data,files)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        const payment=createPaymentRepository(db,{provider:'PAYPAL',environment:'test'});
+        await expect(payment.preparePayPal(adminId,results[0].id,'latam-payment-key-'+countryCode)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        const code=proposedInternationalCode(countryCode,results[0].id);
+        await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[results[0].id,code]);
+        await expect(db.unsafe("UPDATE ad507.addresses SET code='AD507-WRONG' WHERE id=$1::uuid",[results[0].id])).rejects.toMatchObject({code:'23514'});
+        const second=await repo.createAdmin(adminId,'latam-second-key-'+countryCode,{...data,name:'Other '+countryCode},files);
+        await expect(db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[second.id,code])).rejects.toMatchObject({code:'23505'});
+      }else{
+        const published=await repo.publish(adminId,results[0].id),pub=await newPublicAddress(db,published.code,origin);
+        expect(pub?.url).toBe('https://direcciones507.com/'+published.code+'/');
+        expect(renderNewPublicAddress(pub!).match(/style="color:#0b57d0">Direcciones LATAM/g)).toHaveLength(2);
+      }
+    }
+    expect(calls.every(method=>method==='PUT')).toBe(true);
+    await expect(db.unsafe(readFileSync(new URL('../schema-proposals/countries.sql',import.meta.url),'utf8'))).rejects.toThrow('COUNTRY_PROPOSAL_ALREADY_PRESENT_REVIEW_LEDGER');
+    await db.unsafe('ROLLBACK');
+  }finally{await db.end();}
+},30000);
+
+test('PayPal sandbox shares orders/audit: concurrent intent, private ownership, safe uncertainty, refund and no auto-publication',async()=>{
+  const {createPaymentRepository,requireConfirmedPayment}=await import('../payment-repository');
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/paypal.sql',import.meta.url),'utf8'));
+  const db=postgres(isolatedDatabase,{max:4}),repo=createPaymentRepository(db,{provider:'PAYPAL',environment:'test'});
+  const make=async()=>{
+    const rows=await db.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source,request_key_hash,request_data) VALUES(NULL,'BUSINESS','PENDING_REVIEW','PayPal isolated','USER_REQUEST',$1,$2::jsonb) RETURNING id",[crypto.randomUUID(),db.json({countryCode:'PA',plan:'BUSINESS_PREMIUM'})]);
+    await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[rows[0].id,clientId]);return rows[0].id;
+  };
+  try{
+    const address=await make();const [a,b]=await Promise.all([repo.preparePayPal(clientId,address,'paypal-shared-key-001'),repo.preparePayPal(clientId,address,'paypal-shared-key-001')]);
+    expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(1999);
+    await expect(repo.preparePayPal(clientId,address,'paypal-another-key-001')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+    await expect(repo.preparePayPal(adminId,address,'paypal-foreign-owner-001')).rejects.toThrow('PAYMENT_NOT_FOUND');
+    const yappy=createPaymentRepository(db,{environment:'test',merchantId:'fixture',domain:'https://example.test',ipnUrl:'https://example.test/ipn',secret:Buffer.from('fixture.key').toString('base64')});
+    await expect(yappy.prepare(clientId,address,'yappy-second-method-001')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+    let calls=0,refunded=false;
+    const provider={createOrder:async()=>{calls++;return {providerOrderId:'PAYPALISOLATED123'};},confirmedCapture:async()=>({status:refunded?'REFUNDED':'PAID',captureId:'CAPTUREISOLATED123'})} as any;
+    await repo.initializePayPal(clientId,a.order.id,provider);
+    await expect(repo.initializePayPal(clientId,a.order.id,provider)).rejects.toThrow('PAYMENT_ALREADY_INITIALIZED');expect(calls).toBe(1);
+    const confirmed=await Promise.all([repo.confirmPayPal(clientId,a.order.id,provider),repo.confirmPayPal(clientId,a.order.id,provider)]);
+    expect(confirmed.filter(p=>!p.unchanged)).toHaveLength(1);
+    const row=(await db.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[address]))[0];expect(row.status).toBe('PENDING_REVIEW');expect(row.review_decision).toBeNull();expect(row.code).toBeNull();
+    await requireConfirmedPayment(db,row,'test');await expect(requireConfirmedPayment(db,row,'production')).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');
+    refunded=true;expect((await repo.confirmPayPal(clientId,a.order.id,provider)).status).toBe('REFUNDED');
+    expect((await repo.confirmPayPal(clientId,a.order.id,provider)).unchanged).toBe(true);
+    await expect(requireConfirmedPayment(db,row,'test')).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');
+    expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='PAYPAL_PAYMENT_CONFIRMED'",[a.order.id]))[0].n).toBe(2);
+    const pending=await repo.preparePayPal(clientId,await make(),'paypal-timeout-key-001');
+    const failing={createOrder:async()=>{throw Error('PAYPAL_PROVIDER_UNCONFIRMED');}} as any;
+    await expect(repo.initializePayPal(clientId,pending.order.id,failing)).rejects.toThrow('PAYPAL_PROVIDER_UNCONFIRMED');
+    await expect(repo.initializePayPal(clientId,pending.order.id,provider)).rejects.toThrow('PAYMENT_ALREADY_INITIALIZED');
+    expect((await db.unsafe('SELECT status,provider_reference FROM ad507.orders WHERE id=$1::uuid',[pending.order.id]))[0]).toMatchObject({status:'PENDING',provider_reference:'INITIALIZING:'+pending.order.id});
+  }finally{await db.end();}
+},30000);

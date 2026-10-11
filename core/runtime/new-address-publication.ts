@@ -1,3 +1,4 @@
+import { assertCountryCommerce, prepareCountryTemplate, proposedCountryUrl } from './country-configuration';
 import { createR2Storage, type R2Settings } from './r2-storage';
 import type { Sql } from 'postgres';
 import { getPublicAddressByCode } from '../postgres/public-address-repository';
@@ -12,7 +13,8 @@ import { readFileSync } from 'node:fs';
 export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
     historicalRegistryVerified:options.namespaceExclusive,
-    async reserve({id}) {
+    async reserve({id,countryCode='PA'}) {
+      assertCountryCommerce(countryCode);
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       // Canonical UUID layout makes removing separators injective: malformed
       // IDs must not collapse onto another request's code or shorten the suffix.
@@ -37,6 +39,7 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
       const rows=await sql.unsafe("SELECT id,request_data FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
+      if(!rows[0].request_data?.migration)assertCountryCommerce(rows[0].request_data?.countryCode??'PA');
       if(!rows[0].request_data?.migration&&!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       return {confirmed:true,receipt:'postgres:'+id+':'+code};
     },
@@ -47,16 +50,18 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   const record=await getPublicAddressByCode(sql as any,code);if(!record)return null;
   const rows=await sql.unsafe("SELECT a.id::text,a.request_data FROM ad507.addresses a WHERE a.code=$1 AND a.source='USER_REQUEST' AND a.publication_receipt IS NOT NULL",[record.code]);
   if(!rows.length)return null;
+  if(!rows[0].request_data?.migration)assertCountryCommerce(rows[0].request_data?.countryCode??'PA');
   const media=await sql.unsafe("SELECT id::text,media_type,url FROM ad507.address_media WHERE address_id=$1::uuid AND upload_status='READY' ORDER BY position,id",[rows[0].id]);
   const urls=media.map((m:any)=>({type:m.media_type,url:m.url??origin+'/v1/addresses/'+record.code+'/media/'+m.id}));
   const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
-  return {...record,url:historical?.originalUrl??origin+'/'+record.code+'/',media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{postalCode:rows[0].request_data?.postalCode??null}};
+  return {...record,url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
   const data={ok:true,nombre:record.name,referencia:record.reference,descripcionComercial:record.commercialDescription,plan:record.plan?.name,lat:record.coordinates.latitude,lng:record.coordinates.longitude,telefono:record.phone,telefonoFijo:record.landlinePhone,horario:record.hours,codigoPostal:record.extras.postalCode,logo:record.media.find(m=>m.type==='LOGO')?.url,fotos:record.media.filter(m=>m.type==='IMAGE').map(m=>m.url),...social};
   // Reuse the maintained template; adapt only its data transport for new records.
   let template=readFileSync(new URL('../../ad507.template.html',import.meta.url),'utf8');
+  if(!record.extras.historical)template=prepareCountryTemplate(template,record.extras.countryCode);
   const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc(record.description??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
   template=template.replace('const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);\n      const data = await response.json();','const data = '+JSON.stringify(data).replaceAll('<','\\u003c')+';');

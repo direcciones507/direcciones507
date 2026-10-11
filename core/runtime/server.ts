@@ -47,7 +47,7 @@ startLegacyCore(async req => {
       const rows = places
         ? await sql.unsafe(`SELECT a.id::text,a.code,a.address_type AS "addressType",a.status,a.name,a.reference,a.source,a.created_at AS "createdAt",a.updated_at AS "updatedAt" FROM ad507.addresses a WHERE a.address_type='PLACE' ORDER BY a.updated_at DESC,a.code ASC LIMIT 500`)
         : await sql.unsafe(`SELECT a.id::text,a.code,a.address_type AS "addressType",a.status,a.name,a.reference,a.source,a.created_at AS "createdAt",a.updated_at AS "updatedAt" FROM ad507.addresses a WHERE a.status='PENDING_REVIEW' ORDER BY a.created_at ASC,a.code ASC LIMIT 500`);
-      return Response.json(places ? { ok: true, count: rows.length, places: rows } : { ok: true, count: rows.length, requests: rows, actions: { reviewRequests: REQUEST_WORKFLOW_ENABLED } }, { headers: { 'cache-control': 'no-store' } });
+      return Response.json(places ? { ok: true, count: rows.length, places: rows } : { ok: true, count: rows.length, requests: rows, actions: { reviewRequests: commercialWorkflowEnabled } }, { headers: { 'cache-control': 'no-store' } });
     } catch { return Response.json({ ok: false, error: 'ADMIN_LIST_UNAVAILABLE' }, { status: 503, headers: { 'cache-control': 'no-store' } }); }
   }
   if (req.method === 'GET' && ['/v1/admin/users', '/v1/admin/plans', '/v1/admin/stats'].includes(url.pathname)) {

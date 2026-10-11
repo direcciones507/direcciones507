@@ -91,7 +91,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       if(new Set(preparedFiles.map(f=>f.role+':'+digest(f.bytes))).size!==preparedFiles.length)throw Error('DUPLICATE_MEDIA');
       const keyHash=digest(actorId+':'+key),payloadHash=digest(actorId+':'+JSON.stringify({data,files:fingerprints.sort()}));
       const request=await sql.begin(async tx=>{
-        await actor(tx,actorId,admin?'ADMIN':'CLIENT');
+        if(admin){const roles=await tx.unsafe("SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role IN ('ADMIN','COMMERCIAL') LIMIT 1",[actorId]);if(!roles.length)throw Error('FORBIDDEN');}else await actor(tx,actorId,'CLIENT');
         await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[keyHash]);
         await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[payloadHash]);
         const existing=await tx.unsafe('SELECT id::text FROM ad507.addresses WHERE request_key_hash=$1 OR request_payload_hash=$2 ORDER BY (request_key_hash=$1) DESC NULLS LAST LIMIT 1',[keyHash,payloadHash]);
@@ -108,12 +108,12 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       try {
         if(files.length){const storage=createRequestMediaStorage(sql,actorId,options.r2!,options.fetch);for(const file of [...preparedFiles].sort((a,b)=>a.role==='logo'?-1:b.role==='logo'?1:0))await storage.storeOptimized({...file,ownerId:actorId,addressId:request.id});}
         return await sql.begin(async tx=>{
-          await actor(tx,actorId,admin?'ADMIN':'CLIENT');const row=await owned(tx,actorId,request.id);
+          if(admin){const roles=await tx.unsafe("SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role IN ('ADMIN','COMMERCIAL') LIMIT 1",[actorId]);if(!roles.length)throw Error('FORBIDDEN');}else await actor(tx,actorId,'CLIENT');const row=await owned(tx,actorId,request.id);
           if(row.status==='DRAFT'){await complete(tx,row);await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',updated_at=now() WHERE id=$1::uuid",[row.id]);await audit(tx,actorId,'REQUEST_SUBMITTED',row.id,admin);}
           return {id:row.id,status:row.status==='DRAFT'?'PENDING_REVIEW':row.status,code:row.code,review:row.review_decision};
         });
       } catch(error){
-        const latest=await sql.begin(async tx=>{await actor(tx,actorId,admin?'ADMIN':'CLIENT');return owned(tx,actorId,request.id);});
+        const latest=await sql.begin(async tx=>{if(admin){const roles=await tx.unsafe("SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role IN ('ADMIN','COMMERCIAL') LIMIT 1",[actorId]);if(!roles.length)throw Error('FORBIDDEN');}else await actor(tx,actorId,'CLIENT');return owned(tx,actorId,request.id);});
         if(latest.status!=='DRAFT')return {id:latest.id,status:latest.status,code:latest.code,review:latest.review_decision};
         return {id:request.id,status:'DRAFT',code:null,error:error instanceof Error&&['MEDIA_INCOMPLETE','MEDIA_LIMIT_EXCEEDED','MEDIA_FORBIDDEN'].includes(error.message)?error.message:'MEDIA_UPLOAD_RETRY_REQUIRED'};}
     },

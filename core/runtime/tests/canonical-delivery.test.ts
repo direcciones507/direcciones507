@@ -31,7 +31,7 @@ test('delivery reuses canonical URL policy and only preserves a validated origin
 
 
 test('public route recognition covers Panama and international prefixes without enabling foreign commerce',async()=>{
- const sql={unsafe:async()=>{throw Error('ISOLATED_ROUTE_PROBE');}} as any;
+ const sql=Object.assign(async()=>{throw Error('ISOLATED_ROUTE_PROBE');},{unsafe:async()=>{throw Error('ISOLATED_ROUTE_PROBE');}}) as any;
  const context={enabled:true,sql,r2:null};
  for(const code of ['AD507-N12345678123412341234123456789ABC','AD57-N12345678123412341234123456789ABC','AD506-N12345678123412341234123456789ABC']){
   const pageUrl='https://direcciones.lat/'+code+'/';

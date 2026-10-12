@@ -2,6 +2,7 @@ import { beforeAll, afterAll, test, expect } from 'bun:test';
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createServer } from 'node:net';
 import EmbeddedPostgres from 'embedded-postgres';
 import postgres from 'postgres';
 import { createGeneralAuth } from '../general-auth';
@@ -13,6 +14,7 @@ const dir = mkdtempSync(join(tmpdir(), 'ad507-auth-test-'));
 const password = crypto.randomUUID();
 const pg = new EmbeddedPostgres({ databaseDir: join(dir, 'db'), user: 'postgres', password, port: 55439, persistent: false, createPostgresUser: true, onLog: () => {}, onError: () => {} });
 let isolatedDatabase: string;
+let runtimePort: number;
 let sql: ReturnType<typeof postgres>, runtime: ReturnType<typeof Bun.spawn>;
 const origin = 'https://ad507-core-production.up.railway.app';
 const env = { AD507_GOOGLE_CLIENT_ID: 'test-client', AD507_GOOGLE_CLIENT_SECRET: crypto.randomUUID(), AD507_SESSION_SECRET: crypto.randomUUID() + crypto.randomUUID(), AD507_GOOGLE_REDIRECT_URI: origin + '/auth/google/callback', AD507_AUTH_SUCCESS_URL: '/', AD507_PUBLIC_BASE_URL: origin };
@@ -29,11 +31,20 @@ beforeAll(async () => {
   await sql.unsafe(readFileSync(new URL('db/migrations/0005_general_google_auth.sql', root), 'utf8'));
   await sql.unsafe(readFileSync(new URL('../schema-proposals/landline.sql', import.meta.url), 'utf8'));
   await sql.unsafe(readFileSync(new URL('../schema-proposals/requests.sql', import.meta.url), 'utf8'));
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/countries.sql', import.meta.url), 'utf8'));
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'client@gmail.com'),($2::uuid,'admin@example.test')", [clientId, adminId]);
   await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')", [clientId, adminId]);
-  runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: '55440', DATABASE_URL: database, AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
+  runtimePort = await new Promise<number>((resolve, reject) => {
+    const listener = createServer();
+    listener.once('error', reject);
+    listener.listen(0, '127.0.0.1', () => {
+      const port = (listener.address() as { port: number }).port;
+      listener.close(error => error ? reject(error) : resolve(port));
+    });
+  });
+  runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: String(runtimePort), DATABASE_URL: database, AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true', AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
   for (let i = 0; i < 100; i++) {
-    try { if ((await fetch('http://127.0.0.1:55440/health')).ok) return; } catch {}
+    try { if ((await fetch('http://127.0.0.1:'+runtimePort+'/health')).ok) return; } catch {}
     await new Promise(r => setTimeout(r, 50));
   }
   throw new Error('RUNTIME_FAILED: ' + await new Response(runtime.stderr).text());
@@ -65,7 +76,7 @@ async function login(auth: ReturnType<typeof createGeneralAuth>) {
 test('exact extraction and all 12 Residential routes/handlers survive', () => {
   const snapshot = readFileSync(new URL('../legacy.snapshot.txt', import.meta.url), 'utf8').trimEnd();
   const legacy = readFileSync(new URL('../legacy.ts', import.meta.url), 'utf8').trimEnd();
-  const expected = snapshot.replace('Bun.serve({ hostname:', 'export function startLegacyCore(extension: (req: Request) => Promise<Response | null>) { return Bun.serve({ hostname:').replace('async fetch(req) { const startedAt', 'async fetch(req) { const added = await extension(req); if (added) return added; const startedAt').replace('}); audit("controlled_private_listener_ready"', '}); } audit("controlled_private_listener_ready"');
+  const expected = snapshot.replace('Bun.serve({ hostname:', 'export function startLegacyCore(extension: (req: Request) => Promise<Response | null>) { if (process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED === "true") NATALIE_ALLOWED_ORIGINS.add("https://direcciones.lat"); return Bun.serve({ hostname:').replace('async fetch(req) { const startedAt', 'async fetch(req) { const added = await extension(req); if (added) return added; const startedAt').replace('}); audit("controlled_private_listener_ready"', '}); } audit("controlled_private_listener_ready"');
   expect(legacy).toBe(expected);
   const routes = [...snapshot.matchAll(/const (RESIDENTIAL_\w*ROUTE)\s*=\s*"([^"]+)"/g)];
   expect(routes.length).toBe(12);
@@ -75,8 +86,8 @@ test('exact extraction and all 12 Residential routes/handlers survive', () => {
   expect(legacy).toContain('req.method === "HEAD"');
 });
 test('real Bun entrypoint: health/readiness and real PostgreSQL', async () => {
-  expect((await fetch('http://127.0.0.1:55440/health')).status).toBe(200);
-  const ready = await fetch('http://127.0.0.1:55440/ready'); expect(ready.status).toBe(200);
+  expect((await fetch('http://127.0.0.1:'+runtimePort+'/health')).status).toBe(200);
+  const ready = await fetch('http://127.0.0.1:'+runtimePort+'/ready'); expect(ready.status).toBe(200);
   expect((await ready.json()).database).toBe(true);
   expect((await sql.unsafe('SELECT 1 AS connected'))[0].connected).toBe(1);
 });
@@ -85,14 +96,14 @@ test('legacy POST routes remain dispatched with invalid credentials', async () =
   const paths = [...snapshot.matchAll(/const RESIDENTIAL_\w*ROUTE\s*=\s*"([^"]+)"/g)].map(x => x[1]);
   paths.push('/internal/v1/natalie/controlled-session', '/internal/v1/natalie/controlled-query', '/internal/v1/analytics/track', '/internal/v1/analytics/access/exchange');
   for (const path of paths) {
-    const res = await fetch('http://127.0.0.1:55440' + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    const res = await fetch('http://127.0.0.1:'+runtimePort + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
     expect(res.status).not.toBe(404); expect(res.status).toBeLessThan(500);
   }
-  expect((await fetch('http://127.0.0.1:55440/internal/v1/analytics/private/summary')).status).not.toBe(404);
+  expect((await fetch('http://127.0.0.1:'+runtimePort+'/internal/v1/analytics/private/summary')).status).not.toBe(404);
 });
 test('general routes are registered in the sole entrypoint', async () => {
-  for (const path of ['/auth/google/login', '/auth/google/callback', '/v1/auth/me', '/v1/admin/session-check']) expect((await fetch('http://127.0.0.1:55440' + path)).status).toBe(400);
-  expect((await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST' })).status).toBe(400);
+  for (const path of ['/auth/google/login', '/auth/google/callback', '/v1/auth/me', '/v1/admin/session-check']) expect((await fetch('http://127.0.0.1:'+runtimePort + path)).status).toBe(400);
+  expect((await fetch('http://127.0.0.1:'+runtimePort+'/auth/logout', { method: 'POST' })).status).toBe(400);
 });
 test('canonical identity and roles; OAuth does not grant ADMIN; logout revokes copied cookie', async () => {
   const auth = createGeneralAuth(sql, env, google({ sub: 'client-sub', email: 'client@gmail.com', email_verified: true }));
@@ -187,7 +198,7 @@ test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner crea
 }, 30000);
 
 async function runtimeGet(path: string, cookie?: string) {
-  return fetch('http://127.0.0.1:55440' + path, { headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', ...(cookie ? { cookie } : {}) } });
+  return fetch('http://127.0.0.1:'+runtimePort + path, { headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', ...(cookie ? { cookie } : {}) } });
 }
 async function fixtureSession(id: string, email: string, sub: string) {
   await sql.unsafe("UPDATE ad507.users SET status='ACTIVE' WHERE id=$1::uuid", [id]);
@@ -241,9 +252,9 @@ test('user panel isolates canonical ownership and orders without internal capabi
   const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
   expect(panel.headers.get('x-robots-tag')).toBe('noindex, nofollow');
   expect(await panel.text()).toContain('id="send" type="button" disabled>Enviar solicitud');
-  const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', cookie: client } });
+  const redirect = await fetch('http://127.0.0.1:'+runtimePort+'/', { redirect: 'manual', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', cookie: client } });
   expect(redirect.status).toBe(302); expect(redirect.headers.get('location')).toBe('/panel');
-  const logout = await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
+  const logout = await fetch('http://127.0.0.1:'+runtimePort+'/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
   expect(logout.status).toBe(204);
   expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
   const renewed = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
@@ -268,10 +279,10 @@ test('pre-migration panel rejects every write method and preserves database coun
   const count = async () => (await sql.unsafe('SELECT (SELECT count(*) FROM ad507.addresses)::int AS addresses,(SELECT count(*) FROM ad507.address_ownership)::int AS ownership,(SELECT count(*) FROM ad507.orders)::int AS orders,(SELECT count(*) FROM ad507.audit_log)::int AS audit'))[0];
   const before = await count();
   for (const method of ['POST','PUT','PATCH','DELETE']) {
-    const res = await fetch('http://127.0.0.1:55440/v1/user/requests', { method, headers: { cookie: client, origin, 'content-type': 'application/json' }, body: JSON.stringify({ addressType: 'RESIDENTIAL', planCode: 'RESIDENTIAL', name: 'Must never exist', checkout: true, owner: true }) });
+    const res = await fetch('http://127.0.0.1:'+runtimePort+'/v1/user/requests', { method, headers: { cookie: client, origin, 'content-type': 'application/json' }, body: JSON.stringify({ addressType: 'RESIDENTIAL', planCode: 'RESIDENTIAL', name: 'Must never exist', checkout: true, owner: true }) });
     expect(res.status).toBe(503);
     expect((await res.json()).error).toBe('USER_PANEL_SUBMISSION_NOT_ENABLED');
-    expect((await fetch('http://127.0.0.1:55440/v1/user/panel', {method, headers:{cookie:client}})).status).toBe(405);
+    expect((await fetch('http://127.0.0.1:'+runtimePort+'/v1/user/panel', {method, headers:{cookie:client}})).status).toBe(405);
   }
   expect(await count()).toEqual(before);
   const panel = await runtimeGet('/panel');
@@ -289,7 +300,7 @@ test('panel sessions reject a wrong host, duplicate cookie and cross-site read',
   const auth = createGeneralAuth(sql, env, google({}));
   expect(await auth.currentUser(new Request('https://evil.test/v1/user/panel',{headers:{cookie:client}}))).toBeNull();
   expect((await runtimeGet('/v1/user/panel',client+'; '+client)).status).toBe(401);
-  const res = await fetch('http://127.0.0.1:55440/v1/user/panel',{headers:{host:'ad507-core-production.up.railway.app','x-forwarded-proto':'https',cookie:client,origin:'https://evil.test','sec-fetch-site':'cross-site'}});
+  const res = await fetch('http://127.0.0.1:'+runtimePort+'/v1/user/panel',{headers:{host:'ad507-core-production.up.railway.app','x-forwarded-proto':'https',cookie:client,origin:'https://evil.test','sec-fetch-site':'cross-site'}});
   expect(res.status).toBe(403);
 });
 
@@ -598,7 +609,7 @@ test('new publication HTTP serves the existing template and PostgreSQL API; hist
   try{
     const base='http://127.0.0.1:'+server.port;
     const html=await fetch(base+'/'+code+'/');expect(html.status).toBe(200);const text=await html.text();expect(text).toContain('ADMIN temporary address');expect(text).not.toContain('{{CANONICAL}}');
-    expect(text).toContain(base+'/'+code+'/');
+    expect(text).toContain('https://direcciones507.com/'+code+'/');
     const api=await fetch(base+'/v1/addresses/'+code);expect(api.status).toBe(200);expect((await api.json()).address.code).toBe(code);
     expect((await fetch(base+'/AD507-TESTBUSINESS/')).status).toBe(404);
     const privatePhoto=(await sql.unsafe("SELECT m.id::text FROM ad507.address_media m JOIN ad507.addresses a ON a.id=m.address_id WHERE a.code=$1",[code]))[0].id;
@@ -642,14 +653,14 @@ test('individual commercial staging, verified cutover and rollback preserve orig
       expect((await repo.stageHistorical(adminId,key,s)).id).toBe(created.id);expect(created.code).toBe(code);await expect(repo.stageHistorical(adminId,key,{...s,name:'Changed'})).rejects.toThrow('IDEMPOTENCY_CONFLICT');
       await expect(repo.publish(adminId,created.id)).rejects.toThrow('APPROVAL_REQUIRED');await repo.review(adminId,created.id,'APPROVED');
       await expect(repo.publish(adminId,created.id)).rejects.toThrow('MIGRATION_BRIDGE_NOT_VERIFIED');expect(await newPublicAddress(db,code,origin)).toBeNull();
-      bridges.set(s.publicUrl,renderCommercialBridge(s,created.id,origin));const published=await Promise.all([repo.publish(adminId,created.id),repo.publish(adminId,created.id)]);expect(published.every(p=>p.code===code&&p.status==='ACTIVE')).toBe(true);
+      bridges.set(s.publicUrl,renderCommercialBridge(s,created.id,origin));const published=await Promise.all([repo.publish(adminId,created.id),repo.publish(adminId,created.id)]);expect(published.every(p=>p.code===code&&p.status==='ACTIVE')).toBe(true);expect((await repo.read(adminId,created.id)).publicUrl).toBe(s.publicUrl);
       const pub=await newPublicAddress(db,code,origin);expect(pub?.url).toBe(s.publicUrl);expect(pub?.media.map(m=>m.url)).toEqual(s.media.map(m=>m.url));expect(JSON.stringify(pub)).not.toContain('private-original');
       if(plan!=='PLACE')expect(pub?.socials).toEqual([{platform:'instagram',url:'https://instagram.com/original'}]);
       const response=await handleNewPublicRoutes(new Request(origin+'/v1/addresses/'+code),{enabled:true,sql:db,r2:null});expect(response?.headers.get('access-control-allow-origin')).toBe('https://direcciones507.com');
       const before=(await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id]))[0].row;
       await repo.transfer(adminId,created.id,adminId,clientId);expect((await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id]))[0].row).toEqual(before);
       await expect(repo.rollbackHistorical(clientId,created.id)).rejects.toThrow('FORBIDDEN');listed=false;await expect(repo.rollbackHistorical(adminId,created.id)).rejects.toThrow('HISTORICAL_RESTORE_REQUIRED');expect((await repo.read(adminId,created.id)).status).toBe('ACTIVE');listed=true;
-      expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');expect(await newPublicAddress(db,code,origin)).toBeNull();expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');
+      expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');expect(await newPublicAddress(db,code,origin)).toBeNull();expect((await repo.read(adminId,created.id)).publicUrl).toBeNull();expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');
       changed=true;await expect(repo.publish(adminId,created.id)).rejects.toThrow('HISTORICAL_MEDIA_UNVERIFIED');changed=false;expect((await repo.publish(adminId,created.id)).code).toBe(code);
       const final=(await db.unsafe('SELECT legacy_payload,code FROM ad507.addresses WHERE id=$1::uuid',[created.id]))[0];expect(final.legacy_payload).toEqual(s);expect(final.code).toBe(code);
       expect((await db.unsafe("SELECT id FROM ad507.audit_log WHERE entity_id=$1 AND action='HISTORICAL_PUBLICATION_ROLLED_BACK'",[created.id])).length).toBe(1);
@@ -692,3 +703,213 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
     await expect(createPaymentRepository(db,{...config,environment:'production'}).read(clientId,a.order.id)).rejects.toThrow('PAYMENT_NOT_FOUND');
   }finally{await db.end();}
 });
+
+test('LATAM uses existing ADMIN requests, private R2 and PG with country/territory round trip and closed foreign publication',async()=>{
+  const {createRequestRepository}=await import('../request-repository');
+  const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
+  const {createPaymentRepository}=await import('../payment-repository');
+  const {proposedInternationalCode,INITIAL_COUNTRIES}=await import('../country-configuration');
+  const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:8,connection:{statement_timeout:5000,lock_timeout:3000}});
+  const files=[{role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:6,height:6,channels:3,background:'blue'}}).png().toBuffer()}];
+  const calls:string[]=[];
+  const http=(async(url:any,init:any)=>{if(String(url).includes('action=list'))return Response.json({ok:true,codes:[{codigo:'AD507-0038'}]});calls.push(init.method);return new Response(null,{status:200});}) as typeof fetch;
+  const repo=createRequestRepository(db,{r2:{accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture',configurationVerified:true},fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
+  const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'LATAM isolated',reference:'Park',latitude:8.2,longitude:-80.1,region:'Región',municipality:'Municipio',locality:'Localidad',city:'Ciudad',sector:'Sector'};
+  try{
+    for(const countryCode of INITIAL_COUNTRIES){
+      console.info('LATAM isolated country '+countryCode);
+      const phone=countryCode==='CO'?'3001234567':'88888888';
+      const data={...raw,name:'LATAM '+countryCode,countryCode,phone};
+      const results=await Promise.all([repo.createAdmin(adminId,'latam-create-key-'+countryCode,data,files),repo.createAdmin(adminId,'latam-create-key-'+countryCode,data,files)]);
+      console.info('LATAM created '+countryCode);
+      expect(results[0].id).toBe(results[1].id);expect(results[0].status).toBe('PENDING_REVIEW');
+      const read=await repo.read(adminId,results[0].id);expect(read.countryCode).toBe(countryCode);expect(read.extras.countryCode).toBe(countryCode);expect(read.extras.territory.city).toBe('Ciudad');
+      expect(read.media).toHaveLength(1);expect(read.media[0].status).toBe('READY');expect(read.media[0].url).toBeNull();
+      await expect(repo.read(clientId,results[0].id)).rejects.toThrow('REQUEST_NOT_FOUND');
+      await expect(repo.createAdmin(clientId,'latam-forbidden-'+countryCode,data,files)).rejects.toThrow('FORBIDDEN');
+      console.info('LATAM validated '+countryCode);
+      await repo.review(adminId,results[0].id,'APPROVED');
+      console.info('LATAM reviewed '+countryCode);
+      if(countryCode!=='PA'){
+        await expect(repo.publish(adminId,results[0].id)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        await expect(repo.submit(clientId,'latam-client-key-'+countryCode,data,files)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        const payment=createPaymentRepository(db,{provider:'PAYPAL',environment:'test'});
+        await expect(payment.preparePayPal(adminId,results[0].id,'latam-payment-key-'+countryCode)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        console.info('LATAM foreign gates '+countryCode);
+        const code=proposedInternationalCode(countryCode,results[0].id);
+        await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[results[0].id,code]);
+        await expect((async()=>await db.unsafe("UPDATE ad507.addresses SET code='AD507-WRONG' WHERE id=$1::uuid",[results[0].id]))()).rejects.toMatchObject({code:'23514'});
+        const second=await repo.createAdmin(adminId,'latam-second-key-'+countryCode,{...data,name:'Other '+countryCode},files);
+        await expect((async()=>await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[second.id,code]))()).rejects.toMatchObject({code:'23505'});
+      }else{
+        const published=await repo.publish(adminId,results[0].id),pub=await newPublicAddress(db,published.code,origin);
+        expect(pub?.url).toBe('https://direcciones507.com/'+published.code+'/');
+        expect(renderNewPublicAddress(pub!)).toContain('DIRECCIONES<span>507</span>');
+      }
+    }
+    console.info('LATAM requests complete');
+    expect(calls.every(method=>method==='PUT')).toBe(true);
+    const connection=await db.reserve();try{
+      await expect((async()=>await connection.unsafe(readFileSync(new URL('../schema-proposals/countries.sql',import.meta.url),'utf8')))()).rejects.toThrow('COUNTRY_PROPOSAL_ALREADY_PRESENT_REVIEW_LEDGER');
+    }finally{await connection.unsafe('ROLLBACK');connection.release();}
+  }finally{await db.end({timeout:2});}
+},30000);
+
+test('PayPal sandbox shares orders/audit: concurrent intent, private ownership, safe uncertainty, refund and no auto-publication',async()=>{
+  const {createPaymentRepository,requireConfirmedPayment}=await import('../payment-repository');
+  await sql.unsafe(readFileSync(new URL('../schema-proposals/paypal.sql',import.meta.url),'utf8'));
+  const db=postgres(isolatedDatabase,{max:4}),repo=createPaymentRepository(db,{provider:'PAYPAL',environment:'test'});
+  const make=async()=>{
+    const rows=await db.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source,request_key_hash,request_data) VALUES(NULL,'BUSINESS','PENDING_REVIEW','PayPal isolated','USER_REQUEST',$1,$2::jsonb) RETURNING id",[crypto.randomUUID(),db.json({countryCode:'PA',plan:'BUSINESS_PREMIUM'})]);
+    await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[rows[0].id,clientId]);return rows[0].id;
+  };
+  try{
+    const address=await make();const [a,b]=await Promise.all([repo.preparePayPal(clientId,address,'paypal-shared-key-001'),repo.preparePayPal(clientId,address,'paypal-shared-key-001')]);
+    expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(1999);
+    await expect(repo.preparePayPal(clientId,address,'paypal-another-key-001')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+    await expect(repo.preparePayPal(adminId,address,'paypal-foreign-owner-001')).rejects.toThrow('PAYMENT_NOT_FOUND');
+    const yappy=createPaymentRepository(db,{environment:'test',merchantId:'fixture',domain:'https://example.test',ipnUrl:'https://example.test/ipn',secret:Buffer.from('fixture.key').toString('base64')});
+    await expect(yappy.prepare(clientId,address,'yappy-second-method-001')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+    let calls=0,refunded=false;
+    const provider={createOrder:async()=>{calls++;return {providerOrderId:'PAYPALISOLATED123'};},confirmedCapture:async()=>({status:refunded?'REFUNDED':'PAID',captureId:'CAPTUREISOLATED123'})} as any;
+    await repo.initializePayPal(clientId,a.order.id,provider);
+    await expect(repo.initializePayPal(clientId,a.order.id,provider)).rejects.toThrow('PAYMENT_ALREADY_INITIALIZED');expect(calls).toBe(1);
+    const confirmed=await Promise.all([repo.confirmPayPal(clientId,a.order.id,provider),repo.confirmPayPal(clientId,a.order.id,provider)]);
+    expect(confirmed.filter(p=>!p.unchanged)).toHaveLength(1);
+    const row=(await db.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[address]))[0];expect(row.status).toBe('PENDING_REVIEW');expect(row.review_decision).toBeNull();expect(row.code).toBeNull();
+    await requireConfirmedPayment(db,row,'test');await expect(requireConfirmedPayment(db,row,'production')).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');
+    refunded=true;expect((await repo.confirmPayPal(clientId,a.order.id,provider)).status).toBe('REFUNDED');
+    expect((await repo.confirmPayPal(clientId,a.order.id,provider)).unchanged).toBe(true);
+    await expect(requireConfirmedPayment(db,row,'test')).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');
+    expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='PAYPAL_PAYMENT_CONFIRMED'",[a.order.id]))[0].n).toBe(2);
+    const pending=await repo.preparePayPal(clientId,await make(),'paypal-timeout-key-001');
+    const failing={createOrder:async()=>{throw Error('PAYPAL_PROVIDER_UNCONFIRMED');}} as any;
+    await expect(repo.initializePayPal(clientId,pending.order.id,failing)).rejects.toThrow('PAYPAL_PROVIDER_UNCONFIRMED');
+    await expect(repo.initializePayPal(clientId,pending.order.id,provider)).rejects.toThrow('PAYMENT_ALREADY_INITIALIZED');
+    expect((await db.unsafe('SELECT status,provider_reference FROM ad507.orders WHERE id=$1::uuid',[pending.order.id]))[0]).toMatchObject({status:'PENDING',provider_reference:'INITIALIZING:'+pending.order.id});
+  }finally{await db.end();}
+},30000);
+
+test('one OAuth authenticates the same identity on both explicit domains with origin-bound state and cookies',async()=>{
+ const pa='https://direcciones507.com',lat='https://direcciones.lat';
+ const auth=createGeneralAuth(sql,{...env,AD507_GOOGLE_REDIRECT_URI:pa+'/auth/google/callback',AD507_PUBLIC_BASE_URL:pa,AD507_AUTH_SUCCESS_URL:'/panel',AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:lat+'/auth/google/callback',AD507_AUTH_SUCCESS_URL_LATAM:'/panel'},google({sub:'dual-origin-sub',email:'dual-origin-client@gmail.com',email_verified:true}));
+ const begin=async(host:string)=>{
+  const r=(await auth.handle(new Request(host+'/auth/google/login')))!;expect(r.status).toBe(302);
+  const u=new URL(r.headers.get('location')!);expect(u.searchParams.get('redirect_uri')).toBe(host+'/auth/google/callback');
+  expect(r.headers.get('set-cookie')).not.toContain('Domain=');
+  return {state:u.searchParams.get('state')!,binding:binding(r)};
+ };
+ const flow=await begin(pa);
+ const mismatched=(await auth.handle(new Request(lat+'/auth/google/callback?state='+flow.state+'&code=test',{headers:{cookie:flow.binding}})))!;
+ expect(mismatched.status).toBe(400);
+ const complete=async(host:string,f:any)=> (await auth.handle(new Request(host+'/auth/google/callback?state='+f.state+'&code=test',{headers:{cookie:f.binding}})))!;
+ const panama=await complete(pa,flow),international=await complete(lat,await begin(lat));
+ expect(panama.status).toBe(302);expect(international.status).toBe(302);
+ expect(international.headers.get('location')).toBe(lat+'/panel');
+ const get=async(host:string,cookie:string)=> (await auth.handle(new Request(host+'/v1/auth/me',{headers:{cookie}})))!;
+ const a=await (await get(pa,session(panama))).json(),b=await(await get(lat,session(international))).json();
+ expect(a.user.id).toBe(b.user.id);expect(a.user.roles).toEqual(['CLIENT']);
+ // Existing primary sessions had no origin claim: retain them only on the primary host.
+ const {createHash,createHmac,randomBytes}=await import('node:crypto');
+ const oldSid=randomBytes(32).toString('base64url'),oldExp=Math.floor(Date.now()/1000)+600;
+ await sql.unsafe('INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))',[createHash('sha256').update(oldSid).digest('hex'),a.user.id,oldExp]);
+ const oldBody=Buffer.from(JSON.stringify({uid:a.user.id,email:a.user.email,sid:oldSid,exp:oldExp})).toString('base64url');
+ const oldCookie='ad507_session='+oldBody+'.'+createHmac('sha256',env.AD507_SESSION_SECRET).update(oldBody).digest('base64url');
+ expect((await get(pa,oldCookie)).status).toBe(200);expect((await get(lat,oldCookie)).status).toBe(401);
+
+ expect((await get(lat,session(panama))).status).toBe(401);expect((await get(pa,session(international))).status).toBe(401);
+ expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.google_identities WHERE google_sub='dual-origin-sub'"))[0].n).toBe(1);
+ const csrf=(await auth.handle(new Request(lat+'/auth/logout',{method:'POST',headers:{cookie:session(international),origin:pa}})))!;expect(csrf.status).toBe(403);
+ const logout=(await auth.handle(new Request(lat+'/auth/logout',{method:'POST',headers:{cookie:session(international),origin:lat}})))!;expect(logout.status).toBe(204);
+ expect((await get(lat,session(international))).status).toBe(401);expect((await get(pa,session(panama))).status).toBe(200);
+});
+
+
+test('existing Natalie backend allows only exact verified LATAM origin in isolated CORS preflight, without session/provider calls',async()=>{
+ for(const route of ['controlled-session','controlled-conversation']){
+  const url='http://127.0.0.1:'+runtimePort+'/internal/v1/natalie/'+route;
+  const allowed=await fetch(url,{method:'OPTIONS',headers:{origin:'https://direcciones.lat'}});
+  expect(allowed.status).toBe(204);expect(allowed.headers.get('access-control-allow-origin')).toBe('https://direcciones.lat');
+  const denied=await fetch(url,{method:'OPTIONS',headers:{origin:'https://direcciones.lat.evil.test'}});
+  expect(denied.status).toBe(403);expect(denied.headers.get('access-control-allow-origin')).toBeNull();
+ }
+});
+
+test('isolated HTTP commercial journey connects OAuth, client request, ADMIN review, publication, canonical delivery and existing QR',async()=>{
+ const {handleRequestRoutes}=await import('../request-routes');
+ const {createRequestRepository}=await import('../request-repository');
+ const {createNewAddressPublication,handleNewPublicRoutes}=await import('../new-address-publication');
+ const {handleUserPanel}=await import('../user-panel');
+ const {requestAdminScript}=await import('../request-admin-ui');
+ const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:4});
+ const before=await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id");
+ const objects=new Map<string,Uint8Array>();
+ const providers=(async(input:any,init:any={})=>{
+  const url=String(input);if(url.includes('script.google.com')&&url.includes('action=list'))return Response.json({ok:true,codes:[{codigo:'AD507-0038'}]});
+  if(!url.includes('.r2.cloudflarestorage.com/'))throw Error('UNEXPECTED_EXTERNAL_NETWORK');
+  if(init.method==='PUT'){objects.set(url,new Uint8Array(init.body));return new Response(null,{status:200});}
+  if(init.method==='DELETE'){objects.delete(url);return new Response(null,{status:204});}
+  const bytes=objects.get(url);return bytes?new Response(bytes,{headers:{'content-type':'image/webp','content-length':String(bytes.length)}}):new Response(null,{status:404});
+ }) as typeof fetch;
+ const unique=crypto.randomUUID(),profiles:any={client:{sub:'flow-client-'+unique,email:'flow-client-'+unique+'@gmail.com',email_verified:true},admin:{sub:'flow-admin-'+unique,email:'flow-admin-'+unique+'@gmail.com',email_verified:true}};
+ const googleHttp=(async(input:any,init:any)=>{
+  if(String(input)==='https://oauth2.googleapis.com/token')return Response.json({access_token:new URLSearchParams(init.body).get('code')});
+  if(String(input)!=='https://openidconnect.googleapis.com/v1/userinfo')throw Error('UNEXPECTED_GOOGLE_NETWORK');
+  return Response.json(profiles[String(init.headers.authorization).slice(7)]);
+ }) as typeof fetch;
+ const auth=createGeneralAuth(db,env,googleHttp);
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'isolated',secretAccessKey:'isolated',configurationVerified:true as const};
+ const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:providers})});
+ const blocked=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:providers})});
+ let fixtureEvidenceVerified=false;
+ const server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:async incoming=>{
+  // Test-only HTTPS edge simulation; actual transport is local HTTP, no production ingress.
+  const path=new URL(incoming.url);const req=new Request(origin+path.pathname+path.search,incoming);
+  return await auth.handle(req)??await handleRequestRoutes(req,{enabled:true,sql:db,auth,repository:fixtureEvidenceVerified?repo:blocked,r2,fetch:providers})??await handleNewPublicRoutes(req,{enabled:true,sql:db,r2,fetch:providers})??await handleUserPanel(req,db,auth)??new Response(null,{status:404});
+ }});
+ const base='http://127.0.0.1:'+server.port;
+ const call=(path:string,cookie='',init:any={})=>fetch(base+path,{...init,redirect:'manual',headers:{...init.headers,...(cookie?{cookie}:{}),origin}});
+ const loginHttp=async(role:string)=>{
+  const begin=await call('/auth/google/login');expect(begin.status).toBe(302);
+  const state=new URL(begin.headers.get('location')!).searchParams.get('state');
+  const done=await call('/auth/google/callback?state='+state+'&code='+role,binding(begin));expect(done.status).toBe(302);
+  const c=session(done),me=await(await call('/v1/auth/me',c)).json();return {cookie:c,user:me.user};
+ };
+ const png=await sharp({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
+ const raw={type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Isolated full commercial journey '+unique,reference:'Synthetic reference',description:'Synthetic description',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
+ const form=(data:any)=>{const body=new FormData();body.append('payload',JSON.stringify(data));body.append('logo',new Blob([png],{type:'image/png'}),'synthetic.png');return body;};
+ try{
+  const client=await loginHttp('client'),admin=await loginHttp('admin');
+  await db.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'ADMIN')",[admin.user.id]); // Isolated fixture role only.
+  const submit=()=>call('/v1/user/requests',client.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-'+unique},body:form(raw)});
+  const sent=await submit();expect(sent.status).toBe(200);const initial=(await sent.json()).request;expect(initial.status).toBe('PENDING_REVIEW');expect(initial.code).toBeNull();
+  const retry=await submit();expect((await retry.json()).request.id).toBe(initial.id);expect(objects.size).toBe(1);
+  expect((await call('/v1/admin/requests/'+initial.id,client.cookie)).status).toBe(403);
+  const actions:any={children:[],append(x:any){this.children.push(x)}},message:any={textContent:''},rows:any={};
+  Object.defineProperty(rows,'innerHTML',{set(){actions.children=[];}});
+  const doc={getElementById:(id:string)=>id==='requestsRows'?rows:id==='reviewActions'?actions:message,createElement:(tag:string)=>({tag})};
+  const adminHttp=(path:string,init:any={})=>call(path,admin.cookie,init);
+  const open=new Function('document','fetch','esc',requestAdminScript+';return openRequestReview;')(doc,adminHttp,(x:any)=>String(x??'').replaceAll('<','&lt;'));
+  await open(initial.id);expect(actions.children.some((x:any)=>x.textContent==='Abrir ficha, enlace y QR')).toBe(false);
+  await actions.children.find((x:any)=>x.textContent==='Aprobar').onclick();
+  let publish=actions.children.find((x:any)=>x.textContent==='Publicar');expect(publish).toBeDefined();
+  await publish.onclick();expect(message.textContent).toContain('Publicación bloqueada');
+  const unchanged=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;expect(unchanged.code).toBeNull();expect(unchanged.publicUrl).toBeNull();expect(unchanged.status).toBe('PENDING_REVIEW');
+  fixtureEvidenceVerified=true; // Synthetic historical registry only; never sets a production gate.
+  await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir ficha, enlace y QR');expect(link).toBeDefined();
+  const canonical='https://direcciones507.com/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
+  const delivered=await(await call('/v1/user/panel',client.cookie)).json();const card=delivered.addresses.find((a:any)=>a.id===initial.id);expect(card.status).toBe('ACTIVE');expect(card.publicUrl).toBe(canonical);
+  const page=await call(new URL(card.publicUrl).pathname);expect(page.status).toBe(200);const html=await page.text();expect(html).toContain(raw.name);expect(html).toContain('DIRECCIONES<span>507</span>');
+  const qr=new Function(html.match(/const qrUrl = [^\n]+/)![0]+';return qrUrl;')();expect(new URL(qr).searchParams.get('data')).toBe(canonical);expect(html).toContain('navigator.clipboard.writeText('+JSON.stringify(canonical)+')');
+  const published=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;
+  const publicPhoto=await call('/v1/addresses/'+published.code+'/media/'+published.media[0].id);expect(publicPhoto.status).toBe(200);expect(publicPhoto.headers.get('content-type')).toBe('image/webp');
+  const again=await call('/v1/admin/requests/'+initial.id+'/publish',admin.cookie,{method:'POST'});expect(again.status).toBe(200);expect((await again.json()).request.code).toBe(published.code);
+  expect((await db.unsafe('SELECT count(*)::int AS n FROM ad507.addresses WHERE id=$1::uuid',[initial.id]))[0].n).toBe(1);
+  const co=await call('/v1/admin/requests',admin.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-co-'+unique},body:form({...raw,countryCode:'CO',name:'Synthetic Colombia '+unique,phone:'+573001234567'})});expect(co.status).toBe(200);const foreign=(await co.json()).request;
+  expect((await call('/v1/admin/requests/'+foreign.id+'/approve',admin.cookie,{method:'POST'})).status).toBe(200);
+  const stop=await call('/v1/admin/requests/'+foreign.id+'/publish',admin.cookie,{method:'POST'});expect(stop.status).toBe(503);expect((await stop.json()).error).toBe('COUNTRY_NOT_ENABLED');
+  const foreignRead=(await(await call('/v1/admin/requests/'+foreign.id,admin.cookie)).json()).request;expect(foreignRead.countryCode).toBe('CO');expect(foreignRead.publicUrl).toBeNull();expect(foreignRead.code).toBeNull();
+  expect(await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
+  console.info('HTTP journey PASS: OAuth → multipart/logo → durable request/retry → ADMIN approve → closed gate 503 → synthetic verified publication → owner canonical link → existing QR/copy → WebP; Colombia stops exactly at publish503');
+ }finally{server.stop(true);await db.end({timeout:2});}
+},20000);

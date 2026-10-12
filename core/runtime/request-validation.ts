@@ -1,6 +1,9 @@
+import { requestCountry, countryConfiguration } from './country-configuration';
 import { inspectImage, prepareContacts, validateRequestMedia } from './panel-preparation';
 
 export type RequestDraft = {
+  countryCode: import('./country-configuration').CountryCode;
+  territory: { region:string; municipality:string; locality:string; city:string; sector:string };
   type: 'RESIDENTIAL' | 'PLACE' | 'BUSINESS';
   plan: string;
   name: string;
@@ -18,7 +21,9 @@ export type RequestDraft = {
 export function validateRequestDraft(raw: unknown): RequestDraft {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('INVALID_REQUEST');
   const value = raw as Record<string, unknown>;
+  const countryCode=requestCountry(value.countryCode===undefined?'PA':value.countryCode);
   const type = value.type;
+  if(type==='RESIDENTIAL'&&countryCode!=='PA')throw Error('COUNTRY_NOT_ENABLED');
   if (type !== 'RESIDENTIAL' && type !== 'PLACE' && type !== 'BUSINESS') throw new Error('INVALID_TYPE');
   const plan = type === 'RESIDENTIAL' ? 'RESIDENTIAL' : type === 'PLACE' ? 'PLACE' : value.plan;
   if (typeof plan !== 'string') throw new Error('INVALID_PLAN');
@@ -36,7 +41,7 @@ export function validateRequestDraft(raw: unknown): RequestDraft {
   if (typeof latitude !== 'number' || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
       typeof longitude !== 'number' || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw new Error('INVALID_COORDINATES');
   for (const key of ['phone','landlinePhone']) if(value[key]!=null && typeof value[key]!=='string') throw new Error('INVALID_PHONE');
-  const { phone, landlinePhone } = prepareContacts(value.phone, value.landlinePhone);
+  const { phone, landlinePhone } = prepareContacts(value.phone, value.landlinePhone, countryConfiguration(countryCode).prefix);
   const media = value.media;
   if (!media || typeof media !== 'object' || Array.isArray(media)) throw new Error('INVALID_MEDIA');
   const m = media as Record<string, unknown>;
@@ -53,7 +58,8 @@ export function validateRequestDraft(raw: unknown): RequestDraft {
     if(url.protocol!=='https:'||url.username||url.password||url.port||!(url.hostname===host||url.hostname==='www.'+host))throw Error('INVALID_SOCIAL_URL');
     socials[platform]=url.href;
   }
-  return { type, plan, name, reference, description, email,hours,commercialDescription,namedCode,postalCode,postalZone,socials, latitude, longitude, phone, landlinePhone,
+  const territory={region:field('region',120,false),municipality:field('municipality',120,false),locality:field('locality',120,false),city:field('city',120,false),sector:field('sector',120,false)};
+  return { countryCode, territory, type, plan, name, reference, description, email,hours,commercialDescription,namedCode,postalCode,postalZone,socials, latitude, longitude, phone, landlinePhone,
     media: { logos: m.logos, placePhotos: m.placePhotos, galleryPhotos: m.galleryPhotos } };
 }
 

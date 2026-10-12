@@ -1,12 +1,13 @@
 /** Preparation only: no database writer, upload route or storage client is connected. */
 export type PreparedContacts = { phone: string | null; landlinePhone: string | null };
-export function prepareContacts(phone: unknown, landlinePhone: unknown): PreparedContacts {
+export function prepareContacts(phone: unknown, landlinePhone: unknown, prefix = '507'): PreparedContacts {
   const normalize = (value: unknown) => {
     const text = String(value ?? '').trim();
     if (!text) return null;
     if (!/^[+\d\s().-]+$/.test(text)) throw new Error('INVALID_PHONE');
     let digits = text.replace(/\D/g, '');
-    if (digits.length === 7 || digits.length === 8) digits = '507' + digits;
+    if (prefix === '507') { if (digits.length === 7 || digits.length === 8) digits = '507' + digits; }
+    else if (!text.startsWith('+') && !(digits.startsWith(prefix) && digits.length >= 10)) digits = prefix + digits;
     if (digits.length < 10 || digits.length > 15) throw new Error('INVALID_PHONE');
     return '+' + digits;
   };
@@ -29,7 +30,7 @@ export function mediaCountAllowed(type: string, plan: string, count: number): bo
 }
 /** Shared private-storage contract implemented by r2-storage; no public URLs. */
 export interface PreparedMediaStorage {
-  storeOptimized(input: { bytes: Uint8Array; mime: string; ownerId: string; addressId: string; role: 'logo' | 'photo' }): Promise<{ storageKey: string; bucket: string }>;
+  storeOptimized(input: { bytes: Uint8Array; mime: string; ownerId: string; addressId: string; role: 'logo' | 'photo'; countryCode?: string }): Promise<{ storageKey: string; bucket: string }>;
 }
 
 /** Server-side media policy; browser validation alone is not authoritative. */

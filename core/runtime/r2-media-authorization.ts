@@ -5,7 +5,7 @@ import type { MediaAuthorization } from './r2-storage';
 export function createMediaAuthorizer(sql: Sql, actorId: string): MediaAuthorization {
   return async scope => {
     if (scope.ownerId !== actorId) return false;
-    const rows = await sql.unsafe(`SELECT a.address_type,a.status,a.source,
+    const rows = await sql.unsafe(`SELECT a.address_type,a.status,a.source,a.country_code,
       EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=u.id AND o.ownership_role='OWNER') AS owner,
       EXISTS(SELECT 1 FROM ad507.user_roles r WHERE r.user_id=u.id AND r.role='CLIENT') AS client,
       EXISTS(SELECT 1 FROM ad507.user_roles r WHERE r.user_id=u.id AND r.role='ADMIN') AS admin,
@@ -16,6 +16,9 @@ export function createMediaAuthorizer(sql: Sql, actorId: string): MediaAuthoriza
     const row = rows[0];
     // Never read, upload or delete legacy/Residential media through the new request flow.
     if (!row || row.source !== 'USER_REQUEST' || row.address_type === 'RESIDENTIAL') return false;
+    if(scope.countryCode&&scope.countryCode!==row.country_code)return false;
+    const keyCountry=scope.storageKey?.match(/^countries\/([A-Z]{2})\//)?.[1];
+    if(keyCountry&&keyCountry!==row.country_code)return false;
     if (scope.action === 'read') return row.linked === true && (row.owner === true || row.admin === true);
     if (row.status !== 'DRAFT' || row.owner !== true || (row.client !== true && row.admin !== true)) return false;
     if (scope.action === 'delete') return row.linked === true;

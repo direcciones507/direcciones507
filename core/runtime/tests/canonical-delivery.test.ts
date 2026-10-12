@@ -44,7 +44,11 @@ test('public route recognition covers Panama and international prefixes without 
   const media=await handleNewPublicRoutes(new Request('https://direcciones.lat/v1/addresses/'+code+'/media/11111111-1111-4111-8111-111111111111'),context);
   expect(media?.status).toBe(503);
  }
- expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/AD9999-N123/'),context)).toBeNull();
+ for(const code of ['AD9999-N123','AD999-N123','AD99-N123']){
+  expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/'+code+'/'),context)).toBeNull();
+  expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/v1/addresses/'+code),context)).toBeNull();
+  expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/v1/addresses/'+code+'/media/11111111-1111-4111-8111-111111111111'),context)).toBeNull();
+ }
  expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/AD57-N123/'),{...context,enabled:false})).toBeNull();
 });
 

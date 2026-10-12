@@ -1,16 +1,13 @@
-name: Consolidated Core compatibility
+name: PR43 exact-source Docker verification
 on:
   push:
     branches: ["feat/core-consolidated-oauth-20261006"]
-  pull_request:
-    paths: ["core/runtime/**", "db/migrations/0005_general_google_auth.sql", ".github/workflows/test-consolidated-core.yml"]
 jobs:
-  compatibility:
+  exact-source:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
-      actions: write
     services:
       postgres:
         image: postgres:18.1
@@ -22,31 +19,37 @@ jobs:
           --health-cmd "pg_isready -U postgres"
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
-      - name: Cancel superseded compatibility runs on this branch
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const branch = context.payload.pull_request?.head.ref ?? context.ref.replace('refs/heads/', '');
-            const head = context.payload.pull_request?.head.sha ?? context.sha;
-            const { data } = await github.rest.actions.listWorkflowRunsForRepo({ ...context.repo, branch, per_page: 50 });
-            for (const run of data.workflow_runs) {
-              if (run.name === 'Consolidated Core compatibility' && run.head_sha !== head && ['queued','in_progress'].includes(run.status)) {
-                await github.rest.actions.cancelWorkflowRun({ ...context.repo, run_id: run.id });
-              }
-            }
       - uses: actions/checkout@v4
+        with:
+          ref: 4b98ec245b51b2fed9b4fe8148ba33a61fff6aeb
+          persist-credentials: false
+      - name: Attest exact source and clean tree
+        run: |
+          test "$(git rev-parse HEAD)" = "4b98ec245b51b2fed9b4fe8148ba33a61fff6aeb"
+          test "$(git rev-parse HEAD^{tree})" = "0799c88b12581c04154ec7f1abc9e3c9985ba143"
+          test -z "$(git status --porcelain)"
+          git show -s --format="SOURCE_SHA=%H%nSOURCE_TREE=%T"
+          sha256sum core/runtime/Dockerfile index.html ad507.template.html
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.4.0"
-      - run: python scripts/validate-migrations.py
       - run: bun install --frozen-lockfile
         working-directory: core/runtime
       - run: bun run check:legacy
         working-directory: core/runtime
       - run: bun build server.ts --target bun --external postgres --outfile /tmp/ad507-core-review.js
         working-directory: core/runtime
-      - run: docker build --tag ad507-core-review --file core/runtime/Dockerfile .
-      - run: timeout 90s bun test tests
+      - name: Compile Docker from exact approved tree
+        run: |
+          docker build --tag ad507-core-exact-4b98ec2 --file core/runtime/Dockerfile .
+          docker image inspect ad507-core-exact-4b98ec2 --format 'IMAGE_ID={{.Id}} ARCH={{.Architecture}} USER={{.Config.User}} CMD={{json .Config.Cmd}}'
+      - name: Test affected template compatibility
         working-directory: core/runtime
-        env:
-          AD507_TEST_DATABASE_URL: postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres
+        run: timeout 90s bun test tests/commercial-entry.test.ts tests/canonical-delivery.test.ts tests/template-preparation.test.ts tests/country-configuration.test.ts
+      - name: Test actual Docker startup against isolated read-only PostgreSQL
+        run: |
+          docker run --rm --network host \
+            --mount type=bind,src="$PWD/core/runtime/tests",dst=/app/core/runtime/tests,readonly \
+            --mount type=bind,src="$PWD/db",dst=/app/db,readonly \
+            --env AD507_TEST_DATABASE_URL=postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres \
+            --entrypoint bun ad507-core-exact-4b98ec2 test tests/startup-no-ddl.test.ts

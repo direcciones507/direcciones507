@@ -286,6 +286,9 @@ jobs:
             cat out/CNAME
           fi
 
+      - name: Apply authorized single-business cutover if present
+        run: node scripts/apply-commercial-cutover.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

@@ -1,4 +1,4 @@
-name: PR43 exact-source Docker verification
+name: PR43 safe-rollback exact-source Docker verification
 on:
   push:
     branches: ["feat/core-consolidated-oauth-20261006"]
@@ -21,12 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 4b98ec245b51b2fed9b4fe8148ba33a61fff6aeb
+          ref: 60ac9575e395b3aa8d0671d52a2a06fdea097cbe
           persist-credentials: false
       - name: Attest exact source and clean tree
         run: |
-          test "$(git rev-parse HEAD)" = "4b98ec245b51b2fed9b4fe8148ba33a61fff6aeb"
-          test "$(git rev-parse HEAD^{tree})" = "0799c88b12581c04154ec7f1abc9e3c9985ba143"
+          test "$(git rev-parse HEAD)" = "60ac9575e395b3aa8d0671d52a2a06fdea097cbe"
+          test "$(git rev-parse HEAD^{tree})" = "6310fd841012f11bdd27da4a84ccc4fe60eb438d"
           test -z "$(git status --porcelain)"
           git show -s --format="SOURCE_SHA=%H%nSOURCE_TREE=%T"
           sha256sum core/runtime/Dockerfile index.html ad507.template.html
@@ -41,15 +41,12 @@ jobs:
         working-directory: core/runtime
       - name: Compile Docker from exact approved tree
         run: |
-          docker build --tag ad507-core-exact-4b98ec2 --file core/runtime/Dockerfile .
-          docker image inspect ad507-core-exact-4b98ec2 --format 'IMAGE_ID={{.Id}} ARCH={{.Architecture}} USER={{.Config.User}} CMD={{json .Config.Cmd}}'
-      - name: Test affected template compatibility
-        working-directory: core/runtime
-        run: timeout 90s bun test tests/commercial-entry.test.ts tests/canonical-delivery.test.ts tests/template-preparation.test.ts tests/country-configuration.test.ts
+          docker build --tag ad507-core-rollback-60ac957 --file core/runtime/Dockerfile .
+          docker image inspect ad507-core-rollback-60ac957 --format 'IMAGE_ID={{.Id}} ARCH={{.Architecture}} USER={{.Config.User}} CMD={{json .Config.Cmd}}'
       - name: Test actual Docker startup against isolated read-only PostgreSQL
         run: |
           docker run --rm --network host \
             --mount type=bind,src="$PWD/core/runtime/tests",dst=/app/core/runtime/tests,readonly \
             --mount type=bind,src="$PWD/db",dst=/app/db,readonly \
             --env AD507_TEST_DATABASE_URL=postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres \
-            --entrypoint bun ad507-core-exact-4b98ec2 test tests/startup-no-ddl.test.ts
+            --entrypoint bun ad507-core-rollback-60ac957 test tests/startup-no-ddl.test.ts

@@ -2,6 +2,7 @@ import {test,expect} from 'bun:test';
 import {renderNewPublicAddress,handleNewPublicRoutes} from '../new-address-publication';
 import {proposedCountryUrl} from '../country-configuration';
 import {readFileSync} from 'node:fs';
+import {normalizeAd507Code} from '../../postgres/public-address-repository';
 
 test('existing QR/share/copy mechanisms use canonical country URL rather than preview URL',()=>{
  for(const [country,code] of [['PA','AD507-N12345678123412341234123456789ABC'],['CO','AD57-N12345678123412341234123456789ABC'],['CR','AD506-N12345678123412341234123456789ABC']]){
@@ -45,4 +46,10 @@ test('public route recognition covers Panama and international prefixes without 
  }
  expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/AD9999-N123/'),context)).toBeNull();
  expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/AD57-N123/'),{...context,enabled:false})).toBeNull();
+});
+
+
+test('PostgreSQL public reader accepts only configured country prefixes',()=>{
+ for(const code of ['AD507-N12345678123412341234123456789ABC','AD57-N12345678123412341234123456789ABC','AD506-N12345678123412341234123456789ABC','AD593-N12345678123412341234123456789ABC'])expect(normalizeAd507Code(code)).toBe(code);
+ for(const code of ['AD999-N123','AD9999-N123','AD57-N123/extra','AD57-N123?x=1'])expect(normalizeAd507Code(code)).toBeNull();
 });

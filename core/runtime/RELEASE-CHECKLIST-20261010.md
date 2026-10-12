@@ -100,7 +100,7 @@ El acceso y cotejo PostgreSQL quedan VERDE. Pendientes reales: contrato de exclu
 |Lugares Core anteriores|core/postgres/place-code.ts/place-create-repository.ts: slug limitado24 + guion + sufijohex máximo6, UNIQUE y reintentos acotados|Lenguaje disjunto deN32 sin guion interior; prueba añadida sin alterar este emisor. No acredita activación productiva de esa ruta|
 |Aprovisionamiento residencial|Backendlegacy recibe/valida códigos suministrados; no emite códigos comerciales nuevos|Preservado; origen de esos códigos en PLANES no demostrado por esta ruta|
 |Generación/auto-sync GitHub Pages|generate.yml/auto-sync-ad507.yml leen action=list y copian códigos; patch-ad507-2026.sh adapta plantilla/enlaces|Publicadores/consumidores de códigos, no evidencia de asignación nueva; no alterados|
-|PLANES44, formularios y altas manuales|Proyecto autoridad1A6hGG0gTBwZ6L6yHOqrf9k7Q7KtUa8MonInL3Nmsh8JSG0Bll_n8Tj4Z. Editor real devolvió Acceso denegado / Necesitas acceso en la cuenta disponible. Repositorio no contiene fuentes .gs|ROJO: no se revisó el generador ni triggers/version44 o todos los emisores manuales; no declarar inventario completo ni garantía futura|
+|PLANES44, formularios y altas manuales|Proyecto autoridad1A6hGG0gTBwZ6L6yHOqrf9k7Q7KtUa8MonInL3Nmsh8JSG0Bll_n8Tj4Z. Editor real devolvió Acceso denegado / Necesitas acceso en la cuenta disponible. Repositorio no contiene fuentes .gs|ROJO: falta contrato de generadores/triggers/emisores manuales FUTUROS. Identidad, código lector y despliegue44 ya registrados el10octubre; no reabrirlos ni declarar inventario completo|
 
 Snapshot maestro40códigos y PGtotal0 conservados como evidencia previa, no releídos ni diagnosticados nuevamente. La garantía verificable disponible impide colisiones dentro del nuevo sistema y con el registro histórico consultado en cada reserva, pero exige registro legible vigente y contrato de emisores externos. El lector canónico existente sigue sin validación positiva del contrato action=list; no sustituirlo por un snapshot estático ni afirmar reserva global. Gate AD507_HISTORICAL_NAMESPACE_VERIFIED continúa cerrado.
 
@@ -233,3 +233,31 @@ Propietario: abrir proyectoPLANES identificado con su cuenta autorizada, confirm
 Railway: documentación https://docs.railway.com/platform/support confirma Central Station como canal oficial y Private Threads paraPro; no soporteemail ni contratación adicional. Entrar https://station.railway.com con cuentaRailway, crear consulta privada sobre proyectoamused-enchantment/production/Postgres, proyecto2b6d4e6c-e1d4-471d-a77d-c9bdb711650d, snapshot2026-10-11T16:39:30.690Z/245MB. Pedir procedimiento soportado y costo de extracción/clonaislado sin sustituir montaje ni redesplegarfuente. NoRestore, Deploy, PITR, recursos o servicios contratados. RecuperaciónROJO hastarespuesta/pruebareal. Noenviada por asistente.
 
 Checklist FUTURO (no ejecutar hoy): [ ] autorización/configuración dominio/callback trasbloqueos; [ ] identidad/roles/Micuenta ylogout correctos enamboshosts; [ ] Natalie una solasesiónHTTPS por conversación, respuesta real ycontrol3mensajes enPanamá/LATAM; [ ] URLs/QR/home/indexación históricos intactos; [ ] no pagos/publicaciónextranjera sin autorización. Prueba positivaIA con costo debeautorizarse previamente. EmisiónAD507 siguebloqueada. 127pruebas/diagnósticos no repetidos.
+
+
+## Consolidación de evidencias10–11octubre — sin repetir trabajo
+
+Corrección documental de alcance: el10octubre23:08/23:10UTC (18:08/18:10Panamá) YA se registró revisión segura de PLANES vinculado alMáster, código y despliegue44. Su conclusión: lectura de direcciones/contadores, sin reserva idempotente/asignación concurrente ni endpoint de publicación de altas acreditados. Se recuperó el reporte previo; NO se volvió a abrir/revisar versión44. La ausencia actual deacceso al editor no invalida esa identificación/revisión anterior. No pedir alpropietario repetir elección dePLANES,44,40códigos oPG.
+
+Accesos existentes aprovechados: búsquedaDrive PLANES SIN limitarse a mimeAppsScript localizó maestro, respaldos ydocumentación. No se abrieron maestro/respaldos ni se releyeron sus códigos. Se leyeron documentos accesibles 04_Base_de_Datos_y_Datos_Maestros_v0.3 (ID1GcOnUjtiI6mB6Qs1-cEZy-KUCB8CcO7M), 01_Expediente_Maestro_Direcciones507_v0.4 (ID1XyWZEBHoppZhD55v6KuKX56aXuRK2-As) y 05_Automatizaciones_e_Integraciones_v0.3 (ID1WIay85Ocs3xXQwEoTEq3OTxp02aDNoMk). Son documentos históricos fechados13sept, no certificación de infraestructura actual.
+
+Nueva evidencia recuperada: Automatizaciones distingue explícitamente el proveedor AppsScript action=list del pipelineGitHub que normaliza y genera PÁGINAS. No identifica funciones que ASIGNAN códigos ni inventario completo deemisores/triggers. Los documentos remiten a procesos vinculados al maestro, pero no contienen unaexportación ejecutable deesos emisores. La documentación deNatalie distingue frontend/web, backend/PG, IA yplantilla n8n inactiva/placeholders; no activar/reconstruir n8n ni confundirla con el backendHTTPS actual ya probado. No se modificaron documentosDrive ni se inspeccionóotroproyecto.
+
+### Única evidencia de emisión futura que falta
+
+- Lista de TODOS los canales que pueden escribir/asignar la columnaCódigo AD507 en elfuturo, incluidos formularios/triggers, scripts separados yaltasmanuales.
+- Nombre/fuente de cada función asignadora y reglas de normalización/formatos que puede producir. No toda la auditoría dePLANES44 otra vez.
+- Cuenta creadora y función/evento/frecuencia de cada trigger que invoca esos emisores; evidencia individual si pertenecen aotrascuentas.
+- Regla verificable que excluya ^AD507-N[0-9A-F]{32}$ en TODOS esosemisores, o evidencia de que ya no emiten altas y lasnuevas pasan exclusivamente por la plataforma central. No asumir que se desactivaron canales antiguos.
+
+Estos cuatroelementos no aparecen en las fuentes recuperadas. Tener listaactual sincolisiones, PLANESlector y127pruebas no sustituye este contrato futuro. ExclusividadROJO; bloqueo previo aemisiónVERDE conservado. AD507_HISTORICAL_NAMESPACE_VERIFIED no se activa. El lectorcanónico requerido por cadareserva continúa convalidaciónpositiva pendiente; no se reemplaza porregistroestático.
+
+Intervención acotada, solo si no existe fuente ya accesible: propietario facilita lectura/exportación de ESASfunciones y listado deemisores/triggers/manuales; no pedir otra revisión44 ni lecturamasiva delmaestro. Si sefacilita fuente podemos cotejarla sinSQL/despliegue/modificaciones. No solicitarEditor/Deploy automáticamente; usar cuentaautorizada/exportación sinsecretos.
+
+### Continuidad de pendientes reales
+
+Recuperación del snapshot11octubre: IDs/fecha/procedimiento y canalCentralStation conservados, no búsquedasgenerales/Restore/nuevosrecursos. Falta respuesta deRailway sobre método soportado de extracción/clonaislado de ESEsnapshot sin montar/redeploylive. Esees elbloqueo, no tamaño/capacidad ni otra compra.
+
+Natalie/OAuth/dosentradas: código8689e4e y127aprobadas conservados; no funcionesnuevas, testsrepetidos, llamadasGoogle/IA reales oconfiguraciónproductiva. Una plataforma/ADMIN/DB/identidad; sesionespororigen; homepage507 preservada yentradaLATAM opt-in. ConservarNatalie comoasistente delpropietario con backendexistente, sin asignarleprivilegios/tareasnuevas. Validaciónreal pendiente debe comprobar acceso delpropietario, widget enambasentradas, sesiónHTTPS/límites ylogout; no afirmar privacidadexclusiva/continuidadentre dispositivos noacreditada por la identidadcontrolada actual.
+
+Soloautorizacionespendientes: acceso acotado aemisores si siguefaltando; procedimiento/costo concreto deRailway antes de recuperar; después callback/host/configuraciónDNS/TLS yvalidaciónrealdesignadaGoogle/Natalie con consumoautorizado siaplica. DDL/merge/deploy permanecenprohibidos. No pedir nuevo permiso dePG ni repetir127. Commitdoc [skip ci]; evidenciaverde delcódigo8689 no cambia.

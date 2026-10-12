@@ -44,6 +44,22 @@ test('existing publisher overlay is absent by default and applies only one verif
     writeFileSync(join(dir,'commercial-cutovers',snapshot.code+'.html'),'changed');expect(()=>applyCommercialCutover(dir,out)).toThrow('INVALID_CUTOVER_ARTIFACT');expect(readFileSync(join(out,snapshot.code,'index.html'),'utf8')).toBe(html);
   }finally{rmSync(dir,{recursive:true,force:true});}
 });
+test('normal Pages invocation never overlays historical pages even with a valid cutover manifest',async()=>{
+  const {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync}=await import('node:fs');
+  const {tmpdir}=await import('node:os');const {join}=await import('node:path');const {createHash}=await import('node:crypto');
+  const dir=mkdtempSync(join(tmpdir(),'ad507-pages-safe-'));
+  try{
+    for(const code of [snapshot.code,snapshot.code.toLowerCase()]){mkdirSync(join(dir,'out',code),{recursive:true});writeFileSync(join(dir,'out',code,'index.html'),'ORIGINAL_HISTORICAL_PAGE');}
+    mkdirSync(join(dir,'commercial-cutovers'));
+    const html=renderCommercialBridge(snapshot,id,snapshot.coreOrigin);
+    writeFileSync(join(dir,'commercial-cutovers',snapshot.code+'.html'),html);
+    writeFileSync(join(dir,'commercial-cutover.json'),JSON.stringify({version:1,code:snapshot.code,id,snapshotHash:snapshotHash(snapshot),htmlPath:'commercial-cutovers/'+snapshot.code+'.html',htmlSha256:createHash('sha256').update(html).digest('hex')}));
+    const script=new URL('../../../scripts/apply-commercial-cutover.mjs',import.meta.url).pathname;
+    const env={...process.env};delete env.AD507_AUTHORIZED_COMMERCIAL_CUTOVER;
+    const result=Bun.spawnSync(['node',script],{cwd:dir,env});expect(result.exitCode).toBe(0);
+    for(const code of [snapshot.code,snapshot.code.toLowerCase()])expect(readFileSync(join(dir,'out',code,'index.html'),'utf8')).toBe('ORIGINAL_HISTORICAL_PAGE');
+  }finally{rmSync(dir,{recursive:true,force:true});}
+});
 test('the generated transport really selects PostgreSQL and returns to PLANES on suspension or failure',async()=>{
   const html=renderCommercialBridge(snapshot,id,snapshot.coreOrigin),fragment=html.match(/let data;try\{[\s\S]*?data=await response.json\(\);\}/)![0];
   const execute=new Function('fetch','CODE','WEBAPP_URL','AbortSignal','return (async()=>{'+fragment+';return data;})()');

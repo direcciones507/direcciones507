@@ -54,8 +54,9 @@ export function codeMatchesCountry(code:string,country:unknown='PA') {
  return new RegExp('^AD'+prefix+'-[A-Z0-9_-]+$').test(code);
 }
 /** Proposed URLs cannot be returned as active links until publication is authorized. */
-export function proposedCountryUrl(country:unknown,code:string) {
+export function proposedCountryUrl(country:unknown,code:string,originalUrl?:string|null) {
  if(!codeMatchesCountry(code,country))throw Error('CANONICAL_CODE_INVALID');
+ if(originalUrl){const u=new URL(originalUrl);if(country!=='PA'||u.protocol!=='https:'||u.hostname!=='direcciones507.com'||u.username||u.password||u.port||u.search||u.hash||u.pathname!=='/'+code.toLowerCase()+'/')throw Error('INVALID_HISTORICAL_URL');return u.href;}
  return (countryConfiguration(country).prefix==='507'?'https://direcciones507.com':FUTURE_PUBLIC_ORIGIN)+'/'+code+'/';
 }
 export function paymentMethods(country:unknown='PA') {

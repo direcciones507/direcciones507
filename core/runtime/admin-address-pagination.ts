@@ -1,5 +1,5 @@
 import type {Sql} from 'postgres';
-import {requestCountry} from './country-configuration';
+import {requestCountry,proposedCountryUrl} from './country-configuration';
 type Kind='addresses'|'requests'|'places';
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export function addressPageOptions(params:URLSearchParams,kind:Kind){
@@ -28,8 +28,8 @@ export async function adminAddressPage(sql:Sql,params:URLSearchParams,kind:Kind,
  // (milliseconds), which would lose PostgreSQL microseconds at page boundaries.
  if(o.cursor){args.push(o.cursor.time,o.cursor.id);where.push('(a.'+time+',a.id) '+(asc?'>':'<')+' ($'+(args.length-1)+'::text::timestamptz,$'+args.length+'::uuid)');}
  args.push(o.limit+1);
- const rows=await sql.unsafe(`SELECT a.id::text,a.code,a.country_code AS "countryCode",a.address_type AS "addressType",a.status,a.name,a.reference,a.description,a.commercial_description AS "commercialDescription",a.latitude,a.longitude,a.phone,a.hours,a.source,CASE WHEN a.address_type<>'RESIDENTIAL' THEN (SELECT m.url FROM ad507.address_media m WHERE m.address_id=a.id AND m.url IS NOT NULL ORDER BY (m.media_type='LOGO') DESC,m.is_primary DESC,m.position,m.id LIMIT 1) ELSE NULL END AS "imageUrl",p.code AS "planCode",p.name AS "planName",a.created_at AS "createdAt",a.updated_at AS "updatedAt",to_char(a.${time} AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS "cursorTime" FROM ad507.addresses a LEFT JOIN ad507.plans p ON p.id=a.plan_id ${where.length?'WHERE '+where.join(' AND '):''} ORDER BY a.${time} ${asc?'ASC':'DESC'},a.id ${asc?'ASC':'DESC'} LIMIT $${args.length}`,args);
+ const rows=await sql.unsafe(`SELECT a.id::text,a.code,a.country_code AS "countryCode",a.address_type AS "addressType",a.status,a.name,a.reference,a.description,a.commercial_description AS "commercialDescription",a.latitude,a.longitude,a.phone,a.hours,a.source,a.publication_receipt AS "publicationReceipt",a.request_data->'migration'->>'originalUrl' AS "originalUrl",CASE WHEN a.address_type<>'RESIDENTIAL' THEN (SELECT m.url FROM ad507.address_media m WHERE m.address_id=a.id AND m.url IS NOT NULL ORDER BY (m.media_type='LOGO') DESC,m.is_primary DESC,m.position,m.id LIMIT 1) ELSE NULL END AS "imageUrl",p.code AS "planCode",p.name AS "planName",a.created_at AS "createdAt",a.updated_at AS "updatedAt",to_char(a.${time} AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS "cursorTime" FROM ad507.addresses a LEFT JOIN ad507.plans p ON p.id=a.plan_id ${where.length?'WHERE '+where.join(' AND '):''} ORDER BY a.${time} ${asc?'ASC':'DESC'},a.id ${asc?'ASC':'DESC'} LIMIT $${args.length}`,args);
  const more=rows.length>o.limit,items=rows.slice(0,o.limit),last=items.at(-1);
  const nextCursor=more&&last?Buffer.from(JSON.stringify({kind,country:o.country,time:last.cursorTime,id:last.id})).toString('base64url'):null;
- return {items:items.map(({cursorTime,...r})=>r),nextCursor,count:items.length};
+ return {items:items.map(({cursorTime,publicationReceipt,originalUrl,...r})=>({...r,publicUrl:r.source==='USER_REQUEST'&&r.countryCode==='PA'&&r.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(r.addressType)&&publicationReceipt?proposedCountryUrl(r.countryCode,r.code,originalUrl):null})),nextCursor,count:items.length};
 }

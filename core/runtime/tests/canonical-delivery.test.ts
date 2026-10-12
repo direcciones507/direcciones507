@@ -22,3 +22,9 @@ test('prepared individual historical renderer preserves original URL for QR and 
  const qr=new Function(html.match(/const qrUrl = [^\n]+/)![0]+';return qrUrl;')();
  expect(new URL(qr).searchParams.get('data')).toBe(url);expect(html).toContain('DIRECCIONES<span>507</span>');
 });
+
+test('delivery reuses canonical URL policy and only preserves a validated original Panama URL',()=>{
+ expect(proposedCountryUrl('PA','AD507-0038','https://direcciones507.com/ad507-0038/')).toBe('https://direcciones507.com/ad507-0038/');
+ for(const bad of ['javascript:alert(1)','https://evil.test/ad507-0038/','https://direcciones507.com/ad507-0038/?token=private','https://user:pass@direcciones507.com/ad507-0038/','https://direcciones507.com/ad507-9999/'])expect(()=>proposedCountryUrl('PA','AD507-0038',bad)).toThrow();
+ expect(()=>proposedCountryUrl('CO','AD57-0038','https://direcciones507.com/ad507-0038/')).toThrow();
+});

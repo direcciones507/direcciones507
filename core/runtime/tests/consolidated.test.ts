@@ -643,14 +643,14 @@ test('individual commercial staging, verified cutover and rollback preserve orig
       expect((await repo.stageHistorical(adminId,key,s)).id).toBe(created.id);expect(created.code).toBe(code);await expect(repo.stageHistorical(adminId,key,{...s,name:'Changed'})).rejects.toThrow('IDEMPOTENCY_CONFLICT');
       await expect(repo.publish(adminId,created.id)).rejects.toThrow('APPROVAL_REQUIRED');await repo.review(adminId,created.id,'APPROVED');
       await expect(repo.publish(adminId,created.id)).rejects.toThrow('MIGRATION_BRIDGE_NOT_VERIFIED');expect(await newPublicAddress(db,code,origin)).toBeNull();
-      bridges.set(s.publicUrl,renderCommercialBridge(s,created.id,origin));const published=await Promise.all([repo.publish(adminId,created.id),repo.publish(adminId,created.id)]);expect(published.every(p=>p.code===code&&p.status==='ACTIVE')).toBe(true);
+      bridges.set(s.publicUrl,renderCommercialBridge(s,created.id,origin));const published=await Promise.all([repo.publish(adminId,created.id),repo.publish(adminId,created.id)]);expect(published.every(p=>p.code===code&&p.status==='ACTIVE')).toBe(true);expect((await repo.read(adminId,created.id)).publicUrl).toBe(s.publicUrl);
       const pub=await newPublicAddress(db,code,origin);expect(pub?.url).toBe(s.publicUrl);expect(pub?.media.map(m=>m.url)).toEqual(s.media.map(m=>m.url));expect(JSON.stringify(pub)).not.toContain('private-original');
       if(plan!=='PLACE')expect(pub?.socials).toEqual([{platform:'instagram',url:'https://instagram.com/original'}]);
       const response=await handleNewPublicRoutes(new Request(origin+'/v1/addresses/'+code),{enabled:true,sql:db,r2:null});expect(response?.headers.get('access-control-allow-origin')).toBe('https://direcciones507.com');
       const before=(await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id]))[0].row;
       await repo.transfer(adminId,created.id,adminId,clientId);expect((await db.unsafe('SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE id=$1::uuid',[created.id]))[0].row).toEqual(before);
       await expect(repo.rollbackHistorical(clientId,created.id)).rejects.toThrow('FORBIDDEN');listed=false;await expect(repo.rollbackHistorical(adminId,created.id)).rejects.toThrow('HISTORICAL_RESTORE_REQUIRED');expect((await repo.read(adminId,created.id)).status).toBe('ACTIVE');listed=true;
-      expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');expect(await newPublicAddress(db,code,origin)).toBeNull();expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');
+      expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');expect(await newPublicAddress(db,code,origin)).toBeNull();expect((await repo.read(adminId,created.id)).publicUrl).toBeNull();expect((await repo.rollbackHistorical(adminId,created.id)).status).toBe('SUSPENDED');
       changed=true;await expect(repo.publish(adminId,created.id)).rejects.toThrow('HISTORICAL_MEDIA_UNVERIFIED');changed=false;expect((await repo.publish(adminId,created.id)).code).toBe(code);
       const final=(await db.unsafe('SELECT legacy_payload,code FROM ad507.addresses WHERE id=$1::uuid',[created.id]))[0];expect(final.legacy_payload).toEqual(s);expect(final.code).toBe(code);
       expect((await db.unsafe("SELECT id FROM ad507.audit_log WHERE entity_id=$1 AND action='HISTORICAL_PUBLICATION_ROLLED_BACK'",[created.id])).length).toBe(1);
@@ -824,3 +824,82 @@ test('existing Natalie backend allows only exact verified LATAM origin in isolat
   expect(denied.status).toBe(403);expect(denied.headers.get('access-control-allow-origin')).toBeNull();
  }
 });
+
+test('isolated HTTP commercial journey connects OAuth, client request, ADMIN review, publication, canonical delivery and existing QR',async()=>{
+ const {handleRequestRoutes}=await import('../request-routes');
+ const {createRequestRepository}=await import('../request-repository');
+ const {createNewAddressPublication,handleNewPublicRoutes}=await import('../new-address-publication');
+ const {handleUserPanel}=await import('../user-panel');
+ const {requestAdminScript}=await import('../request-admin-ui');
+ const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:4});
+ const before=await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id");
+ const objects=new Map<string,Uint8Array>();
+ const providers=(async(input:any,init:any={})=>{
+  const url=String(input);if(url.includes('script.google.com')&&url.includes('action=list'))return Response.json({ok:true,codes:[{codigo:'AD507-0038'}]});
+  if(!url.includes('.r2.cloudflarestorage.com/'))throw Error('UNEXPECTED_EXTERNAL_NETWORK');
+  if(init.method==='PUT'){objects.set(url,new Uint8Array(init.body));return new Response(null,{status:200});}
+  if(init.method==='DELETE'){objects.delete(url);return new Response(null,{status:204});}
+  const bytes=objects.get(url);return bytes?new Response(bytes,{headers:{'content-type':'image/webp','content-length':String(bytes.length)}}):new Response(null,{status:404});
+ }) as typeof fetch;
+ const unique=crypto.randomUUID(),profiles:any={client:{sub:'flow-client-'+unique,email:'flow-client-'+unique+'@gmail.com',email_verified:true},admin:{sub:'flow-admin-'+unique,email:'flow-admin-'+unique+'@gmail.com',email_verified:true}};
+ const googleHttp=(async(input:any,init:any)=>{
+  if(String(input)==='https://oauth2.googleapis.com/token')return Response.json({access_token:new URLSearchParams(init.body).get('code')});
+  if(String(input)!=='https://openidconnect.googleapis.com/v1/userinfo')throw Error('UNEXPECTED_GOOGLE_NETWORK');
+  return Response.json(profiles[String(init.headers.authorization).slice(7)]);
+ }) as typeof fetch;
+ const auth=createGeneralAuth(db,env,googleHttp);
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'isolated',secretAccessKey:'isolated',configurationVerified:true as const};
+ const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:providers})});
+ const blocked=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:providers})});
+ let fixtureEvidenceVerified=false;
+ const server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:async incoming=>{
+  // Test-only HTTPS edge simulation; actual transport is local HTTP, no production ingress.
+  const path=new URL(incoming.url);const req=new Request(origin+path.pathname+path.search,incoming);
+  return await auth.handle(req)??await handleRequestRoutes(req,{enabled:true,sql:db,auth,repository:fixtureEvidenceVerified?repo:blocked,r2,fetch:providers})??await handleNewPublicRoutes(req,{enabled:true,sql:db,r2,fetch:providers})??await handleUserPanel(req,db,auth)??new Response(null,{status:404});
+ }});
+ const base='http://127.0.0.1:'+server.port;
+ const call=(path:string,cookie='',init:any={})=>fetch(base+path,{...init,redirect:'manual',headers:{...init.headers,...(cookie?{cookie}:{}),origin}});
+ const loginHttp=async(role:string)=>{
+  const begin=await call('/auth/google/login');expect(begin.status).toBe(302);
+  const state=new URL(begin.headers.get('location')!).searchParams.get('state');
+  const done=await call('/auth/google/callback?state='+state+'&code='+role,binding(begin));expect(done.status).toBe(302);
+  const c=session(done),me=await(await call('/v1/auth/me',c)).json();return {cookie:c,user:me.user};
+ };
+ const png=await sharp({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
+ const raw={type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Isolated full commercial journey '+unique,reference:'Synthetic reference',description:'Synthetic description',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
+ const form=(data:any)=>{const body=new FormData();body.append('payload',JSON.stringify(data));body.append('logo',new Blob([png],{type:'image/png'}),'synthetic.png');return body;};
+ try{
+  const client=await loginHttp('client'),admin=await loginHttp('admin');
+  await db.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'ADMIN')",[admin.user.id]); // Isolated fixture role only.
+  const submit=()=>call('/v1/user/requests',client.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-'+unique},body:form(raw)});
+  const sent=await submit();expect(sent.status).toBe(200);const initial=(await sent.json()).request;expect(initial.status).toBe('PENDING_REVIEW');expect(initial.code).toBeNull();
+  const retry=await submit();expect((await retry.json()).request.id).toBe(initial.id);expect(objects.size).toBe(1);
+  expect((await call('/v1/admin/requests/'+initial.id,client.cookie)).status).toBe(403);
+  const actions:any={children:[],append(x:any){this.children.push(x)}},message:any={textContent:''},rows:any={};
+  Object.defineProperty(rows,'innerHTML',{set(){actions.children=[];}});
+  const doc={getElementById:(id:string)=>id==='requestsRows'?rows:id==='reviewActions'?actions:message,createElement:(tag:string)=>({tag})};
+  const adminHttp=(path:string,init:any={})=>call(path,admin.cookie,init);
+  const open=new Function('document','fetch','esc',requestAdminScript+';return openRequestReview;')(doc,adminHttp,(x:any)=>String(x??'').replaceAll('<','&lt;'));
+  await open(initial.id);expect(actions.children.some((x:any)=>x.textContent==='Abrir ficha, enlace y QR')).toBe(false);
+  await actions.children.find((x:any)=>x.textContent==='Aprobar').onclick();
+  let publish=actions.children.find((x:any)=>x.textContent==='Publicar');expect(publish).toBeDefined();
+  await publish.onclick();expect(message.textContent).toContain('Publicación bloqueada');
+  const unchanged=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;expect(unchanged.code).toBeNull();expect(unchanged.publicUrl).toBeNull();expect(unchanged.status).toBe('PENDING_REVIEW');
+  fixtureEvidenceVerified=true; // Synthetic historical registry only; never sets a production gate.
+  await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir ficha, enlace y QR');expect(link).toBeDefined();
+  const canonical='https://direcciones507.com/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
+  const delivered=await(await call('/v1/user/panel',client.cookie)).json();const card=delivered.addresses.find((a:any)=>a.id===initial.id);expect(card.status).toBe('ACTIVE');expect(card.publicUrl).toBe(canonical);
+  const page=await call(new URL(card.publicUrl).pathname);expect(page.status).toBe(200);const html=await page.text();expect(html).toContain(raw.name);expect(html).toContain('Direcciones LATAM');
+  const qr=new Function(html.match(/const qrUrl = [^\n]+/)![0]+';return qrUrl;')();expect(new URL(qr).searchParams.get('data')).toBe(canonical);expect(html).toContain('navigator.clipboard.writeText('+JSON.stringify(canonical)+')');
+  const published=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;
+  const publicPhoto=await call('/v1/addresses/'+published.code+'/media/'+published.media[0].id);expect(publicPhoto.status).toBe(200);expect(publicPhoto.headers.get('content-type')).toBe('image/webp');
+  const again=await call('/v1/admin/requests/'+initial.id+'/publish',admin.cookie,{method:'POST'});expect(again.status).toBe(200);expect((await again.json()).request.code).toBe(published.code);
+  expect((await db.unsafe('SELECT count(*)::int AS n FROM ad507.addresses WHERE id=$1::uuid',[initial.id]))[0].n).toBe(1);
+  const co=await call('/v1/admin/requests',admin.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-co-'+unique},body:form({...raw,countryCode:'CO',name:'Synthetic Colombia '+unique,phone:'+573001234567'})});expect(co.status).toBe(200);const foreign=(await co.json()).request;
+  expect((await call('/v1/admin/requests/'+foreign.id+'/approve',admin.cookie,{method:'POST'})).status).toBe(200);
+  const stop=await call('/v1/admin/requests/'+foreign.id+'/publish',admin.cookie,{method:'POST'});expect(stop.status).toBe(503);expect((await stop.json()).error).toBe('COUNTRY_NOT_ENABLED');
+  const foreignRead=(await(await call('/v1/admin/requests/'+foreign.id,admin.cookie)).json()).request;expect(foreignRead.countryCode).toBe('CO');expect(foreignRead.publicUrl).toBeNull();expect(foreignRead.code).toBeNull();
+  expect(await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
+  console.info('HTTP journey PASS: OAuth → multipart/logo → durable request/retry → ADMIN approve → closed gate 503 → synthetic verified publication → owner canonical link → existing QR/copy → WebP; Colombia stops exactly at publish503');
+ }finally{server.stop(true);await db.end({timeout:2});}
+},20000);

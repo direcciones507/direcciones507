@@ -1,3 +1,4 @@
+import { COUNTRIES } from '../runtime/country-configuration';
 export type SqlExecutor = <T = Record<string, unknown>>(
   strings: TemplateStringsArray,
   ...values: unknown[]
@@ -58,7 +59,8 @@ export function postgresPublicReadEnabled(env: Record<string, string | undefined
 
 export function normalizeAd507Code(raw: string): string | null {
   const code = String(raw || "").trim().toUpperCase();
-  return /^AD507-[A-Z0-9_-]+$/.test(code) ? code : null;
+  const match = /^AD([0-9]{2,3})-[A-Z0-9_-]+$/.exec(code);
+  return match && Object.values(COUNTRIES).some(country => country.prefix === match[1]) ? code : null;
 }
 
 function numberOrNull(value: string | number | null): number | null {

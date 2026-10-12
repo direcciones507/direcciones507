@@ -1,10 +1,10 @@
 // @bun
 var __require = import.meta.require;
 
-// scripts/r2-diagnostic.ts
+// core/runtime/scripts/r2-diagnostic.ts
 import { randomUUID } from "crypto";
 
-// r2-signing.ts
+// core/runtime/r2-signing.ts
 import { createHash, createHmac } from "crypto";
 var hash = (input) => createHash("sha256").update(input).digest("hex");
 var hmac = (key, input) => createHmac("sha256", key).update(input).digest();
@@ -40,7 +40,7 @@ x-amz-date:${amzDate}
   };
 }
 
-// scripts/r2-diagnostic.ts
+// core/runtime/scripts/r2-diagnostic.ts
 var names = ["R2_ACCOUNT_ID", "R2_BUCKET", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];
 var allowedCodes = new Set(["AccessDenied", "InvalidAccessKeyId", "SignatureDoesNotMatch", "NoSuchBucket", "NoSuchKey", "RequestTimeTooSkewed", "ExpiredToken", "InvalidToken", "PreconditionFailed", "InternalError", "ServiceUnavailable"]);
 async function bounded(response, limit) {
@@ -132,7 +132,7 @@ async function diagnoseR2(env, http = fetch, options = {}) {
         let authorizationRejected = false;
         if (unsigned.status === 400) {
           const text = (await bounded(unsigned, 4096)).toString("utf8");
-          authorizationRejected = text.match(/<Code>([^<]+)<\/Code>/)?.[1] === "InvalidArgument" && text.match(/<Message>([^<]+)<\/Message>/)?.[1] === "Invalid Authorization";
+          authorizationRejected = text.match(/<Code>([^<]+)<\/Code>/)?.[1] === "InvalidArgument" && text.match(/<Message>([^<]+)<\/Message>/)?.[1] === "Authorization";
         } else
           await unsigned.body?.cancel();
         report.privateAccess = { ok: [401, 403].includes(unsigned.status) || authorizationRejected, http: unsigned.status, ...authorizationRejected ? { code: "UNSIGNED_AUTHORIZATION_REJECTED" } : {} };

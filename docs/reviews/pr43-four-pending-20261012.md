@@ -19,11 +19,17 @@ GitHubActions sobre5c46df8: ConsolidatedCorecompatibility run38206464256 SUCCESS
 
 Ejecutado por consola del servicio existente, heredando variables; sin exportarlas. providerCredentialPresent/modelMatches/reasoningMatches/tokenLimitMatches/budgetMatches=true; latamOriginEnabled=false. scopeCount=1, agentStatus=draft, activePermissionCount=0, driverCountType=string, officialKnowledgeCount=10. Única razón detectada: COUNT_INT8_STRING_STRICT_COMPARISON; correctedScopeReady=true. Así se confirma en producción la causa exacta del403, sin cambiar status ni permisos. La corrección ya está en PR, pero NO desplegada. Conversación con proveedor real sigue pendiente de despliegue autorizado; LATAM requiere configurar origen verificado tras autorización.
 
-### R2: prueba REAL de fotografía temporal
+### R2: prueba REAL de fotografía temporal — APROBADO
+
+Revalidación final dentro del mismo servicio: reporte ok=true, write200, read200, privateAccess400 con codeUNSIGNED_AUTHORIZATION_REJECTED, delete204, absence404NoSuchKey y cleanupRequired=false. Se ejecutó el diagnóstico por stdin; no se instaló código ni se modificó el proceso del servicio. Evidencia:
+
+![Prueba real R2](pr43-r2-real-proof.jpg)
+
+Registro de la primera fotografía temporal:
 
 Desde ad507-core con sus credenciales existentes. Objeto _diagnostics/ad507-r2/9f12ef39-2932-4ef3-a29d-2eb90d5fe757.webp. WebP12×12. PUT200; GETfirmado200 con bytesidénticos; DELETE204; GETposterior404NoSuchKey; cleanupRequired=false. Ninguna foto real enumerada o modificada. Dirección del objeto: r2://direcciones507-media/_diagnostics/ad507-r2/9f12ef39-2932-4ef3-a29d-2eb90d5fe757.webp (ya eliminado; sinURLpública permanente).
 
-GETsin firma devolvió400. Una comprobación específica confirmó Code=InvalidArgument y Message=Invalid Authorization. El diagnóstico inicial marcaba ese rechazo como fallo por aceptar únicamente401/403. Se corrigió SOLO la clasificación:400 se acepta exclusivamente con esa pareja exacta de Code/Message; otros400 permanecen fallidos. Testsafectados:6pass/0fail/54assertions. Corrección adicional del diagnóstico incluida en este mismoPR; no cambia almacenamiento ni el servicio.
+GETsin firma devolvió400. Una comprobación específica confirmó Code=InvalidArgument y Message=Authorization. El diagnóstico inicial marcaba ese rechazo como fallo por aceptar únicamente401/403. Se corrigió SOLO la clasificación:400 se acepta exclusivamente con esa pareja exacta de Code/Message; otros400 permanecen fallidos. Testsafectados:6pass/0fail/54assertions. Corrección adicional del diagnóstico incluida en este mismoPR; no cambia almacenamiento ni el servicio.
 
 ### Pendientes conservados
 

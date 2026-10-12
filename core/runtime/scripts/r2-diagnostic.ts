@@ -48,7 +48,7 @@ export async function diagnoseR2(env:Record<string,string|undefined>,http:typeof
         // R2's S3 endpoint also rejects an unsigned request with 400/InvalidArgument.
         // Accept only its exact authorization error, never a generic 400.
         let authorizationRejected=false;
-        if(unsigned.status===400){const text=(await bounded(unsigned,4096)).toString('utf8');authorizationRejected=text.match(/<Code>([^<]+)<\/Code>/)?.[1]==='InvalidArgument'&&text.match(/<Message>([^<]+)<\/Message>/)?.[1]==='Invalid Authorization';}
+        if(unsigned.status===400){const text=(await bounded(unsigned,4096)).toString('utf8');authorizationRejected=text.match(/<Code>([^<]+)<\/Code>/)?.[1]==='InvalidArgument'&&text.match(/<Message>([^<]+)<\/Message>/)?.[1]==='Authorization';}
         else await unsigned.body?.cancel();
         report.privateAccess={ok:[401,403].includes(unsigned.status)||authorizationRejected,http:unsigned.status,...(authorizationRejected?{code:'UNSIGNED_AUTHORIZATION_REJECTED'}:{})};
       }catch(error){report.privateAccess=network(error);}

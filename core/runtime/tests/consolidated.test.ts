@@ -2,6 +2,7 @@ import { beforeAll, afterAll, test, expect } from 'bun:test';
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createServer } from 'node:net';
 import EmbeddedPostgres from 'embedded-postgres';
 import postgres from 'postgres';
 import { createGeneralAuth } from '../general-auth';
@@ -13,6 +14,7 @@ const dir = mkdtempSync(join(tmpdir(), 'ad507-auth-test-'));
 const password = crypto.randomUUID();
 const pg = new EmbeddedPostgres({ databaseDir: join(dir, 'db'), user: 'postgres', password, port: 55439, persistent: false, createPostgresUser: true, onLog: () => {}, onError: () => {} });
 let isolatedDatabase: string;
+let runtimePort: number;
 let sql: ReturnType<typeof postgres>, runtime: ReturnType<typeof Bun.spawn>;
 const origin = 'https://ad507-core-production.up.railway.app';
 const env = { AD507_GOOGLE_CLIENT_ID: 'test-client', AD507_GOOGLE_CLIENT_SECRET: crypto.randomUUID(), AD507_SESSION_SECRET: crypto.randomUUID() + crypto.randomUUID(), AD507_GOOGLE_REDIRECT_URI: origin + '/auth/google/callback', AD507_AUTH_SUCCESS_URL: '/', AD507_PUBLIC_BASE_URL: origin };
@@ -32,9 +34,17 @@ beforeAll(async () => {
   await sql.unsafe(readFileSync(new URL('../schema-proposals/countries.sql', import.meta.url), 'utf8'));
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'client@gmail.com'),($2::uuid,'admin@example.test')", [clientId, adminId]);
   await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')", [clientId, adminId]);
-  runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: '55440', DATABASE_URL: database, AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true', AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
+  runtimePort = await new Promise<number>((resolve, reject) => {
+    const listener = createServer();
+    listener.once('error', reject);
+    listener.listen(0, '127.0.0.1', () => {
+      const port = (listener.address() as { port: number }).port;
+      listener.close(error => error ? reject(error) : resolve(port));
+    });
+  });
+  runtime = Bun.spawn([process.execPath, 'server.ts'], { cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, ...env, PORT: String(runtimePort), DATABASE_URL: database, AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true', AD507_RESIDENTIAL_PROVISIONING_SECRET: crypto.randomUUID() }, stdout: 'ignore', stderr: 'pipe' });
   for (let i = 0; i < 100; i++) {
-    try { if ((await fetch('http://127.0.0.1:55440/health')).ok) return; } catch {}
+    try { if ((await fetch('http://127.0.0.1:'+runtimePort+'/health')).ok) return; } catch {}
     await new Promise(r => setTimeout(r, 50));
   }
   throw new Error('RUNTIME_FAILED: ' + await new Response(runtime.stderr).text());
@@ -76,8 +86,8 @@ test('exact extraction and all 12 Residential routes/handlers survive', () => {
   expect(legacy).toContain('req.method === "HEAD"');
 });
 test('real Bun entrypoint: health/readiness and real PostgreSQL', async () => {
-  expect((await fetch('http://127.0.0.1:55440/health')).status).toBe(200);
-  const ready = await fetch('http://127.0.0.1:55440/ready'); expect(ready.status).toBe(200);
+  expect((await fetch('http://127.0.0.1:'+runtimePort+'/health')).status).toBe(200);
+  const ready = await fetch('http://127.0.0.1:'+runtimePort+'/ready'); expect(ready.status).toBe(200);
   expect((await ready.json()).database).toBe(true);
   expect((await sql.unsafe('SELECT 1 AS connected'))[0].connected).toBe(1);
 });
@@ -86,14 +96,14 @@ test('legacy POST routes remain dispatched with invalid credentials', async () =
   const paths = [...snapshot.matchAll(/const RESIDENTIAL_\w*ROUTE\s*=\s*"([^"]+)"/g)].map(x => x[1]);
   paths.push('/internal/v1/natalie/controlled-session', '/internal/v1/natalie/controlled-query', '/internal/v1/analytics/track', '/internal/v1/analytics/access/exchange');
   for (const path of paths) {
-    const res = await fetch('http://127.0.0.1:55440' + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    const res = await fetch('http://127.0.0.1:'+runtimePort + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
     expect(res.status).not.toBe(404); expect(res.status).toBeLessThan(500);
   }
-  expect((await fetch('http://127.0.0.1:55440/internal/v1/analytics/private/summary')).status).not.toBe(404);
+  expect((await fetch('http://127.0.0.1:'+runtimePort+'/internal/v1/analytics/private/summary')).status).not.toBe(404);
 });
 test('general routes are registered in the sole entrypoint', async () => {
-  for (const path of ['/auth/google/login', '/auth/google/callback', '/v1/auth/me', '/v1/admin/session-check']) expect((await fetch('http://127.0.0.1:55440' + path)).status).toBe(400);
-  expect((await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST' })).status).toBe(400);
+  for (const path of ['/auth/google/login', '/auth/google/callback', '/v1/auth/me', '/v1/admin/session-check']) expect((await fetch('http://127.0.0.1:'+runtimePort + path)).status).toBe(400);
+  expect((await fetch('http://127.0.0.1:'+runtimePort+'/auth/logout', { method: 'POST' })).status).toBe(400);
 });
 test('canonical identity and roles; OAuth does not grant ADMIN; logout revokes copied cookie', async () => {
   const auth = createGeneralAuth(sql, env, google({ sub: 'client-sub', email: 'client@gmail.com', email_verified: true }));
@@ -188,7 +198,7 @@ test.skipIf(process.env.AD507_TEST_PGLITE === '1')('atomic migration runner crea
 }, 30000);
 
 async function runtimeGet(path: string, cookie?: string) {
-  return fetch('http://127.0.0.1:55440' + path, { headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', ...(cookie ? { cookie } : {}) } });
+  return fetch('http://127.0.0.1:'+runtimePort + path, { headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', ...(cookie ? { cookie } : {}) } });
 }
 async function fixtureSession(id: string, email: string, sub: string) {
   await sql.unsafe("UPDATE ad507.users SET status='ACTIVE' WHERE id=$1::uuid", [id]);
@@ -242,9 +252,9 @@ test('user panel isolates canonical ownership and orders without internal capabi
   const panel = await runtimeGet('/panel'); expect(panel.status).toBe(200);
   expect(panel.headers.get('x-robots-tag')).toBe('noindex, nofollow');
   expect(await panel.text()).toContain('id="send" type="button" disabled>Enviar solicitud');
-  const redirect = await fetch('http://127.0.0.1:55440/', { redirect: 'manual', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', cookie: client } });
+  const redirect = await fetch('http://127.0.0.1:'+runtimePort+'/', { redirect: 'manual', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', cookie: client } });
   expect(redirect.status).toBe(302); expect(redirect.headers.get('location')).toBe('/panel');
-  const logout = await fetch('http://127.0.0.1:55440/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
+  const logout = await fetch('http://127.0.0.1:'+runtimePort+'/auth/logout', { method: 'POST', headers: { host: 'ad507-core-production.up.railway.app', 'x-forwarded-proto': 'https', origin, cookie: client } });
   expect(logout.status).toBe(204);
   expect((await runtimeGet('/v1/user/panel', client)).status).toBe(401);
   const renewed = await fixtureSession(clientId, 'client@gmail.com', 'client-sub');
@@ -269,10 +279,10 @@ test('pre-migration panel rejects every write method and preserves database coun
   const count = async () => (await sql.unsafe('SELECT (SELECT count(*) FROM ad507.addresses)::int AS addresses,(SELECT count(*) FROM ad507.address_ownership)::int AS ownership,(SELECT count(*) FROM ad507.orders)::int AS orders,(SELECT count(*) FROM ad507.audit_log)::int AS audit'))[0];
   const before = await count();
   for (const method of ['POST','PUT','PATCH','DELETE']) {
-    const res = await fetch('http://127.0.0.1:55440/v1/user/requests', { method, headers: { cookie: client, origin, 'content-type': 'application/json' }, body: JSON.stringify({ addressType: 'RESIDENTIAL', planCode: 'RESIDENTIAL', name: 'Must never exist', checkout: true, owner: true }) });
+    const res = await fetch('http://127.0.0.1:'+runtimePort+'/v1/user/requests', { method, headers: { cookie: client, origin, 'content-type': 'application/json' }, body: JSON.stringify({ addressType: 'RESIDENTIAL', planCode: 'RESIDENTIAL', name: 'Must never exist', checkout: true, owner: true }) });
     expect(res.status).toBe(503);
     expect((await res.json()).error).toBe('USER_PANEL_SUBMISSION_NOT_ENABLED');
-    expect((await fetch('http://127.0.0.1:55440/v1/user/panel', {method, headers:{cookie:client}})).status).toBe(405);
+    expect((await fetch('http://127.0.0.1:'+runtimePort+'/v1/user/panel', {method, headers:{cookie:client}})).status).toBe(405);
   }
   expect(await count()).toEqual(before);
   const panel = await runtimeGet('/panel');
@@ -290,7 +300,7 @@ test('panel sessions reject a wrong host, duplicate cookie and cross-site read',
   const auth = createGeneralAuth(sql, env, google({}));
   expect(await auth.currentUser(new Request('https://evil.test/v1/user/panel',{headers:{cookie:client}}))).toBeNull();
   expect((await runtimeGet('/v1/user/panel',client+'; '+client)).status).toBe(401);
-  const res = await fetch('http://127.0.0.1:55440/v1/user/panel',{headers:{host:'ad507-core-production.up.railway.app','x-forwarded-proto':'https',cookie:client,origin:'https://evil.test','sec-fetch-site':'cross-site'}});
+  const res = await fetch('http://127.0.0.1:'+runtimePort+'/v1/user/panel',{headers:{host:'ad507-core-production.up.railway.app','x-forwarded-proto':'https',cookie:client,origin:'https://evil.test','sec-fetch-site':'cross-site'}});
   expect(res.status).toBe(403);
 });
 
@@ -817,7 +827,7 @@ test('one OAuth authenticates the same identity on both explicit domains with or
 
 test('existing Natalie backend allows only exact verified LATAM origin in isolated CORS preflight, without session/provider calls',async()=>{
  for(const route of ['controlled-session','controlled-conversation']){
-  const url='http://127.0.0.1:55440/internal/v1/natalie/'+route;
+  const url='http://127.0.0.1:'+runtimePort+'/internal/v1/natalie/'+route;
   const allowed=await fetch(url,{method:'OPTIONS',headers:{origin:'https://direcciones.lat'}});
   expect(allowed.status).toBe(204);expect(allowed.headers.get('access-control-allow-origin')).toBe('https://direcciones.lat');
   const denied=await fetch(url,{method:'OPTIONS',headers:{origin:'https://direcciones.lat.evil.test'}});

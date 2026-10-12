@@ -950,3 +950,52 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   console.info('HTTP journey PASS: OAuth → multipart/logo → durable request/retry → ADMIN approve → closed gate 503 → synthetic verified publication → owner canonical link → existing QR/copy → WebP; Colombia stops exactly at publish503');
  }finally{server.stop(true);await db.end({timeout:2});}
 },20000);
+
+// Only a disposable local database: production foundation may not yet have commercial proposals.
+test('Mi cuenta works on foundation-only PostgreSQL for cuenta507 and LATAM with persistent isolated OAuth sessions',async()=>{
+ const name='panel_foundation_'+crypto.randomUUID().replaceAll('-','');
+ await sql.unsafe('CREATE DATABASE '+name);
+ const dbUrl=new URL(isolatedDatabase);dbUrl.pathname='/'+name;
+ const db=postgres(dbUrl.toString(),{max:1});
+ try{
+  for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql','0005_general_google_auth.sql'])await db.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
+  const cols=await db.unsafe("SELECT column_name FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses'");
+  for(const column of ['country_code','request_data','publication_receipt'])expect(cols.some(c=>c.column_name===column)).toBe(false);
+  await expect(db.unsafe('SELECT a.country_code FROM ad507.addresses a')).rejects.toMatchObject({code:'42703'});
+  const {handleUserPanel}=await import('../user-panel');
+  const pa='https://cuenta.direcciones507.com',lat='https://direcciones.lat';
+  const auth=createGeneralAuth(db,{...env,AD507_GOOGLE_REDIRECT_URI:pa+'/auth/google/callback',AD507_AUTH_SUCCESS_URL:'/panel',AD507_PUBLIC_BASE_URL:pa,AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:lat+'/auth/google/callback',AD507_AUTH_SUCCESS_URL_LATAM:'/panel'},google({sub:'foundation-panel-user',email:'foundation-panel@gmail.com',email_verified:true}));
+  const cookies:Record<string,string>={},users:Record<string,any>={};
+  for(const host of [pa,lat]){
+   const entry=(await auth.handle(new Request(host+'/auth/google/login')))!;
+   expect(entry.status).toBe(302);const target=new URL(entry.headers.get('location')!);
+   expect(target.searchParams.get('redirect_uri')).toBe(host+'/auth/google/callback');
+   const done=(await auth.handle(new Request(host+'/auth/google/callback?state='+target.searchParams.get('state')+'&code=test',{headers:{cookie:binding(entry)}})))!;
+   expect(done.status).toBe(302);expect(done.headers.get('location')).toBe(host+'/panel');
+   expect(done.headers.getSetCookie().some(c=>c.startsWith('ad507_session=')&&c.includes('HttpOnly; Secure; SameSite=Lax'))).toBe(true);
+   cookies[host]=session(done);
+   for(let reload=0;reload<2;reload++){
+    const me=(await auth.handle(new Request(host+'/v1/auth/me',{headers:{cookie:cookies[host]}})))!;
+    expect(me.status).toBe(200);users[host]=(await me.json()).user;
+    const panel=(await handleUserPanel(new Request(host+'/v1/user/panel',{headers:{cookie:cookies[host]}}),db,auth))!;
+    expect(panel.status).toBe(200);const data=await panel.json();expect(data.user.email).toBe('foundation-panel@gmail.com');expect(data.addresses).toEqual([]);expect(data.plans.length).toBeGreaterThan(0);
+   }
+  }
+  expect(users[pa].id).toBe(users[lat].id);expect(users[pa].roles).toEqual(['CLIENT']);
+  const addressId=crypto.randomUUID();await db.unsafe("INSERT INTO ad507.addresses(id,code,address_type,status,name,source) VALUES($1::uuid,'AD507-ISOLATED_FOUNDATION','BUSINESS','ACTIVE','Owned historical fixture','SYSTEM')",[addressId]);
+  await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[addressId,users[pa].id]);
+  for(const host of [pa,lat]){
+   const panel=(await handleUserPanel(new Request(host+'/v1/user/panel?country=PA',{headers:{cookie:cookies[host]}}),db,auth))!;expect(panel.status).toBe(200);
+   const item=(await panel.json()).addresses[0];expect(item.code).toBe('AD507-ISOLATED_FOUNDATION');expect(item.countryCode).toBe('PA');expect(item.publicUrl).toBeNull();
+   const foreign=(await handleUserPanel(new Request(host+'/v1/user/panel?country=CO',{headers:{cookie:cookies[host]}}),db,auth))!;expect(foreign.status).toBe(200);expect((await foreign.json()).addresses).toEqual([]);
+  }
+  expect((await auth.handle(new Request(lat+'/v1/auth/me',{headers:{cookie:cookies[pa]}})))!.status).toBe(401);
+  expect((await auth.handle(new Request(pa+'/v1/auth/me',{headers:{cookie:cookies[lat]}})))!.status).toBe(401);
+  expect((await auth.handle(new Request(lat+'/auth/logout',{method:'POST',headers:{cookie:cookies[lat],origin:pa}})))!.status).toBe(403);
+  expect((await auth.handle(new Request(lat+'/auth/logout',{method:'POST',headers:{cookie:cookies[lat],origin:lat}})))!.status).toBe(204);
+  expect((await auth.handle(new Request(lat+'/v1/auth/me',{headers:{cookie:cookies[lat]}})))!.status).toBe(401);
+  expect((await auth.handle(new Request(pa+'/v1/auth/me',{headers:{cookie:cookies[pa]}})))!.status).toBe(200);
+  await db.unsafe('UPDATE ad507.auth_sessions SET expires_at=now()-interval \'1 second\' WHERE user_id=$1::uuid',[users[pa].id]);
+  expect((await handleUserPanel(new Request(pa+'/v1/user/panel',{headers:{cookie:cookies[pa]}}),db,auth))!.status).toBe(401);
+ }finally{await db.end({timeout:2});await sql.unsafe('DROP DATABASE '+name);}
+},20000);

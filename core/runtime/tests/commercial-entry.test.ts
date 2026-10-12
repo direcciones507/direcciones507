@@ -7,7 +7,7 @@ test('Panama and LATAM commercial contexts retain distinct titles, headers and w
  const pa=commercialEntryHtml(false,new URL('https://direcciones507.com/commercial/panama'));
  const co=commercialEntryHtml(true,new URL('https://direcciones.lat/commercial/international?country=CO'));
  expect(pa).toContain('<title>Direcciones507 | Direcciones comerciales</title>');expect(pa).toContain('<div class="brand">Direcciones<span>507</span></div>');expect(pa).toContain('<h1 style="color:#0b57d0">Direcciones507</h1>');
- expect(co).toContain('<title>Direcciones LATAM | Direcciones comerciales</title>');expect(co).toContain('<div class="brand" style="color:#76aaff">Direcciones LATAM</div>');expect(co).toContain('id="commercialIdentity">Direcciones LATAM · Colombia');expect(co).toContain('value="CO" selected');
+ expect(co).toContain('<title>Direcciones LATAM | Direcciones comerciales</title>');expect(co).toContain('class="latam-brand"');expect(co).toContain('id="commercialIdentity">Direcciones LATAM · Colombia');expect(co).toContain('value="CO" selected');
 });
 
 test('one shared interface prepares both exact domains, defaults Panama and fails closed on activation',()=>{

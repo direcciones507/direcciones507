@@ -1,3 +1,4 @@
+import {nataliePresentationAllowed} from './natalie-presentation';
 import {latamPresentation} from './latam-presentation';
 import {readFileSync} from 'node:fs';
 import {adminAddressPage} from './admin-address-pagination';
@@ -69,8 +70,8 @@ export function commercialEntryHtml(international=false,url=new URL(internationa
  if(styleStart<0||styleEnd<0||widgetStart<0||scriptStart<0||scriptEnd<0)throw Error('EXISTING_NATALIE_WIDGET_REQUIRED');
  const widget=source.slice(widgetStart,scriptStart);
  const script=source.slice(scriptStart+8,scriptEnd);
- // The preserved backend only accepts these origins. LATAM remains blocked.
- const natalieAllowed=['https://direcciones507.com','https://www.direcciones507.com'].includes(url.origin)||(url.origin==='https://direcciones.lat'&&process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED==='true');
+ // Match exact public hosts behind Railway TLS; backend Origin checks remain unchanged.
+ const natalieAllowed=nataliePresentationAllowed(url,process.env);
  const html=userPanelHtml.replace('<title>Direcciones507 | Mi panel</title>','<title>'+context.title+'</title><meta name="description" content="'+context.description+'"><link rel="canonical" href="'+context.canonical+'">')
  .replace('<div class="brand">Direcciones<span>507</span></div>',context.international?'<div class="brand" style="color:#76aaff">Direcciones LATAM</div>':'<div class="brand">Direcciones<span>507</span></div>')
  .replace('<main>','<main>'+commercialNavigation(context.country,context.international))

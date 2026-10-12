@@ -30,7 +30,6 @@ export function initializeCommercialNavigation(){
    const country=select.value,panama=country==='PA';
    document.getElementById('commercialIdentity')!.textContent=panama?'Direcciones507 · Panamá':'Direcciones LATAM · '+select.selectedOptions[0].textContent;
    document.getElementById('commercialAvailability')!.textContent=panama?'Panamá: revisa el estado de habilitación al ingresar.':'País en preparación: publicación y cobros deshabilitados.';
-   document.querySelectorAll<HTMLAnchorElement>('[data-commercial-country]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.commercialCountry===country)));
    // Changing geography does not erase family/business data or selected photos.
    formCountry.value=country;formCountry.dispatchEvent(new Event('change'));
  };

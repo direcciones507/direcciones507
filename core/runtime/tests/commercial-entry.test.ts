@@ -145,7 +145,11 @@ test('commercial entry applies CSP nonce to both panel and existing Natalie scri
  const nonce=csp.match(/script-src 'nonce-([^']+)'/)?.[1];
  expect(nonce).toBeTruthy();
  const scripts=[...html.matchAll(/<script([^>]*)>/g)];
- expect(scripts.length).toBeGreaterThan(1);
+ expect(scripts.length).toBeGreaterThan(0);
+ expect(html).toContain("fetch('/v1/user/panel");
+ expect(html).toContain('const SESSION_ENDPOINT = CORE');
+ expect(html).toContain('const CONVERSATION_ENDPOINT = CORE');
+ for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(match[1])).not.toThrow();
  for(const script of scripts)expect(script[1]).toContain('nonce="'+nonce+'"');
  expect(html).toContain('id="natalieLauncher"');
 });

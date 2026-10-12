@@ -825,6 +825,42 @@ test('one OAuth authenticates the same identity on both explicit domains with or
 });
 
 
+test('PR43 Mi cuenta isolates users, country contexts, cursors and ADMIN permissions',async()=>{
+ const {handleUserPanel}=await import('../user-panel');
+ const {handleRequestRoutes}=await import('../request-routes');
+ const {createRequestRepository}=await import('../request-repository');
+ const users=[0,1,2].map(i=>({id:crypto.randomUUID(),email:'panel-'+crypto.randomUUID()+'@example.test',displayName:'Fixture '+i,roles:i===2?['ADMIN']:['CLIENT']}));
+ for(const user of users){
+  await sql.unsafe('INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)',[user.id,user.email]);
+  await sql.unsafe('INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,$2)',[user.id,user.roles[0]]);
+  for(const country of ['PA','CO'])for(let i=0;i<2;i++){
+   const rows=await sql.unsafe("INSERT INTO ad507.addresses(address_type,status,name,source,country_code,request_key_hash,request_data) VALUES('BUSINESS','PENDING_REVIEW',$1,'USER_REQUEST',$2,$4,$3::jsonb) RETURNING id",['private-'+user.id+'-'+country+'-'+i,country,sql.json({countryCode:country,type:'BUSINESS',plan:'BUSINESS_FREE',media:[]}),crypto.randomUUID()]);
+   await sql.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[rows[0].id,user.id]);
+  }
+ }
+ const panel=(user:any,host:string,query='')=>handleUserPanel(new Request(host+'/v1/user/panel'+query,{headers:{origin:host}}),sql,{currentUser:async()=>user} as any);
+ for(const user of users){
+  for(const host of ['https://direcciones507.com','https://direcciones.lat'])for(const country of ['PA','CO','PA']){
+   const r=await panel(user,host,'?country='+country);expect(r!.status).toBe(200);const d=await r!.json();expect(d.addresses).toHaveLength(2);
+   expect(d.addresses.every((a:any)=>a.countryCode===country&&a.name.startsWith('private-'+user.id))).toBe(true);
+   for(const other of users.filter(x=>x.id!==user.id))expect(JSON.stringify(d)).not.toContain('private-'+other.id);
+  }
+  const first=await(await panel(user,'https://direcciones507.com','?country=PA&limit=1'))!.json();expect(first.nextAddressCursor).toBeTruthy();
+  const next=await(await panel(user,'https://direcciones507.com','?country=PA&limit=1&cursor='+first.nextAddressCursor))!.json();expect(next.addresses).toHaveLength(1);expect(next.addresses[0].id).not.toBe(first.addresses[0].id);
+  expect((await panel(user,'https://direcciones.lat','?country=CO&cursor='+first.nextAddressCursor))!.status).not.toBe(200);
+  expect((await panel(user,'https://direcciones507.com','?adminCreate=1'))!.status).toBe(user.roles.includes('ADMIN')?200:403);
+ }
+ const target=(await(await panel(users[0],'https://direcciones507.com','?country=PA'))!.json()).addresses[0].id;
+ const repository=createRequestRepository(sql,{r2:null});
+ for(const user of users){
+  const r=await handleRequestRoutes(new Request('https://direcciones507.com/v1/admin/requests/'+target),{enabled:true,sql,auth:{currentUser:async()=>user} as any,repository,r2:null});
+  expect(r!.status).toBe(user.roles.includes('ADMIN')?200:403);
+ }
+ expect((await panel(null,'https://direcciones507.com'))!.status).toBe(401);
+ const denied=await handleUserPanel(new Request('https://direcciones507.com/v1/user/panel',{headers:{origin:'https://direcciones.lat'}}),sql,{currentUser:async()=>users[0]} as any);expect(denied!.status).toBe(403);
+ console.info('PR43 panel PASS: separate owners on PA/CO, context switches, cursor mismatch, CLIENT admin403, ADMIN review200, anonymous401, cross-origin403');
+});
+
 test('existing Natalie backend allows only exact verified LATAM origin in isolated CORS preflight, without session/provider calls',async()=>{
  for(const route of ['controlled-session','controlled-conversation']){
   const url='http://127.0.0.1:'+runtimePort+'/internal/v1/natalie/'+route;

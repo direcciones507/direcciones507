@@ -129,8 +129,13 @@ async function diagnoseR2(env, http = fetch, options = {}) {
     if (options.verifyPrivateAccess) {
       try {
         const unsigned = await http(signedR2Request(settings, "GET", key, new Uint8Array, mime).url, { method: "GET", redirect: "error", signal: AbortSignal.timeout(1e4) });
-        report.privateAccess = { ok: [401, 403].includes(unsigned.status), http: unsigned.status };
-        await unsigned.body?.cancel();
+        let authorizationRejected = false;
+        if (unsigned.status === 400) {
+          const text = (await bounded(unsigned, 4096)).toString("utf8");
+          authorizationRejected = text.match(/<Code>([^<]+)<\/Code>/)?.[1] === "InvalidArgument" && text.match(/<Message>([^<]+)<\/Message>/)?.[1] === "Invalid Authorization";
+        } else
+          await unsigned.body?.cancel();
+        report.privateAccess = { ok: [401, 403].includes(unsigned.status) || authorizationRejected, http: unsigned.status, ...authorizationRejected ? { code: "UNSIGNED_AUTHORIZATION_REJECTED" } : {} };
       } catch (error) {
         report.privateAccess = network(error);
       }

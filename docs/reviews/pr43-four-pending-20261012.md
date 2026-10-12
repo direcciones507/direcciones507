@@ -1,3 +1,46 @@
+# PR43 — actualización tras autorización de Auto Deploy
+
+## Resultado real del 12 de octubre
+
+Auto Deploy de ad507-core DESACTIVADO mediante Disable; permanece desactivado hasta autorización nueva. No restart, deploy, merge, SQL productivo, DNS, precios ni credenciales modificados. Deployment vigente confirmado antes y después de subir: 005e0c46-e59b-4ea1-9afd-923920c1c894 SUCCESS, creado2026-10-12T04:27:52.196Z.
+
+Se revisaron8 proyectos Railway/8 entornos/18 servicios: solo ad507-core enlaza este repositorio/rama. Shadow usa imagen independiente. Sin webhooks Railway del proyecto y sin webhooksGitHub del repositorio. GitHubApps: únicamente RailwayApp y ChatGPTCodexConnector. Workflows: pruebas para PR; Pages por pushmain/manual y autosync programado ajeno a este push. No otro despliegue automático asociado a la rama encontrado.
+
+Gitpush no tenía credenciales de terminal. Se incorporaron los dos cambios mediante el conector, con árboles idénticos byte a byte a los originales:
+
+|Local|GitHub|ÁrbolGit idéntico|
+|---|---|---|
+|d48bf4811fa50123759071e27bc35e2d35cb21f8|4d39b0911029f1a2dcf72ddadc9da044edb4c59a|246391df363a229791cd48046c22907c42ce1ce3|
+|e2ae8257d926346076807651cdc46426ffee81f9|5c46df8d6ff74fbce350159b40f546d99e4fd4de|c3eb2206d6850dbd61c371171f9e63ed80cdc533|
+
+GitHubActions sobre5c46df8: ConsolidatedCorecompatibility run38206464256 SUCCESS,140pass/0fail/2269assertions,21archivos; ValidateDBmigrations run38206464206 SUCCESS. Docker/Core/legacy/migraciones aprobados. PR43 abierto y sin fusionar.
+
+### Natalie: diagnóstico REAL, solo lectura
+
+Ejecutado por consola del servicio existente, heredando variables; sin exportarlas. providerCredentialPresent/modelMatches/reasoningMatches/tokenLimitMatches/budgetMatches=true; latamOriginEnabled=false. scopeCount=1, agentStatus=draft, activePermissionCount=0, driverCountType=string, officialKnowledgeCount=10. Única razón detectada: COUNT_INT8_STRING_STRICT_COMPARISON; correctedScopeReady=true. Así se confirma en producción la causa exacta del403, sin cambiar status ni permisos. La corrección ya está en PR, pero NO desplegada. Conversación con proveedor real sigue pendiente de despliegue autorizado; LATAM requiere configurar origen verificado tras autorización.
+
+### R2: prueba REAL de fotografía temporal
+
+Desde ad507-core con sus credenciales existentes. Objeto _diagnostics/ad507-r2/9f12ef39-2932-4ef3-a29d-2eb90d5fe757.webp. WebP12×12. PUT200; GETfirmado200 con bytesidénticos; DELETE204; GETposterior404NoSuchKey; cleanupRequired=false. Ninguna foto real enumerada o modificada. Dirección del objeto: r2://direcciones507-media/_diagnostics/ad507-r2/9f12ef39-2932-4ef3-a29d-2eb90d5fe757.webp (ya eliminado; sinURLpública permanente).
+
+GETsin firma devolvió400. Una comprobación específica confirmó Code=InvalidArgument y Message=Invalid Authorization. El diagnóstico inicial marcaba ese rechazo como fallo por aceptar únicamente401/403. Se corrigió SOLO la clasificación:400 se acepta exclusivamente con esa pareja exacta de Code/Message; otros400 permanecen fallidos. Testsafectados:6pass/0fail/54assertions. Corrección adicional del diagnóstico incluida en este mismoPR; no cambia almacenamiento ni el servicio.
+
+### Pendientes conservados
+
+Panamá: solicitud→ADMIN→publicación→URL→QR→entrega pasó anteriormente en base aislada con R2simulado. R2real ya cuenta con prueba independiente aprobada; aún falta unir ambas evidencias en una ejecución integral sobre base descartable y R2real. No se afirma que una prueba de objeto complete el flujo comercial.
+
+MiCuenta conserva aprobación. Sin repetir sus pruebas. LATAM conserva interfaz/formularios/8países/Core/widgetúnico, con cobros/publicación extranjera cerrados; integraciónNatalieHTTPSaprobada en aislado, origen real403 hasta configuración autorizada.
+
+Para fusión: CIverde del últimoSHA, integraciónPanamá conR2real acreditada, plan de despliegue/migraciones/reversión revisado y autorización expresa. Para Natalie real: despliegue autorizado de la corrección y prueba de conversación con proveedor real. AutoDeploy no se reactiva como parte de ninguna de esas operaciones sin autorización nueva.
+
+Evidencia de configuración:
+
+![Auto Deploy desactivado](pr43-autodeploy-disabled.jpg)
+
+---
+
+## Registro anterior, conservado como historial (sus bloqueos de acceso y subida fueron superados arriba)
+
 # PR #43 — correcciones finales y estado verificable
 
 Repositorio direcciones507/direcciones507. Rama feat/admin-ui-20261006. Se recuperó el commit local d48bf4811fa50123759071e27bc35e2d35cb21f8. GitHub sigue en 0489da005d0692a6dbdefa45caf311594be50a76. Todos los cambios siguientes son locales: no push, merge, deploy, SQL productivo, precios, credenciales, DNS o traslados históricos.

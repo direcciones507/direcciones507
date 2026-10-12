@@ -43,7 +43,15 @@ export async function diagnoseR2(env:Record<string,string|undefined>,http:typeof
     cleanup=true;report.write={ok:true,http:put.status};await put.body?.cancel();
     try{const get=await send('GET');if(!get.ok)report.read=await failure(get);else report.read={ok:(await bounded(get,bytes.length+1)).equals(bytes),http:get.status};}catch(error){report.read=network(error);}
     if(options.verifyPrivateAccess){
-      try{const unsigned=await http(signedR2Request(settings,'GET',key,new Uint8Array(),mime).url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(10000)});report.privateAccess={ok:[401,403].includes(unsigned.status),http:unsigned.status};await unsigned.body?.cancel();}catch(error){report.privateAccess=network(error);}
+      try{
+        const unsigned=await http(signedR2Request(settings,'GET',key,new Uint8Array(),mime).url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(10000)});
+        // R2's S3 endpoint also rejects an unsigned request with 400/InvalidArgument.
+        // Accept only its exact authorization error, never a generic 400.
+        let authorizationRejected=false;
+        if(unsigned.status===400){const text=(await bounded(unsigned,4096)).toString('utf8');authorizationRejected=text.match(/<Code>([^<]+)<\/Code>/)?.[1]==='InvalidArgument'&&text.match(/<Message>([^<]+)<\/Message>/)?.[1]==='Invalid Authorization';}
+        else await unsigned.body?.cancel();
+        report.privateAccess={ok:[401,403].includes(unsigned.status)||authorizationRejected,http:unsigned.status,...(authorizationRejected?{code:'UNSIGNED_AUTHORIZATION_REJECTED'}:{})};
+      }catch(error){report.privateAccess=network(error);}
     }
   }finally{
     if(cleanup){

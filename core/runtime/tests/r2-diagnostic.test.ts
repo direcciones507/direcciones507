@@ -1,6 +1,18 @@
 import {test,expect} from 'bun:test';
 import {diagnoseR2} from '../scripts/r2-diagnostic';
 const env={R2_ACCOUNT_ID:'a'.repeat(32),R2_BUCKET:'direcciones507-media',R2_ACCESS_KEY_ID:'fixture-access',R2_SECRET_ACCESS_KEY:'fixture-secret'};
+test('unsigned R2 400 passes only for the exact Invalid Authorization response',async()=>{
+ for(const message of ['Invalid Authorization','Other error']){
+  let data:Uint8Array|undefined;
+  const http=(async(_:any,init:any)=>{
+   if(!init.headers?.authorization)return new Response('<Code>InvalidArgument</Code><Message>'+message+'</Message>',{status:400});
+   if(init.method==='PUT'){data=init.body;return new Response(null,{status:200});}
+   if(init.method==='DELETE'){data=undefined;return new Response(null,{status:204});}
+   return data?new Response(data):new Response('<Code>NoSuchKey</Code>',{status:404});
+  }) as typeof fetch;
+  const r=await diagnoseR2(env,http,{photo:true,verifyPrivateAccess:true});expect(r.privateAccess?.http).toBe(400);expect(r.privateAccess?.ok).toBe(message==='Invalid Authorization');expect(r.ok).toBe(message==='Invalid Authorization');expect(r.cleanupRequired).toBe(false);
+ }
+});
 test('photo diagnostic checks signed WebP bytes, private access and cleanup using only its temporary key',async()=>{
  let data:Uint8Array|undefined;const methods:string[]=[];
  const http=(async(url:any,init:any)=>{

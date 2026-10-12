@@ -7,7 +7,7 @@ test('Panama and LATAM commercial contexts retain distinct titles, headers and w
  const pa=commercialEntryHtml(false,new URL('https://direcciones507.com/commercial/panama'));
  const co=commercialEntryHtml(true,new URL('https://direcciones.lat/commercial/international?country=CO'));
  expect(pa).toContain('<title>Direcciones507 | Direcciones comerciales</title>');expect(pa).toContain('<div class="brand">Direcciones<span>507</span></div>');expect(pa).toContain('<h1 style="color:#0b57d0">Direcciones507</h1>');
- expect(co).toContain('<title>Direcciones LATAM | Direcciones comerciales</title>');expect(co).toContain('<div class="brand" style="color:#76aaff">Direcciones LATAM</div>');expect(co).toContain('id="commercialIdentity">Direcciones LATAM · Colombia');expect(co).toContain('value="CO" selected');
+ expect(co).toContain('<title>Direcciones LATAM | Direcciones comerciales</title>');expect(co).toContain('class="latam-brand"');expect(co).toContain('id="commercialIdentity">Direcciones LATAM · Colombia');expect(co).toContain('value="CO" selected');
 });
 
 test('one shared interface prepares both exact domains, defaults Panama and fails closed on activation',()=>{
@@ -30,7 +30,7 @@ test('in-document country navigation preserves fields and selected photo objects
  const listeners:any={},selectors:any={},input={value:'Panamá',file:{name:'logo.png'}},country:any={value:'PA',dispatchEvent:()=>{},addEventListener:(event:string,handler:any)=>listeners.formCountry=handler};
  const select:any={value:'PA',options:[{value:'PA'},{value:'CO'}],selectedOptions:[{textContent:'Colombia'}],dispatchEvent:()=>select.onchange()};
  selectors.commercialCountry=select;selectors.countryCode=country;selectors.commercialIdentity={};selectors.commercialAvailability={};
- const link:any={dataset:{commercialCountry:'CO'}},doc={getElementById:(id:string)=>selectors[id],querySelectorAll:()=>[link]};
+ const link:any={setAttribute(){},dataset:{commercialCountry:'CO'}},doc={getElementById:(id:string)=>selectors[id],querySelectorAll:()=>[link]};
  const loc={href:'https://direcciones507.com/?country=PA'},history={pushState:(_:any,__:any,path:string)=>{loc.href='https://direcciones507.com'+path;}};
  const run=new Function('document','location','history','addEventListener','Event','return ('+initializeCommercialNavigation.toString()+')()');
  run(doc,loc,history,(event:string,handler:any)=>listeners[event]=handler,Event);expect(country.value).toBe('PA');

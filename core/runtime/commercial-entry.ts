@@ -1,3 +1,4 @@
+import {latamWelcome} from './latam-presentation';
 import {INITIAL_COUNTRIES,COUNTRIES,requestCountry} from './country-configuration';
 
 export function commercialEntryContext(url:URL){
@@ -16,6 +17,7 @@ export function sharedCommercialRoot(req:Request,env:Record<string,string|undefi
 }
 export function commercialNavigation(country='PA',international=true){
  requestCountry(country);
+ if(international)return latamWelcome(country,COUNTRIES,INITIAL_COUNTRIES);
  const brand=international?'Direcciones LATAM':'Direcciones507';
  return '<section class="card" id="commercialWelcome"><h1 style="color:#0b57d0">'+brand+'</h1><p id="commercialIdentity">'+(country==='PA'?'Direcciones507 · Panamá':'Direcciones LATAM · '+COUNTRIES[country as keyof typeof COUNTRIES].name)+'</p><label for="commercialCountry">País</label><select id="commercialCountry">'+INITIAL_COUNTRIES.map(c=>'<option value="'+c+'"'+(c===country?' selected':'')+'>'+COUNTRIES[c].name+'</option>').join('')+'</select><nav aria-label="Presencia comercial"><a href="?country=PA" data-commercial-country="PA">Panamá · Direcciones507</a> · <a href="?country=CO" data-commercial-country="CO">Presencia internacional</a></nav><p id="commercialAvailability" role="status"></p><h2>Servicios y planes</h2><p>Residencial · Lugar · Negocio Gratis · Premium · Premium Pro</p><p>Ubicación, contacto, mapas y QR en una plataforma. Las capacidades y precios de Panamá conservan su autoridad vigente. Los países extranjeros están en preparación.</p></section>';
 }
@@ -28,6 +30,7 @@ export function initializeCommercialNavigation(){
    const country=select.value,panama=country==='PA';
    document.getElementById('commercialIdentity')!.textContent=panama?'Direcciones507 · Panamá':'Direcciones LATAM · '+select.selectedOptions[0].textContent;
    document.getElementById('commercialAvailability')!.textContent=panama?'Panamá: revisa el estado de habilitación al ingresar.':'País en preparación: publicación y cobros deshabilitados.';
+   document.querySelectorAll<HTMLAnchorElement>('[data-commercial-country]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.commercialCountry===country)));
    // Changing geography does not erase family/business data or selected photos.
    formCountry.value=country;formCountry.dispatchEvent(new Event('change'));
  };

@@ -20,9 +20,11 @@ test('distinct proposed namespaces; Panama matches PR51 UUID code format',()=>{
  expect(proposedInternationalCode('PA','22345678-1234-1234-1234-123456789abc')).not.toBe(codes[0]);
  for(const x of ['',id.toUpperCase(),'../'+id,id.replaceAll('-','')])expect(()=>proposedInternationalCode('PA',x)).toThrow('INVALID_REQUEST');
 });
-test('single actual template shows blue LATAM top and bottom for every country',()=>{
+test('Panama keeps its original brand while international templates use LATAM',()=>{
  for(const [code,c] of Object.entries(COUNTRIES)){
   const html=prepareCountryTemplate(template,code);
+  if(code==='PA'){expect(html).toBe(template);expect(c.title).toBe('Direcciones507');continue;}
+  expect(c.title).toBe('Direcciones LATAM');
   expect(html.match(/style="color:#0b57d0">Direcciones LATAM/g)).toHaveLength(2);
   expect(html.replace('<div class="brand-title-text" style="color:#0b57d0">Direcciones LATAM</div>','<div class="brand-title-text">DIRECCIONES<span>507</span></div>').replace('<div class="footer-title-main" style="color:#0b57d0">Direcciones LATAM</div>','<div class="footer-title-main">DIRECCIONES<span>507</span></div>')).toBe(template);
   for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();

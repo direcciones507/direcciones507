@@ -76,14 +76,14 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
 export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
   if(context.enabled&&req.method==='GET'){
-    const publicMatch=url.pathname.match(/^\/(AD507-[A-Z0-9_-]+)\/$/);
-    const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD507-[A-Z0-9_-]+)$/);
+    const publicMatch=url.pathname.match(/^\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/$/);
+    const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)$/);
     if(publicMatch||apiMatch){
       try{const record=await newPublicAddress(sql,(publicMatch??apiMatch)![1],url.origin);
         if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
       }catch{return Response.json({ok:false,error:'PUBLICATION_UNAVAILABLE'},{status:503});}
     }
-    const mediaMatch=url.pathname.match(/^\/v1\/addresses\/(AD507-[A-Z0-9_-]+)\/media\/([a-f0-9-]{36})$/);
+    const mediaMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/media\/([a-f0-9-]{36})$/);
     if(mediaMatch){
       if(!context.r2)return new Response(null,{status:503});
       try{const rows=await sql.unsafe("SELECT a.id::text,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);

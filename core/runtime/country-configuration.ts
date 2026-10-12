@@ -1,7 +1,7 @@
 /** Shared country policy for the existing commercial workflow. Foreign commerce stays closed. */
 export type CountryCode='PA'|'CO'|'CR'|'GT'|'SV'|'HN'|'NI'|'MX'|'PE'|'EC';
 type Rollout='PANAMA_FIRST'|'NEXT'|'PREPARED'|'FUTURE';
-const country=(name:string,prefix:string,rollout:Rollout,labels:string[],currency:string,pricing:'EXISTING_PANAMA_AUTHORITY'|'UNCONFIGURED'='UNCONFIGURED')=>Object.freeze({name,prefix,title:'Direcciones LATAM',rollout,locationLabels:Object.freeze(labels),localCurrency:currency,officialCurrency:'USD' as const,pricing,internationalCardPaymentsEnabled:false as const});
+const country=(name:string,prefix:string,rollout:Rollout,labels:string[],currency:string,pricing:'EXISTING_PANAMA_AUTHORITY'|'UNCONFIGURED'='UNCONFIGURED')=>Object.freeze({name,prefix,title:prefix==='507'?'Direcciones507':'Direcciones LATAM',rollout,locationLabels:Object.freeze(labels),localCurrency:currency,officialCurrency:'USD' as const,pricing,internationalCardPaymentsEnabled:false as const});
 export const COUNTRIES=Object.freeze({
  PA:country('Panamá','507','PANAMA_FIRST',['Provincia','Distrito','Corregimiento'],'USD','EXISTING_PANAMA_AUTHORITY'),
  CO:country('Colombia','57','NEXT',['Departamento','Municipio','Localidad / sector'],'COP'),
@@ -32,6 +32,7 @@ export function preparedCountryAmount(code:unknown,plan:string,panamaAmount:(pla
 export const FUTURE_PUBLIC_ORIGIN='https://direcciones.lat'; // no DNS/runtime activation
 export function prepareCountryTemplate(template:string,code:unknown){
  const config=countryConfiguration(code);
+ if(config.prefix==='507')return template; // Preserve the Panama brand and historical template.
  const marker='<div class="brand-title-text">DIRECCIONES<span>507</span></div>';
  if(template.split(marker).length!==2)throw Error('COUNTRY_TEMPLATE_MARKER_MISMATCH');
  const footer='<div class="footer-title-main">DIRECCIONES<span>507</span></div>';

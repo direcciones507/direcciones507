@@ -956,17 +956,20 @@ test('Mi cuenta works on foundation-only PostgreSQL for cuenta507 and LATAM with
  const name='panel_foundation_'+crypto.randomUUID().replaceAll('-','');
  await sql.unsafe('CREATE DATABASE '+name);
  const dbUrl=new URL(isolatedDatabase);dbUrl.pathname='/'+name;
- const db=postgres(dbUrl.toString(),{max:1});
+ const db=postgres(dbUrl.toString(),{max:1,connect_timeout:5,connection:{statement_timeout:'5000',lock_timeout:'2000'},onnotice:()=>{}});
  try{
   for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql','0005_general_google_auth.sql'])await db.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
+  console.info('Foundation panel: migrations complete');
   const cols=await db.unsafe("SELECT column_name FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses'");
   for(const column of ['country_code','request_data','publication_receipt'])expect(cols.some(c=>c.column_name===column)).toBe(false);
-  await expect(db.unsafe('SELECT a.country_code FROM ad507.addresses a')).rejects.toMatchObject({code:'42703'});
+  await expect(Promise.resolve(db.unsafe('SELECT a.country_code FROM ad507.addresses a'))).rejects.toMatchObject({code:'42703'});
+  console.info('Foundation panel: missing-column reproduction complete');
   const {handleUserPanel}=await import('../user-panel');
   const pa='https://cuenta.direcciones507.com',lat='https://direcciones.lat';
   const auth=createGeneralAuth(db,{...env,AD507_GOOGLE_REDIRECT_URI:pa+'/auth/google/callback',AD507_AUTH_SUCCESS_URL:'/panel',AD507_PUBLIC_BASE_URL:pa,AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:lat+'/auth/google/callback',AD507_AUTH_SUCCESS_URL_LATAM:'/panel'},google({sub:'foundation-panel-user',email:'foundation-panel@gmail.com',email_verified:true}));
   const cookies:Record<string,string>={},users:Record<string,any>={};
   for(const host of [pa,lat]){
+   console.info('Foundation panel: OAuth '+host);
    const entry=(await auth.handle(new Request(host+'/auth/google/login')))!;
    expect(entry.status).toBe(302);const target=new URL(entry.headers.get('location')!);
    expect(target.searchParams.get('redirect_uri')).toBe(host+'/auth/google/callback');
@@ -981,6 +984,7 @@ test('Mi cuenta works on foundation-only PostgreSQL for cuenta507 and LATAM with
     expect(panel.status).toBe(200);const data=await panel.json();expect(data.user.email).toBe('foundation-panel@gmail.com');expect(data.addresses).toEqual([]);expect(data.plans.length).toBeGreaterThan(0);
    }
   }
+  console.info('Foundation panel: session reloads complete');
   expect(users[pa].id).toBe(users[lat].id);expect(users[pa].roles).toEqual(['CLIENT']);
   const addressId=crypto.randomUUID();await db.unsafe("INSERT INTO ad507.addresses(id,code,address_type,status,name,source) VALUES($1::uuid,'AD507-ISOLATED_FOUNDATION','BUSINESS','ACTIVE','Owned historical fixture','SYSTEM')",[addressId]);
   await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[addressId,users[pa].id]);
@@ -997,5 +1001,6 @@ test('Mi cuenta works on foundation-only PostgreSQL for cuenta507 and LATAM with
   expect((await auth.handle(new Request(pa+'/v1/auth/me',{headers:{cookie:cookies[pa]}})))!.status).toBe(200);
   await db.unsafe('UPDATE ad507.auth_sessions SET expires_at=now()-interval \'1 second\' WHERE user_id=$1::uuid',[users[pa].id]);
   expect((await handleUserPanel(new Request(pa+'/v1/user/panel',{headers:{cookie:cookies[pa]}}),db,auth))!.status).toBe(401);
+  console.info('Foundation panel: ownership/logout/expiry complete');
  }finally{await db.end({timeout:2});await sql.unsafe('DROP DATABASE '+name);}
 },20000);

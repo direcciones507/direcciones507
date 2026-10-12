@@ -22,11 +22,11 @@ Actualizado 11 octubre 2026. Este es el checklist de release existente, ampliado
 |R2 compatibilidad y permisos|AMARILLO|CI: clavesPA antiguas conservadas, país extranjero/UUID, propiedad, roles, linkedmedia, intent/reintento privado. Archivos/objetos reales sin cambios|VERDE limitado a contratoCI y preservación; comprobar release real tras autorización|
 |Entrega QR/canonical|AMARILLO|Renderer existente usaURLcanónica; pruebasPA/CO/CR y URLoriginal del traslado. Actions118/0|Payload probado, sin crear ficha/QR/registro real; routing productivo pendiente|
 |País/navegación/formulario|AMARILLO|PA por defecto, selector sincronizado, datos/Files conservados al navegar dentro del documento, validación servidor y foreigngates probados|No acredita transferencia de sesión/Files entrehosts|
-|Routing507 y URLs históricas|ROJO|DNS507 permaneceGitHubPages; Railwaycustomdomain sin verificar. Backend no acredita reemplazar todos los archivosPages|Autorizar/verificar routing selectivo existente antes de cambiarDNS. No redirectglobal, no tocarindexhistórico|
+|Raíz507 y URLs históricas|VERDE|Página principal/Pages yarchivos históricos intactos. Candidato8689e4e no intercepta root507, incluso congate; pruebas aprobadas conservadas|Enrutamiento del NUEVO pathcomercialPA pendiente, sin reemplazar raíz ni redirigir históricos|
 |direcciones.lat adquirido|VERDE|Confirmación expresa del propietario en encargo de cierre|No equivale aTLS/DNS/hostRailway conectado|
 |Conexiónlat/DNS preparados|AMARILLO|Mismo servicio/puerto8080 identificado. lat no está registrado; no hayCNAME/TXT propios emitidos|Autorizar registro de hostname en servicio existente para obtener valores específicos; DNS aún prohibido. No copiarTXT507|
 |OAuth / Mi cuenta Panamá (CI)|AMARILLO|Mismoauth, sesiones, identidad, rolesADMIN, CSRF y ownership enActions; no se duplican cuentas|Origen productivo/callback efectivo se revisa en activación; valores secretos no publicados|
-|OAuth / Mi cuenta entre dominios|ROJO|Auth actual mono-origen/callback; cookiehost-only, no sesión compartida acreditada. No se eludeCSRF/CORS|Resolver configuración del mismoauth e ingreso autorizado en amboshosts y validarlo antes deLATAM, sin otroauth ni tokens porURL|
+|OAuth / Mi cuenta entre dominios|AMARILLO|Candidato8689e4e: mismoauth/identidad con callbacks explícitos, state/tokens pororigen y cookieshost-only; Actions38185952778 SUCCESS127/0. Producción conserva versión anterior|Falta configurar callbacklat en elmismoclienteGoogle y verificar ingreso real tras autorización. NoSSO automático ni tokens porURL|
 |Natalie — preservación existente|VERDE|check-legacy exige extracción exacta de snapshot salvoextensionseam. CI verifica rutasSESSION_ROUTE/CONVERSATION_ROUTE/ROUTE conservadas; dispatch negativo session/query aislado. Fuentes: core-runtime-baseline.md y core-oauth-cutover.md|No implica conversación real ni capacidad nueva; fuentelegacy no modificada|
 |Natalie — validación productiva positiva|AMARILLO|No se generaron conversaciones/sesiones reales. Esas llamadas pueden escribir auditoría/estado y consumir proveedor, por eso no son diagnóstico read-only|Reutilizar capturas existentes o autorización específica con registro designado y presupuesto si aplica; no disparar llamadas nuevas para marcarverde|
 |Natalie — reportes previstos|AMARILLO|seo-intelligence.md permite lectura de KPIs, periodos, interacciones y anomalías mediante contratos aprobados; prohíbe SQL/secrets/OWNER/PIN. Es arquitectura documentada, no integración nueva comprobada|Mantener frontera aprobada; no implementar herramientas/reportes nuevos en este cierre ni convertir previsiones en tareas duplicadas|
@@ -182,3 +182,43 @@ Consulta que necesita respuesta delpropietario/soporte: con losIDs y fecha regis
 4. Solo tras exclusividad/recuperación/routing/verificaciones: DDLordenado/merge/deploy/activación autorizados. Ninguna deestas acciones fue realizada. El diagnósticoREADONLY permanececonsumido, nopermite repetición.
 
 CI final deestecommit y sus límites se registran en el reporte único dePR52; PR51 permanece7535f2c. No declarar operativo lo preparado.
+
+
+## Avance hacia activación desde8689e4e — evidencia adicional sin repetir pruebas
+
+Cambio exclusivamente documental. Se conserva la evidencia127/0,1970aserciones,20archivos, Actions38185952778 SUCCESS sobre8689e4e. No nuevo test, rerunCI, diagnósticoPG, roundtripR2, conversaciónIA o lectura masiva delmaestro. El commit documental utiliza [skip ci] para respetar la instrucción de no repetir pruebas; no atribuirle una nueva ejecuciónCI.
+
+### Barrera de emisión comprobada por lectura del código actual
+
+VERDE (garantía de bloqueo, no exclusividad histórica): server.ts calcula namespaceExclusive SOLO con AD507_HISTORICAL_NAMESPACE_VERIFIED==='true' y pasa ese valor al adaptador. request-repository.ts publish verifica canonical.historicalRegistryVerified===true ANTES de sql.reserve(), locks, consultas o escritura delcódigo. Si falta, CANONICAL_PUBLICATION_NOT_READY. new-address-publication.ts reserve comprueba namespaceExclusive ANTES del lectorPLANES y SQL: HISTORICAL_NAMESPACE_NOT_VERIFIED. El acceso directo al adaptador tampoco evita la barrera. No añadir otroallocator ocontrol duplicado, ni activar el existente con evidencia insuficiente.
+
+La preparación de solicitudes sin código no equivale aemisión; la aprobaciónADMIN noelimina elgate. UNIQUE ynormalización siguen como barreras adicionales deDB, sin atribuirles garantía frente aescritoreshistóricos externos. PLANES permaneceROJO por la evidencia reciente editorNecesitasacceso/Drive403: falta permisoLector deproyecto oexportación deasignadores/version44/triggers y canalesmanuales. No se solicitaron permisos ni se tocaron históricos. La lectura delproyecto no acredita por sísola triggers instaladospor otrascuentas.
+
+### Lectura nueva de Railway, sin secretos
+
+ad507-core b0da9f70-7790-4729-a728-aaa4aa3f571d, proyecto2b6d4e6c-e1d4-471d-a77d-c9bdb711650d, production909fdec4-8930-4405-ae53-6e8fb0d3f901: deployment e43bec48-2518-41bc-814a-a99da78eb6c4 SUCCESS, staged:null. Solo nombres devariables, no valores: AD507_HISTORICAL_NAMESPACE_VERIFIED ausente; AD507_INTERNATIONAL_DOMAIN_VERIFIED ausente; AD507_GOOGLE_REDIRECT_URI_LATAM ausente. Por ello no hay confirmación deexclusividad ni activaciónLATAM/callback secundaria enproducción. CandidatoPR52 no desplegado.
+
+Dominios delmismoservicio existentes: direcciones507.com, www.direcciones507.com, cuenta.direcciones507.com y ad507-core-production.up.railway.app, puerto8080. direcciones.lat ausente. No se registróhost, cambióDNS/TLS, variable oservicio. No afirmar valoresDNSlat hasta que Railwaylos emita.
+
+### Configuración exacta preparada para revisión posterior
+
+|Elemento|Valor/procedimiento preparado|Estado|
+|---|---|---|
+|GoogleOAuthlat|Registrar https://direcciones.lat/auth/google/callback en elmismoclienteGoogle actual; no otrocliente/auth|AMARILLO: sin cambiosCloud/credenciales|
+|Callbackbackendlat|AD507_GOOGLE_REDIRECT_URI_LATAM=https://direcciones.lat/auth/google/callback|AMARILLO: variable actualmenteausente|
+|RetornoMi cuentaLATAM|AD507_AUTH_SUCCESS_URL_LATAM=/panel, validado enorigenlat|AMARILLO: preparadocandidato|
+|Origen primarioPanamá|Conservar config primaria vigente; confirmar su callback público y routing real antes de cualquier activación. No asumir valorsecretamente leído ni sustituirlo ahora|AMARILLO: pruebas127 aprobadas, configuraciónproductiva sin cambios|
+|HostLATAM|Registrar direcciones.lat en ad507-core/production, puerto8080, obtenerCNAME/TXT específicos y validarDNS/TLS|AMARILLO: operaciónprohibida hasta autorización; sin crearotraapp|
+|GatesLATAM|AD507_INTERNATIONAL_DOMAIN_VERIFIED=true solo DESPUÉS deDNS/TLS/origen comprobados; AD507_SHARED_COMMERCIAL_ENTRY_ENABLED controla raízlat; root507 sepreserva|AMARILLO: ningunaactivación|
+|Natalie|Mismo widget/script/backend; origenlat condicionadoalmismogate, sesionesHTTPS y alcance/límites conservados|VERDE integraciónaislada127; AMARILLO respuesta real/activación|
+|EmisiónAD507|NO establecer AD507_HISTORICAL_NAMESPACE_VERIFIED hasta revisar TODOS los emisores ylectorcanónico|ROJO exclusividad, VERDE bloqueoactual|
+
+Respaldo11oct2026-10-11T16:39:30.690Z/245MB: identificaciónconservada, recuperaciónaisladaROJO. Procedimiento/IDs/consulta soportada ya documentados; no nuevos debates/tarifas/storage ni recursos. Solo falta respuesta concreta sobre cómo recuperar ESE snapshotaislado sin montaje/redeploylive; autorización de una operación/costo se decidirá después, no autorización genérica deRestore.
+
+Verificaciones Natalie/OAuth de código ydesarrollo quedan cerradas con las127 aprobadas; no repetirlas para obtener otroverde. Lo que queda es físico/configuraciónautorizada y evidenciasexternas. Sin desplegar el candidato no puede certificarse su funcionamiento productivo. Mantener estas filasAMARILLO hasta pruebasreales; no exigir teléfonoWhatsApp paraNatalie ni añadir identidad/asistente paralelo.
+
+### Qué puede continuar y qué requiere intervención
+
+Sin afectarproducción: revisar fuentePLANES si elpropietariofacilita lectura/exportación; cotejar evidencia detriggersemisores; evaluar respuesta desoporte sobre snapshot; revisar los valoresDNSqueRailway emita cuando suregistrose autorice. Estas revisiones no requieren nuevo permisoSQL, otrodiagnóstico o nuevasfunciones.
+
+Intervenciones concretas: (1) LectorPLANES/exportación y evidencia deemisores; (2) respuesta deRailway de recuperaciónaislada; (3) posteriormente autorizar callback/host/configuración/DNS/TLS yprueba real designadaGoogle/Natalie con costo si aplica; (4) DDL/merge/deploy solo tras resolverbloqueos yautorización. No nuevasautorizaciones para repetir trabajo completado. PR51 intacto, una arquitectura central ypagosapagados.

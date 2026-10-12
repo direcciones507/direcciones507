@@ -36,7 +36,7 @@ test('public route recognition covers Panama and international prefixes without 
  for(const code of ['AD507-N12345678123412341234123456789ABC','AD57-N12345678123412341234123456789ABC','AD506-N12345678123412341234123456789ABC']){
   const pageUrl='https://direcciones.lat/'+code+'/';
   expect(new URL(pageUrl).pathname).toMatch(/^\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/$/);
-  const page=await handleNewPublicRoutes(new Request(pageUrl),context);
+  const page=await handleNewPublicRoutes(new Request(pageUrl,{method:'GET'}),context);
   expect(page?.status).toBe(503); // recognized, but no real publication is available
   const api=await handleNewPublicRoutes(new Request('https://direcciones.lat/v1/addresses/'+code),context);
   expect(api?.status).toBe(503);

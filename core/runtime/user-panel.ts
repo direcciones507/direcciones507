@@ -71,9 +71,9 @@ export function commercialEntryHtml(international=false,url=new URL(internationa
  // The preserved backend only accepts these origins. LATAM remains blocked.
  const natalieAllowed=['https://direcciones507.com','https://www.direcciones507.com'].includes(url.origin)||(url.origin==='https://direcciones.lat'&&process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED==='true');
  return userPanelHtml.replace('<title>Direcciones507 | Mi panel</title>','<title>'+context.title+'</title><meta name="description" content="'+context.description+'"><link rel="canonical" href="'+context.canonical+'">')
- .replace('<div class="brand">Direcciones<span>507</span></div>','<div class="brand" style="color:#76aaff">Direcciones LATAM</div>')
- .replace('<main>','<main>'+commercialNavigation(context.country))
- .replace('</main>','<footer class="card" style="color:#0b57d0">Direcciones LATAM · Direcciones507, presencia de Panamá</footer></main>')
+ .replace('<div class="brand">Direcciones<span>507</span></div>',context.international?'<div class="brand" style="color:#76aaff">Direcciones LATAM</div>':'<div class="brand">Direcciones<span>507</span></div>')
+ .replace('<main>','<main>'+commercialNavigation(context.country,context.international))
+ .replace('</main>','<footer class="card" style="color:#0b57d0">'+(context.international?'Direcciones LATAM · Direcciones507, presencia de Panamá':'Direcciones507 · Panamá')+'</footer></main>')
  .replace('<script>','<script>const commercialInitialCountry='+JSON.stringify(context.country)+';')
  .replace('load();\n</script>', 'load();('+initializeCommercialNavigation.toString()+')();\n</script>')
  .replace('</style>',source.slice(styleStart,styleEnd)+'</style>')

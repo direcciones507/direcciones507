@@ -1,6 +1,19 @@
 import {test,expect} from 'bun:test';
 import {diagnoseR2} from '../scripts/r2-diagnostic';
 const env={R2_ACCOUNT_ID:'a'.repeat(32),R2_BUCKET:'direcciones507-media',R2_ACCESS_KEY_ID:'fixture-access',R2_SECRET_ACCESS_KEY:'fixture-secret'};
+test('photo diagnostic checks signed WebP bytes, private access and cleanup using only its temporary key',async()=>{
+ let data:Uint8Array|undefined;const methods:string[]=[];
+ const http=(async(url:any,init:any)=>{
+  expect(String(url)).toMatch(/\/_diagnostics\/ad507-r2\/[a-f0-9-]+\.webp$/);
+  if(!init.headers?.authorization){methods.push('UNSIGNED_GET');return new Response(null,{status:403});}
+  methods.push(init.method);expect(init.headers['content-type']).toBe('image/webp');
+  if(init.method==='PUT'){data=init.body;expect(Buffer.from(data!).subarray(8,12).toString()).toBe('WEBP');return new Response(null,{status:200});}
+  if(init.method==='DELETE'){data=undefined;return new Response(null,{status:204});}
+  return data?new Response(data,{headers:{'content-type':'image/webp'}}):new Response('<Code>NoSuchKey</Code>',{status:404});
+ }) as typeof fetch;
+ const r=await diagnoseR2(env,http,{photo:true,verifyPrivateAccess:true});expect(r.ok).toBe(true);expect(r.privateAccess).toEqual({ok:true,http:403});expect(r.access).toBe('SIGNED_R2_ONLY');expect(r.objectUrl).toStartWith('r2://direcciones507-media/_diagnostics/');expect(r.cleanupRequired).toBe(false);expect(methods).toEqual(['PUT','GET','UNSIGNED_GET','DELETE','GET']);
+ for(const secret of [env.R2_ACCESS_KEY_ID,env.R2_SECRET_ACCESS_KEY,env.R2_ACCOUNT_ID])expect(JSON.stringify(r)).not.toContain(secret);
+});
 test('diagnostic writes unique temporary key, compares bytes and verifies deletion without leaking secrets',async()=>{
   let data:Uint8Array|undefined;const calls:any[]=[];
   const http=(async(url:any,init:any)=>{

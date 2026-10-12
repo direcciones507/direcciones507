@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import EmbeddedPostgres from 'embedded-postgres';
 import postgres from 'postgres';
 import { createGeneralAuth } from '../general-auth';
+import {applyReviewedNatalieCorrections} from '../legacy-corrections';
 import { userPanelHtml } from '../user-panel';
 import { prepareMigration0005 } from '../scripts/prepare-0005';
 
@@ -76,7 +77,7 @@ async function login(auth: ReturnType<typeof createGeneralAuth>) {
 test('exact extraction and all 12 Residential routes/handlers survive', () => {
   const snapshot = readFileSync(new URL('../legacy.snapshot.txt', import.meta.url), 'utf8').trimEnd();
   const legacy = readFileSync(new URL('../legacy.ts', import.meta.url), 'utf8').trimEnd();
-  const expected = snapshot.replace('Bun.serve({ hostname:', 'export function startLegacyCore(extension: (req: Request) => Promise<Response | null>) { if (process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED === "true") NATALIE_ALLOWED_ORIGINS.add("https://direcciones.lat"); return Bun.serve({ hostname:').replace('async fetch(req) { const startedAt', 'async fetch(req) { const added = await extension(req); if (added) return added; const startedAt').replace('}); audit("controlled_private_listener_ready"', '}); } audit("controlled_private_listener_ready"');
+  const expected = applyReviewedNatalieCorrections(snapshot).replace('Bun.serve({ hostname:', 'export function startLegacyCore(extension: (req: Request) => Promise<Response | null>) { if (process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED === "true") NATALIE_ALLOWED_ORIGINS.add("https://direcciones.lat"); return Bun.serve({ hostname:').replace('async fetch(req) { const startedAt', 'async fetch(req) { const added = await extension(req); if (added) return added; const startedAt').replace('}); audit("controlled_private_listener_ready"', '}); } audit("controlled_private_listener_ready"');
   expect(legacy).toBe(expected);
   const routes = [...snapshot.matchAll(/const (RESIDENTIAL_\w*ROUTE)\s*=\s*"([^"]+)"/g)];
   expect(routes.length).toBe(12);

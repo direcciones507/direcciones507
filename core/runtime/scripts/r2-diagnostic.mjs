@@ -1,4 +1,6 @@
 // @bun
+var __require = import.meta.require;
+
 // scripts/r2-diagnostic.ts
 import { randomUUID } from "crypto";
 
@@ -80,17 +82,21 @@ function network(error) {
   const name = error instanceof Error ? error.name : "";
   return { ok: false, code: ["AbortError", "TimeoutError"].includes(name) ? "NETWORK_TIMEOUT" : "NETWORK_OR_TLS_ERROR" };
 }
-async function diagnoseR2(env, http = fetch) {
+async function diagnoseR2(env, http = fetch, options = {}) {
   const present = Object.fromEntries(names.map((name) => [name, Boolean(env[name]?.trim())]));
   const report = { ok: false, configuration: { present, accountFormatValid: /^[a-f0-9]{32}$/i.test(env.R2_ACCOUNT_ID?.trim() ?? ""), bucketMatches: env.R2_BUCKET?.trim() === "direcciones507-media" } };
   if (Object.values(present).some((v) => !v) || !report.configuration.accountFormatValid || !report.configuration.bucketMatches)
     return report;
   const settings = { accountId: env.R2_ACCOUNT_ID.trim(), bucket: env.R2_BUCKET.trim(), accessKeyId: env.R2_ACCESS_KEY_ID.trim(), secretAccessKey: env.R2_SECRET_ACCESS_KEY.trim() };
-  const key = "_diagnostics/ad507-r2/" + randomUUID() + ".txt";
+  const key = "_diagnostics/ad507-r2/" + randomUUID() + (options.photo ? ".webp" : ".txt");
   report.objectKey = key;
-  const bytes = Buffer.from("AD507 R2 temporary connectivity check " + randomUUID());
+  const mime = options.photo ? "image/webp" : "text/plain";
+  const bytes = options.photo ? await (await import("sharp")).default({ create: { width: 12, height: 12, channels: 3, background: "blue" } }).webp().toBuffer() : Buffer.from("AD507 R2 temporary connectivity check " + randomUUID());
+  report.mime = mime;
+  report.objectUrl = "r2://" + settings.bucket + "/" + key;
+  report.access = "SIGNED_R2_ONLY";
   const send = (method, body = new Uint8Array) => {
-    const signed = signedR2Request(settings, method, key, body, "text/plain");
+    const signed = signedR2Request(settings, method, key, body, mime);
     return http(signed.url, { method, headers: { ...signed.headers, ...method === "PUT" ? { "if-none-match": "*" } : {} }, ...method === "PUT" ? { body: Buffer.from(body) } : {}, redirect: "error", signal: AbortSignal.timeout(1e4) });
   };
   let cleanup = false;
@@ -120,6 +126,15 @@ async function diagnoseR2(env, http = fetch) {
     } catch (error) {
       report.read = network(error);
     }
+    if (options.verifyPrivateAccess) {
+      try {
+        const unsigned = await http(signedR2Request(settings, "GET", key, new Uint8Array, mime).url, { method: "GET", redirect: "error", signal: AbortSignal.timeout(1e4) });
+        report.privateAccess = { ok: [401, 403].includes(unsigned.status), http: unsigned.status };
+        await unsigned.body?.cancel();
+      } catch (error) {
+        report.privateAccess = network(error);
+      }
+    }
   } finally {
     if (cleanup) {
       report.cleanupRequired = true;
@@ -144,13 +159,13 @@ async function diagnoseR2(env, http = fetch) {
         report.delete ??= network(error);
       }
     }
-    report.ok = Boolean(report.write?.ok && report.read?.ok && report.delete?.ok && report.absence?.ok);
+    report.ok = Boolean(report.write?.ok && report.read?.ok && report.delete?.ok && report.absence?.ok && (!options.verifyPrivateAccess || report.privateAccess?.ok));
   }
   return report;
 }
 if (import.meta.main) {
   try {
-    const report = await diagnoseR2(process.env);
+    const report = await diagnoseR2(process.env, fetch, { photo: process.argv.includes("--photo"), verifyPrivateAccess: process.argv.includes("--photo") });
     console.log(JSON.stringify(report));
     process.exitCode = report.ok ? 0 : 1;
   } catch {

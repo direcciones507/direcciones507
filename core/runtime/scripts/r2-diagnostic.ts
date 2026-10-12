@@ -2,7 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {signedR2Request,type R2SigningSettings} from '../r2-signing';
 
 type Step={ok:boolean;http?:number;code?:string};
-type Report={ok:boolean;configuration:{present:Record<string,boolean>;accountFormatValid:boolean;bucketMatches:boolean};objectKey?:string;write?:Step;read?:Step;delete?:Step;absence?:Step;cleanupRequired?:boolean};
+type Report={ok:boolean;configuration:{present:Record<string,boolean>;accountFormatValid:boolean;bucketMatches:boolean};objectKey?:string;objectUrl?:string;access?:'SIGNED_R2_ONLY';mime?:string;write?:Step;read?:Step;privateAccess?:Step;delete?:Step;absence?:Step;cleanupRequired?:boolean};
 const names=['R2_ACCOUNT_ID','R2_BUCKET','R2_ACCESS_KEY_ID','R2_SECRET_ACCESS_KEY'];
 const allowedCodes=new Set(['AccessDenied','InvalidAccessKeyId','SignatureDoesNotMatch','NoSuchBucket','NoSuchKey','RequestTimeTooSkewed','ExpiredToken','InvalidToken','PreconditionFailed','InternalError','ServiceUnavailable']);
 async function bounded(response:Response,limit:number){
@@ -21,15 +21,17 @@ function network(error:unknown):Step{
 }
 
 /** Operator-only temporary object test. Never updates env, DB, flags or media. */
-export async function diagnoseR2(env:Record<string,string|undefined>,http:typeof fetch=fetch):Promise<Report>{
+export async function diagnoseR2(env:Record<string,string|undefined>,http:typeof fetch=fetch,options:{photo?:boolean;verifyPrivateAccess?:boolean}={}):Promise<Report>{
   const present=Object.fromEntries(names.map(name=>[name,Boolean(env[name]?.trim())]));
   const report:Report={ok:false,configuration:{present,accountFormatValid:/^[a-f0-9]{32}$/i.test(env.R2_ACCOUNT_ID?.trim()??''),bucketMatches:env.R2_BUCKET?.trim()==='direcciones507-media'}};
   if(Object.values(present).some(v=>!v)||!report.configuration.accountFormatValid||!report.configuration.bucketMatches)return report;
   const settings:R2SigningSettings={accountId:env.R2_ACCOUNT_ID!.trim(),bucket:env.R2_BUCKET!.trim(),accessKeyId:env.R2_ACCESS_KEY_ID!.trim(),secretAccessKey:env.R2_SECRET_ACCESS_KEY!.trim()};
-  const key='_diagnostics/ad507-r2/'+randomUUID()+'.txt';report.objectKey=key;
-  const bytes=Buffer.from('AD507 R2 temporary connectivity check '+randomUUID());
+  const key='_diagnostics/ad507-r2/'+randomUUID()+(options.photo?'.webp':'.txt');report.objectKey=key;
+  const mime=options.photo?'image/webp':'text/plain';
+  const bytes=options.photo?await (await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).webp().toBuffer():Buffer.from('AD507 R2 temporary connectivity check '+randomUUID());
+  report.mime=mime;report.objectUrl='r2://'+settings.bucket+'/'+key;report.access='SIGNED_R2_ONLY';
   const send=(method:'PUT'|'GET'|'DELETE',body=new Uint8Array())=>{
-    const signed=signedR2Request(settings,method,key,body,'text/plain');
+    const signed=signedR2Request(settings,method,key,body,mime);
     return http(signed.url,{method,headers:{...signed.headers,...(method==='PUT'?{'if-none-match':'*'}:{})},...(method==='PUT'?{body:Buffer.from(body)}:{}),redirect:'error',signal:AbortSignal.timeout(10000)});
   };
   let cleanup=false;
@@ -40,6 +42,9 @@ export async function diagnoseR2(env:Record<string,string|undefined>,http:typeof
     if(!put.ok){report.write=await failure(put);cleanup=put.status>=500;return report;}
     cleanup=true;report.write={ok:true,http:put.status};await put.body?.cancel();
     try{const get=await send('GET');if(!get.ok)report.read=await failure(get);else report.read={ok:(await bounded(get,bytes.length+1)).equals(bytes),http:get.status};}catch(error){report.read=network(error);}
+    if(options.verifyPrivateAccess){
+      try{const unsigned=await http(signedR2Request(settings,'GET',key,new Uint8Array(),mime).url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(10000)});report.privateAccess={ok:[401,403].includes(unsigned.status),http:unsigned.status};await unsigned.body?.cancel();}catch(error){report.privateAccess=network(error);}
+    }
   }finally{
     if(cleanup){
       report.cleanupRequired=true;
@@ -55,11 +60,11 @@ export async function diagnoseR2(env:Record<string,string|undefined>,http:typeof
         }
       }catch(error){report.delete??=network(error);}
     }
-    report.ok=Boolean(report.write?.ok&&report.read?.ok&&report.delete?.ok&&report.absence?.ok);
+    report.ok=Boolean(report.write?.ok&&report.read?.ok&&report.delete?.ok&&report.absence?.ok&&(!options.verifyPrivateAccess||report.privateAccess?.ok));
   }
   return report;
 }
 if(import.meta.main){
-  try{const report=await diagnoseR2(process.env);console.log(JSON.stringify(report));process.exitCode=report.ok?0:1;}
+  try{const report=await diagnoseR2(process.env,fetch,{photo:process.argv.includes('--photo'),verifyPrivateAccess:process.argv.includes('--photo')});console.log(JSON.stringify(report));process.exitCode=report.ok?0:1;}
   catch{console.log(JSON.stringify({ok:false,error:'DIAGNOSTIC_UNEXPECTED_FAILURE'}));process.exitCode=1;}
 }

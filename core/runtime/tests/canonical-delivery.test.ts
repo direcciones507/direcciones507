@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {renderNewPublicAddress} from '../new-address-publication';
+import {renderNewPublicAddress,handleNewPublicRoutes} from '../new-address-publication';
 import {proposedCountryUrl} from '../country-configuration';
 import {readFileSync} from 'node:fs';
 
@@ -27,4 +27,20 @@ test('delivery reuses canonical URL policy and only preserves a validated origin
  expect(proposedCountryUrl('PA','AD507-0038','https://direcciones507.com/ad507-0038/')).toBe('https://direcciones507.com/ad507-0038/');
  for(const bad of ['javascript:alert(1)','https://evil.test/ad507-0038/','https://direcciones507.com/ad507-0038/?token=private','https://user:pass@direcciones507.com/ad507-0038/','https://direcciones507.com/ad507-9999/'])expect(()=>proposedCountryUrl('PA','AD507-0038',bad)).toThrow();
  expect(()=>proposedCountryUrl('CO','AD57-0038','https://direcciones507.com/ad507-0038/')).toThrow();
+});
+
+
+test('public route recognition covers Panama and international prefixes without enabling foreign commerce',async()=>{
+ const sql={unsafe:async()=>{throw Error('ISOLATED_ROUTE_PROBE');}} as any;
+ const context={enabled:true,sql,r2:null};
+ for(const code of ['AD507-N12345678123412341234123456789ABC','AD57-N12345678123412341234123456789ABC','AD506-N12345678123412341234123456789ABC']){
+  const page=await handleNewPublicRoutes(new Request('https://direcciones.lat/'+code+'/'),context);
+  expect(page?.status).toBe(503); // recognized, but no real publication is available
+  const api=await handleNewPublicRoutes(new Request('https://direcciones.lat/v1/addresses/'+code),context);
+  expect(api?.status).toBe(503);
+  const media=await handleNewPublicRoutes(new Request('https://direcciones.lat/v1/addresses/'+code+'/media/11111111-1111-4111-8111-111111111111'),context);
+  expect(media?.status).toBe(503);
+ }
+ expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/AD9999-N123/'),context)).toBeNull();
+ expect(await handleNewPublicRoutes(new Request('https://direcciones.lat/AD57-N123/'),{...context,enabled:false})).toBeNull();
 });

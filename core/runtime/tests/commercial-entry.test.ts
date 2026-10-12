@@ -1,6 +1,6 @@
 import {test,expect} from 'bun:test';
 import {commercialEntryContext,sharedCommercialRoot,initializeCommercialNavigation} from '../commercial-entry';
-import {commercialEntryHtml} from '../user-panel';
+import {commercialEntryHtml,handleUserPanel} from '../user-panel';
 import {addressPageOptions} from '../admin-address-pagination';
 import {createMediaAuthorizer} from '../r2-media-authorization';
 
@@ -134,4 +134,18 @@ test('additional OAuth config fails closed on unverified domain, malformed callb
  }
  const wrongSuccess=createGeneralAuth(db,{...base,AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:'https://direcciones.lat/auth/google/callback',AD507_AUTH_SUCCESS_URL_LATAM:'https://evil.test/'});
  expect((await wrongSuccess.handle(new Request('https://direcciones.lat/auth/google/login')))!.status).toBe(400);
+});
+
+
+test('commercial entry applies CSP nonce to both panel and existing Natalie scripts',async()=>{
+ const response=await handleUserPanel(new Request('https://direcciones507.com/commercial/panama'),{} as any,{} as any);
+ expect(response?.status).toBe(200);
+ const html=await response!.text();
+ const csp=response!.headers.get('content-security-policy')??'';
+ const nonce=csp.match(/script-src 'nonce-([^']+)'/)?.[1];
+ expect(nonce).toBeTruthy();
+ const scripts=[...html.matchAll(/<script([^>]*)>/g)];
+ expect(scripts.length).toBeGreaterThan(1);
+ for(const script of scripts)expect(script[1]).toContain('nonce="'+nonce+'"');
+ expect(html).toContain('id="natalieLauncher"');
 });

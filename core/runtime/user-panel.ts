@@ -54,7 +54,7 @@ export async function handleUserPanel(req: Request, sql: Sql, auth: ReturnType<t
     const data=await userPanelData(sql,user as {id:string;roles:string[]},url.searchParams);
     if(adminMode)data.actions.submitRequest=ADMIN_CREATION_ENABLED && user.roles.includes('ADMIN');
     return Response.json({ ok: true, user: { displayName: user.displayName, email: user.email }, ...data }, { headers: { 'cache-control': 'no-store' } });
-  } catch { return Response.json({ ok: false, error: 'USER_PANEL_UNAVAILABLE' }, { status: 503, headers: { 'cache-control': 'no-store' } }); }
+  } catch (error) { const dbError=error as {code?:unknown;schema?:unknown;table?:unknown;column?:unknown}; const safe=(v:unknown)=>typeof v==='string'&&/^[A-Za-z0-9_]{1,64}$/.test(v)?v:undefined; console.error(JSON.stringify({event:'user_panel_query_failed',route:'/v1/user/panel',dbCode:safe(dbError?.code),dbSchema:safe(dbError?.schema),dbTable:safe(dbError?.table),dbColumn:safe(dbError?.column)})); return Response.json({ ok: false, error: 'USER_PANEL_UNAVAILABLE' }, { status: 503, headers: { 'cache-control': 'no-store' } }); }
 }
 export function commercialEntryHtml(international=false,url=new URL(international?'https://direcciones.lat/':'https://direcciones507.com/')){
  const context=commercialEntryContext(url);

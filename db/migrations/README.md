@@ -8,7 +8,7 @@ This directory contains versioned, forward-only migrations for the modern Direcc
 2. Never place database credentials, Railway secrets, tokens, PINs, OWNER tokens, or API keys in this repository.
 3. Apply migrations only from an authenticated administrative/deployment context.
 4. Before production execution, take a database backup/snapshot and verify rollback/recovery access.
-5. Check `ad507_schema_migrations` before execution. A migration version is applied at most once.
+5. Check `ad507.schema_migrations` before execution. A migration version is applied at most once.
 6. Execute one migration at a time and verify its postconditions before continuing.
 7. Foundation migrations must be additive. Do not rename/drop legacy Natalie, Residential/OWNER, analytics, Apps Script compatibility, or other production structures during the parallel migration period.
 8. Never make a schema migration depend on an AI model or Natalie.
@@ -17,7 +17,7 @@ This directory contains versioned, forward-only migrations for the modern Direcc
 
 ## Migration ledger
 
-`0000_migration_ledger.sql` creates `ad507_schema_migrations`. The deployment/migration runner records a version only after the corresponding migration has completed successfully and its postconditions have been checked.
+`0000_migration_ledger.sql` creates `ad507.schema_migrations`. The deployment/migration runner records a version only after the corresponding migration has completed successfully and its postconditions have been checked.
 
 Current planned sequence:
 

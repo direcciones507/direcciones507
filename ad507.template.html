@@ -1411,6 +1411,34 @@
         opacity: 0.13;
       }
     }
+
+    /* Prepared tablet/desktop composition; existing mobile rules remain unchanged. */
+    [hidden] { display: none !important; }
+    @media (min-width: 768px) {
+      .identity-watermark { display: none !important; }
+      .identity-block { grid-template-columns: 210px minmax(0,1fr); gap: 30px; padding-top: 30px; padding-bottom: 30px; }
+      .identity-block:not(:has(#logoBox[style*="display: block"])) { grid-template-columns: minmax(0,1fr); }
+      #logoNegocio { width: 200px; height: 200px; object-fit: contain; }
+      .title-details-header { align-items: flex-start; text-align: left; padding: 0; }
+      .card .white-sheet { display: flex; flex-direction: column; gap: 18px; }
+      .card .white-sheet > * { width: 100%; margin: 0; }
+      .card .white-sheet .commercial-description.is-visible { order: -2; padding: 26px; }
+      .commercial-description-text { font-size: 18px; line-height: 1.75; white-space: pre-line; }
+      .card .white-sheet #premiumGalleryContainer { order: -1; }
+      .card .white-sheet .actions-triple-row { display: flex; flex-wrap: wrap; gap: 10px; }
+      .card .white-sheet .actions-triple-row > * { flex: 1 1 150px; min-height: 64px; padding: 12px; }
+      .card .white-sheet .actions-triple-row i { font-size: 18px; }
+      .card .white-sheet .social-quad-row { display: flex; flex-wrap: wrap; gap: 10px; }
+      .card .white-sheet .btn-social-quad { flex: 0 1 auto; padding: 10px 16px; }
+      .card .white-sheet .negocio-galeria { display: grid; grid-template-columns: repeat(auto-fit,minmax(210px,1fr)); grid-template-rows: none; grid-auto-rows: auto; overflow: visible; padding: 10px; }
+      .card .white-sheet .negocio-galeria img, .card .white-sheet .negocio-galeria img:first-child { grid-column: auto; grid-row: auto; width: 100%; height: 230px; object-fit: contain; }
+      .card .main-nav-grid { gap: 10px; }
+      .card .main-nav-grid .nav-box { min-height: 64px; padding: 12px; }
+    }
+    @media (min-width: 1100px) {
+      .identity-block { grid-template-columns: 250px minmax(0,1fr); }
+      #logoNegocio { width: 240px; height: 240px; }
+    }
   </style>
 </head>
 
@@ -1507,6 +1535,9 @@
         <p id="refTelefono">Contacto</p>
       </a>
 
+      <a id="btnLandline" class="btn-action-triple" hidden>
+        <i class="fa-solid fa-phone"></i><span>Teléfono fijo</span><p id="refLandline"></p>
+      </a>
       <div id="btnShare" class="btn-action-triple" style="cursor: pointer;">
         <i class="fa-solid fa-share-nodes"></i>
         <span>Compartir</span>
@@ -1767,6 +1798,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";
 
       if(data.logo){
+      document.getElementById('logoNegocio').onerror = () => { document.getElementById('logoBox').style.display = 'none'; };
       document.getElementById('logoNegocio').src = normalizarImagenDrive(data.logo);
       const watermark = document.getElementById('identityWatermark');
       watermark.onerror = () => { watermark.hidden = true; };
@@ -1783,6 +1815,8 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('codigoPostalContainer').style.display = 'flex';
       }
 
+      document.getElementById('btnHorario').hidden = !String(data.horario || '').trim();
+      document.getElementById('btnRef').hidden = !String(data.referencia || '').trim();
       if(data.horario){
         document.getElementById('horario').textContent = data.horario;
       }
@@ -1831,6 +1865,17 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('btnCall').href = "#";
       }
 
+      // Future PostgreSQL contract: independent optional landline, never used for WhatsApp.
+      let landline = String(data.telefonoFijo || data.landlinePhone || data.landline_phone || '').replace(/\D/g,'');
+      if(landline.length === 7 || landline.length === 8) landline = '507' + landline;
+      if(landline.length >= 10 && landline.length <= 15){
+        const button = document.getElementById('btnLandline');
+        button.href = 'tel:+' + landline;
+        button.hidden = false;
+        document.getElementById('refLandline').textContent = '+' + landline;
+      }
+      document.getElementById('btnCall').hidden = tel.length < 10;
+      document.getElementById('btnWhats').hidden = tel.length < 10;
       if(data.instagram){
         document.getElementById('btnInstagram').href = data.instagram;
       }else{
@@ -1943,6 +1988,13 @@ if(data.web){
         }
       }
 
+      for(const id of ['btnInstagram','btnFacebook','btnTikTok','btnWeb','btnGoogle','btnGoogleSecundario','btnWaze','btnUber']) {
+        const link = document.getElementById(id);
+        try { const target = new URL(link.getAttribute('href')); if(!['https:','http:'].includes(target.protocol) || target.username || target.password) throw Error(); }
+        catch { link.hidden = true; link.removeAttribute('href'); }
+      }
+      const social = document.getElementById('redes-container');
+      social.hidden = !Array.from(social.children).some(link => !link.hidden && link.style.display !== 'none');
       {
         let listaFotos = [];
 
@@ -1962,7 +2014,10 @@ if(data.web){
 
           listaFotos.forEach((urlFoto, index) => {
             const imgElement = document.createElement('img');
-            imgElement.src = normalizarImagenDrive(urlFoto);
+            const imageUrl = normalizarImagenDrive(urlFoto);
+            try { const parsed = new URL(imageUrl); if(parsed.protocol !== 'https:' || parsed.username || parsed.password) return; } catch { return; }
+            imgElement.src = imageUrl;
+            imgElement.onerror = () => { imgElement.remove(); if(!galeriaContainer.children.length) document.getElementById('premiumGalleryContainer').style.display = 'none'; };
             imgElement.alt = `Imagen ${index + 1}`;
             imgElement.classList.add('gallery-clickable');
 
@@ -1974,7 +2029,7 @@ if(data.web){
             galeriaContainer.appendChild(imgElement);
           });
 
-          document.getElementById('premiumGalleryContainer').style.display = 'block';
+          document.getElementById('premiumGalleryContainer').style.display = galeriaContainer.children.length ? 'block' : 'none';
           actualizarEstadoGaleria(data.horario);
         }
       }

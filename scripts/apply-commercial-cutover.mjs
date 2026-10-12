@@ -13,4 +13,12 @@ export function applyCommercialCutover(root, output) {
   for(const code of [m.code,m.code.toLowerCase()])writeFileSync(resolve(output,code,'index.html'),html);
   return true;
 }
-if(process.argv[1]&&resolve(process.argv[1])===resolve(new URL(import.meta.url).pathname))applyCommercialCutover(process.cwd(),resolve('out'));
+// Never overwrite historical Pages during an ordinary build. Individual cutovers
+// require a separate, explicit approval and a deliberate invocation.
+if(process.argv[1]&&resolve(process.argv[1])===resolve(new URL(import.meta.url).pathname)) {
+  if(process.env.AD507_AUTHORIZED_COMMERCIAL_CUTOVER!=='true') {
+    console.log('Historical Pages preserved: commercial cutover not authorized.');
+  } else {
+    applyCommercialCutover(process.cwd(),resolve('out'));
+  }
+}

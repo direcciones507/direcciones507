@@ -96,7 +96,7 @@ if(authParams.has('token')&&authParams.has('email')){
  latamEmailField.value=authParams.get('email')||'';
  setLatamEmailMode(authParams.get('action')==='reset'?'reset':'verify');
  openLatamAccess();
-}else setLatamEmailMode('register');
+}else {setLatamEmailMode('register');if(authParams.get('access')==='1')openLatamAccess();}
 const countrySelect=document.getElementById('commercialCountry');
 const countryState=document.getElementById('latamCountryState'),countryField=document.getElementById('countryField');
 countryField.appendChild(countryState);countryState.hidden=false;document.getElementById('countryCode').hidden=true;countryField.querySelector('label[for="countryCode"]').hidden=true;

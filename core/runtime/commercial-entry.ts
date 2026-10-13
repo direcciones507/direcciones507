@@ -28,12 +28,13 @@ export function initializeCommercialNavigation(){
  const formCountry=document.getElementById('countryCode') as HTMLSelectElement;
  const refresh=()=>{
    const country=select.value,panama=country==='PA';
-   document.getElementById('commercialIdentity')!.textContent=panama?'Direcciones507 · Panamá':'Direcciones LATAM · '+select.selectedOptions[0].textContent;
+   const prefix=COUNTRIES[country as keyof typeof COUNTRIES].prefix;
+   document.getElementById('commercialIdentity')!.textContent=(panama?'Direcciones507 · Panamá':'Direcciones LATAM · '+select.selectedOptions[0].textContent)+' · +'+prefix;
    document.getElementById('commercialAvailability')!.textContent=panama?'Panamá: revisa el estado de habilitación al ingresar.':'País en preparación: publicación y cobros deshabilitados.';
    // Changing geography does not erase family/business data or selected photos.
-   formCountry.value=country;formCountry.dispatchEvent(new Event('change'));
+   if(formCountry){formCountry.value=country;formCountry.dispatchEvent(new Event('change'));}
  };
- formCountry.addEventListener('change',()=>{if(select.value!==formCountry.value){select.value=formCountry.value;select.dispatchEvent(new Event('change'));}});
+ formCountry?.addEventListener('change',()=>{if(select.value!==formCountry.value){select.value=formCountry.value;select.dispatchEvent(new Event('change'));}});
  select.onchange=()=>{const u=new URL(location.href);u.searchParams.set('country',select.value);history.pushState({},'',u.pathname+u.search);refresh();};
  document.querySelectorAll<HTMLAnchorElement>('[data-commercial-country]').forEach(a=>a.onclick=e=>{e.preventDefault();select.value=a.dataset.commercialCountry!;select.dispatchEvent(new Event('change'));});
  addEventListener('popstate',()=>{const c=new URL(location.href).searchParams.get('country')??'PA';if(Array.from(select.options).some(o=>o.value===c))select.value=c;else select.value='PA';refresh();});

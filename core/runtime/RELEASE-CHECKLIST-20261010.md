@@ -328,3 +328,5 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - EN DESARROLLO: `core/runtime/request-validation.ts` ahora rechaza solicitudes `PLACE` fuera de PA y CR mediante `COUNTRY_PRODUCT_NOT_AVAILABLE`. Mantiene validación de RESIDENTIAL y BUSINESS y no toca históricos.
 - Estado de pruebas: NO EJECUTADAS en esta intervención; no declarar PROBADO ni OPERATIVO. UI de catálogo por país y selector/OAuth aún pendientes. Sin merge, migración ni despliegue.
 - Reutilización: módulo `requestCountry` y `validateRequestDraft` existentes; ningún generador/panel nuevo. Bloqueos productivos previos permanecen.
+
+- EN DESARROLLO, commit 495a667: `core/runtime/commercial-entry.ts` muestra el indicativo telefónico de cada país inicial en la identidad del selector y tolera ausencia del campo `countryCode` al inicializar; reutiliza `COUNTRIES` y sincronización existente. No se afirma persistencia tras OAuth ni publicación. Pruebas NO EJECUTADAS; no merge/deploy.

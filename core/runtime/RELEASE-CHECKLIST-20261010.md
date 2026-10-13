@@ -330,3 +330,5 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - Reutilización: módulo `requestCountry` y `validateRequestDraft` existentes; ningún generador/panel nuevo. Bloqueos productivos previos permanecen.
 
 - EN DESARROLLO, commit 495a667: `core/runtime/commercial-entry.ts` muestra el indicativo telefónico de cada país inicial en la identidad del selector y tolera ausencia del campo `countryCode` al inicializar; reutiliza `COUNTRIES` y sincronización existente. No se afirma persistencia tras OAuth ni publicación. Pruebas NO EJECUTADAS; no merge/deploy.
+
+- EN DESARROLLO, commits 3077722 y 4f5ccdf: `core/runtime/latam-presentation.ts` oculta tarjeta LUGARES fuera de PA/CR al renderizar y cambiar país, incluyendo regla CSS `[hidden]` frente a `display:flex`. La validación del servidor se añadió previamente. Sin pruebas automatizadas ejecutadas ni despliegue; el flujo OAuth y la persistencia entre hosts siguen pendientes.

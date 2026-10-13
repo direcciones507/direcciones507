@@ -322,3 +322,9 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 |Migraciones/activación producción|BLOQUEADO|Gates de respaldo/exclusividad documentados arriba|Autorización y verificación productiva, no CI solamente|
 
 **Registro de esta actualización:** archivo modificado: core/runtime/RELEASE-CHECKLIST-20261010.md. PR nuevo: ninguno. Pruebas ejecutadas: lectura de configuración y checklist, sin tests de código ni despliegue. Bloqueos: gates de activación existentes; sin modificar Apps Script, Excel, DNS, SQL ni cobros.
+
+### Avance funcional en rama feat/unified-country-generation-20261012
+
+- EN DESARROLLO: `core/runtime/request-validation.ts` ahora rechaza solicitudes `PLACE` fuera de PA y CR mediante `COUNTRY_PRODUCT_NOT_AVAILABLE`. Mantiene validación de RESIDENTIAL y BUSINESS y no toca históricos.
+- Estado de pruebas: NO EJECUTADAS en esta intervención; no declarar PROBADO ni OPERATIVO. UI de catálogo por país y selector/OAuth aún pendientes. Sin merge, migración ni despliegue.
+- Reutilización: módulo `requestCountry` y `validateRequestDraft` existentes; ningún generador/panel nuevo. Bloqueos productivos previos permanecen.

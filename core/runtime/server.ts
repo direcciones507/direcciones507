@@ -30,6 +30,13 @@ const adminHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><m
 
 startLegacyCore(async req => {
   const url = new URL(req.url);
+  // Panamá uses the LATAM account panel, not a second session or identity.
+  // Only redirect account entry paths; preserve historical AD507 pages and assets.
+  if(req.method==='GET' && ['direcciones507.com','cuenta.direcciones507.com'].includes(url.hostname) && ['/panel','/panel/','/mi-cuenta','/crear-cuenta'].includes(url.pathname)){
+    const destination=new URL('/panel','https://direcciones.lat');
+    destination.searchParams.set('country','PA');
+    return new Response(null,{status:302,headers:{location:destination.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
+  }
   if(req.method==='GET' && (url.pathname==='/verificar-correo'||url.pathname==='/recuperar-contrasena') && url.hostname==='direcciones.lat'){
     const token=url.searchParams.get('token'),email=url.searchParams.get('email');
     if(!token||!email||!/^[A-Za-z0-9_-]{43}$/.test(token)||email.length>320)return new Response('Enlace inválido',{status:400,headers:{'cache-control':'no-store'}});

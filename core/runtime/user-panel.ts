@@ -38,6 +38,16 @@ export async function handleUserPanel(req: Request, sql: Sql, auth: ReturnType<t
     // No dormant writer: submissions require a separately reviewed implementation.
     return Response.json({ ok: false, error: 'USER_PANEL_SUBMISSION_NOT_ENABLED' }, { status: 503, headers: { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' } });
   }
+  if(req.method==='GET' && ['/panel','/panel/'].includes(url.pathname) && url.hostname==='direcciones.lat'){
+    const user=await auth.currentUser(req);
+    if(!user){
+      const country=url.searchParams.get('country')||'PA';
+      const destination=new URL('/',url.origin);
+      destination.searchParams.set('country',/^(PA|CO|CR|GT|SV|HN|NI|MX)$/.test(country)?country:'PA');
+      destination.searchParams.set('access','1');
+      return new Response(null,{status:302,headers:{location:destination.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
+    }
+  }
   if (req.method !== 'GET') return Response.json({ ok: false, error: 'METHOD_NOT_ALLOWED' }, { status: 405, headers: { 'cache-control': 'no-store' } });
   if (url.pathname !== '/v1/user/panel') {
     const nonce = crypto.randomUUID().replaceAll('-', '');

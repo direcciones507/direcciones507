@@ -49,7 +49,7 @@ function prepareLatamRequest(e,type,plan){
  .replace(/<header>[\s\S]*?<\/header>/,header)
  .replace('</style>',css+'#latamAccess{width:min(430px,92vw);border-radius:16px;padding:24px;background:#0e2036;color:white;border:1px solid #40516b}#latamAccess::backdrop{background:#020b16cc}#latamAccess input{display:block;width:100%;margin:8px 0 16px;padding:12px}#latamAccess .button{display:block;text-align:center;padding:14px}#latamAccess button{cursor:pointer}#latamPasswordNotice{font-size:13px;color:#cbd8ec}</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
- .replace('</body>',notice+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" autocomplete="email" placeholder="tu@correo.com"><label for="latamAccessPassword">Contraseña</label><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" disabled><p id="latamPasswordNotice" role="status">El acceso con contraseña y su recuperación están en preparación. Por ahora puedes continuar con Google.</p><a id="latamGoogleAccess" class="button" href="/auth/google/login">Continuar con Google</a><p><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button> · <button type="button" id="latamForgotPassword">Olvidé mi contraseña</button></p></dialog>`+'</body>')
+ .replace('</body>',notice+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" autocomplete="email" placeholder="tu@correo.com"><label for="latamAccessPassword">Contraseña</label><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><a id="latamGoogleAccess" class="button" href="/auth/google/login">Continuar con Google</a><p><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button> · <button type="button" id="latamForgotPassword">Olvidé mi contraseña</button></p></dialog>`+'</body>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')
  .replace('<section id="panel" class="hidden">','<dialog id="latamRequestDialog" aria-label="Preparar dirección"><button type="button" id="latamRequestClose" class="secondary">Cerrar preparación</button><section id="panel" class="hidden">')
  .replace('</section><p id="message" role="status">','</section></dialog><span id="latamMessageAnchor"></span><p id="message" role="status">')
@@ -63,8 +63,40 @@ function prepareLatamRequest(e,type,plan){
 const accessDialog=document.getElementById('latamAccess');
 function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+document.getElementById('commercialCountry').selectedOptions[0].textContent;accessDialog.showModal();document.getElementById('latamAccessEmail').focus();}
 document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
-document.getElementById('latamHaveAccount').onclick=()=>document.getElementById('latamAccessEmail').focus();
-document.getElementById('latamForgotPassword').onclick=()=>document.getElementById('latamPasswordNotice').textContent='La recuperación de contraseña todavía no está habilitada. Puedes utilizar Google para acceder.';
+let latamEmailMode='register';
+const latamEmailSubmit=document.getElementById('latamEmailSubmit');
+const latamEmailNotice=document.getElementById('latamPasswordNotice');
+const latamEmailPassword=document.getElementById('latamAccessPassword');
+const latamEmailField=document.getElementById('latamAccessEmail');
+function setLatamEmailMode(mode){
+ latamEmailMode=mode;
+ latamEmailSubmit.textContent=mode==='register'?'Crear cuenta con correo':mode==='login'?'Ingresar con correo':mode==='forgot'?'Enviar recuperación':mode==='verify'?'Verificar correo':'Cambiar contraseña';
+ latamEmailPassword.hidden=mode==='forgot'||mode==='verify';
+ latamEmailNotice.textContent=mode==='register'?'Utiliza una contraseña de al menos 12 caracteres. Te enviaremos un enlace de verificación.':mode==='forgot'?'Te enviaremos un enlace para recuperar tu contraseña.':mode==='verify'?'Introduce el código del enlace recibido.':mode==='reset'?'Introduce el código del enlace recibido y tu nueva contraseña.':'Introduce tu correo y contraseña.';
+}
+document.getElementById('latamHaveAccount').onclick=()=>setLatamEmailMode('login');
+document.getElementById('latamForgotPassword').onclick=()=>setLatamEmailMode('forgot');
+latamEmailSubmit.onclick=async()=>{
+ const email=latamEmailField.value.trim(),password=latamEmailPassword.value;
+ const route={register:'register',login:'login',forgot:'forgot',verify:'verify',reset:'reset'}[latamEmailMode];
+ const token=new URLSearchParams(location.search).get('token')||'';
+ latamEmailSubmit.disabled=true;latamEmailNotice.textContent='Procesando solicitud…';
+ try{
+  const response=await fetch('/v1/auth/email/'+route,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({email,password,token})});
+  const result=await response.json();
+  if(!response.ok)throw Error(result.error||'No se pudo completar la solicitud.');
+  if(route==='login'){location.assign('/panel');return;}
+  latamEmailNotice.textContent=route==='register'||route==='forgot'?'Si el correo cumple las condiciones, recibirás un mensaje con las instrucciones.':'Solicitud completada. Ya puedes ingresar.';
+  if(route==='verify'||route==='reset')setLatamEmailMode('login');
+ }catch(err){latamEmailNotice.textContent=err instanceof Error?err.message:'No se pudo completar la solicitud.';}
+ finally{latamEmailSubmit.disabled=false;}
+};
+const authParams=new URLSearchParams(location.search);
+if(authParams.has('token')&&authParams.has('email')){
+ latamEmailField.value=authParams.get('email')||'';
+ setLatamEmailMode(location.pathname.includes('recuperar')?'reset':'verify');
+ openLatamAccess();
+}else setLatamEmailMode('register');
 const countrySelect=document.getElementById('commercialCountry');
 const countryState=document.getElementById('latamCountryState'),countryField=document.getElementById('countryField');
 countryField.appendChild(countryState);countryState.hidden=false;document.getElementById('countryCode').hidden=true;countryField.querySelector('label[for="countryCode"]').hidden=true;

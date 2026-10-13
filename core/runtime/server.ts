@@ -51,6 +51,8 @@ startLegacyCore(async req => {
   if(req.method==='GET' && ['direcciones507.com','cuenta.direcciones507.com'].includes(url.hostname) && ['/panel','/panel/','/mi-cuenta','/crear-cuenta'].includes(url.pathname)){
     const destination=new URL('/panel','https://direcciones.lat');
     destination.searchParams.set('country','PA');
+    // Panama account entry opens the shared centered dialog, not a second login page.
+    if(url.pathname==='/crear-cuenta'||url.pathname==='/mi-cuenta'||url.searchParams.get('access')==='1')destination.searchParams.set('access','1');
     return new Response(null,{status:302,headers:{location:destination.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
   }
   if(req.method==='GET' && (url.pathname==='/verificar-correo'||url.pathname==='/recuperar-contrasena') && url.hostname==='direcciones.lat'){

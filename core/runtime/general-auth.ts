@@ -105,7 +105,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     if(emailRoute){
       if(req.method!=='POST')return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
       if(req.headers.get('origin')!==cfg.origin || req.headers.get('sec-fetch-site')==='cross-site')return respond(403,{ok:false,error:'CSRF_DENIED'});
-      if(!mailer.configured)return respond(503,{ok:false,error:'EMAIL_NOT_CONFIGURED'});
+      if(!mailer.configured&&url.pathname!=='/v1/auth/email/login'&&url.pathname!=='/v1/auth/email/verify'&&url.pathname!=='/v1/auth/email/reset')return respond(503,{ok:false,error:'EMAIL_NOT_CONFIGURED'});
       const raw=await req.text();
       if(raw.length>4096)return respond(413,{ok:false,error:'INVALID_INPUT'});
       let data:Record<string,unknown>;
@@ -113,6 +113,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       const email=typeof data.email==='string'?data.email.trim().toLowerCase():'';
       const password=typeof data.password==='string'?data.password:'';
       const token=typeof data.token==='string'?data.token:'';
+      if(password.length>128||token.length>256)return respond(400,{ok:false,error:'INVALID_INPUT'});
       if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||email.length>320)return respond(400,{ok:false,error:'INVALID_EMAIL'});
       const digest=(v:string)=>hash(v);
       const makeToken=()=>random();

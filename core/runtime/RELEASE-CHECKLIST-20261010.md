@@ -341,3 +341,5 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - [ ] NATALIE EN ADMIN: reutilizar el chatbot existente en el panel administrativo, verificar CSP, orígenes, permisos y conversación real; no crear otro widget.
 
 - [ ] NATALIE ADMIN, avance de código 2026-10-12: commits 9afad51 y ea0097c reutilizan el widget existente en `core/runtime/server.ts` solamente cuando `nataliePresentationAllowed` autoriza el origen. Pendiente: permitir y probar el origen administrativo real `cuenta.direcciones507.com` o el canónico `direcciones.lat`, comprobar CORS/CSP, conversación real y responsive. Sin pruebas ejecutadas, merge ni despliegue.
+
+- [ ] ACCESO CORREO/GOOGLE, avance 2026-10-12: commit `530ed359` abre el diálogo de ingreso LATAM cuando `/panel` devuelve al visitante con `?access=1`. Rutas de correo y Google existentes; pendiente probar registro, entrega/verificación de correo, login, recuperación, callback Google, sesión y persistencia de país. No afirmar operativo ni desplegado.

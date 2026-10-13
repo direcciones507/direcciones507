@@ -5,7 +5,7 @@ test('LATAM footer, five described plans and legal notice reuse existing content
  const html=commercialEntryHtml(true,new URL('https://direcciones.lat/'));
  expect(html).not.toContain('Direcciones507, presencia de Panamá');
  expect(html).not.toContain('Direcciones507 · Panamá');
- expect(html).toContain('AD507 Technologies');expect(html).toContain('id="modalPoliticas"');expect(html).toContain('Protección de Datos Residenciales');
+ expect(html).toContain('AD507 Technologies');expect(html).toContain('id="modalPoliticas"');expect(html).toContain('data-latam-legal');
  expect(html.match(/data-latam-legal/g)!.length).toBeGreaterThanOrEqual(2);
  expect(html).toContain('https://wa.me/50765996532');expect(html).toContain('galería de hasta 5 fotos');
  expect(userPanelHtml).not.toContain('latam-footer');

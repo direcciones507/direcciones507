@@ -19,6 +19,10 @@ test('C04/C06/C07 retain country support and request types without another Natal
  expect([...page.matchAll(/class="latam-plan-card"[^>]*><h3>(.*?)<\/h3>/g)].map(m=>m[1])).toEqual(['Residencial','Lugar','Negocio Gratis','Premium','Premium Pro']);
  expect(page).not.toContain('id="latamHelp"');expect(page).toContain('id="latamHelpLink"');expect(page.match(/id="natalieLauncher"/g)?.length).toBe(1);
 });
-test('C05 vector hero is self-contained and resolution-independent',()=>{
- const svg=Buffer.from(latamHeroImage,'base64').toString();expect(svg).toContain('width="2400" height="1400"');expect(svg).toContain('<svg');expect(svg).not.toMatch(/<script|<image|href=|url\(https?:/);expect(svg.length).toBeLessThan(60000);expect(html()).toContain("type:'image/svg+xml'");
+test('C05 original hero is an embedded WebP image with correct MIME',()=>{
+ const bytes=Buffer.from(latamHeroImage,'base64');
+ expect(bytes.subarray(0,4).toString()).toBe('RIFF');
+ expect(bytes.subarray(8,12).toString()).toBe('WEBP');
+ expect(bytes.length).toBeGreaterThan(10000);
+ expect(html()).toContain("type:'image/webp'");
 });

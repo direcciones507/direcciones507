@@ -334,3 +334,8 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - EN DESARROLLO, commits 3077722 y 4f5ccdf: `core/runtime/latam-presentation.ts` oculta tarjeta LUGARES fuera de PA/CR al renderizar y cambiar país, incluyendo regla CSS `[hidden]` frente a `display:flex`. La validación del servidor se añadió previamente. Sin pruebas automatizadas ejecutadas ni despliegue; el flujo OAuth y la persistencia entre hosts siguen pendientes.
 
 - ACCESO LATAM EN DESARROLLO (commit c212cb1): panel previo al OAuth desde CTA principal y enlaces de invitado, país seleccionado visible y Google OAuth existente reutilizado. Campos de contraseña y recuperación expresamente deshabilitados/no operativos hasta implementar endpoints, almacenamiento seguro y recuperación; no afirmar registro por correo listo. Sin pruebas ejecutadas, merge ni despliegue.
+
+- [ ] ADMIN ÚNICO: conservar el panel administrativo existente y conectar Direcciones LATAM sin crear otro panel ni duplicar datos.
+- [ ] ADMIN LATAM: consultar Panamá y países habilitados desde el mismo panel, con filtros y permisos existentes; comprobar datos reales antes de declarar operativo.
+- [ ] DOMINIO ADMIN: habilitar direcciones.lat/admin conservando cuenta.direcciones507.com/admin hasta validar sesión, Google OAuth y redirección segura; no cambiar DNS aún.
+- [ ] NATALIE EN ADMIN: reutilizar el chatbot existente en el panel administrativo, verificar CSP, orígenes, permisos y conversación real; no crear otro widget.

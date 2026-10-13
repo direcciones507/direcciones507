@@ -31,7 +31,7 @@ export async function inspectCanonicalSchema(sql:Sql) {
     const codes=hasCode?(await tx.unsafe(`SELECT count(*)::int AS total,count(*) FILTER(WHERE code IS NULL)::int AS uncoded,
       count(*) FILTER(WHERE code IS NOT NULL AND (code<>upper(btrim(code)) OR code!~'^AD507-[A-Z0-9_-]+$'))::int AS noncanonical,
       (SELECT count(*)::int FROM (SELECT upper(btrim(code)) FROM ad507.addresses WHERE code IS NOT NULL GROUP BY upper(btrim(code)) HAVING count(*)>1) d) AS normalized_duplicates FROM ad507.addresses`))[0]:null;
-    const expectedColumns=['landline_phone','request_key_hash','request_payload_hash','request_data','review_decision','reviewed_by','publication_receipt'];
+    const expectedColumns=['landline_phone','request_key_hash','request_payload_hash','request_data','review_decision','reviewed_by','publication_receipt','country_code'];
     const missingRequestColumns=expectedColumns.filter(name=>!columns.some(c=>c.table_name==='addresses'&&c.column_name===name));
     if(!columns.some(c=>c.table_name==='address_media'&&c.column_name==='upload_status'))missingRequestColumns.push('address_media.upload_status');
     const schema={columns:Array.from(columns),constraints:Array.from(constraints),indexes:Array.from(indexes),ledger:Array.from(ledger)};

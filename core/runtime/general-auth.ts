@@ -114,11 +114,11 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       const password=typeof data.password==='string'?data.password:'';
       const token=typeof data.token==='string'?data.token:'';
       if(password.length>128||token.length>256)return respond(400,{ok:false,error:'INVALID_INPUT'});
-      if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||email.length>320)return respond(400,{ok:false,error:'INVALID_EMAIL'});
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>320)return respond(400,{ok:false,error:'INVALID_EMAIL'});
       const digest=(v:string)=>hash(v);
       const makeToken=()=>random();
       const passwordHash=async(v:string,salt?:string)=>{const actual=salt??secureRandomBytes(16).toString('hex');const derived=await derivePassword(v,Buffer.from(actual,'hex'),64) as Buffer;return 'scrypt:'+actual+':'+derived.toString('hex');};
-      const validPassword=async(stored:string,v:string)=>{const parts=stored.split(':');if(parts.length!==3||parts[0]!=='scrypt'||!/^[0-9a-f]{32}$/.test(parts[1]))return false;const calculated=await passwordHash(v,parts[1]);return timingSafeEqual(Buffer.from(calculated),Buffer.from(stored));};
+      const validPassword=async(stored:string,v:string)=>{const parts=stored.split(':');if(parts.length!==3||parts[0]!=='scrypt'||!/^[0-9a-f]{32}$/.test(parts[1]))return false;if(!/^[0-9a-f]{128}$/.test(parts[2]))return false;const calculated=await passwordHash(v,parts[1]);return timingSafeEqual(Buffer.from(calculated),Buffer.from(stored));};
       const issue=async(userId:string,purpose:'VERIFY_EMAIL'|'RESET_PASSWORD')=>{
         const value=makeToken();
         await sql.unsafe("UPDATE ad507.email_auth_tokens SET consumed_at=now() WHERE user_id=$1::uuid AND purpose=$2 AND consumed_at IS NULL",[userId,purpose]);

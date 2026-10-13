@@ -24,6 +24,8 @@ export function validateRequestDraft(raw: unknown): RequestDraft {
   const countryCode=requestCountry(value.countryCode===undefined?'PA':value.countryCode);
   const type = value.type;
   if(type==='RESIDENTIAL'&&countryCode!=='PA')throw Error('COUNTRY_NOT_ENABLED');
+  // LUGARES belongs to the shared catalogue but is offered only in Panama and Costa Rica.
+  if(type==='PLACE'&&countryCode!=='PA'&&countryCode!=='CR')throw Error('COUNTRY_PRODUCT_NOT_AVAILABLE');
   if (type !== 'RESIDENTIAL' && type !== 'PLACE' && type !== 'BUSINESS') throw new Error('INVALID_TYPE');
   const plan = type === 'RESIDENTIAL' ? 'RESIDENTIAL' : type === 'PLACE' ? 'PLACE' : value.plan;
   if (typeof plan !== 'string') throw new Error('INVALID_PLAN');

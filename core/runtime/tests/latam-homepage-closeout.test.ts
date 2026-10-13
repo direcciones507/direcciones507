@@ -11,6 +11,10 @@ test('LATAM footer, five described plans and legal notice reuse existing content
  expect(userPanelHtml).not.toContain('latam-footer');
  for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
 });
+test('LATAM Lugar is restricted to Panama and Costa Rica',()=>{
+ for(const country of ['PA','CR']){const html=commercialEntryHtml(true,new URL('https://direcciones.lat/?country='+country));expect(html).toContain('data-latam-type="PLACE"');}
+ for(const country of ['CO','MX']){const html=commercialEntryHtml(true,new URL('https://direcciones.lat/?country='+country));expect(html).not.toContain('data-latam-type="PLACE"');expect(html).toContain('Prueba gratuita 1 mes');}
+});
 test('outside pointer closes Natalie, internal taps retain it and launcher can reopen',()=>{
  const listeners:any={};let opened=true,closed=0;
  const panel={classList:{contains:()=>opened},contains:(node:any)=>node==='inside'};

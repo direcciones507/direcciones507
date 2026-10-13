@@ -94,7 +94,7 @@ latamEmailSubmit.onclick=async()=>{
 const authParams=new URLSearchParams(location.search);
 if(authParams.has('token')&&authParams.has('email')){
  latamEmailField.value=authParams.get('email')||'';
- setLatamEmailMode(location.pathname.includes('recuperar')?'reset':'verify');
+ setLatamEmailMode(authParams.get('action')==='reset'?'reset':'verify');
  openLatamAccess();
 }else setLatamEmailMode('register');
 const countrySelect=document.getElementById('commercialCountry');

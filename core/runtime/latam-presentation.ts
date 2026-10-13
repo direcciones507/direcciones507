@@ -7,7 +7,7 @@ export function latamPresentation(html:string){
  if(start<0||end<0)throw Error('EXISTING_LEGAL_NOTICE_REQUIRED');
  const notice=legacy.slice(start,end).replace('onclick="cerrarPoliticas()"','data-legal-close');
  const footer=`<footer class="latam-footer"><div><a href="#inicio"><strong>Direcciones LATAM</strong></a><p>Tu ubicación, más fácil de compartir.</p><small>AD507 Technologies</small></div><nav aria-label="Información y contacto"><a href="#planes">Planes y servicios</a><button type="button" data-latam-legal>Privacidad</button><button type="button" data-latam-legal>Términos y condiciones</button><a href="https://wa.me/50765996532" target="_blank" rel="noopener noreferrer">Contacto</a></nav></footer>`;
- const header=`<header class="latam-header"><a class="latam-brand" href="#inicio"><svg width="32" height="38" viewBox="0 0 24 28" fill="none" stroke="#438bff" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><div>Direcciones <strong>LATAM</strong><small>Direcciones digitales para Latinoamérica</small></div></a><details class="latam-menu"><summary>Menú</summary><nav aria-label="Navegación principal"><a href="#inicio">Inicio</a><a href="#paises">Países</a><a href="#planes">Planes</a><a href="#ayuda" id="latamHelpLink">Ayuda</a></nav></details><div class="latam-account"><a class="latam-outline hidden" data-latam-session="guest" href="/auth/google/login">Ingresar</a><a class="button hidden" data-latam-session="guest" href="/auth/google/login">Crear cuenta</a><a class="latam-outline hidden" data-latam-session="authenticated" href="/panel">Mi cuenta</a><button id="logout" data-latam-session="authenticated" class="hidden">Cerrar sesión</button></div></header>`;
+ const header=`<header class="latam-header"><a class="latam-brand" href="#inicio"><svg width="32" height="38" viewBox="0 0 24 28" fill="none" stroke="#438bff" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><div>Direcciones <strong>LATAM</strong><small>Direcciones digitales para Latinoamérica</small></div></a><details class="latam-menu"><summary>Menú</summary><nav aria-label="Navegación principal"><a href="#inicio">Inicio</a><a href="#paises">Países</a><a href="#planes">Planes</a><a href="#ayuda" id="latamHelpLink">Ayuda</a></nav></details><div class="latam-account"><a class="latam-outline hidden" data-latam-session="guest" href="#latamAccess">Ingresar</a><a class="button hidden" data-latam-session="guest" href="#latamAccess">Crear cuenta</a><a class="latam-outline hidden" data-latam-session="authenticated" href="/panel">Mi cuenta</a><button id="logout" data-latam-session="authenticated" class="hidden">Cerrar sesión</button></div></header>`;
  const css=`
 .latam-footer{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:28px 0 92px;border-top:1px solid #263951;color:#aabbd0}.latam-footer strong{font-size:21px;color:#fff}.latam-footer p{font-size:14px}.latam-footer nav{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:12px 24px;align-content:start}.latam-footer button{padding:0;min-height:36px;background:none!important;box-shadow:none!important;color:#cbd8ec!important;text-align:left;justify-content:start;font-weight:400;font-size:14px}.latam-footer a{min-height:36px;display:inline-flex;align-items:center}.latam-plan-card p{font-size:13px;line-height:1.6;color:#b8c7da;margin:0 0 16px}.latam-plan-card>span{margin-top:auto}.latam-plan-card h3{margin-bottom:10px!important}body.latam .natalie-chat{max-height:min(540px,70dvh);bottom:84px;width:min(360px,calc(100vw - 32px));right:16px}body.latam .natalie-launcher{right:16px;bottom:16px}body.latam .natalie-messages{min-height:80px;max-height:35dvh}body.latam .latam-benefit-grid article{padding:20px}body.latam .latam-benefits{padding-bottom:24px}@media(max-width:620px){.latam-footer nav{width:100%}.latam-plan-card{min-height:230px}}
 
@@ -25,14 +25,14 @@ function updateLatamSession(){
  if(['guest','error'].includes(latamSessionState)&&document.getElementById('latamRequestDialog').open)document.getElementById('latamRequestDialog').close();
  document.querySelectorAll('[data-latam-session]').forEach(a=>a.classList.toggle('hidden',a.dataset.latamSession!==latamSessionState));
  const c=document.getElementById('commercialCountry').value,cta=document.getElementById('latamCreate');
- cta.href=c!=='PA'?'#commercialAvailability':latamSessionState==='authenticated'?'#requestForm':'/auth/google/login';
+ cta.href=c!=='PA'?'#commercialAvailability':latamSessionState==='authenticated'?'#requestForm':'#latamAccess';
  cta.setAttribute('aria-disabled',String(c!=='PA'||latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&!latamCanPrepare)));
  document.querySelectorAll('[data-latam-type]').forEach(a=>{a.href=cta.href;a.setAttribute('aria-disabled',cta.getAttribute('aria-disabled'));});
 }
 function prepareLatamRequest(e,type,plan){
  const status=document.getElementById('latamActionStatus');
  if(document.getElementById('commercialCountry').value!=='PA'){e.preventDefault();status.textContent='País en preparación: solicitudes, publicación y cobros deshabilitados.';status.scrollIntoView({block:'center'});return;}
- if(latamSessionState==='guest')return;
+ if(latamSessionState==='guest'){e.preventDefault();openLatamAccess();return;}
  e.preventDefault();
  if(latamSessionState!=='authenticated'||!latamCanPrepare){status.textContent=latamSessionState==='loading'?'Verificando tu sesión…':latamSessionState==='error'?'No se pudo verificar tu sesión. Intenta actualizar.':'La preparación de solicitudes no está habilitada para esta cuenta.';return;}
  const select=document.getElementById('plan');
@@ -47,9 +47,9 @@ function prepareLatamRequest(e,type,plan){
 `;
  return html.replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
- .replace('</style>',css+'</style>')
+ .replace('</style>',css+'#latamAccess{width:min(430px,92vw);border-radius:16px;padding:24px;background:#0e2036;color:white;border:1px solid #40516b}#latamAccess::backdrop{background:#020b16cc}#latamAccess input{display:block;width:100%;margin:8px 0 16px;padding:12px}#latamAccess .button{display:block;text-align:center;padding:14px}#latamAccess button{cursor:pointer}#latamPasswordNotice{font-size:13px;color:#cbd8ec}</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
- .replace('</body>',notice+'</body>')
+ .replace('</body>',notice+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" autocomplete="email" placeholder="tu@correo.com"><label for="latamAccessPassword">Contraseña</label><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" disabled><p id="latamPasswordNotice" role="status">El acceso con contraseña y su recuperación están en preparación. Por ahora puedes continuar con Google.</p><a id="latamGoogleAccess" class="button" href="/auth/google/login">Continuar con Google</a><p><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button> · <button type="button" id="latamForgotPassword">Olvidé mi contraseña</button></p></dialog>`+'</body>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')
  .replace('<section id="panel" class="hidden">','<dialog id="latamRequestDialog" aria-label="Preparar dirección"><button type="button" id="latamRequestClose" class="secondary">Cerrar preparación</button><section id="panel" class="hidden">')
  .replace('</section><p id="message" role="status">','</section></dialog><span id="latamMessageAnchor"></span><p id="message" role="status">')
@@ -60,6 +60,11 @@ function prepareLatamRequest(e,type,plan){
  .replace("const d=await r.json();$('login')", "const d=await r.json();latamSessionState='authenticated';latamCanPrepare=!!d.actions.prepareRequest;updateLatamSession();$('login')")
  .replace("}catch{$('panel').classList.add('hidden');$('message')", "}catch{latamSessionState='error';updateLatamSession();$('panel').classList.add('hidden');$('message')")
  .replace('</script>',`
+const accessDialog=document.getElementById('latamAccess');
+function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+document.getElementById('commercialCountry').selectedOptions[0].textContent;accessDialog.showModal();document.getElementById('latamAccessEmail').focus();}
+document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
+document.getElementById('latamHaveAccount').onclick=()=>document.getElementById('latamAccessEmail').focus();
+document.getElementById('latamForgotPassword').onclick=()=>document.getElementById('latamPasswordNotice').textContent='La recuperación de contraseña todavía no está habilitada. Puedes utilizar Google para acceder.';
 const countrySelect=document.getElementById('commercialCountry');
 const countryState=document.getElementById('latamCountryState'),countryField=document.getElementById('countryField');
 countryField.appendChild(countryState);countryState.hidden=false;document.getElementById('countryCode').hidden=true;countryField.querySelector('label[for="countryCode"]').hidden=true;

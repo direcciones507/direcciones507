@@ -298,3 +298,27 @@ Commit funcional validado: `72a6cf9118c0550ebfa0447be3c09adb858f996e` (correcci�
 Alcance de la prueba: proveedores Google, PLANES y R2 sustituidos por respuestas sintéticas controladas, sin tráfico externo; ADMIN ejecuta su JavaScript real con DOM mínimo de ensayo, sin navegador visual. El QR se valida como URL generada por el mecanismo existente; no se contacta al proveedor externo de QR. No acredita callbacks reales, R2 físico, IA ni rutas/DNS productivos. No se repitió el diagnóstico PostgreSQL. El workflow existente ejecuta su suite completa como regresión del cambio funcional; no se lanzó una auditoría ni prueba de carga productiva.
 
 Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exportación autorizada del inventario de emisores futuros AD507 (funciones, triggers y emisión manual) y evidencia de exclusión del espacio reservado; solicitar a Railway el procedimiento y costo exactos para recuperación aislada del snapshot identificado, sin Restore del servicio activo. Después, autorizar por separado migraciones, dominios/callbacks, validación real de Natalie e integración/despliegue. Ninguna de esas operaciones se efectuó aquí.
+
+
+## Integración única de generación Panamá + LATAM — decisión 12 octubre 2026
+
+**Estado: EN DESARROLLO (decisión y alcance registrados; NO equivale a código integrado, pruebas ni producción).** Una plataforma, un Core, un generador, una plantilla compartida, un panel Mi cuenta y un ADMIN. No generar nuevas direcciones desde Apps Script/Excel históricos; preservar intactos enlaces y direcciones existentes. Reutilizar PR #51/#52/#62 y componentes existentes antes de escribir código nuevo.
+
+- Países iniciales tomados de INITIAL_COUNTRIES en core/runtime/country-configuration.ts: PA +507, CO +57, CR +506, GT +502, SV +503, HN +504, NI +505, MX +52. PE +51 y EC +593 permanecen FUTURE, sin activarlos.
+- Selección de bandera en entrada pública → Crear mi dirección → OAuth Google → Mi cuenta → formulario → ADMIN: conservar countryCode elegido y mostrar automáticamente indicativo telefónico; nunca imponer PA por defecto si hubo selección explícita. El indicativo no reemplaza el identificador único de dirección.
+- Un portafolio con habilitación por país. Producto LUGARES únicamente en PA y CR, oculto en CO y demás países. No alterar planes ni precios sin autorización.
+- Reservar/publicar códigos por país sin colisiones con históricos; conservar URL canónica y QR; un mismo proceso de solicitud, revisión ADMIN, publicación y entrega. La función assertCountryCommerce actual limita a PA: ampliar de manera controlada solo cuando estén cumplidos los gates de país y producción.
+- Preparar interfaz de pasarela de pago desacoplada/configurable por país y producto; no escoger proveedor, solicitar secretos, activar cobros ni confirmar pagos. No confundir espacio de integración con pagos operativos.
+- Países futuros deben incorporarse mediante configuración y pruebas, sin duplicar panel, plantilla ni generador.
+
+|Trabajo específico|Estado|Evidencia actual|Cierre requerido|
+|---|---|---|---|
+|Configuración de ocho países y prefijos|PROBADO EN CÓDIGO|core/runtime/country-configuration.ts contiene INITIAL_COUNTRIES; no prueba productiva|Verificar selector real y persistencia|
+|Un único panel/ADMIN/plantilla|EN DESARROLLO|Componentes compartidos existentes; no crear duplicados|Prueba extremo a extremo de cada flujo|
+|Selección bandera→OAuth→panel→formulario|PENDIENTE|Regla de persistencia definida; no prueba completa|Validar countryCode e indicativo tras login|
+|LUGARES solo PA/CR|PENDIENTE|Regla de producto definida|Pruebas positivas PA/CR y negativas otros|
+|Pasarela desacoplada sin cobros|PENDIENTE|Interfaz prevista; pagos actuales apagados|Contrato técnico y pruebas sin transacción|
+|Reserva, solicitud, publicación, URL y QR|PENDIENTE|PRs y pruebas parciales ya documentados arriba|Prueba integrada real sin afectar históricos|
+|Migraciones/activación producción|BLOQUEADO|Gates de respaldo/exclusividad documentados arriba|Autorización y verificación productiva, no CI solamente|
+
+**Registro de esta actualización:** archivo modificado: core/runtime/RELEASE-CHECKLIST-20261010.md. PR nuevo: ninguno. Pruebas ejecutadas: lectura de configuración y checklist, sin tests de código ni despliegue. Bloqueos: gates de activación existentes; sin modificar Apps Script, Excel, DNS, SQL ni cobros.

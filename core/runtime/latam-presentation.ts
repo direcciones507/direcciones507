@@ -25,8 +25,8 @@ function updateLatamSession(){
  if(['guest','error'].includes(latamSessionState)&&document.getElementById('latamRequestDialog').open)document.getElementById('latamRequestDialog').close();
  document.querySelectorAll('[data-latam-session]').forEach(a=>a.classList.toggle('hidden',a.dataset.latamSession!==latamSessionState));
  const c=document.getElementById('commercialCountry').value,cta=document.getElementById('latamCreate');
- cta.href=c!=='PA'?'#commercialAvailability':latamSessionState==='authenticated'?'#requestForm':'#latamAccess';
- cta.setAttribute('aria-disabled',String(c!=='PA'||latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&!latamCanPrepare)));
+ cta.href=latamSessionState==='authenticated'?(c==='PA'?'#requestForm':'#commercialAvailability'):'#latamAccess';
+ cta.setAttribute('aria-disabled',String(latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&(c!=='PA'||!latamCanPrepare))));
  document.querySelectorAll('[data-latam-type]').forEach(a=>{a.href=cta.href;a.setAttribute('aria-disabled',cta.getAttribute('aria-disabled'));});
 }
 function prepareLatamRequest(e,type,plan){

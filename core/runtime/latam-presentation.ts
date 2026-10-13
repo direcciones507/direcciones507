@@ -31,8 +31,8 @@ function updateLatamSession(){
 }
 function prepareLatamRequest(e,type,plan){
  const status=document.getElementById('latamActionStatus');
- if(document.getElementById('commercialCountry').value!=='PA'){e.preventDefault();status.textContent='País en preparación: solicitudes, publicación y cobros deshabilitados.';status.scrollIntoView({block:'center'});return;}
  if(latamSessionState==='guest'){e.preventDefault();openLatamAccess();return;}
+ if(document.getElementById('commercialCountry').value!=='PA'){e.preventDefault();status.textContent='País en preparación: solicitudes, publicación y cobros deshabilitados.';status.scrollIntoView({block:'center'});return;}
  e.preventDefault();
  if(latamSessionState!=='authenticated'||!latamCanPrepare){status.textContent=latamSessionState==='loading'?'Verificando tu sesión…':latamSessionState==='error'?'No se pudo verificar tu sesión. Intenta actualizar.':'La preparación de solicitudes no está habilitada para esta cuenta.';return;}
  const select=document.getElementById('plan');

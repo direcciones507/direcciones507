@@ -61,7 +61,7 @@ function prepareLatamRequest(e,type,plan){
  .replace("}catch{$('panel').classList.add('hidden');$('message')", "}catch{latamSessionState='error';updateLatamSession();$('panel').classList.add('hidden');$('message')")
  .replace('</script>',`
 const accessDialog=document.getElementById('latamAccess');
-function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+document.getElementById('commercialCountry').selectedOptions[0].textContent;if(!accessDialog.open)accessDialog.showModal();document.getElementById('latamAccessEmail').focus();}
+function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+(document.getElementById('commercialCountry')?.selectedOptions[0]?.textContent||'Panamá');if(!accessDialog.open)accessDialog.showModal();document.getElementById('latamAccessEmail').focus();}
 document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
 let latamEmailMode='register';
 const latamEmailSubmit=document.getElementById('latamEmailSubmit');

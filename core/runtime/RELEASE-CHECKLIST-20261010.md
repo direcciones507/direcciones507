@@ -339,3 +339,5 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - [ ] ADMIN LATAM: consultar Panamá y países habilitados desde el mismo panel, con filtros y permisos existentes; comprobar datos reales antes de declarar operativo.
 - [ ] DOMINIO ADMIN: habilitar direcciones.lat/admin conservando cuenta.direcciones507.com/admin hasta validar sesión, Google OAuth y redirección segura; no cambiar DNS aún.
 - [ ] NATALIE EN ADMIN: reutilizar el chatbot existente en el panel administrativo, verificar CSP, orígenes, permisos y conversación real; no crear otro widget.
+
+- [ ] NATALIE ADMIN, avance de código 2026-10-12: commits 9afad51 y ea0097c reutilizan el widget existente en `core/runtime/server.ts` solamente cuando `nataliePresentationAllowed` autoriza el origen. Pendiente: permitir y probar el origen administrativo real `cuenta.direcciones507.com` o el canónico `direcciones.lat`, comprobar CORS/CSP, conversación real y responsive. Sin pruebas ejecutadas, merge ni despliegue.

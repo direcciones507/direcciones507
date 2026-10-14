@@ -1440,6 +1440,46 @@
       .identity-block { grid-template-columns: 250px minmax(0,1fr); }
       #logoNegocio { width: 240px; height: 240px; }
     }
+    /* Shared published-card lower layout only. Functional nodes and scripts are unchanged. */
+    .card .white-sheet .public-lower-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;width:100%;min-width:0;margin:0;padding:4px 0 24px;align-items:start}
+    .public-lower-layout *{min-width:0}
+    .public-lower-left{display:flex;flex-direction:column;gap:22px}
+    .public-lower-layout .public-lower-title{margin:0 0 12px;color:#dceafa;font-size:15px;font-weight:750;line-height:1.4;letter-spacing:.01em;text-transform:none}
+    .card .white-sheet .public-lower-layout .actions-triple-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0}
+    .card .white-sheet .public-lower-layout .actions-triple-row>.btn-action-triple{width:auto;min-height:78px;padding:13px 5px;gap:7px;border:1px solid #344252;border-radius:15px;background:#202a36;color:#f0f6fc;box-shadow:0 4px 14px #0002;justify-content:center;text-align:center;overflow-wrap:anywhere}
+    .public-lower-layout .btn-action-triple i{color:#7dd3fc!important;font-size:20px}
+    .public-lower-layout .btn-action-triple span{font-size:11px;line-height:1.3}
+    .public-lower-layout .btn-action-triple p{margin:0;color:#b9c9dc;font-size:10px;line-height:1.4}
+    .public-lower-layout #btnGoogleSecundario,.public-lower-layout #btnCall,.public-lower-layout #btnShare{grid-column:auto!important;grid-row:auto!important;order:0}
+    .public-lower-layout #btnLandline{grid-column:1/-1;order:1}
+    .public-social-section:has(>#redes-container[hidden]){display:none}
+    .card .white-sheet .public-lower-layout .social-quad-row{display:flex;flex-wrap:wrap;gap:9px;margin:0}
+    .card .white-sheet .public-lower-layout .btn-social-quad{flex:1 1 130px;gap:9px;justify-content:flex-start;min-height:46px;padding:11px 13px;background:#202a36;color:#e4eef9;border:1px solid #344252;border-radius:12px;font-size:13px;text-decoration:none}
+    .public-lower-layout .btn-social-quad i{font-size:19px;flex-shrink:0}
+    .public-navigation-section:not(:has(.nav-box:not([hidden]))){display:none}
+    .card .public-lower-layout .main-nav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0;padding:0}
+    .card .public-lower-layout .nav-box{min-height:76px;padding:13px 10px;border-radius:15px;gap:10px;align-items:center;overflow-wrap:anywhere}
+    .public-lower-layout .nav-box i{font-size:26px;flex-shrink:0}
+    .public-lower-layout .nav-box-text h4{font-size:12px;line-height:1.35;letter-spacing:0;text-transform:none}
+    .public-lower-layout .nav-box-text p{font-size:10px;line-height:1.4;margin-top:3px}
+    .public-business-info{width:100%;padding:20px;background:#202a36;border:1px solid #344252;border-radius:20px;box-shadow:0 8px 24px #0002}
+    .public-business-info>.public-lower-title{margin-bottom:4px;color:#dceafa}
+    .card .white-sheet .public-lower-layout .accordion-item{display:flex;width:100%;min-height:76px;padding:16px 0;margin:0;border:0;border-bottom:1px solid #41506480;border-radius:0;background:transparent;color:#e7f0fb;box-shadow:none;gap:12px;grid-column:auto;grid-row:auto}
+    .public-lower-layout .accordion-item:hover{background:#ffffff05}
+    .public-lower-layout .accordion-icon-left{width:34px;height:34px;background:#6ac3fa14;border:1px solid #6ac3fa30;color:#7dd3fc}
+    .public-lower-layout .accordion-icon-left i{color:#7dd3fc!important}
+    .public-lower-layout .accordion-label{font-size:10px;line-height:1.4;color:#a9c0d8;letter-spacing:.04em;margin-bottom:5px}
+    .public-lower-layout .accordion-value{font-size:13px;line-height:1.6;color:#eef5fd}
+    .public-lower-layout .accordion-arrow-right{color:#7dd3fc}
+    .card .white-sheet .public-lower-layout .double-row-buttons{display:flex;flex-direction:column;gap:0;margin:0}
+    .public-lower-layout #btnQR{order:0}
+    .public-lower-layout #qrSection{order:1;padding:14px 0;grid-column:auto;grid-row:auto}
+    .public-lower-layout #btnStats{order:2;border-bottom:0}
+    .card .white-sheet .public-lower-layout .qr-box{background:transparent;border:0;padding:0;color:#eef5fd;border-radius:0}
+    .public-lower-layout .qr-box h3{color:#dceafa;font-size:12px;line-height:1.5}
+    .public-lower-layout .qr-box img{background:#fff;padding:8px;border-radius:10px;max-width:100%;height:auto;aspect-ratio:1}
+    @media(min-width:768px){.card .white-sheet .public-lower-layout{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;padding-top:4px}.public-business-info{padding:22px}.public-lower-left{gap:24px}}
+    @media(max-width:380px){.public-lower-layout .nav-box{flex-direction:column;text-align:center;gap:7px}.public-lower-layout .btn-action-triple span{font-size:10px}.public-business-info{padding:16px}}
   </style>
 </head>
 
@@ -1481,7 +1521,58 @@
     </div>
   </div>
 
-  <div class="main-nav-grid">
+  <div class="white-sheet">
+
+    <div id="premiumGalleryContainer" class="negocio-premium">
+      <div class="sheet-section-title">Galería Comercial:</div>
+      <div id="galeriaFotos" class="negocio-galeria"></div>
+      <div id="galleryBusinessStatus" class="gallery-business-status" aria-live="polite"></div>
+    </div>
+
+    <section class="public-lower-layout" aria-label="Contacto y datos del negocio">
+      <div class="public-lower-left">
+<div class="actions-triple-row">
+      <a id="btnGoogleSecundario" class="btn-action-triple" target="_blank" href="#">
+        <i class="fa-solid fa-map-marked-alt"></i>
+        <span>Ver Mapa</span>
+        <p>Google Maps</p>
+      </a>
+
+      <a id="btnCall" class="btn-action-triple" href="#">
+        <i class="fa-solid fa-phone"></i>
+        <span>Llamar</span>
+        <p id="refTelefono">Contacto</p>
+      </a>
+
+      <a id="btnLandline" class="btn-action-triple" hidden>
+        <i class="fa-solid fa-phone"></i><span>Teléfono fijo</span><p id="refLandline"></p>
+      </a>
+      <div id="btnShare" class="btn-action-triple" style="cursor: pointer;">
+        <i class="fa-solid fa-share-nodes"></i>
+        <span>Compartir</span>
+        <p>Dirección</p>
+      </div>
+    </div>
+        <section class="public-social-section" aria-labelledby="publicSocialTitle">
+          <h2 id="publicSocialTitle" class="public-lower-title">Redes sociales</h2>
+<div class="social-quad-row" id="redes-container">
+      <a id="btnInstagram" class="btn-social-quad ig" target="_blank">
+        <i class="fa-brands fa-instagram"></i> Instagram
+      </a>
+      <a id="btnTikTok" class="btn-social-quad tk" target="_blank" style="display:none;">
+        <i class="fa-brands fa-tiktok"></i> TikTok
+      </a>
+      <a id="btnFacebook" class="btn-social-quad fb" target="_blank" style="display:none;">
+        <i class="fa-brands fa-facebook"></i> Facebook
+      </a>
+      <a id="btnWeb" class="btn-social-quad web" target="_blank" style="display:none;">
+        <i class="fa-solid fa-globe"></i> Web
+      </a>
+    </div>
+        </section>
+        <section class="public-navigation-section" aria-labelledby="publicNavigationTitle">
+          <h2 id="publicNavigationTitle" class="public-lower-title">Cómo llegar</h2>
+<div class="main-nav-grid">
     <a id="btnGoogle" class="nav-box box-google" target="_blank">
       <i class="fa-solid fa-location-dot gmaps-original-color"></i>
       <div class="nav-box-text">
@@ -1489,7 +1580,7 @@
         <p>Abrir navegación</p>
       </div>
     </a>
-    
+
     <a id="btnWaze" class="nav-box box-waze" target="_blank">
       <i class="fa-brands fa-waze"></i>
       <div class="nav-box-text">
@@ -1514,54 +1605,34 @@
       </div>
     </a>
   </div>
-
-  <div class="white-sheet">
-
-    <div id="premiumGalleryContainer" class="negocio-premium">
-      <div class="sheet-section-title">Galería Comercial:</div>
-      <div id="galeriaFotos" class="negocio-galeria"></div>
-      <div id="galleryBusinessStatus" class="gallery-business-status" aria-live="polite"></div>
+        </section>
+      </div>
+      <section class="public-business-info" aria-labelledby="publicBusinessTitle">
+        <h2 id="publicBusinessTitle" class="public-lower-title">Información del negocio</h2>
+<div class="accordion-item accordion-full" id="btnHorario">
+      <div class="accordion-icon-left"><i class="fa-solid fa-clock"></i></div>
+      <div class="accordion-content-text">
+        <div class="accordion-label">Horario de atención</div>
+        <div class="accordion-value" id="horario">No especificado</div>
+      </div>
+      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
     </div>
-
-    <div class="actions-triple-row">
-      <a id="btnGoogleSecundario" class="btn-action-triple" target="_blank" href="#">
-        <i class="fa-solid fa-map-marked-alt"></i>
-        <span>Ver Mapa</span>
-        <p>Google Maps</p>
-      </a>
-
-      <a id="btnCall" class="btn-action-triple" href="#">
-        <i class="fa-solid fa-phone"></i>
-        <span>Llamar</span>
-        <p id="refTelefono">Contacto</p>
-      </a>
-
-      <a id="btnLandline" class="btn-action-triple" hidden>
-        <i class="fa-solid fa-phone"></i><span>Teléfono fijo</span><p id="refLandline"></p>
-      </a>
-      <div id="btnShare" class="btn-action-triple" style="cursor: pointer;">
-        <i class="fa-solid fa-share-nodes"></i>
-        <span>Compartir</span>
-        <p>Dirección</p>
+<div class="accordion-item accordion-full" id="btnRef">
+      <div class="accordion-icon-left"><i class="fa-solid fa-location-dot"></i></div>
+      <div class="accordion-content-text">
+        <div class="accordion-label">Ubicación / Referencia</div>
+        <div class="accordion-value" id="ref">Cargando detalles...</div>
+      </div>
+      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
+    </div>
+<div class="accordion-item accordion-full" id="codigoPostalContainer" style="display:none;">
+      <div class="accordion-icon-left"><i class="fa-solid fa-envelope"></i></div>
+      <div class="accordion-content-text">
+        <div class="accordion-label">Código postal</div>
+        <div class="accordion-value" id="codigoPostal">No especificado</div>
       </div>
     </div>
-
-    <div class="social-quad-row" id="redes-container">
-      <a id="btnInstagram" class="btn-social-quad ig" target="_blank">
-        <i class="fa-brands fa-instagram"></i> Instagram
-      </a>
-      <a id="btnTikTok" class="btn-social-quad tk" target="_blank" style="display:none;">
-        <i class="fa-brands fa-tiktok"></i> TikTok
-      </a>
-      <a id="btnFacebook" class="btn-social-quad fb" target="_blank" style="display:none;">
-        <i class="fa-brands fa-facebook"></i> Facebook
-      </a>
-      <a id="btnWeb" class="btn-social-quad web" target="_blank" style="display:none;">
-        <i class="fa-solid fa-globe"></i> Web
-      </a>
-    </div>
-
-    <div class="double-row-buttons">
+<div class="double-row-buttons">
       <div class="accordion-item" id="btnQR">
         <div class="accordion-icon-left"><i class="fa-solid fa-qrcode"></i></div>
         <div class="accordion-content-text">
@@ -1587,32 +1658,8 @@
         </div>
       </div>
     </div>
-
-    <div class="accordion-item accordion-full" id="btnHorario">
-      <div class="accordion-icon-left"><i class="fa-solid fa-clock"></i></div>
-      <div class="accordion-content-text">
-        <div class="accordion-label">Horario de atención</div>
-        <div class="accordion-value" id="horario">No especificado</div>
-      </div>
-      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
-    </div>
-
-    <div class="accordion-item accordion-full" id="codigoPostalContainer" style="display:none;">
-      <div class="accordion-icon-left"><i class="fa-solid fa-envelope"></i></div>
-      <div class="accordion-content-text">
-        <div class="accordion-label">Código postal</div>
-        <div class="accordion-value" id="codigoPostal">No especificado</div>
-      </div>
-    </div>
-
-    <div class="accordion-item accordion-full" id="btnRef">
-      <div class="accordion-icon-left"><i class="fa-solid fa-location-dot"></i></div>
-      <div class="accordion-content-text">
-        <div class="accordion-label">Ubicación / Referencia</div>
-        <div class="accordion-value" id="ref">Cargando detalles...</div>
-      </div>
-      <i class="fa-solid fa-chevron-down accordion-arrow-right"></i>
-    </div>
+      </section>
+    </section>
 
     <section id="commercialDescription" class="commercial-description" aria-label="Descripción comercial">
       <p id="commercialDescriptionText" class="commercial-description-text"></p>

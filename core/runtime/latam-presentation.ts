@@ -80,6 +80,25 @@ body.latam .latam-footer{display:block;padding:24px 0 48px;margin-top:12px}
 .latam-footer-inner{flex-direction:column;gap:18px}
 .latam-footer-inner nav{width:100%;max-width:none;gap:6px 16px}
 }
+
+/* Homepage-only polish; retain existing colors and functional controls. */
+#commercialWelcome .latam-hero{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(24px,4vw,56px)}
+#commercialWelcome .latam-copy h1{font-size:clamp(38px,4.1vw,58px);line-height:1.12;letter-spacing:-.035em;text-wrap:balance}
+#commercialWelcome .latam-copy>p{max-width:530px;line-height:1.7;color:#d1def0}
+#commercialWelcome .latam-art{object-fit:contain;object-position:center;max-height:390px;border-radius:18px}
+#commercialWelcome .latam-benefit-grid article{display:flex;flex-direction:column;gap:8px;border-radius:18px;background:linear-gradient(150deg,#132b48,#0e2036)}
+#commercialWelcome .latam-benefit-grid h3{margin:2px 0;font-size:18px}
+#commercialWelcome .latam-benefit-grid p{line-height:1.65}
+#commercialWelcome .latam-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+#commercialWelcome .latam-plan-card{flex:auto;min-height:208px;padding:24px;border-radius:18px;background:linear-gradient(155deg,#142d4c,#0e2036);border-color:#344d6b;overflow-wrap:break-word}
+#commercialWelcome .latam-plan-card h3{margin-bottom:10px!important;font-size:19px}
+#commercialWelcome .latam-plan-card p{font-size:14px;line-height:1.65;flex:1}
+#commercialWelcome .latam-plan-card>span{display:inline-flex;align-items:center;font-weight:700;margin-top:16px}
+body.latam .latam-footer-inner{justify-content:center;align-items:center;gap:clamp(24px,6vw,88px)}
+body.latam .latam-footer-inner>div{flex:0 1 300px}
+body.latam .latam-footer-inner nav{flex:0 1 440px;justify-items:start}
+@media(min-width:621px) and (max-width:1099px){#commercialWelcome .latam-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#commercialWelcome .latam-hero{gap:20px}#commercialWelcome .latam-art{height:300px}}
+@media(max-width:620px){#commercialWelcome .latam-hero{grid-template-columns:1fr}#commercialWelcome .latam-copy h1{font-size:clamp(34px,9vw,44px)}#commercialWelcome .latam-art{height:220px}#commercialWelcome .latam-plan-grid{grid-template-columns:1fr}#commercialWelcome .latam-plan-card{min-height:0}body.latam .latam-footer-inner{align-items:stretch;gap:20px}body.latam .latam-footer-inner>div,body.latam .latam-footer-inner nav{flex:auto}}
 `;
  const sessionScript = `
 let latamSessionState='loading',latamCanPrepare=false;

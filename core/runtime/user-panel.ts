@@ -82,7 +82,7 @@ export function commercialEntryHtml(international=false,url=new URL(internationa
  const script=source.slice(scriptStart+8,scriptEnd);
  // Match exact public hosts behind Railway TLS; backend Origin checks remain unchanged.
  const natalieAllowed=nataliePresentationAllowed(url,process.env);
- const html=userPanelHtml.replace('<title>Direcciones LATAM | Mi cuenta</title>','<title>'+context.title+'</title><meta name="description" content="'+context.description+'"><link rel="canonical" href="'+context.canonical+'">')
+ const html=userPanelHtml.replace(/<title>[^<]*<\/title>/,'<title>'+context.title+'</title><meta name="description" content="'+context.description+'"><link rel="canonical" href="'+context.canonical+'">')
  .replace('<div class="brand">Direcciones<span>507</span></div>',context.international?'<div class="brand" style="color:#76aaff">Direcciones LATAM</div>':'<div class="brand">Direcciones<span>507</span></div>')
  .replace('<main>','<main>'+commercialNavigation(context.country,context.international))
  .replace('</main>','<footer class="card" style="color:#0b57d0">'+(context.international?'Direcciones LATAM · Direcciones507, presencia de Panamá':'Direcciones507 · Panamá')+'</footer></main>')

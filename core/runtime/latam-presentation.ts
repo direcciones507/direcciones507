@@ -45,9 +45,32 @@ function prepareLatamRequest(e,type,plan){
  document.getElementById('requestForm').scrollIntoView({block:'start'});
 }
 `;
+ const accessCss=`
+#latamAccess{box-sizing:border-box;width:min(440px,calc(100vw - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);margin:auto;padding:20px;border:1px solid #dce6ef;border-radius:18px;background:#fff;color:#18324b;box-shadow:0 20px 70px #001a3670;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+#latamAccess::backdrop{background:#020b16cc}
+#latamAccess>form{display:flex;justify-content:flex-end;margin:0}
+#latamAccess>form button{min-height:32px;padding:5px 12px;border-radius:9px;background:#eff5ff;color:#17458b;box-shadow:none;font-size:13px}
+#latamAccess h2{margin:4px 0 6px;color:#102e49;font-size:23px;line-height:1.2}
+#latamAccessCountry{margin:0 0 12px;font-size:13px;color:#526981;line-height:1.4}
+#latamAccess label{margin:10px 0 5px;font-size:14px;font-weight:700}
+#latamAccess input{display:block;width:100%;height:42px;margin:0;padding:10px 12px;border:1px solid #cad8e5;border-radius:11px;background:#fff;color:#142f46;font-size:16px;min-width:0}
+#latamAccess .latam-password-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+#latamAccess .latam-password-row input{flex:1}
+#latamAccess #latamTogglePassword{flex-shrink:0;min-height:42px;padding:10px;border:1px solid #cad8e5;border-radius:11px;background:#f3f7fc;color:#204668;box-shadow:none;font-size:13px}
+#latamAccess #latamEmailSubmit,#latamAccess #latamGoogleAccess{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;padding:11px 14px;border-radius:11px;font-size:14px;font-weight:750;line-height:1.25}
+#latamAccess #latamEmailSubmit{border:0;background:#0b57d0;color:#fff}
+#latamAccess #latamGoogleAccess{border:1px solid #ccd8e5;background:#fff;color:#233b54;text-decoration:none;box-shadow:none}
+#latamAccess #latamPasswordNotice{margin:8px 0 0;font-size:12px;line-height:1.4;color:#526981}
+#latamAccess .latam-auth-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 14px;margin:7px 0}
+#latamAccess .latam-auth-links button{min-height:32px;padding:4px 0;border:0;border-radius:4px;background:transparent;color:#0b57d0;font-size:12px;font-weight:700;box-shadow:none;transform:none}
+#latamAccess .latam-auth-divider{display:flex;align-items:center;gap:12px;margin:8px 0;color:#63778c;font-size:13px}
+#latamAccess .latam-auth-divider:before,#latamAccess .latam-auth-divider:after{content:'';flex:1;border-top:1px solid #dbe3eb}
+#latamAccess [hidden]{display:none!important}
+@media(max-width:480px),(max-height:600px){#latamAccess{padding:16px}#latamAccess h2{font-size:21px}}
+`;
  return html.replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
- .replace('</style>',css+'#latamAccess{width:min(430px,92vw);border-radius:16px;padding:24px;background:#0e2036;color:white;border:1px solid #40516b}#latamAccess::backdrop{background:#020b16cc}#latamAccess input{display:block;width:100%;margin:8px 0 16px;padding:12px}#latamAccess .button{display:block;text-align:center;padding:14px}#latamAccess button{cursor:pointer}#latamPasswordNotice{font-size:13px;color:#cbd8ec}#latamAccess{background:#fff;color:#18324b;border:1px solid #dce6ef;box-shadow:0 20px 70px #001a3670}#latamAccess h2{color:#102e49;margin:12px 0}#latamAccess input{border:1px solid #cad8e5;border-radius:11px;background:#fff;color:#142f46}#latamAccess label{font-weight:650}#latamAccess #latamEmailSubmit{width:100%;padding:13px;border:0;border-radius:11px;background:#0b57d0;color:#fff;font-weight:750}#latamAccess #latamGoogleAccess{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:1px solid #ccd8e5;border-radius:11px;background:#fff;color:#233b54;text-decoration:none;font-weight:700;padding:13px}#latamAccess .latam-auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0;color:#63778c}#latamAccess .latam-auth-divider:before,#latamAccess .latam-auth-divider:after{content:\'\';flex:1;border-top:1px solid #dbe3eb}#latamAccess .latam-auth-links{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:16px 0}#latamAccess .latam-auth-links button{border:0;background:transparent;color:#0b57d0;font-weight:700;padding:6px}#latamAccess #latamPasswordNotice{color:#526981}#latamAccess [hidden]{display:none!important}#latamAccess .latam-password-row{display:flex;gap:8px;align-items:center}#latamAccess .latam-password-row input{flex:1;min-width:0}#latamAccess #latamTogglePassword{border:1px solid #cad8e5;border-radius:10px;background:#f5f8fc;color:#204668;padding:10px}</style>')
+ .replace('</style>',css+accessCss+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
  .replace('<script>',notice+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><span aria-hidden="true">G</span> Continuar con Google</a></dialog>`+'<script>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')

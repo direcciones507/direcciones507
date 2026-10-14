@@ -427,3 +427,14 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - Chromium aislado, usando lecturas reales de datos públicos sin modificarlos: THE1920 Premium Pro, FJSPORTGYM Premium, LABDIESELMONTERO Negocio; tamaños 390×844, 320×568, 768×1024 y 1440×900. Doce combinaciones aprobadas: enlaces/targets/visibilidad y QR idénticos antes/después, dimensiones de identidad/galería/descripción iguales, dos columnas equilibradas desde tablet, una en móvil, tres acciones uniformes, desplegables/QR y lectura de estadísticas simulada funcionando, sin desbordamientos ni errores JS. Imágenes aisladas sustituidas por fixtures solo durante las mediciones.
 - Caso adicional sin redes configuradas en fixture local: wrapper y título ausentes sin modificar el script. Capturas de teléfono/tablet/escritorio inspeccionadas. Ningún clic ni dato estadístico real escrito por las pruebas.
 - Pendiente: CI completo, integración/publicación mediante generador Pages existente y verificación productiva. Railway permanece sin cambios por restricción expresa.
+
+
+## 2026-10-14 · Portada LATAM responsive y textos (solo presentación)
+
+- Base main 5dc8f539 (PR #66 preservado). Cambios limitados a latam-presentation.ts y prueba de portada; sin cambios en panel, fichas, datos, proveedores ni infraestructura.
+- Portada horizontal desde tablet: texto/CTA y mapa existente en columnas; países separados con cuatro tarjetas por fila y selección destacada. Móvil: título, descripción, mapa, CTA, países, beneficios, planes, disponibilidad y ayuda.
+- Beneficios uniformes; planes centrados con dimensiones comunes y ajuste de texto; disponibilidad en franja y footer con marca/enlaces en dos grupos compactos. Mismos colores, logo, bytes de mapa, países e indicativos.
+- Textos: “enlace”, descripción de navegación sin promesa absoluta, Premium con código postal/zona postal y nombre completo del plan base; Premium Pro mantiene descripción comercial y hasta cinco fotos, contrastado con index.html y capacidades existentes. Sin nuevos beneficios/precios/condiciones. Tarjeta Panamá identifica Direcciones507 sin duplicar “Panamá”.
+- 24 pruebas aprobadas / 183 aserciones en acceso, portada, contexto comercial y panel. Scripts generados y ventana de acceso idénticos byte por byte respecto a la base.
+- Chromium aislado: 320×568, 390×844, 768×1024, 1024×768 y 1440×900; sin desbordamientos, hero horizontal/vertical correcto, footer compacto, apertura/cierre del acceso, país CO conservado, ocho banderas y aviso legal funcionando. Sin llamadas productivas ni envíos.
+- CI e integración se registran en el PR de esta única intervención al completarse. No se opera Railway por restricción expresa.

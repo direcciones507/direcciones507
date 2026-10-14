@@ -30,6 +30,22 @@ const adminHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><m
 
 startLegacyCore(async req => {
   const url = new URL(req.url);
+  // Panamá uses the LATAM account panel, not a second session or identity.
+  // Only redirect account entry paths; preserve historical AD507 pages and assets.
+  if(req.method==='GET' && ['direcciones507.com','cuenta.direcciones507.com'].includes(url.hostname) && ['/panel','/panel/','/mi-cuenta','/crear-cuenta'].includes(url.pathname)){
+    const destination=new URL('/panel','https://direcciones.lat');
+    destination.searchParams.set('country','PA');
+    // Panama account entry opens the shared centered dialog, not a second login page.
+    if(url.pathname==='/crear-cuenta'||url.pathname==='/mi-cuenta'||url.searchParams.get('access')==='1')destination.searchParams.set('access','1');
+    return new Response(null,{status:302,headers:{location:destination.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
+  }
+  if(req.method==='GET' && (url.pathname==='/verificar-correo'||url.pathname==='/recuperar-contrasena') && url.hostname==='direcciones.lat'){
+    const token=url.searchParams.get('token'),email=url.searchParams.get('email');
+    if(!token||!email||!/^[A-Za-z0-9_-]{43}$/.test(token)||email.length>320)return new Response('Enlace inválido',{status:400,headers:{'cache-control':'no-store'}});
+    const next=new URL('/',url.origin);
+    next.searchParams.set('token',token);next.searchParams.set('email',email);next.searchParams.set('action',url.pathname==='/recuperar-contrasena'?'reset':'verify');
+    return new Response(null,{status:302,headers:{location:next.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
+  }
   if(sharedCommercialRoot(req,process.env)){const nonce=crypto.randomUUID().replaceAll('-','');return new Response(commercialEntryHtml(url.hostname==='direcciones.lat',url).replace('<script>','<script nonce="'+nonce+'">'),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-"+nonce+"'; base-uri 'none'; frame-ancestors 'none'; connect-src 'self' https://ad507-core-production.up.railway.app; object-src 'none'"}});}
   const paymentPageId=url.pathname.match(/^\/panel\/payments\/([a-f0-9-]{36})$/);
   if(paymentPageId&&req.method==='GET'){

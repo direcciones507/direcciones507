@@ -322,3 +322,50 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 |Migraciones/activación producción|BLOQUEADO|Gates de respaldo/exclusividad documentados arriba|Autorización y verificación productiva, no CI solamente|
 
 **Registro de esta actualización:** archivo modificado: core/runtime/RELEASE-CHECKLIST-20261010.md. PR nuevo: ninguno. Pruebas ejecutadas: lectura de configuración y checklist, sin tests de código ni despliegue. Bloqueos: gates de activación existentes; sin modificar Apps Script, Excel, DNS, SQL ni cobros.
+
+### Avance funcional en rama feat/unified-country-generation-20261012
+
+- EN DESARROLLO: `core/runtime/request-validation.ts` ahora rechaza solicitudes `PLACE` fuera de PA y CR mediante `COUNTRY_PRODUCT_NOT_AVAILABLE`. Mantiene validación de RESIDENTIAL y BUSINESS y no toca históricos.
+- Estado de pruebas: NO EJECUTADAS en esta intervención; no declarar PROBADO ni OPERATIVO. UI de catálogo por país y selector/OAuth aún pendientes. Sin merge, migración ni despliegue.
+- Reutilización: módulo `requestCountry` y `validateRequestDraft` existentes; ningún generador/panel nuevo. Bloqueos productivos previos permanecen.
+
+- EN DESARROLLO, commit 495a667: `core/runtime/commercial-entry.ts` muestra el indicativo telefónico de cada país inicial en la identidad del selector y tolera ausencia del campo `countryCode` al inicializar; reutiliza `COUNTRIES` y sincronización existente. No se afirma persistencia tras OAuth ni publicación. Pruebas NO EJECUTADAS; no merge/deploy.
+
+- EN DESARROLLO, commits 3077722 y 4f5ccdf: `core/runtime/latam-presentation.ts` oculta tarjeta LUGARES fuera de PA/CR al renderizar y cambiar país, incluyendo regla CSS `[hidden]` frente a `display:flex`. La validación del servidor se añadió previamente. Sin pruebas automatizadas ejecutadas ni despliegue; el flujo OAuth y la persistencia entre hosts siguen pendientes.
+
+- ACCESO LATAM EN DESARROLLO (commit c212cb1): panel previo al OAuth desde CTA principal y enlaces de invitado, país seleccionado visible y Google OAuth existente reutilizado. Campos de contraseña y recuperación expresamente deshabilitados/no operativos hasta implementar endpoints, almacenamiento seguro y recuperación; no afirmar registro por correo listo. Sin pruebas ejecutadas, merge ni despliegue.
+
+- [ ] ADMIN ÚNICO: conservar el panel administrativo existente y conectar Direcciones LATAM sin crear otro panel ni duplicar datos.
+- [ ] ADMIN LATAM: consultar Panamá y países habilitados desde el mismo panel, con filtros y permisos existentes; comprobar datos reales antes de declarar operativo.
+- [ ] DOMINIO ADMIN: habilitar direcciones.lat/admin conservando cuenta.direcciones507.com/admin hasta validar sesión, Google OAuth y redirección segura; no cambiar DNS aún.
+- [ ] NATALIE EN ADMIN: reutilizar el chatbot existente en el panel administrativo, verificar CSP, orígenes, permisos y conversación real; no crear otro widget.
+
+- [ ] NATALIE ADMIN, avance de código 2026-10-12: commits 9afad51 y ea0097c reutilizan el widget existente en `core/runtime/server.ts` solamente cuando `nataliePresentationAllowed` autoriza el origen. Pendiente: permitir y probar el origen administrativo real `cuenta.direcciones507.com` o el canónico `direcciones.lat`, comprobar CORS/CSP, conversación real y responsive. Sin pruebas ejecutadas, merge ni despliegue.
+
+- [ ] ACCESO CORREO/GOOGLE, avance 2026-10-12: commit `530ed359` abre el diálogo de ingreso LATAM cuando `/panel` devuelve al visitante con `?access=1`. Rutas de correo y Google existentes; pendiente probar registro, entrega/verificación de correo, login, recuperación, callback Google, sesión y persistencia de país. No afirmar operativo ni desplegado.
+
+- [ ] VENTANAS DE ACCESO estilo Empleos.pa (2026-10-12): commits `0cf07ad`, `e3e29c3` añaden diseño claro, mostrar/ocultar contraseña, enlace «¿Olvidaste tu contraseña?» y botón «Continuar con Google» abajo en el diálogo LATAM existente. Pendiente probar visualmente móvil/tablet/escritorio y flujo real de recuperación, verificación y OAuth; no desplegado.
+
+- [ ] GOOGLE CLOUD OAUTH (acción de propietario): confirmar en el cliente OAuth existente los orígenes autorizados `https://direcciones.lat` y el callback exacto `https://direcciones.lat/auth/google/callback`, además de los de Panamá; verificar que Railway tenga `AD507_GOOGLE_REDIRECT_URI_LATAM`, `AD507_AUTH_SUCCESS_URL_LATAM` y la compuerta de dominio validado. No copiar secretos a checklist ni alterar credenciales sin autorización. Google Sheets no configura OAuth; si se usa, solo registrar resultados.
+- [ ] CORREO DE CUENTAS (acción técnica): comprobar variables `EMAIL_WEBHOOK_URL`, `EMAIL_WEBHOOK_SECRET`, `EMAIL_FROM` en Railway y entrega de verificación/recuperación. El backend genera enlaces `/verificar-correo` y `/recuperar-contrasena`; verificar que el frontend abra el diálogo con `token`, `email` y acción adecuada desde esas rutas, no solo desde la portada.
+
+- [x] GOOGLE CLOUD OAuth (evidencia visual del propietario, 2026-10-12): cliente web `Direcciones507` muestra orígenes JavaScript `https://direcciones507.com` y `https://direcciones.lat`, y callbacks `https://cuenta.direcciones507.com/auth/google/callback` y `https://direcciones.lat/auth/google/callback`. No crear otro cliente ni duplicar entradas. Esta evidencia acredita configuración visible, no login funcional.
+- [ ] GOOGLE OAUTH prueba de extremo a extremo: verificar variables Railway para LATAM, estado del despliegue, callback, cookie, `/v1/auth/me` y llegada a `/panel` mediante cuenta de prueba, sin exponer secretos ni alterar producción sin autorización.
+
+- [x] RAILWAY OAuth inventario (lectura 2026-10-12): servicio `ad507-core` production confirma presencia de `AD507_GOOGLE_CLIENT_ID`, `AD507_GOOGLE_CLIENT_SECRET`, `AD507_GOOGLE_REDIRECT_URI`, `AD507_GOOGLE_REDIRECT_URI_LATAM`, `AD507_AUTH_SUCCESS_URL`, `AD507_AUTH_SUCCESS_URL_LATAM`, `AD507_INTERNATIONAL_DOMAIN_VERIFIED` y `AD507_SESSION_SECRET`. Valores sellados: no se verificó contenido ni estado de la compuerta.
+- [ ] RAILWAY CORREO, bloqueo real: `ad507-core` production no presenta `EMAIL_WEBHOOK_URL`, `EMAIL_WEBHOOK_SECRET` ni `EMAIL_FROM`; el mailer actual depende de estas variables para registro/recuperación. Elegir proveedor existente y configurar sin exponer secretos, con autorización antes de cualquier despliegue.
+- [ ] DESPLIEGUE OAuth/UI: Railway `ad507-core` muestra SUCCESS en `main` commit `c34f7b62` (PR #43), diferente de la rama `feat/unified-country-generation-20261012` que contiene los cambios recientes de ventanas. No afirmar que las ventanas nuevas estén en producción; pendiente validación, integración y despliegue autorizado.
+
+### PR #63 — ejecución de acceso único, 2026-10-14 UTC
+
+- Corregido fallo real de JavaScript: `initializeCommercialNavigation` recibe explícitamente el catálogo serializado, sin depender de imports ausentes en el navegador. Actualizada prueba de conservación de país/campos/fotos.
+- Actualizada expectativa de acceso invitado al diálogo compartido. Panamá enlaza al mismo diálogo canónico LATAM con `country=PA&access=1`.
+- Excluidos del cierre cambios de validación comercial y widget ADMIN ajenos al acceso; se conserva main para esas partes.
+- Correo: errores controlados, rechazo de JSON nulo, creación transaccional de identidad/rol/credencial, reenvío para registro no verificado y consumo de tokens/cambio de contraseña atómicos. Recuperación revoca sesiones previas. Añadidas pruebas con PostgreSQL real en CI y transporte Resend simulado.
+- Compilación Bun aprobada; compatibilidad legacy aprobada; 17 pruebas focalizadas aprobadas, 0 fallos. Suite completa local inicialmente bloqueada por PostgreSQL local ausente; no se declara aprobada hasta CI.
+- Railway: `RESEND_API_KEY` y `EMAIL_FROM` ya preparados, sin recrear secretos. Todavía pendientes de activar.
+- PostgreSQL productivo consultado mediante consola existente: `email_credentials` y `email_auth_tokens` ausentes. Nuevo respaldo lógico del esquema `ad507` guardado en volumen PostgreSQL: `$PGDATA/ad507-release-backups/pr63-pre-email-20261014.dump`. Restauración con `pg_restore --exit-on-error` a base aislada `pr63_restore_20261014`: 41 tablas, 3 usuarios, 0 direcciones, 45 sesiones. Sin reemplazar volumen/reiniciar producción. Este ensayo no acredita recuperación del snapshot histórico del 11 de octubre.
+- Reversión: volver al commit previo de aplicación y conservar tablas/datos nuevos; SQL de retirada opcional `schema-proposals/email-auth.rollback.sql` solo permite eliminar tablas vacías y aborta si contienen datos. Migración preparada existente `schema-proposals/email-auth.sql`, sin duplicarla. Pendiente ensayo de aplicar/revertir/reaplicar antes de producción.
+- Pendientes de este registro: GitHub Actions, ensayo SQL, activación Resend, integración/despliegue y pruebas reales de ambos sitios.
+- CI commit `4ac54a22`: workflow `38506691238`, job compatibility SUCCESS (validación SQL, legacy, compilación, Docker y suite PostgreSQL). Corregido además orden del DOM: diálogo de acceso antes del script que lo inicializa, evitando referencias nulas al abrir. Prueba de regresión añadida; pendiente nuevo CI del ajuste.
+- Ensayo SQL sobre restauración aislada: aplicación → reversión con tablas vacías → reaplicación, los tres COMMIT correctos. Sin columnas comerciales ni migraciones de direcciones.

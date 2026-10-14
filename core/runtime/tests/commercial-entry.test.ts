@@ -1,3 +1,4 @@
+import {COUNTRIES} from '../country-configuration';
 import {test,expect} from 'bun:test';
 import {commercialEntryContext,sharedCommercialRoot,initializeCommercialNavigation} from '../commercial-entry';
 import {commercialEntryHtml,handleUserPanel} from '../user-panel';
@@ -32,8 +33,8 @@ test('in-document country navigation preserves fields and selected photo objects
  selectors.commercialCountry=select;selectors.countryCode=country;selectors.commercialIdentity={};selectors.commercialAvailability={};
  const link:any={dataset:{commercialCountry:'CO'}},doc={getElementById:(id:string)=>selectors[id],querySelectorAll:()=>[link]};
  const loc={href:'https://direcciones507.com/?country=PA'},history={pushState:(_:any,__:any,path:string)=>{loc.href='https://direcciones507.com'+path;}};
- const run=new Function('document','location','history','addEventListener','Event','return ('+initializeCommercialNavigation.toString()+')()');
- run(doc,loc,history,(event:string,handler:any)=>listeners[event]=handler,Event);expect(country.value).toBe('PA');
+ const run=new Function('document','location','history','addEventListener','Event','countries','return ('+initializeCommercialNavigation.toString()+')(countries)');
+ run(doc,loc,history,(event:string,handler:any)=>listeners[event]=handler,Event,COUNTRIES);expect(country.value).toBe('PA');
  const file=input.file;link.onclick({preventDefault(){}});expect(country.value).toBe('CO');expect(loc.href).toBe('https://direcciones507.com/?country=CO');expect(input.value).toBe('Panamá');expect(input.file).toBe(file);
  loc.href='https://direcciones507.com/?country=PA';listeners.popstate();expect(country.value).toBe('PA');expect(input.file).toBe(file);country.value='CO';listeners.formCountry();expect(select.value).toBe('CO');expect(input.file).toBe(file);
 });

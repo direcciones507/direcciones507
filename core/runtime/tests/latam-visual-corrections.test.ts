@@ -8,7 +8,7 @@ test('C01/C09 public menu keeps four destinations and private addresses stay in 
  expect(page).not.toContain('href="/panel#addresses"');expect(userPanelHtml).toContain('Mis direcciones y lugares');
 });
 test('C02/C03/C08 reuse OAuth and preserve session and error nodes',()=>{
- const page=html();expect(page).toContain('data-latam-session="guest" href="/auth/google/login"');expect(page).toContain('data-latam-session="authenticated" href="/panel"');
+ const page=html();expect(page).toContain('data-latam-session="guest" href="#latamAccess"');expect(page).toContain('data-latam-session="authenticated" href="/panel"');
  expect(page).toContain('id="login" class="hidden" hidden');expect(page).toContain('id="message" role="status"');
  expect(page).toContain('latamCanPrepare=!!d.actions.prepareRequest');expect(page).toContain("if(document.getElementById('commercialCountry').value!=='PA')");
  expect(userPanelHtml).not.toContain('latamRequestDialog');expect(userPanelHtml).toContain('<h1>Mi panel</h1>');
@@ -25,4 +25,9 @@ test('C05 original hero is an embedded WebP image with correct MIME',()=>{
  expect(bytes.subarray(8,12).toString()).toBe('WEBP');
  expect(bytes.length).toBeGreaterThan(10000);
  expect(html()).toContain("type:'image/webp'");
+});
+
+test('shared access dialog exists before its initialization script executes',()=>{
+ const page=html();expect(page.indexOf('<dialog id="latamAccess"')).toBeLessThan(page.indexOf('<script>'));
+ expect(page).toContain('type="email" required maxlength="320"');
 });

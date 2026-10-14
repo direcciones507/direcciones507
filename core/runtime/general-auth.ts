@@ -1,4 +1,9 @@
 import type { Sql } from 'postgres';
+import {createAccountMailer} from './account-email';
+import {scrypt as scryptCallback, randomBytes as secureRandomBytes} from 'node:crypto';
+import {promisify} from 'node:util';
+const derivePassword=promisify(scryptCallback);
+
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 // General identity only: authorization remains in canonical PostgreSQL roles.
@@ -8,7 +13,7 @@ type Payload = { uid: string; email: string; sid: string; exp: number; origin?: 
 const hash = (s: string) => createHash('sha256').update(s).digest('hex');
 const random = () => randomBytes(32).toString('base64url');
 const encoder = new TextEncoder();
-const routes = new Set(['/auth/google/login', '/auth/google/callback', '/auth/logout', '/v1/auth/me', '/v1/admin/session-check']);
+const routes = new Set(['/v1/auth/email/register','/v1/auth/email/login','/v1/auth/email/verify','/v1/auth/email/forgot','/v1/auth/email/reset','/auth/google/login', '/auth/google/callback', '/auth/logout', '/v1/auth/me', '/v1/admin/session-check']);
 
 function cookie(name: string, value: string, age: number) {
   return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${age}`;
@@ -52,7 +57,8 @@ function config(env: Env) {
     return { clientId, clientSecret, secret, redirect: redirect.toString(), origin: redirect.origin, success: success.toString() };
   } catch { return null; }
 }
-export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch = fetch) {
+export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch = fetch, emailFetch: typeof fetch = fetch) {
+  const mailer=createAccountMailer(env,emailFetch);
   const primary = config(env);
   // Same authenticator/client/database; explicit second callback, never proxy-derived.
   const latamCandidate=env.AD507_INTERNATIONAL_DOMAIN_VERIFIED==='true' && env.AD507_GOOGLE_REDIRECT_URI_LATAM
@@ -95,6 +101,91 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     if (!cfg) return respond(503, { ok: false, error: 'AUTH_NOT_CONFIGURED' }, callback ? [clearState()] : []);
     // Railway terminates TLS before Bun; never derive redirects from proxy input.
     if (url.host !== new URL(cfg.origin).host || (url.protocol !== 'https:' && req.headers.get('x-forwarded-proto') !== 'https')) return respond(400, { ok: false, error: 'AUTH_ORIGIN_DENIED' });
+    const emailRoute=url.pathname.startsWith('/v1/auth/email/');
+    if(emailRoute){
+      try {
+      if(req.method!=='POST')return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
+      if(req.headers.get('origin')!==cfg.origin || req.headers.get('sec-fetch-site')==='cross-site')return respond(403,{ok:false,error:'CSRF_DENIED'});
+      if(!mailer.configured&&url.pathname!=='/v1/auth/email/login'&&url.pathname!=='/v1/auth/email/verify'&&url.pathname!=='/v1/auth/email/reset')return respond(503,{ok:false,error:'EMAIL_NOT_CONFIGURED'});
+      const raw=await req.text();
+      if(raw.length>4096)return respond(413,{ok:false,error:'INVALID_INPUT'});
+      let data:Record<string,unknown>;
+      try{data=JSON.parse(raw);if(!data||Array.isArray(data)||typeof data!=='object')throw Error();}catch{return respond(400,{ok:false,error:'INVALID_INPUT'});}
+      const email=typeof data.email==='string'?data.email.trim().toLowerCase():'';
+      const password=typeof data.password==='string'?data.password:'';
+      const token=typeof data.token==='string'?data.token:'';
+      if(password.length>128||token.length>256)return respond(400,{ok:false,error:'INVALID_INPUT'});
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>320)return respond(400,{ok:false,error:'INVALID_EMAIL'});
+      const digest=(v:string)=>hash(v);
+      const makeToken=()=>random();
+      const passwordHash=async(v:string,salt?:string)=>{const actual=salt??secureRandomBytes(16).toString('hex');const derived=await derivePassword(v,Buffer.from(actual,'hex'),64) as Buffer;return 'scrypt:'+actual+':'+derived.toString('hex');};
+      const validPassword=async(stored:string,v:string)=>{const parts=stored.split(':');if(parts.length!==3||parts[0]!=='scrypt'||!/^[0-9a-f]{32}$/.test(parts[1]))return false;if(!/^[0-9a-f]{128}$/.test(parts[2]))return false;const calculated=await passwordHash(v,parts[1]);return timingSafeEqual(Buffer.from(calculated),Buffer.from(stored));};
+      const issue=async(userId:string,purpose:'VERIFY_EMAIL'|'RESET_PASSWORD')=>{
+        const value=makeToken();
+        await sql.unsafe("UPDATE ad507.email_auth_tokens SET consumed_at=now() WHERE user_id=$1::uuid AND purpose=$2 AND consumed_at IS NULL",[userId,purpose]);
+        await sql.unsafe("INSERT INTO ad507.email_auth_tokens(token_hash,user_id,purpose,expires_at) VALUES($1,$2::uuid,$3,now()+interval '30 minutes')",[digest(value),userId,purpose]);
+        return value;
+      };
+      if(url.pathname==='/v1/auth/email/register'){
+        if(password.length<12||password.length>128)return respond(400,{ok:false,error:'WEAK_PASSWORD'});
+        const hashed=await passwordHash(password);
+        const id=await sql.begin(async tx=>{
+          await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[email]);
+          const existing=await tx.unsafe("SELECT u.id::text,c.email_verified_at FROM ad507.users u LEFT JOIN ad507.email_credentials c ON c.user_id=u.id WHERE lower(u.email)=$1 AND u.status='ACTIVE'",[email]);
+          if(existing.length){
+            const pending=await tx.unsafe('SELECT user_id FROM ad507.email_credentials WHERE user_id=$1::uuid AND email_verified_at IS NULL',[existing[0].id]);
+            return pending.length?existing[0].id:null;
+          }
+          if((await tx.unsafe('SELECT id FROM ad507.users WHERE lower(email)=$1',[email])).length)return null;
+          const users=await tx.unsafe("INSERT INTO ad507.users(email,status) VALUES($1,'ACTIVE') RETURNING id::text",[email]);
+          await tx.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT') ON CONFLICT DO NOTHING",[users[0].id]);
+          await tx.unsafe('INSERT INTO ad507.email_credentials(user_id,password_hash) VALUES($1::uuid,$2)',[users[0].id,hashed]);
+          return users[0].id;
+        });
+        if(!id)return respond(200,{ok:true,message:'IF_ELIGIBLE_EMAIL_SENT'});
+        const code=await issue(id,'VERIFY_EMAIL');
+        await mailer.send({to:email,subject:'Verifica tu correo de Direcciones',text:cfg.origin+'/verificar-correo?token='+encodeURIComponent(code)+'&email='+encodeURIComponent(email)});
+        return respond(200,{ok:true,message:'IF_ELIGIBLE_EMAIL_SENT'});
+      }
+      if(url.pathname==='/v1/auth/email/forgot'){
+        const users=await sql.unsafe("SELECT u.id::text FROM ad507.users u JOIN ad507.email_credentials c ON c.user_id=u.id WHERE lower(u.email)=$1 AND u.status='ACTIVE' AND c.email_verified_at IS NOT NULL",[email]);
+        if(users.length){const code=await issue(users[0].id,'RESET_PASSWORD');await mailer.send({to:email,subject:'Recupera tu acceso a Direcciones',text:cfg.origin+'/recuperar-contrasena?token='+encodeURIComponent(code)+'&email='+encodeURIComponent(email)});}
+        return respond(200,{ok:true,message:'IF_ELIGIBLE_EMAIL_SENT'});
+      }
+      if(url.pathname==='/v1/auth/email/verify'||url.pathname==='/v1/auth/email/reset'){
+        if(!/^[A-Za-z0-9_-]{43}$/.test(token))return respond(400,{ok:false,error:'INVALID_TOKEN'});
+        const purpose=url.pathname.endsWith('/verify')?'VERIFY_EMAIL':'RESET_PASSWORD';
+        if(purpose==='RESET_PASSWORD'&&(password.length<12||password.length>128))return respond(400,{ok:false,error:'WEAK_PASSWORD'});
+        const newHash=purpose==='RESET_PASSWORD'?await passwordHash(password):null;
+        const updated=await sql.begin(async tx=>{
+          const consumed=await tx.unsafe("UPDATE ad507.email_auth_tokens t SET consumed_at=now() FROM ad507.users u WHERE t.user_id=u.id AND u.status='ACTIVE' AND lower(u.email)=$1 AND t.token_hash=$2 AND t.purpose=$3 AND t.consumed_at IS NULL AND t.expires_at>now() RETURNING t.user_id::text AS id",[email,digest(token),purpose]);
+          if(!consumed.length)return false;
+          if(purpose==='VERIFY_EMAIL')await tx.unsafe('UPDATE ad507.email_credentials SET email_verified_at=now() WHERE user_id=$1::uuid',[consumed[0].id]);
+          else{
+            await tx.unsafe('UPDATE ad507.email_credentials SET password_hash=$2,password_changed_at=now(),failed_attempts=0,locked_until=NULL WHERE user_id=$1::uuid',[consumed[0].id,newHash!]);
+            await tx.unsafe('UPDATE ad507.auth_sessions SET revoked_at=now() WHERE user_id=$1::uuid AND revoked_at IS NULL',[consumed[0].id]);
+          }
+          return true;
+        });
+        if(!updated)return respond(400,{ok:false,error:'INVALID_TOKEN'});
+        return respond(200,{ok:true});
+      }
+      if(url.pathname==='/v1/auth/email/login'){
+        const users=await sql.unsafe("SELECT u.id::text,u.email,c.password_hash,c.email_verified_at,c.failed_attempts,c.locked_until FROM ad507.users u JOIN ad507.email_credentials c ON c.user_id=u.id WHERE lower(u.email)=$1 AND u.status='ACTIVE'",[email]);
+        const user=users[0];
+        if(!user||!user.email_verified_at||user.locked_until&&new Date(user.locked_until).getTime()>Date.now()||!(await validPassword(user.password_hash,password))){
+          if(user)await sql.unsafe("UPDATE ad507.email_credentials SET failed_attempts=failed_attempts+1,locked_until=CASE WHEN failed_attempts+1>=5 THEN now()+interval '15 minutes' ELSE locked_until END WHERE user_id=$1::uuid",[user.id]);
+          return respond(401,{ok:false,error:'INVALID_CREDENTIALS'});
+        }
+        await sql.unsafe("UPDATE ad507.email_credentials SET failed_attempts=0,locked_until=NULL WHERE user_id=$1::uuid",[user.id]);
+        const sid=random(),exp=Math.floor(Date.now()/1000)+28800;
+        await sql.unsafe("INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))",[hash(sid),user.id,exp]);
+        const signed=await sign({uid:user.id,email:user.email,sid,exp,origin:cfg.origin},cfg.secret);
+        return new Response(JSON.stringify({ok:true}),{status:200,headers:{'content-type':'application/json','set-cookie':cookie('ad507_session',signed,28800),'cache-control':'no-store'}});
+      }
+      }
+      catch {return respond(503,{ok:false,error:'EMAIL_AUTH_UNAVAILABLE'});}
+    }
     const method = url.pathname === '/auth/logout' ? 'POST' : 'GET';
     if (req.method !== method) return respond(405, { ok: false, error: 'METHOD_NOT_ALLOWED' });
     try {

@@ -87,7 +87,7 @@ export function commercialEntryHtml(international=false,url=new URL(internationa
  .replace('<main>','<main>'+commercialNavigation(context.country,context.international))
  .replace('</main>','<footer class="card" style="color:#0b57d0">'+(context.international?'Direcciones LATAM · Direcciones507, presencia de Panamá':'Direcciones507 · Panamá')+'</footer></main>')
  .replace('<script>','<script>const commercialInitialCountry='+JSON.stringify(context.country)+';')
- .replace('load();\n</script>', 'load();('+initializeCommercialNavigation.toString()+')();\n</script>')
+ .replace('load();\n</script>', 'load();('+initializeCommercialNavigation.toString()+')('+JSON.stringify(COUNTRIES)+');\n</script>')
  .replace('</style>',source.slice(styleStart,styleEnd)+'</style>')
  .replace('</main>','</main>'+(natalieAllowed?widget:widget.replace('id="natalieLauncher"','id="natalieLauncher" disabled title="Natalie pendiente de validación para este dominio"')))
  .replace('</script>',(natalieAllowed?script:'')+'</script>')

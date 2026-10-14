@@ -1004,3 +1004,34 @@ test('Mi cuenta works on foundation-only PostgreSQL for cuenta507 and LATAM with
   console.info('Foundation panel: ownership/logout/expiry complete');
  }finally{await db.end({timeout:2});await sql.unsafe('DROP DATABASE '+name);}
 },20000);
+
+test('email registration, verification, login and reset reuse canonical identity and revoke old sessions',async()=>{
+ await sql.unsafe(readFileSync(new URL('../schema-proposals/email-auth.sql',import.meta.url),'utf8'));
+ const email='pr63-'+crypto.randomUUID()+'@example.test',password='Initial-password-123',nextPassword='Recovered-password-456';
+ const messages:any[]=[];
+ const mailFetch=(async(_url:any,options:any)=>{messages.push(JSON.parse(options.body));return Response.json({id:'isolated-mail'});}) as typeof fetch;
+ const auth=createGeneralAuth(sql,{...env,RESEND_API_KEY:'isolated-test-key',EMAIL_FROM:'Direcciones <no-reply@example.test>'},fetch,mailFetch);
+ const post=(route:string,data:any)=>auth.handle(new Request(origin+'/v1/auth/email/'+route,{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(data)})) as Promise<Response>;
+ try{
+  expect((await post('register',{email,password})).status).toBe(200);
+  expect(messages.length).toBe(1);expect(messages[0].to).toEqual([email]);
+  expect((await post('login',{email,password})).status).toBe(401);
+  const verification=new URL(messages[0].text).searchParams.get('token');
+  expect((await post('verify',{email,token:verification})).status).toBe(200);
+  expect((await post('verify',{email,token:verification})).status).toBe(400);
+  const login=await post('login',{email,password});expect(login.status).toBe(200);
+  const cookie=login.headers.get('set-cookie')!.split(';')[0];
+  const user=await auth.currentUser(new Request(origin+'/v1/auth/me',{headers:{cookie}}));expect(user?.email).toBe(email);expect(user?.roles).toContain('CLIENT');
+  expect((await post('register',{email,password})).status).toBe(200);expect(messages.length).toBe(1);
+  expect((await post('forgot',{email})).status).toBe(200);
+  const reset=new URL(messages[1].text).searchParams.get('token');
+  expect((await post('reset',{email,token:reset,password:nextPassword})).status).toBe(200);
+  expect(await auth.currentUser(new Request(origin+'/v1/auth/me',{headers:{cookie}}))).toBeNull();
+  expect((await post('reset',{email,token:reset,password:nextPassword})).status).toBe(400);
+  expect((await post('login',{email,password})).status).toBe(401);
+  expect((await post('login',{email,password:nextPassword})).status).toBe(200);
+  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.users WHERE email=$1',[email]))[0].n).toBe(1);
+  expect((await post('login',null)).status).toBe(400);
+  const denied=await auth.handle(new Request(origin+'/v1/auth/email/register',{method:'POST',headers:{origin:'https://evil.test','content-type':'application/json'},body:JSON.stringify({email,password})}));expect(denied!.status).toBe(403);
+ }finally{await sql.unsafe('DELETE FROM ad507.users WHERE email=$1',[email]);}
+},15000);

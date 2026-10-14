@@ -1440,6 +1440,7 @@
       .identity-block { grid-template-columns: 250px minmax(0,1fr); }
       #logoNegocio { width: 240px; height: 240px; }
     }
+    @media (min-width: 768px) {
     /* Shared published-card lower layout only. Functional nodes and scripts are unchanged. */
     .card .white-sheet .public-lower-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;width:100%;min-width:0;margin:0;padding:4px 0 24px;align-items:start}
     .public-lower-layout *{min-width:0}
@@ -1480,6 +1481,11 @@
     .public-lower-layout .qr-box img{background:#fff;padding:8px;border-radius:10px;max-width:100%;height:auto;aspect-ratio:1}
     @media(min-width:768px){.card .white-sheet .public-lower-layout{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;padding-top:4px}.public-business-info{padding:22px}.public-lower-left{gap:24px}}
     @media(max-width:380px){.public-lower-layout .nav-box{flex-direction:column;text-align:center;gap:7px}.public-lower-layout .btn-action-triple span{font-size:10px}.public-business-info{padding:16px}}
+    }
+    /* Mobile retains the exact pre-PR66 stylesheet and original nodes. */
+    @media (max-width: 767px) {
+      .public-lower-layout { display: none; }
+    }
   </style>
 </head>
 
@@ -1695,6 +1701,33 @@
   <img id="lightboxImg" src="" alt="Vista Previa" class="lightbox-img">
 </div>
 
+<script>
+// Mobile presentation restoration.
+// Presentation only: relocate the same nodes to their historical mobile slots.
+// No clone, link, permission, data or event-handler changes.
+(() => {
+  const mobile = matchMedia('(max-width: 767px)');
+  const sheet = document.querySelector('.white-sheet');
+  const ids = ['.main-nav-grid', '.actions-triple-row', '#redes-container', '.double-row-buttons', '#btnHorario', '#codigoPostalContainer', '#btnRef'];
+  const slots = ids.map(selector => {
+    const node = document.querySelector(selector);
+    const anchor = document.createComment('responsive presentation slot');
+    node.before(anchor);
+    return {node, anchor};
+  });
+  const arrange = () => {
+    if (mobile.matches) {
+      sheet.before(slots[0].node);
+      const description = document.getElementById('commercialDescription');
+      slots.slice(1).forEach(({node}) => sheet.insertBefore(node, description));
+    } else {
+      slots.forEach(({node, anchor}) => anchor.after(node));
+    }
+  };
+  arrange();
+  mobile.addEventListener('change', arrange);
+})();
+</script>
 <script>
 
     function normalizarImagenDrive(url){

@@ -438,3 +438,12 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - 24 pruebas aprobadas / 183 aserciones en acceso, portada, contexto comercial y panel. Scripts generados y ventana de acceso idénticos byte por byte respecto a la base.
 - Chromium aislado: 320×568, 390×844, 768×1024, 1024×768 y 1440×900; sin desbordamientos, hero horizontal/vertical correcto, footer compacto, apertura/cierre del acceso, país CO conservado, ocho banderas y aviso legal funcionando. Sin llamadas productivas ni envíos.
 - CI e integración se registran en el PR de esta única intervención al completarse. No se opera Railway por restricción expresa.
+
+## 2026-10-14 · Restauración móvil de fichas individuales
+
+- Referencia histórica: 4568281e, inmediatamente anterior al rediseño PR #66. Base de trabajo: main 1d7ab58d; portada LATAM del PR #61 y página principal de Panamá intactas.
+- La plantilla ad507.template.html conserva todas las reglas históricas y limita el bloque visual de PR #66 a min-width:768px. No se inventan valores de color, dimensiones ni separaciones móviles.
+- Se reutilizan los mismos nodos: navegación antes del contenedor inferior; luego galería, acciones, redes, QR/estadísticas, horario, postal y referencia en el orden histórico. Un adaptador exclusivamente de presentación cambia su ubicación al cruzar 767/768px y la restaura a sus posiciones actuales en pantallas anchas; no clona ni modifica enlaces, datos, hidden, permisos o eventos.
+- Los scripts funcionales anteriores conservan exactamente su SHA-256 49da00046e9d33aa619da670a6abe8122d31e767e4ba2f375539890a7238b66f. Identidad y galería conservan sus hashes. El adaptador se comprueba separadamente.
+- 4 pruebas de plantilla aprobadas, 38 aserciones: scripts parseables, controles únicos, hidden/configuración y teléfonos conservados. Sin cambios en runtime residencial/OWNER, PIN, QR privado, sesiones ni generadores/filtrado residencial.
+- Comparación Chromium con datos simulados, sin llamadas productivas: posición/tamaño, margen/padding/gap, colores/fondos/bordes, fuentes y colores/tamaños de iconos, enlaces y hidden contrastados contra la referencia histórica en móvil y contra main actual en tablet/escritorio. Resultados finales de navegador y CI registrados en el PR de esta única corrección.

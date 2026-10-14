@@ -380,3 +380,11 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - [ ] Producción permanece en SUCCESS del commit anterior `c34f7b62`, deployment `b659b587-552b-4e00-a4f7-a76921a815ea`. El acceso nuevo no está publicado todavía. La consulta HEAD anterior a raíz LATAM devolvió 404 por el método. Comprobación GET posterior: ambos dominios responden 200, pero ninguno sirve todavía el diálogo nuevo; Panamá ya muestra el enlace al acceso canónico LATAM. No confundir respuesta 200 con nuevo acceso operativo.
 - [ ] Pruebas reales en Panamá/LATAM y entrega/verificación/recuperación/Google: pendientes de aplicar el patch y confirmar SUCCESS en el commit nuevo. No se enviaron correos de prueba ni se crearon cuentas productivas de prueba.
 - Continuación concreta: aprobar/aplicar en Railway el patch preparado del servicio `ad507-core`, esperar SUCCESS, comprobar los dos sitios y registrar resultados aquí. No repetir diagnóstico, respaldo ni SQL ya ejecutados. El snapshot histórico 11-oct sigue fuera de este ensayo lógico.
+
+### Reparación urgente pantalla blanca — 2026-10-14
+
+- Reproducida en navegador real `/panel?country=PA` → `/?country=PA&access=1`: body vacío, cero scripts reconocidos y etiqueta style de 98,634 caracteres que contenía `</head><body` y el diálogo.
+- Causa exacta: `latam-presentation.ts` sustituía `</style>` por estilos de acceso sin volver a cerrar la etiqueta. Corregido cierre HTML; no se modifica autenticación.
+- `server.ts`: nonce aplicado a TODOS los scripts inline reutilizados mediante replaceAll, manteniendo CSP restrictiva existente.
+- `user-panel.ts`: iconos apuntan a los archivos públicos existentes en direcciones507.com, sin crear activos ni rutas nuevas.
+- Añadidas regresiones con parser HTML real (HTMLRewriter), reconocimiento de body/header/dialog/scripts y nonce de cada script. Pendientes CI, despliegue y verificación visual productiva. Sin tocar SQL, respaldos, códigos, planes, cobros ni direcciones históricas.

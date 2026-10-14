@@ -29,3 +29,12 @@ test('mobile restoration reuses each original node and isolates the newer styles
  expect(presentation).toContain('anchor.after(node)');
  expect(presentation).not.toMatch(/cloneNode|innerHTML|fetch\(|\.href\s*=|\.hidden\s*=|localStorage|cookie/);
 });
+
+test('wide card glyph references resolve locally without relying on the external icon font',async()=>{
+ const html=await Bun.file(file).text();const symbols=new Set<string>();const uses:string[]=[];
+ await new HTMLRewriter().on('symbol',{element(e){symbols.add(e.getAttribute('id')!);expect(e.getAttribute('viewBox')).toBeTruthy();}})
+ .on('.public-lower-layout .wide-card-icon use',{element(e){uses.push(e.getAttribute('href')!);}}).transform(new Response(html)).text();
+ expect(uses.length).toBeGreaterThan(15);
+ for(const href of uses)expect(symbols.has(href.slice(1))).toBe(true);
+ expect(html).toContain('.wide-card-icon { display: none; }');
+});

@@ -6,7 +6,7 @@ export function latamPresentation(html:string){
  const start=legacy.indexOf('<div id="modalPoliticas"'),end=legacy.indexOf('<button id="natalieLauncher"',start);
  if(start<0||end<0)throw Error('EXISTING_LEGAL_NOTICE_REQUIRED');
  const notice=legacy.slice(start,end).replace('onclick="cerrarPoliticas()"','data-legal-close');
- const footer=`<footer class="latam-footer"><div><a href="#inicio"><strong>Direcciones LATAM</strong></a><p>Tu ubicación, más fácil de compartir.</p><small>AD507 Technologies</small></div><nav aria-label="Información y contacto"><a href="#planes">Planes y servicios</a><button type="button" data-latam-legal>Privacidad</button><button type="button" data-latam-legal>Términos y condiciones</button><a href="https://wa.me/50765996532" target="_blank" rel="noopener noreferrer">Contacto</a></nav></footer>`;
+ const footer=`<footer class="latam-footer"><div class="latam-footer-inner"><div><a href="#inicio"><strong>Direcciones LATAM</strong></a><p>Tu ubicación, más fácil de compartir.</p><small>AD507 Technologies</small></div><nav aria-label="Información y contacto"><a href="#planes">Planes y servicios</a><button type="button" data-latam-legal>Privacidad</button><button type="button" data-latam-legal>Términos y condiciones</button><a href="https://wa.me/50765996532" target="_blank" rel="noopener noreferrer">Contacto</a></nav></div></footer>`;
  const header=`<header class="latam-header"><a class="latam-brand" href="#inicio"><svg width="32" height="38" viewBox="0 0 24 28" fill="none" stroke="#438bff" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><div>Direcciones <strong>LATAM</strong><small>Direcciones digitales para Latinoamérica</small></div></a><details class="latam-menu"><summary>Menú</summary><nav aria-label="Navegación principal"><a href="#inicio">Inicio</a><a href="#paises">Países</a><a href="#planes">Planes</a><a href="#ayuda" id="latamHelpLink">Ayuda</a></nav></details><div class="latam-account"><a class="latam-outline hidden" data-latam-session="guest" href="#latamAccess">Ingresar</a><a class="button hidden" data-latam-session="guest" href="#latamAccess">Crear cuenta</a><a class="latam-outline hidden" data-latam-session="authenticated" href="/panel">Mi cuenta</a><button id="logout" data-latam-session="authenticated" class="hidden">Cerrar sesión</button></div></header>`;
  const css=`
 .latam-footer{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:28px 0 92px;border-top:1px solid #263951;color:#aabbd0}.latam-footer strong{font-size:21px;color:#fff}.latam-footer p{font-size:14px}.latam-footer nav{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:12px 24px;align-content:start}.latam-footer button{padding:0;min-height:36px;background:none!important;box-shadow:none!important;color:#cbd8ec!important;text-align:left;justify-content:start;font-weight:400;font-size:14px}.latam-footer a{min-height:36px;display:inline-flex;align-items:center}.latam-plan-card p{font-size:13px;line-height:1.6;color:#b8c7da;margin:0 0 16px}.latam-plan-card>span{margin-top:auto}.latam-plan-card h3{margin-bottom:10px!important}body.latam .natalie-chat{max-height:min(540px,70dvh);bottom:84px;width:min(360px,calc(100vw - 32px));right:16px}body.latam .natalie-launcher{right:16px;bottom:16px}body.latam .natalie-messages{min-height:80px;max-height:35dvh}body.latam .latam-benefit-grid article{padding:20px}body.latam .latam-benefits{padding-bottom:24px}@media(max-width:620px){.latam-footer nav{width:100%}.latam-plan-card{min-height:230px}}
@@ -18,6 +18,68 @@ body.latam{background:#071321;color:#f4f7fc;color-scheme:dark}body.latam header 
 @media(max-width:1099px){.latam-menu summary{display:block;cursor:pointer;min-height:44px;padding:12px;border:1px solid #32445e;border-radius:9px}.latam-menu[open]{order:3;width:100%}.latam-menu nav{padding:18px 0}.latam-menu:not([open]) nav{display:none}}
 @media(max-width:620px){body.latam main{padding:0 20px}body.latam .latam-header{padding:18px 20px;gap:12px}.latam-brand{font-size:20px!important}.latam-brand small{font-size:10px}.latam-account{width:100%}.latam-account a{flex:1;text-align:center;padding:12px 8px}.latam-hero{min-height:0;padding:36px 0 24px}.latam-art{display:block;width:100%;right:0;top:16px;height:270px;object-fit:contain;opacity:.17;pointer-events:none}.latam-copy{text-align:center;max-width:none}.latam-copy h1{font-size:clamp(34px,9vw,44px)}.latam-copy>p{font-size:16px;margin-left:auto;margin-right:auto}.latam-country-label{text-align:left}.latam-country-grid{gap:7px}.latam-country-grid a{font-size:11px;padding:10px 3px;min-height:96px}.latam-country-grid .flag{font-size:26px}.latam-secondary-countries{text-align:left}.latam-benefits{padding-top:8px}.latam-benefits h2{font-size:18px}.latam-benefit-grid{gap:8px}.latam-benefit-grid article{padding:16px 9px;text-align:center}.latam-benefit-grid h3{font-size:13px;line-height:1.4}.latam-benefit-grid p{font-size:12px;line-height:1.6}.latam-info{padding:20px 0}body.latam #commercialCountry{max-width:none}}
 @media(max-width:359px){.latam-country-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.latam-benefit-grid{grid-template-columns:1fr}.latam-benefit-grid article{text-align:left}.latam-brand{white-space:normal}}
+`;
+ const homeCss=`
+/* Homepage layout only; existing palette, map, forms and account remain unchanged. */
+body.latam #commercialWelcome{max-width:1180px;margin-inline:auto}
+#commercialWelcome .latam-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:32px;min-height:0;padding:44px 0 28px}
+#commercialWelcome .latam-copy{max-width:none;min-width:0}
+#commercialWelcome .latam-copy h1{font-size:clamp(36px,4.3vw,60px);margin-bottom:20px}
+#commercialWelcome .latam-title-line{white-space:normal}
+#commercialWelcome .latam-copy>p{font-size:17px;margin:0;max-width:480px}
+#commercialWelcome .latam-art{position:static;z-index:auto;width:100%;height:clamp(240px,28vw,360px);max-height:380px;object-fit:cover;object-position:right center;opacity:.95;mask-image:none}
+#commercialWelcome .latam-cta{width:fit-content;max-width:100%;gap:28px;justify-content:center!important;min-height:50px!important;margin:24px 0 0;padding:14px 22px}
+#commercialWelcome #paises{padding:22px 0 26px;border-top:1px solid #203047}
+#commercialWelcome .latam-country-label{margin:0 0 16px;font-size:18px}
+#commercialWelcome .latam-country-grid{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#commercialWelcome .latam-country-grid a{min-height:96px;padding:12px 8px}
+#commercialWelcome .latam-country-grid a[aria-current=true]{outline:2px solid #6fa6ff;outline-offset:2px;font-weight:750}
+#commercialWelcome .latam-secondary-countries{margin-top:12px}
+#commercialWelcome #commercialIdentity{margin:14px 0 8px}
+#commercialWelcome #commercialAvailability,#commercialWelcome .latam-availability{padding:12px 16px;border:1px solid #263951;border-radius:10px;line-height:1.6;font-size:13px;margin:10px 0 0}
+#commercialWelcome .latam-benefits{padding:24px 0 28px}
+#commercialWelcome .latam-benefit-grid{gap:18px;align-items:stretch}
+#commercialWelcome .latam-benefit-grid article{padding:22px;min-width:0}
+#commercialWelcome .latam-benefit-grid h3{line-height:1.4}
+#commercialWelcome .latam-benefit-grid p{margin-bottom:0}
+#commercialWelcome .latam-plan-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+#commercialWelcome .latam-plan-card{flex:0 1 calc((100% - 32px)/3);min-width:0;min-height:210px;padding:22px;overflow-wrap:anywhere}
+#commercialWelcome .latam-plan-card h3{line-height:1.4}
+#commercialWelcome .latam-plan-card p{font-size:14px}
+#commercialWelcome #ayuda{padding:22px 0}
+#commercialWelcome #ayuda p{margin-bottom:0}
+body.latam .latam-footer{display:block;padding:24px 0 48px;margin-top:12px}
+.latam-footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;max-width:1180px;margin-inline:auto}
+.latam-footer-inner>div{min-width:0}
+.latam-footer-inner p{margin:6px 0 10px;line-height:1.5}
+.latam-footer-inner nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 24px;max-width:420px}
+.latam-footer-inner nav a,.latam-footer-inner nav button{font-size:14px;white-space:normal;line-height:1.5}
+@media(min-width:621px) and (max-width:899px){
+#commercialWelcome .latam-hero{gap:20px;padding-top:32px}
+#commercialWelcome .latam-copy h1{font-size:36px}
+#commercialWelcome .latam-copy>p{font-size:15px}
+#commercialWelcome .latam-benefit-grid{gap:12px}
+#commercialWelcome .latam-benefit-grid article{padding:18px 14px}
+#commercialWelcome .latam-plan-card{flex-basis:calc((100% - 16px)/2)}
+}
+@media(max-width:620px){
+#commercialWelcome .latam-hero{grid-template-columns:minmax(0,1fr);gap:16px;padding:28px 0 24px;text-align:center}
+#commercialWelcome .latam-copy{display:contents}
+#commercialWelcome .latam-copy h1{order:0;font-size:clamp(34px,9vw,44px);margin:0}
+#commercialWelcome .latam-copy>p{order:1;font-size:16px;margin-inline:auto}
+#commercialWelcome .latam-art{order:2;height:230px;max-height:230px}
+#commercialWelcome .latam-cta{order:3;margin:0 auto}
+#commercialWelcome .latam-country-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#commercialWelcome .latam-country-grid a{font-size:13px}
+#commercialWelcome .latam-benefit-grid{grid-template-columns:1fr;gap:12px}
+#commercialWelcome .latam-benefit-grid article{text-align:left;padding:20px}
+#commercialWelcome .latam-benefit-grid h3{font-size:17px;margin:10px 0}
+#commercialWelcome .latam-benefit-grid p{font-size:14px}
+#commercialWelcome .latam-plan-card{flex-basis:100%;min-height:0;padding:20px}
+#commercialWelcome .latam-plan-card>span{margin-top:8px}
+.latam-footer-inner{flex-direction:column;gap:18px}
+.latam-footer-inner nav{width:100%;max-width:none;gap:6px 16px}
+}
 `;
  const sessionScript = `
 let latamSessionState='loading',latamCanPrepare=false;
@@ -70,7 +132,7 @@ function prepareLatamRequest(e,type,plan){
 `;
  return html.replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
- .replace('</style>',css+accessCss+'</style>')
+ .replace('</style>',css+accessCss+homeCss+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
  .replace('<script>',notice+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><span aria-hidden="true">G</span> Continuar con Google</a></dialog>`+'<script>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')
@@ -150,12 +212,12 @@ markCountry();
 
 }
 export function latamWelcome(country:string,countries:Record<string,{name:string}>,initial:readonly string[]){
- const details:Record<string,string>={Residencial:'Ubicación y referencia para tu hogar. Acceso residencial privado.',Lugar:'Ubicación, referencia y fotografía de un sitio de interés.','Negocio Gratis':'Logo, horario y contacto. Navegación y código QR.',Premium:'Todo Gratis, código con nombre, redes sociales, zona postal y estadísticas.','Premium Pro':'Todo Premium, descripción comercial y galería de hasta 5 fotos.'};
+ const details:Record<string,string>={Residencial:'Ubicación y referencia para tu hogar. Acceso residencial privado.',Lugar:'Ubicación, referencia y fotografía de un sitio de interés.','Negocio Gratis':'Logo, horario y contacto. Navegación y código QR.',Premium:'Todo lo incluido en Negocio Gratis, código con nombre, redes sociales, código postal, zona postal y estadísticas.','Premium Pro':'Todo lo incluido en Premium, descripción comercial y galería de hasta 5 fotos.'};
  const flag=(c:string)=>{const colors:Record<string,string[]>={CR:['#16489c','#fff','#d92235','#fff','#16489c'],CO:['#f9d526','#f9d526','#174da6','#ce253c'],GT:['#55a5d8','#fff','#55a5d8'],SV:['#1752b8','#fff','#1752b8'],HN:['#149bd7','#fff','#149bd7'],NI:['#1a62bc','#fff','#1a62bc'],MX:['#087044','#fff','#cf2536']};if(c==='PA')return '<svg viewBox="0 0 36 24" width="36" height="24"><path fill="#fff" d="M0 0h36v24H0z"/><path fill="#d82235" d="M18 0h18v12H18z"/><path fill="#1556a4" d="M0 12h18v12H0z"/><text x="9" y="10" text-anchor="middle" font-size="11" fill="#1556a4">★</text><text x="27" y="22" text-anchor="middle" font-size="11" fill="#d82235">★</text></svg>';const stripes=colors[c];const vertical=['MX','GT'].includes(c);return '<svg viewBox="0 0 36 24" width="36" height="24">'+stripes.map((color,i)=>'<rect fill="'+color+'" x="'+(vertical?i*36/stripes.length:0)+'" y="'+(vertical?0:i*24/stripes.length)+'" width="'+(vertical?36/stripes.length:36)+'" height="'+(vertical?24:24/stripes.length)+'"/>').join('')+'</svg>';};
- const card=(c:string)=>`<a href="?country=${c}" data-commercial-country="${c}" aria-current="${c===country}"><span class="flag" aria-hidden="true">${flag(c)}</span>${countries[c].name}<small>${c==='PA'?'Panamá':'En preparación'}</small></a>`;
- return `<section id="commercialWelcome"><div class="latam-hero" id="inicio"><img id="latamArt" class="latam-art" alt="" width="2400" height="1400"><div class="latam-copy"><h1>Crea tu<br><span class="latam-title-line">Dirección Digital</span></h1><p>Comparte un solo link o código QR y facilita que te encuentren. Funciona con Google Maps, Waze, Uber y WhatsApp.</p><a id="latamCreate" class="button latam-cta" href="/auth/google/login">Crear mi Dirección <span aria-hidden="true">→</span></a><div id="paises"><div class="latam-country-label">Elige tu país</div><div class="latam-country-grid">${['PA','CR','CO','MX'].map(card).join('')}</div><details class="latam-secondary-countries"><summary>Más países</summary><div class="latam-country-grid">${initial.filter(c=>!['PA','CR','CO','MX'].includes(c)).map(card).join('')}</div></details><div id="latamCountryState" hidden><label for="commercialCountry">País seleccionado</label><select id="commercialCountry">${initial.map(c=>`<option value="${c}"${c===country?' selected':''}>${countries[c].name}</option>`).join('')}</select></div><p id="commercialIdentity">${'Direcciones LATAM · '+countries[country].name}</p><p id="commercialAvailability" role="status"></p><p id="latamActionStatus" role="status"></p></div></div></div><section class="latam-benefits"><h2>¿Por qué usar Direcciones LATAM?</h2><div class="latam-benefit-grid"><article><span class="symbol" aria-hidden="true">↗</span><h3>Un solo link</h3><p>Comparte toda tu información de contacto y ubicación en un solo lugar.</p></article><article><svg class="symbol" width="32" height="36" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><h3>Llegan más fácil</h3><p>Guía a tus clientes, amigos o repartidores directo a ti sin errores.</p></article><article><span class="symbol" aria-hidden="true">▦</span><h3>QR listo para imprimir</h3><p>Usa tu código QR en tarjetas, redes, sitios web y más.</p></article></div></section><section id="planes" class="latam-info"><h2>Servicios y planes</h2><div class="latam-plan-grid">${[
+ const card=(c:string)=>`<a href="?country=${c}" data-commercial-country="${c}" aria-current="${c===country}"><span class="flag" aria-hidden="true">${flag(c)}</span>${countries[c].name}<small>${c==='PA'?'Direcciones507':'En preparación'}</small></a>`;
+ return `<section id="commercialWelcome"><div class="latam-hero" id="inicio"><div class="latam-copy"><h1>Crea tu<br><span class="latam-title-line">Dirección Digital</span></h1><p>Comparte un solo enlace o código QR y facilita que te encuentren. Funciona con Google Maps, Waze, Uber y WhatsApp.</p><a id="latamCreate" class="button latam-cta" href="/auth/google/login">Crear mi Dirección <span aria-hidden="true">→</span></a></div><img id="latamArt" class="latam-art" alt="" width="2400" height="1400"></div><section id="paises" aria-label="Selección de país"><div class="latam-country-label">Elige tu país</div><div class="latam-country-grid">${['PA','CR','CO','MX'].map(card).join('')}</div><details class="latam-secondary-countries"><summary>Más países</summary><div class="latam-country-grid">${initial.filter(c=>!['PA','CR','CO','MX'].includes(c)).map(card).join('')}</div></details><div id="latamCountryState" hidden><label for="commercialCountry">País seleccionado</label><select id="commercialCountry">${initial.map(c=>`<option value="${c}"${c===country?' selected':''}>${countries[c].name}</option>`).join('')}</select></div><p id="commercialIdentity">${'Direcciones LATAM · '+countries[country].name}</p><p id="commercialAvailability" role="status"></p><p id="latamActionStatus" role="status"></p></section><section class="latam-benefits"><h2>¿Por qué usar Direcciones LATAM?</h2><div class="latam-benefit-grid"><article><span class="symbol" aria-hidden="true">↗</span><h3>Un solo enlace</h3><p>Comparte toda tu información de contacto y ubicación en un solo lugar.</p></article><article><svg class="symbol" width="32" height="36" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><h3>Llegan más fácil</h3><p>Guía a tus clientes, amigos o repartidores hasta tu ubicación.</p></article><article><span class="symbol" aria-hidden="true">▦</span><h3>QR listo para imprimir</h3><p>Usa tu código QR en tarjetas, redes, sitios web y más.</p></article></div></section><section id="planes" class="latam-info"><h2>Servicios y planes</h2><div class="latam-plan-grid">${[
  ['Residencial','RESIDENTIAL',''],['Lugar','PLACE',''],['Negocio Gratis','BUSINESS','BUSINESS_FREE'],['Premium','BUSINESS','BUSINESS_PREMIUM'],['Premium Pro','BUSINESS','BUSINESS_PREMIUM_PRO'],
-].map(([name,type,plan])=>`<a class="latam-plan-card" ${type==='PLACE'&&!['PA','CR'].includes(country)?'hidden':''} href="/auth/google/login" data-latam-type="${type}" data-latam-plan="${plan}"><h3>${name}</h3><p>${details[name]}</p><span>Preparar dirección <span aria-hidden="true">→</span></span></a>`).join('')}</div><p>La disponibilidad y las condiciones de cada servicio se conservan. Los países extranjeros están en preparación.</p></section><section id="ayuda" class="latam-info"><h2>Ayuda</h2><p>Consulta a Natalie desde Ayuda en el menú o desde su botón flotante.</p></section></section>`;
+].map(([name,type,plan])=>`<a class="latam-plan-card" ${type==='PLACE'&&!['PA','CR'].includes(country)?'hidden':''} href="/auth/google/login" data-latam-type="${type}" data-latam-plan="${plan}"><h3>${name}</h3><p>${details[name]}</p><span>Preparar dirección <span aria-hidden="true">→</span></span></a>`).join('')}</div><p class="latam-availability">Los servicios están sujetos a la disponibilidad de cada país. Los demás países están en preparación.</p></section><section id="ayuda" class="latam-info"><h2>Ayuda</h2><p>¿Necesitas orientación? Abre Natalie desde Ayuda en el menú o desde su botón flotante.</p></section></section>`;
 }
 
 /** Visual lifecycle only: reuse the current launcher and close handlers. */

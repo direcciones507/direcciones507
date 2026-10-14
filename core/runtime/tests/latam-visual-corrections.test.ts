@@ -26,3 +26,8 @@ test('C05 original hero is an embedded WebP image with correct MIME',()=>{
  expect(bytes.length).toBeGreaterThan(10000);
  expect(html()).toContain("type:'image/webp'");
 });
+
+test('shared access dialog exists before its initialization script executes',()=>{
+ const page=html();expect(page.indexOf('<dialog id="latamAccess"')).toBeLessThan(page.indexOf('<script>'));
+ expect(page).toContain('type="email" required maxlength="320"');
+});

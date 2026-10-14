@@ -31,3 +31,12 @@ test('shared access dialog exists before its initialization script executes',()=
  const page=html();expect(page.indexOf('<dialog id="latamAccess"')).toBeLessThan(page.indexOf('<script>'));
  expect(page).toContain('type="email" required maxlength="320"');
 });
+
+test('browser HTML parser sees a real body, access dialog and executable scripts outside style',async()=>{
+ const page=html();const seen={body:0,header:0,dialog:0,scripts:0};
+ await new HTMLRewriter().on('body',{element(){seen.body++;}}).on('header',{element(){seen.header++;}})
+ .on('dialog#latamAccess',{element(){seen.dialog++;}}).on('script',{element(){seen.scripts++;}})
+ .transform(new Response(page)).text();
+ expect(seen.body).toBe(1);expect(seen.header).toBeGreaterThan(0);expect(seen.dialog).toBe(1);expect(seen.scripts).toBeGreaterThan(0);
+ expect(page.indexOf('</style>')).toBeLessThan(page.indexOf('</head>'));
+});

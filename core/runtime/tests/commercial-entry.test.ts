@@ -160,3 +160,16 @@ test('commercial entry applies CSP nonce to both panel and existing Natalie scri
  for(const script of scripts)expect(script[1]).toContain('nonce="'+nonce+'"');
  expect(html).toContain('id="natalieLauncher"');
 });
+
+test('commercial root authorizes all reused inline scripts with one CSP nonce and uses public existing icons',async()=>{
+ const source=await Bun.file(new URL('../server.ts',import.meta.url)).text();
+ const route=source.split('if(sharedCommercialRoot(req,process.env))')[1].split('const paymentPageId')[0];
+ expect(route).toContain(".replaceAll('<script>'");
+ const nonce='isolated-csp-check';
+ const page=commercialEntryHtml(true,new URL('https://direcciones.lat/')).replaceAll('<script>','<script nonce="'+nonce+'">');
+ let scripts=0;
+ await new HTMLRewriter().on('script',{element(e){scripts++;expect(e.getAttribute('nonce')).toBe(nonce);}}).transform(new Response(page)).text();
+ expect(scripts).toBeGreaterThan(0);
+ expect(page).toContain('https://direcciones507.com/assets/icon-192.png');
+ expect(page).toContain('https://direcciones507.com/assets/icon-180.png');
+});

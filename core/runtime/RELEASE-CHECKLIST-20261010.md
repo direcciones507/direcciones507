@@ -369,3 +369,14 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - Pendientes de este registro: GitHub Actions, ensayo SQL, activación Resend, integración/despliegue y pruebas reales de ambos sitios.
 - CI commit `4ac54a22`: workflow `38506691238`, job compatibility SUCCESS (validación SQL, legacy, compilación, Docker y suite PostgreSQL). Corregido además orden del DOM: diálogo de acceso antes del script que lo inicializa, evitando referencias nulas al abrir. Prueba de regresión añadida; pendiente nuevo CI del ajuste.
 - Ensayo SQL sobre restauración aislada: aplicación → reversión con tablas vacías → reaplicación, los tres COMMIT correctos. Sin columnas comerciales ni migraciones de direcciones.
+
+#### Resultado de publicación del PR #63 (2026-10-14 03:36 UTC)
+
+- [x] GitHub Actions final: workflow `38506877045`, job `115666296218`, SUCCESS en `b2efed79f28f41c449aee41e679e6aaa4a2e0c4e`; SQL, legacy, compilación, Docker y suite completa PostgreSQL aprobados.
+- [x] PR #63 integrado, commit `6fcebbcda61a49ff423663d1044feee6b0111f03`.
+- [x] Tablas de correo aplicadas productivamente con ON_ERROR_STOP, lock_timeout 5s y statement_timeout 15s, después del respaldo/restauración/ensayo de reversión ya registrados. Confirmados ambos nombres mediante `to_regclass`; usuarios=3, direcciones=0 antes de aplicar; no se ejecutaron migraciones de direcciones.
+- [x] Resend: dominio `mail.direcciones507.com` verificado, envío habilitado. Variables existentes preservadas; no crear otra clave.
+- [ ] Despliegue: preparada fuente exacta `6fcebbcd` + `EMAIL_FROM` y `RESEND_API_KEY` en patch `cb2e3a02-f206-46d0-a85d-45a63d215dd6`, seis campos del mismo servicio, sin cambios destructivos. La llamada `railway_accept_deploy` devolvió «Cancelled — the user did not approve this action. No changes were made.» No se repitió la operación por otro mecanismo.
+- [ ] Producción permanece en SUCCESS del commit anterior `c34f7b62`, deployment `b659b587-552b-4e00-a4f7-a76921a815ea`. El acceso nuevo no está publicado todavía. La prueba HTTP de raíz LATAM anterior al despliegue devolvió 404; no acreditar funcionamiento del nuevo modal con ese despliegue.
+- [ ] Pruebas reales en Panamá/LATAM y entrega/verificación/recuperación/Google: pendientes de aplicar el patch y confirmar SUCCESS en el commit nuevo. No se enviaron correos de prueba ni se crearon cuentas productivas de prueba.
+- Continuación concreta: aprobar/aplicar en Railway el patch preparado del servicio `ad507-core`, esperar SUCCESS, comprobar los dos sitios y registrar resultados aquí. No repetir diagnóstico, respaldo ni SQL ya ejecutados. El snapshot histórico 11-oct sigue fuera de este ensayo lógico.

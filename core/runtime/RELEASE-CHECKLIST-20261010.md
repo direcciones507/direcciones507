@@ -388,3 +388,13 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - `server.ts`: nonce aplicado a TODOS los scripts inline reutilizados mediante replaceAll, manteniendo CSP restrictiva existente.
 - `user-panel.ts`: iconos apuntan a los archivos públicos existentes en direcciones507.com, sin crear activos ni rutas nuevas.
 - Añadidas regresiones con parser HTML real (HTMLRewriter), reconocimiento de body/header/dialog/scripts y nonce de cada script. Pendientes CI, despliegue y verificación visual productiva. Sin tocar SQL, respaldos, códigos, planes, cobros ni direcciones históricas.
+
+#### Cierre verificado de pantalla blanca — 2026-10-14 04:08 UTC
+
+- [x] PR #64 integrado. Commit de aplicación `723f420070a13a68786eb5e5d1826180be5763d3`; corrección `30a05be1871d1a4a9afc8eb87ece6c7ff17d92c5`.
+- [x] GitHub Actions `38509509609`, job `115674538035`: SUCCESS; validación SQL existente, legacy, compilación, Docker y suite PostgreSQL aislada aprobados. Pruebas focalizadas locales: 19 aprobadas, 0 fallos.
+- [x] Railway `ad507-core`: deployment `2c64998b-45e6-443a-aa25-8c8230def890`, SUCCESS, commit exacto `723f4200`. Ningún servicio, variable, SQL o respaldo nuevo/modificado en esta reparación.
+- [x] Navegador real: `/panel?country=PA` llega a `/?country=PA&access=1` y muestra diálogo abierto. Desde portada Panamá, clic Mi cuenta abre el mismo diálogo. Desde raíz LATAM, clic Ingresar abre el diálogo. Body ahora tiene 7 hijos; sin pantalla blanca.
+- [x] Botones reales: Crear cuenta con correo, Ya tengo una cuenta → Ingresar con correo y Olvidaste tu contraseña → Enviar recuperación funcionan visualmente. Google abre selector de cuentas en accounts.google.com con callback LATAM correcto. No se seleccionó identidad ni se introdujeron credenciales; no se afirma una sesión autenticada nueva.
+- [x] Respuesta HTTP LATAM 200, cierre style antes de head y todos los scripts emitidos con nonce coincidente con CSP. Sin errores de JavaScript/CSP propios del sitio observados; mensajes de extensión del navegador excluidos. Ambos iconos públicos existentes de Panamá: 200 image/png.
+- [x] Checklist actualizado. Pantalla blanca y acceso visual cerrados; no quedan bloqueos de esta reparación.

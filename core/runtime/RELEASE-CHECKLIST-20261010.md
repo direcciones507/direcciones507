@@ -408,3 +408,12 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - Chromium real aislado con respuestas API simuladas, sin datos productivos: 390×844, 320×480, 768×600, 1024×768, 1440×900. En los cinco: diálogo único, Google accesible dentro del diálogo, Cerrar, Mostrar/Ocultar, cambios de modo, recuperación simulada, conservación Costa Rica/+506, paginación, revisión y cierre del formulario aprobados; envío continúa deshabilitado. Cero errores JS y cero desbordamientos de panel.
 - Medidas: diálogo de 479–513px en tamaños normales; en 320×480 limitado a 456px con scroll interno. Botón cargar más separado 28px (móvil) / 34px (tablet/escritorio) del borde inferior. Tres tipos uniformes y en fila desde tablet. Capturas inspeccionadas de teléfono, tablet y escritorio; fixtures de panel autenticado aislado, no se afirma sesión productiva nueva.
 - Compilación Bun y check legacy aprobados. Pendientes CI de integración, despliegue y comprobación de acceso público productivo. Sin SQL, Apps Script, Excel, R2, planes, precios ni pasarelas.
+
+#### Cierre visual integral verificado — 2026-10-14 04:31 UTC
+
+- [x] PR #65 integrado: commit aplicación `2525844988f7dd909cb7bc3852d3f18dc3a53cdd`, corrección `7cb89adbb541a9511714155198b44dc58819b7d5`.
+- [x] GitHub Actions `38511473440`, job `115680736947`, SUCCESS: legacy, compilación, Docker y suite completa aislada PostgreSQL. Focalizadas: 28 aprobadas, 0 fallos.
+- [x] Railway deployment `0b666b9e-ec01-4de2-a5bf-7b320e293a34`: SUCCESS con commit exacto `25258449`; únicamente fuente del servicio existente actualizada, sin variables ni recursos nuevos.
+- [x] Navegador público productivo: ventana única abierta con Costa Rica y +506 conservados; 440px ancho y 498.375px alto en la vista observada. Google dentro del contenedor y visible, sin desbordamiento horizontal ni pantalla blanca. Mostrar/Ocultar cambia tipo de campo; modo Ingresar y recuperación muestran sus controles correctos; Cerrar y reapertura funcionan. Google llega al selector real de cuentas; no se eligió identidad ni introdujeron credenciales.
+- [x] Confirmación visual responsive anterior al merge: cinco tamaños Chromium reales, capturas inspeccionadas, panel autenticado con respuestas API de prueba aisladas (no sesión productiva). Paginación, formulario, marcas y botones aprobados. Se conserva deshabilitado Enviar solicitud · Próximamente; no se realizaron envíos ni pagos.
+- [x] Checklist final actualizado. Sin bloqueos técnicos pendientes de esta intervención visual.

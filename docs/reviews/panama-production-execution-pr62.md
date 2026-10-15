@@ -19,20 +19,23 @@ el snapshot del día 11 ni contratar recursos nuevos.
   No se crearon servicios ni se contrataron recursos adicionales.
 - **Ledger verificado:** 0000–0005 y sus SHA256 coinciden con los seis archivos
   del repositorio. Propuestas comerciales pendientes: landline/requests/countries.
-- **SQL de release preparado, NO ejecutado:**
+- **SQL de release ejecutado, ensayo y producción PASS:**
   `docs/reviews/releases/20261015-commercial-schema.sql`, SHA256
   `6bce765b9c5b073b7424d5e9217bf8c01abe96db4799e60dc3b876dbd495287b`.
   Reutiliza los cuerpos existentes; transacción única, locks y timeouts acotados,
   guardas del ledger y sus seis checksums, registro atómico 0006–0008 con hash de
   cada propuesta y postcondiciones. No se invoca en startup ni deployment.
-  Rechaza repetición o drift. Probar primero en la restauración aislada y cotejar
-  antes de ejecutar en producción. No aplicar payments.sql.
-- **Bloqueo de consola:** entrada larga interrumpida antes de ejecutar; se
-  descartó mediante recarga. El intento posterior de subir el SQL por Files
-  agotó el tiempo del navegador; la comprobación de estado también falló.
-  No se envió ningún comando psql para ejecutar ese archivo. Puede haber quedado
-  una copia temporal subida; NO equivale a DDL aplicado. Esquema y ledger
-  productivos no modificados por esta ejecución.
+  Rechaza repetición o drift. Se confirmó SHA256 del archivo subido en /tmp,
+  luego psql con ON_ERROR_STOP en la restauración aislada produjo
+  AD507_ISOLATED_SCHEMA_PASS. El MISMO archivo en railway produjo COMMIT y
+  AD507_PRODUCTION_SCHEMA_PASS. Postconsulta: ledger 0000–0008, ocho columnas
+  comerciales de addresses presentes, cuatro índices comerciales presentes,
+  cero constraints sin validar y cero direcciones (igual al conteo inicial).
+  No se aplicó payments.sql ni se habilitaron países por agregar country_code.
+- **Incidencia de consola resuelta:** la carga de Files agotó tiempo, pero una
+  recuperación del controlador permitió observar el archivo completo y verificar
+  su hash antes de ejecutar. No se repitió backup ni restauración. La entrada
+  larga incompleta previa fue descartada y nunca se ejecutó como SQL.
 - **PostgreSQL:** advertencia investigada: muestra de 151 entradas internas LOG
   de checkpoint, cero mensajes PostgreSQL ERROR/FATAL/PANIC. Sin tuning aplicado.
 - **Core:** deployment `6d5821d6-ff4b-4b14-a99d-85f962ae0937` SUCCESS,
@@ -46,6 +49,12 @@ el snapshot del día 11 ni contratar recursos nuevos.
 
 La evidencia de R2 y las 166 pruebas aprobadas del HEAD c93f0d6 se reutilizan.
 Este cambio documental no convierte aquellas pruebas en validación productiva.
+
+CI posterior #203 detectó un test preexistente desactualizado por PR81: esperaba
+un Blob WebP aunque main ya usa la imagen PNG aprobada por el propietario.
+Se incorpora main d0113d6 sin revertir ese cambio y se ajusta únicamente C05 a
+la URL y nodo de imagen reales. Prueba focal: 6 PASS, 0 FAIL, 30 expectativas.
+No se cambió el diseño para satisfacer el test. Revisar el CI del nuevo HEAD.
 
 ## Evidencia anterior, conservada como historial
 

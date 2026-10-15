@@ -1,6 +1,5 @@
 import {test,expect} from 'bun:test';
 import {commercialEntryHtml,userPanelHtml} from '../user-panel';
-import {latamHeroImage} from '../latam-hero-image';
 const html=()=>commercialEntryHtml(true,new URL('https://direcciones.lat/'));
 test('C01/C09 public menu keeps four destinations and private addresses stay in account panel',()=>{
  const page=html(),nav=page.match(/<nav aria-label="Navegación principal">(.*?)<\/nav>/)![1];
@@ -19,12 +18,11 @@ test('C04/C06/C07 retain country support and request types without another Natal
  expect([...page.matchAll(/class="latam-plan-card"[^>]*>[\s\S]*?<h3>(.*?)<\/h3>/g)].map(m=>m[1])).toEqual(['Residencial','Lugar','Negocio Gratis','Premium','Premium Pro']);
  expect(page).not.toContain('id="latamHelp"');expect(page).toContain('id="latamHelpLink"');expect(page.match(/id="natalieLauncher"/g)?.length).toBe(1);
 });
-test('C05 original hero is an embedded WebP image with correct MIME',()=>{
- const bytes=Buffer.from(latamHeroImage,'base64');
- expect(bytes.subarray(0,4).toString()).toBe('RIFF');
- expect(bytes.subarray(8,12).toString()).toBe('WEBP');
- expect(bytes.length).toBeGreaterThan(10000);
- expect(html()).toContain("type:'image/webp'");
+test('C05 hero uses the owner-approved PNG already published by PR81',()=>{
+ const page=html();
+ expect(page).toContain("hero.src='https://raw.githubusercontent.com/direcciones507/direcciones507/feat/admin-ui-20261006/direcciones-latam-mapa-sin-cuadro-azul.png'");
+ expect(page).toContain('<img id="latamArt" class="latam-art" alt="" width="2400" height="1400">');
+ expect(page).not.toContain("type:'image/webp'");
 });
 
 test('shared access dialog exists before its initialization script executes',()=>{

@@ -43,7 +43,10 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
   if(!context.enabled)return respond(503,{ok:false,error:'USER_PANEL_SUBMISSION_NOT_ENABLED'});
   if(req.method!==(submit||action?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
   try {
-    if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==url.origin)||(req.headers.has('origin')&&req.headers.get('origin')!==url.origin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
+    // Railway terminates TLS before Bun. Keep the URL host authoritative (never
+    // x-forwarded-host), using the same HTTPS proxy condition as general-auth.
+    const requestOrigin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin;
+    if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==requestOrigin)||(req.headers.has('origin')&&req.headers.get('origin')!==requestOrigin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
     const canCreateCommercial=adminCreate&&user.roles.includes('COMMERCIAL');
     if(!(submit&&!adminCreate?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});

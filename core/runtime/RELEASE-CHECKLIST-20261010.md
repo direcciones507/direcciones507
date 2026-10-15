@@ -1,5 +1,35 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Activación ejecutada — 15 octubre 2026, 23:11 UTC
+
+Esta entrada sustituye los bloqueos de acceso, merge y activación descritos más abajo;
+no sustituye la prueba productiva autenticada pendiente.
+
+- PLANES: acceso real con la cuenta del propietario. Código.gs versión44 leído
+  desde historial, idéntico al HEAD leído: consulta/listado y track/stats;
+  escrituras solo de contadores/fecha/encabezados de contadores. Sin emisión,
+  inserción ni importación de códigos. Activadores visibles del propietario:0.
+  Proyecto vinculado al Máster oficial. Ninguna ejecución ni modificación Google.
+- Contrato operacional del propietario: toda emisión nueva corresponde a Core;
+  histórico sin emisión nueva e incorporación únicamente manual conservando código.
+  N32, cotejo histórico vivo por reserva e índices únicos se conservan. Esto no
+  pretende impedir modificaciones manuales de un editor autorizado del Máster.
+- PR62 integrado: main 62c6fecd85e53e88e172d41f6c8301430f71f2fd.
+  Se reutiliza Actions38785672494 SUCCESS,166PASS/0FAIL; sin rerun manual.
+- Railway production ad507-core: deployment323cc395-3edc-414c-9777-80b89509c621
+  SUCCESS, commit62c6fec. Activados únicamente AD507_COMMERCIAL_WORKFLOW_ENABLED,
+  AD507_HISTORICAL_NAMESPACE_VERIFIED y AD507_R2_CONFIGURATION_VERIFIED.
+  R2/respaldo/migraciones aprobados no repetidos. Pagos permanecen apagados;
+  planes de pago requieren confirmación real y países no validados permanecen cerrados.
+- Verificación pública posterior: LATAM/Core /ready200 con database:true y
+  authConfigured:true; muestra histórica /AD507-0025/200; ADMIN sin sesión401.
+- PENDIENTE real: prueba con sesión del propietario/ADMIN y datos/logo reales:
+  solicitud → revisión → aprobación → código → publicación → R2 → QR → Mi cuenta.
+  No se creó una dirección sintética ni se declara operativo ese recorrido.
+  Inicio Google detenido por revisión automática para respetar la entrega manual
+  exigida por el propietario. Se requiere su inicio de sesión en LATAM.
+
+
 ## Ejecución operativa — 15 octubre 2026, continuación
 
 | Componente | Estado | Evidencia / siguiente dependencia |

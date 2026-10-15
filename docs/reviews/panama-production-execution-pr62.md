@@ -86,3 +86,33 @@ R2 y lectura del esquema quedan acreditados; falta recuperación del snapshot y 
 - Antes de aceptar datos nuevos: deshabilitar flujo; rollback-countries.sql PR62 primero, después rollback-requests.sql; cotejar fingerprint y filas históricas. Ajustar ledger con procedimiento autorizado.
 - Después de aceptar solicitudes: deshabilitar flujo y revertir código/configuración manteniendo las columnas y TODOS los datos. Los rollback SQL rechazan pérdida de información; nunca borrar solicitudes ni usar CASCADE para forzar reversión.
 - Restore del snapshot productivo requiere autorización propia y evaluación de los datos posteriores; no es el primer paso automático de reversión.
+# Activación 15 octubre 2026 — actualización de ejecución
+
+PR62 integrado en main62c6fecd85e53e88e172d41f6c8301430f71f2fd.
+Railway deployment323cc395-3edc-414c-9777-80b89509c621 SUCCESS.
+Tres flags de flujo comercial/exclusividad histórica/R2 verificado activos.
+Pagos desactivados y países sin configuración suficiente cerrados.
+
+Evidencia nueva de PLANES: acceso como propietario; Código.gs versión44 idéntico
+al HEAD leído, funciones de lectura/listado y contadores, sin emisión/importación
+de códigos;0 activadores visibles. Solo se leyó. El contrato del propietario
+reserva toda emisión nueva a Core y preserva incorporaciones históricas manuales.
+Se mantienen UUID N32, cotejo vivo del registro histórico e índices únicos.
+No se certifica un control sobre futuras ediciones manuales del Máster.
+
+Comprobaciones posteriores: /ready LATAM y Core200, database:true,
+authConfigured:true; /AD507-0025/ histórico200; ADMIN sin sesión401.
+Se reutilizan CI166/0, respaldo/restauración, migraciones y R2 ya acreditados.
+No se repitieron ni se modificaron Excel, Apps Script o Pages históricos.
+
+Pendiente: recorrido productivo autenticado con datos reales del propietario,
+incluidos aprobación/publicación, fotografíaR2, URL/QR y Mi cuenta. Google requiere
+intervención manual conforme a su instrucción; la revisión automática detuvo
+la navegación de autenticación. No se simulan sesiones ni datos comerciales.
+El despliegue y flags están verificados; el circuito completo NO está certificado.
+
+Bloqueo productivo encontrado después: POST con Origin HTTPS devuelve403, mientras
+el mismo probe sin sesión con Origin HTTP devuelve401. Railway termina TLS y Bun
+recibe URL HTTP. Corrección mínima en request-routes.ts: conservar host URL exacto
+y reconocer HTTPS solo con x-forwarded-proto:https, igual que general-auth.
+No confiar en x-forwarded-host ni aceptar orígenes cruzados. Prueba focal añadida.

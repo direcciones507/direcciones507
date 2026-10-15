@@ -9,6 +9,19 @@ test('release gate rejects publication until activation', async () => {
   expect(response?.status).toBe(503);
 });
 
+test('request origin supports Railway TLS termination without trusting forwarded hosts', async () => {
+  let authReads=0;
+  const context={enabled:true,auth:{currentUser:async()=>{authReads++;return null;}}} as any;
+  const probe=(origin:string,headers:Record<string,string>={})=>handleRequestRoutes(new Request('http://direcciones.lat/v1/user/requests',{method:'POST',headers:{origin,...headers}}),context);
+  expect((await probe('https://direcciones.lat',{'x-forwarded-proto':'https'}))?.status).toBe(401);
+  expect(authReads).toBe(1);
+  expect((await probe('https://direcciones.lat'))?.status).toBe(403);
+  expect((await probe('https://evil.example',{'x-forwarded-proto':'https','x-forwarded-host':'evil.example'}))?.status).toBe(403);
+  expect((await probe('https://direcciones.lat',{'x-forwarded-proto':'https','sec-fetch-site':'cross-site'}))?.status).toBe(403);
+  expect((await probe('http://direcciones.lat',{'x-forwarded-proto':'https'}))?.status).toBe(403);
+  expect(authReads).toBe(1);
+});
+
 test('production publication checks payment even while providers are disabled', () => {
   const server = readFileSync(new URL('../server.ts', import.meta.url), 'utf8');
   expect(server).toContain("paymentEnvironment:'production' }");

@@ -1,3 +1,4 @@
+import {COUNTRIES} from '../country-configuration';
 import {test,expect} from 'bun:test';
 import {commercialEntryContext,sharedCommercialRoot,initializeCommercialNavigation} from '../commercial-entry';
 import {commercialEntryHtml,handleUserPanel} from '../user-panel';
@@ -32,8 +33,8 @@ test('in-document country navigation preserves fields and selected photo objects
  selectors.commercialCountry=select;selectors.countryCode=country;selectors.commercialIdentity={};selectors.commercialAvailability={};
  const link:any={dataset:{commercialCountry:'CO'}},doc={getElementById:(id:string)=>selectors[id],querySelectorAll:()=>[link]};
  const loc={href:'https://direcciones507.com/?country=PA'},history={pushState:(_:any,__:any,path:string)=>{loc.href='https://direcciones507.com'+path;}};
- const run=new Function('document','location','history','addEventListener','Event','return ('+initializeCommercialNavigation.toString()+')()');
- run(doc,loc,history,(event:string,handler:any)=>listeners[event]=handler,Event);expect(country.value).toBe('PA');
+ const run=new Function('document','location','history','addEventListener','Event','countries','return ('+initializeCommercialNavigation.toString()+')(countries)');
+ run(doc,loc,history,(event:string,handler:any)=>listeners[event]=handler,Event,COUNTRIES);expect(country.value).toBe('PA');
  const file=input.file;link.onclick({preventDefault(){}});expect(country.value).toBe('CO');expect(loc.href).toBe('https://direcciones507.com/?country=CO');expect(input.value).toBe('Panamá');expect(input.file).toBe(file);
  loc.href='https://direcciones507.com/?country=PA';listeners.popstate();expect(country.value).toBe('PA');expect(input.file).toBe(file);country.value='CO';listeners.formCountry();expect(select.value).toBe('CO');expect(input.file).toBe(file);
 });
@@ -158,4 +159,17 @@ test('commercial entry applies CSP nonce to both panel and existing Natalie scri
  for(const match of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(match[1])).not.toThrow();
  for(const script of scripts)expect(script[1]).toContain('nonce="'+nonce+'"');
  expect(html).toContain('id="natalieLauncher"');
+});
+
+test('commercial root authorizes all reused inline scripts with one CSP nonce and uses public existing icons',async()=>{
+ const source=await Bun.file(new URL('../server.ts',import.meta.url)).text();
+ const route=source.split('if(sharedCommercialRoot(req,process.env))')[1].split('const paymentPageId')[0];
+ expect(route).toContain(".replaceAll('<script>'");
+ const nonce='isolated-csp-check';
+ const page=commercialEntryHtml(true,new URL('https://direcciones.lat/')).replaceAll('<script>','<script nonce="'+nonce+'">');
+ let scripts=0;
+ await new HTMLRewriter().on('script',{element(e){scripts++;expect(e.getAttribute('nonce')).toBe(nonce);}}).transform(new Response(page)).text();
+ expect(scripts).toBeGreaterThan(0);
+ expect(page).toContain('https://direcciones507.com/assets/icon-192.png');
+ expect(page).toContain('https://direcciones507.com/assets/icon-180.png');
 });

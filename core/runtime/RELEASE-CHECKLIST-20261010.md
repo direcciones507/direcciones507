@@ -1,5 +1,35 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Continuación funcional del generador — 15 octubre 2026
+
+Base real inspeccionada: main `1cef22758c3528353a6bf29e40bb83b80708dac0`.
+Se continúa PR #62, rama `fix/panama-panel-publication-20261012`, incorporando
+main sin revertir el diseño aprobado. No se crea otro panel, Core ni PR.
+
+| Componente | Estado | Evidencia / pendiente exacto |
+|---|---|---|
+| Formulario → receptor persistente | En desarrollo | El formulario existente usa `/v1/user/requests`; panel y receptor están cerrados por `AD507_COMMERCIAL_WORKFLOW_ENABLED`. No es una ruta de envío inexistente. |
+| ADMIN → aprobación/publicación | Probado en fixture previo | Reutiliza `request-routes.ts` y `request-repository.ts`; falta recorrido autenticado productivo. |
+| Separación pago/publicación | En desarrollo | `server.ts` exige confirmación productiva aun con Yappy apagado. Gratis no consulta órdenes; Premium/Pro sin confirmación quedan pendientes. No se activa proveedor ni se altera precio. |
+| Iglesia Catedral | En desarrollo | Nombre usado exclusivamente en el ensayo HTTP aislado existente; imagen y coordenadas sintéticas identificadas como fixture. No se crea registro público ni se inventan datos reales del lugar. |
+| Ocho países / generador único | Probado en configuración | PA, CR, CO, GT, SV, HN, NI, MX comparten configuración y formulario. `assertCountryCommerce` solo admite PA. Los otros siete NO se declaran operativos ni se abren sin configuración comercial suficiente. |
+| Producción | Operativo solo para servicios actuales | Railway ad507-core: SUCCESS `ff0c79d9-f76c-4e61-ae5e-546058c1777c`, sin staged; `/ready` LATAM/Core 200. La variable comercial no está definida. Esto no acredita publicación comercial. |
+| Esquema y exclusividad | Pendiente | Sigue vigente el preflight de PR62: columnas comerciales/country_code, recuperación aislada del respaldo y exclusividad histórica deben acreditarse antes de activar. No se aplica SQL, no se declara namespace verificado ni se cambia flag. |
+
+Archivos funcionales de esta continuación: `core/runtime/server.ts`.
+Pruebas: `tests/publication-errors.test.ts` y el ensayo existente en
+`tests/consolidated.test.ts`, ahora con el mismo control de pago de producción.
+Compatibilidad legacy y compilación PASS. La suite local sin PostgreSQL accesible
+da 121 PASS, 1 skip y 3 fallos de prerrequisitos de PostgreSQL; la certificación
+completa corresponde a Actions con PostgreSQL aislado. No confundir ese resultado
+local con un fallo comercial verificado ni con producción operativa.
+
+Antes de publicar de verdad: cerrar evidencias pendientes, autorizar/aplicar el
+esquema verificado y activar el flujo; después el propietario envía Iglesia
+Catedral con sus datos y logo reales y ADMIN revisa, aprueba y publica. Comprobar
+URL, QR, Maps/Waze y la tarjeta en Mi cuenta desde ambos dominios. No ejecutar
+esa prueba con datos sintéticos en producción.
+
 Actualizado 11 octubre 2026. Este es el checklist de release existente, ampliado documentalmente; no añade funcionalidades ni un segundo sistema. No desplegar hasta verificar asignación de códigos y publicación canónica. PR51:7535f2cdaa38b475538769fa5d90c31a38134713; PR52 funcional:9735178634d467551fe1f05e4c26c8a698158fc4. El cierre READ ONLY está en566b231; la preparación posterior reutiliza únicamente el widgetNatalie existente en el renderer comercial, sin alterar backend/históricos. Sus pruebas se registran en PR52.
 
 **VERDE:** hecho concreto con evidencia. **AMARILLO:** preparado, pendiente de prueba/autorización. **ROJO:** bloqueo de la acción indicada. Un VERDE de CI no sustituye una validación productiva.
@@ -298,3 +328,162 @@ Commit funcional validado: `72a6cf9118c0550ebfa0447be3c09adb858f996e` (correcci�
 Alcance de la prueba: proveedores Google, PLANES y R2 sustituidos por respuestas sintéticas controladas, sin tráfico externo; ADMIN ejecuta su JavaScript real con DOM mínimo de ensayo, sin navegador visual. El QR se valida como URL generada por el mecanismo existente; no se contacta al proveedor externo de QR. No acredita callbacks reales, R2 físico, IA ni rutas/DNS productivos. No se repitió el diagnóstico PostgreSQL. El workflow existente ejecuta su suite completa como regresión del cambio funcional; no se lanzó una auditoría ni prueba de carga productiva.
 
 Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exportación autorizada del inventario de emisores futuros AD507 (funciones, triggers y emisión manual) y evidencia de exclusión del espacio reservado; solicitar a Railway el procedimiento y costo exactos para recuperación aislada del snapshot identificado, sin Restore del servicio activo. Después, autorizar por separado migraciones, dominios/callbacks, validación real de Natalie e integración/despliegue. Ninguna de esas operaciones se efectuó aquí.
+
+
+## Integración única de generación Panamá + LATAM — decisión 12 octubre 2026
+
+**Estado: EN DESARROLLO (decisión y alcance registrados; NO equivale a código integrado, pruebas ni producción).** Una plataforma, un Core, un generador, una plantilla compartida, un panel Mi cuenta y un ADMIN. No generar nuevas direcciones desde Apps Script/Excel históricos; preservar intactos enlaces y direcciones existentes. Reutilizar PR #51/#52/#62 y componentes existentes antes de escribir código nuevo.
+
+- Países iniciales tomados de INITIAL_COUNTRIES en core/runtime/country-configuration.ts: PA +507, CO +57, CR +506, GT +502, SV +503, HN +504, NI +505, MX +52. PE +51 y EC +593 permanecen FUTURE, sin activarlos.
+- Selección de bandera en entrada pública → Crear mi dirección → OAuth Google → Mi cuenta → formulario → ADMIN: conservar countryCode elegido y mostrar automáticamente indicativo telefónico; nunca imponer PA por defecto si hubo selección explícita. El indicativo no reemplaza el identificador único de dirección.
+- Un portafolio con habilitación por país. Producto LUGARES únicamente en PA y CR, oculto en CO y demás países. No alterar planes ni precios sin autorización.
+- Reservar/publicar códigos por país sin colisiones con históricos; conservar URL canónica y QR; un mismo proceso de solicitud, revisión ADMIN, publicación y entrega. La función assertCountryCommerce actual limita a PA: ampliar de manera controlada solo cuando estén cumplidos los gates de país y producción.
+- Preparar interfaz de pasarela de pago desacoplada/configurable por país y producto; no escoger proveedor, solicitar secretos, activar cobros ni confirmar pagos. No confundir espacio de integración con pagos operativos.
+- Países futuros deben incorporarse mediante configuración y pruebas, sin duplicar panel, plantilla ni generador.
+
+|Trabajo específico|Estado|Evidencia actual|Cierre requerido|
+|---|---|---|---|
+|Configuración de ocho países y prefijos|PROBADO EN CÓDIGO|core/runtime/country-configuration.ts contiene INITIAL_COUNTRIES; no prueba productiva|Verificar selector real y persistencia|
+|Un único panel/ADMIN/plantilla|EN DESARROLLO|Componentes compartidos existentes; no crear duplicados|Prueba extremo a extremo de cada flujo|
+|Selección bandera→OAuth→panel→formulario|PENDIENTE|Regla de persistencia definida; no prueba completa|Validar countryCode e indicativo tras login|
+|LUGARES solo PA/CR|PENDIENTE|Regla de producto definida|Pruebas positivas PA/CR y negativas otros|
+|Pasarela desacoplada sin cobros|PENDIENTE|Interfaz prevista; pagos actuales apagados|Contrato técnico y pruebas sin transacción|
+|Reserva, solicitud, publicación, URL y QR|PENDIENTE|PRs y pruebas parciales ya documentados arriba|Prueba integrada real sin afectar históricos|
+|Migraciones/activación producción|BLOQUEADO|Gates de respaldo/exclusividad documentados arriba|Autorización y verificación productiva, no CI solamente|
+
+**Registro de esta actualización:** archivo modificado: core/runtime/RELEASE-CHECKLIST-20261010.md. PR nuevo: ninguno. Pruebas ejecutadas: lectura de configuración y checklist, sin tests de código ni despliegue. Bloqueos: gates de activación existentes; sin modificar Apps Script, Excel, DNS, SQL ni cobros.
+
+### Avance funcional en rama feat/unified-country-generation-20261012
+
+- EN DESARROLLO: `core/runtime/request-validation.ts` ahora rechaza solicitudes `PLACE` fuera de PA y CR mediante `COUNTRY_PRODUCT_NOT_AVAILABLE`. Mantiene validación de RESIDENTIAL y BUSINESS y no toca históricos.
+- Estado de pruebas: NO EJECUTADAS en esta intervención; no declarar PROBADO ni OPERATIVO. UI de catálogo por país y selector/OAuth aún pendientes. Sin merge, migración ni despliegue.
+- Reutilización: módulo `requestCountry` y `validateRequestDraft` existentes; ningún generador/panel nuevo. Bloqueos productivos previos permanecen.
+
+- EN DESARROLLO, commit 495a667: `core/runtime/commercial-entry.ts` muestra el indicativo telefónico de cada país inicial en la identidad del selector y tolera ausencia del campo `countryCode` al inicializar; reutiliza `COUNTRIES` y sincronización existente. No se afirma persistencia tras OAuth ni publicación. Pruebas NO EJECUTADAS; no merge/deploy.
+
+- EN DESARROLLO, commits 3077722 y 4f5ccdf: `core/runtime/latam-presentation.ts` oculta tarjeta LUGARES fuera de PA/CR al renderizar y cambiar país, incluyendo regla CSS `[hidden]` frente a `display:flex`. La validación del servidor se añadió previamente. Sin pruebas automatizadas ejecutadas ni despliegue; el flujo OAuth y la persistencia entre hosts siguen pendientes.
+
+- ACCESO LATAM EN DESARROLLO (commit c212cb1): panel previo al OAuth desde CTA principal y enlaces de invitado, país seleccionado visible y Google OAuth existente reutilizado. Campos de contraseña y recuperación expresamente deshabilitados/no operativos hasta implementar endpoints, almacenamiento seguro y recuperación; no afirmar registro por correo listo. Sin pruebas ejecutadas, merge ni despliegue.
+
+- [ ] ADMIN ÚNICO: conservar el panel administrativo existente y conectar Direcciones LATAM sin crear otro panel ni duplicar datos.
+- [ ] ADMIN LATAM: consultar Panamá y países habilitados desde el mismo panel, con filtros y permisos existentes; comprobar datos reales antes de declarar operativo.
+- [ ] DOMINIO ADMIN: habilitar direcciones.lat/admin conservando cuenta.direcciones507.com/admin hasta validar sesión, Google OAuth y redirección segura; no cambiar DNS aún.
+- [ ] NATALIE EN ADMIN: reutilizar el chatbot existente en el panel administrativo, verificar CSP, orígenes, permisos y conversación real; no crear otro widget.
+
+- [ ] NATALIE ADMIN, avance de código 2026-10-12: commits 9afad51 y ea0097c reutilizan el widget existente en `core/runtime/server.ts` solamente cuando `nataliePresentationAllowed` autoriza el origen. Pendiente: permitir y probar el origen administrativo real `cuenta.direcciones507.com` o el canónico `direcciones.lat`, comprobar CORS/CSP, conversación real y responsive. Sin pruebas ejecutadas, merge ni despliegue.
+
+- [ ] ACCESO CORREO/GOOGLE, avance 2026-10-12: commit `530ed359` abre el diálogo de ingreso LATAM cuando `/panel` devuelve al visitante con `?access=1`. Rutas de correo y Google existentes; pendiente probar registro, entrega/verificación de correo, login, recuperación, callback Google, sesión y persistencia de país. No afirmar operativo ni desplegado.
+
+- [ ] VENTANAS DE ACCESO estilo Empleos.pa (2026-10-12): commits `0cf07ad`, `e3e29c3` añaden diseño claro, mostrar/ocultar contraseña, enlace «¿Olvidaste tu contraseña?» y botón «Continuar con Google» abajo en el diálogo LATAM existente. Pendiente probar visualmente móvil/tablet/escritorio y flujo real de recuperación, verificación y OAuth; no desplegado.
+
+- [ ] GOOGLE CLOUD OAUTH (acción de propietario): confirmar en el cliente OAuth existente los orígenes autorizados `https://direcciones.lat` y el callback exacto `https://direcciones.lat/auth/google/callback`, además de los de Panamá; verificar que Railway tenga `AD507_GOOGLE_REDIRECT_URI_LATAM`, `AD507_AUTH_SUCCESS_URL_LATAM` y la compuerta de dominio validado. No copiar secretos a checklist ni alterar credenciales sin autorización. Google Sheets no configura OAuth; si se usa, solo registrar resultados.
+- [ ] CORREO DE CUENTAS (acción técnica): comprobar variables `EMAIL_WEBHOOK_URL`, `EMAIL_WEBHOOK_SECRET`, `EMAIL_FROM` en Railway y entrega de verificación/recuperación. El backend genera enlaces `/verificar-correo` y `/recuperar-contrasena`; verificar que el frontend abra el diálogo con `token`, `email` y acción adecuada desde esas rutas, no solo desde la portada.
+
+- [x] GOOGLE CLOUD OAuth (evidencia visual del propietario, 2026-10-12): cliente web `Direcciones507` muestra orígenes JavaScript `https://direcciones507.com` y `https://direcciones.lat`, y callbacks `https://cuenta.direcciones507.com/auth/google/callback` y `https://direcciones.lat/auth/google/callback`. No crear otro cliente ni duplicar entradas. Esta evidencia acredita configuración visible, no login funcional.
+- [ ] GOOGLE OAUTH prueba de extremo a extremo: verificar variables Railway para LATAM, estado del despliegue, callback, cookie, `/v1/auth/me` y llegada a `/panel` mediante cuenta de prueba, sin exponer secretos ni alterar producción sin autorización.
+
+- [x] RAILWAY OAuth inventario (lectura 2026-10-12): servicio `ad507-core` production confirma presencia de `AD507_GOOGLE_CLIENT_ID`, `AD507_GOOGLE_CLIENT_SECRET`, `AD507_GOOGLE_REDIRECT_URI`, `AD507_GOOGLE_REDIRECT_URI_LATAM`, `AD507_AUTH_SUCCESS_URL`, `AD507_AUTH_SUCCESS_URL_LATAM`, `AD507_INTERNATIONAL_DOMAIN_VERIFIED` y `AD507_SESSION_SECRET`. Valores sellados: no se verificó contenido ni estado de la compuerta.
+- [ ] RAILWAY CORREO, bloqueo real: `ad507-core` production no presenta `EMAIL_WEBHOOK_URL`, `EMAIL_WEBHOOK_SECRET` ni `EMAIL_FROM`; el mailer actual depende de estas variables para registro/recuperación. Elegir proveedor existente y configurar sin exponer secretos, con autorización antes de cualquier despliegue.
+- [ ] DESPLIEGUE OAuth/UI: Railway `ad507-core` muestra SUCCESS en `main` commit `c34f7b62` (PR #43), diferente de la rama `feat/unified-country-generation-20261012` que contiene los cambios recientes de ventanas. No afirmar que las ventanas nuevas estén en producción; pendiente validación, integración y despliegue autorizado.
+
+### PR #63 — ejecución de acceso único, 2026-10-14 UTC
+
+- Corregido fallo real de JavaScript: `initializeCommercialNavigation` recibe explícitamente el catálogo serializado, sin depender de imports ausentes en el navegador. Actualizada prueba de conservación de país/campos/fotos.
+- Actualizada expectativa de acceso invitado al diálogo compartido. Panamá enlaza al mismo diálogo canónico LATAM con `country=PA&access=1`.
+- Excluidos del cierre cambios de validación comercial y widget ADMIN ajenos al acceso; se conserva main para esas partes.
+- Correo: errores controlados, rechazo de JSON nulo, creación transaccional de identidad/rol/credencial, reenvío para registro no verificado y consumo de tokens/cambio de contraseña atómicos. Recuperación revoca sesiones previas. Añadidas pruebas con PostgreSQL real en CI y transporte Resend simulado.
+- Compilación Bun aprobada; compatibilidad legacy aprobada; 17 pruebas focalizadas aprobadas, 0 fallos. Suite completa local inicialmente bloqueada por PostgreSQL local ausente; no se declara aprobada hasta CI.
+- Railway: `RESEND_API_KEY` y `EMAIL_FROM` ya preparados, sin recrear secretos. Todavía pendientes de activar.
+- PostgreSQL productivo consultado mediante consola existente: `email_credentials` y `email_auth_tokens` ausentes. Nuevo respaldo lógico del esquema `ad507` guardado en volumen PostgreSQL: `$PGDATA/ad507-release-backups/pr63-pre-email-20261014.dump`. Restauración con `pg_restore --exit-on-error` a base aislada `pr63_restore_20261014`: 41 tablas, 3 usuarios, 0 direcciones, 45 sesiones. Sin reemplazar volumen/reiniciar producción. Este ensayo no acredita recuperación del snapshot histórico del 11 de octubre.
+- Reversión: volver al commit previo de aplicación y conservar tablas/datos nuevos; SQL de retirada opcional `schema-proposals/email-auth.rollback.sql` solo permite eliminar tablas vacías y aborta si contienen datos. Migración preparada existente `schema-proposals/email-auth.sql`, sin duplicarla. Pendiente ensayo de aplicar/revertir/reaplicar antes de producción.
+- Pendientes de este registro: GitHub Actions, ensayo SQL, activación Resend, integración/despliegue y pruebas reales de ambos sitios.
+- CI commit `4ac54a22`: workflow `38506691238`, job compatibility SUCCESS (validación SQL, legacy, compilación, Docker y suite PostgreSQL). Corregido además orden del DOM: diálogo de acceso antes del script que lo inicializa, evitando referencias nulas al abrir. Prueba de regresión añadida; pendiente nuevo CI del ajuste.
+- Ensayo SQL sobre restauración aislada: aplicación → reversión con tablas vacías → reaplicación, los tres COMMIT correctos. Sin columnas comerciales ni migraciones de direcciones.
+
+#### Resultado de publicación del PR #63 (2026-10-14 03:36 UTC)
+
+- [x] GitHub Actions final: workflow `38506877045`, job `115666296218`, SUCCESS en `b2efed79f28f41c449aee41e679e6aaa4a2e0c4e`; SQL, legacy, compilación, Docker y suite completa PostgreSQL aprobados.
+- [x] PR #63 integrado, commit `6fcebbcda61a49ff423663d1044feee6b0111f03`.
+- [x] Tablas de correo aplicadas productivamente con ON_ERROR_STOP, lock_timeout 5s y statement_timeout 15s, después del respaldo/restauración/ensayo de reversión ya registrados. Confirmados ambos nombres mediante `to_regclass`; usuarios=3, direcciones=0 antes de aplicar; no se ejecutaron migraciones de direcciones.
+- [x] Resend: dominio `mail.direcciones507.com` verificado, envío habilitado. Variables existentes preservadas; no crear otra clave.
+- [ ] Despliegue: preparada fuente exacta `6fcebbcd` + `EMAIL_FROM` y `RESEND_API_KEY` en patch `cb2e3a02-f206-46d0-a85d-45a63d215dd6`, seis campos del mismo servicio, sin cambios destructivos. La llamada `railway_accept_deploy` devolvió «Cancelled — the user did not approve this action. No changes were made.» No se repitió la operación por otro mecanismo.
+- [ ] Producción permanece en SUCCESS del commit anterior `c34f7b62`, deployment `b659b587-552b-4e00-a4f7-a76921a815ea`. El acceso nuevo no está publicado todavía. La consulta HEAD anterior a raíz LATAM devolvió 404 por el método. Comprobación GET posterior: ambos dominios responden 200, pero ninguno sirve todavía el diálogo nuevo; Panamá ya muestra el enlace al acceso canónico LATAM. No confundir respuesta 200 con nuevo acceso operativo.
+- [ ] Pruebas reales en Panamá/LATAM y entrega/verificación/recuperación/Google: pendientes de aplicar el patch y confirmar SUCCESS en el commit nuevo. No se enviaron correos de prueba ni se crearon cuentas productivas de prueba.
+- Continuación concreta: aprobar/aplicar en Railway el patch preparado del servicio `ad507-core`, esperar SUCCESS, comprobar los dos sitios y registrar resultados aquí. No repetir diagnóstico, respaldo ni SQL ya ejecutados. El snapshot histórico 11-oct sigue fuera de este ensayo lógico.
+
+### Reparación urgente pantalla blanca — 2026-10-14
+
+- Reproducida en navegador real `/panel?country=PA` → `/?country=PA&access=1`: body vacío, cero scripts reconocidos y etiqueta style de 98,634 caracteres que contenía `</head><body` y el diálogo.
+- Causa exacta: `latam-presentation.ts` sustituía `</style>` por estilos de acceso sin volver a cerrar la etiqueta. Corregido cierre HTML; no se modifica autenticación.
+- `server.ts`: nonce aplicado a TODOS los scripts inline reutilizados mediante replaceAll, manteniendo CSP restrictiva existente.
+- `user-panel.ts`: iconos apuntan a los archivos públicos existentes en direcciones507.com, sin crear activos ni rutas nuevas.
+- Añadidas regresiones con parser HTML real (HTMLRewriter), reconocimiento de body/header/dialog/scripts y nonce de cada script. Pendientes CI, despliegue y verificación visual productiva. Sin tocar SQL, respaldos, códigos, planes, cobros ni direcciones históricas.
+
+#### Cierre verificado de pantalla blanca — 2026-10-14 04:08 UTC
+
+- [x] PR #64 integrado. Commit de aplicación `723f420070a13a68786eb5e5d1826180be5763d3`; corrección `30a05be1871d1a4a9afc8eb87ece6c7ff17d92c5`.
+- [x] GitHub Actions `38509509609`, job `115674538035`: SUCCESS; validación SQL existente, legacy, compilación, Docker y suite PostgreSQL aislada aprobados. Pruebas focalizadas locales: 19 aprobadas, 0 fallos.
+- [x] Railway `ad507-core`: deployment `2c64998b-45e6-443a-aa25-8c8230def890`, SUCCESS, commit exacto `723f4200`. Ningún servicio, variable, SQL o respaldo nuevo/modificado en esta reparación.
+- [x] Navegador real: `/panel?country=PA` llega a `/?country=PA&access=1` y muestra diálogo abierto. Desde portada Panamá, clic Mi cuenta abre el mismo diálogo. Desde raíz LATAM, clic Ingresar abre el diálogo. Body ahora tiene 7 hijos; sin pantalla blanca.
+- [x] Botones reales: Crear cuenta con correo, Ya tengo una cuenta → Ingresar con correo y Olvidaste tu contraseña → Enviar recuperación funcionan visualmente. Google abre selector de cuentas en accounts.google.com con callback LATAM correcto. No se seleccionó identidad ni se introdujeron credenciales; no se afirma una sesión autenticada nueva.
+- [x] Respuesta HTTP LATAM 200, cierre style antes de head y todos los scripts emitidos con nonce coincidente con CSP. Sin errores de JavaScript/CSP propios del sitio observados; mensajes de extensión del navegador excluidos. Ambos iconos públicos existentes de Panamá: 200 image/png.
+- [x] Checklist actualizado. Pantalla blanca y acceso visual cerrados; no quedan bloqueos de esta reparación.
+
+### Corrección visual integral de acceso y Mi cuenta — 2026-10-14
+
+- Referencia consultada: `direcciones507/Empleos-pa`, `apps/web/components/LoginForm.tsx` main, blob `cea5765e3421f324a41d4d3bcc7b7df0ecc0f2dc`. Solo proporciones y distribución; no lógica importada.
+- `latam-presentation.ts`: CSS del diálogo consolidado, menos altura/espacios, cierre arriba, botones proporcionados, Google en el mismo contenedor. Límite por 100dvh y scroll interno para pantallas bajas. Sin cambiar handlers, validaciones, país ni OAuth.
+- `user-panel.ts`: paginación centrada con separación inferior; tipos de solicitud uniformes/centrados; acciones Revisar/Cerrar y Próximamente al ancho de contenido. Reutiliza panel existente. Presentación por host cambia únicamente textos visibles en LATAM, conserva Panamá, URLs, códigos y lógica interna; regresión compara scripts normalizando solo las tres frases de marca cambiadas.
+- Regresión en `tests/account-presentation.test.ts`: marca por dominio y ruta real de panel con CSP/nonce preservado. Pruebas de pantalla blanca, parser HTML y scripts siguen aprobadas.
+- Chromium real aislado con respuestas API simuladas, sin datos productivos: 390×844, 320×480, 768×600, 1024×768, 1440×900. En los cinco: diálogo único, Google accesible dentro del diálogo, Cerrar, Mostrar/Ocultar, cambios de modo, recuperación simulada, conservación Costa Rica/+506, paginación, revisión y cierre del formulario aprobados; envío continúa deshabilitado. Cero errores JS y cero desbordamientos de panel.
+- Medidas: diálogo de 479–513px en tamaños normales; en 320×480 limitado a 456px con scroll interno. Botón cargar más separado 28px (móvil) / 34px (tablet/escritorio) del borde inferior. Tres tipos uniformes y en fila desde tablet. Capturas inspeccionadas de teléfono, tablet y escritorio; fixtures de panel autenticado aislado, no se afirma sesión productiva nueva.
+- Compilación Bun y check legacy aprobados. Pendientes CI de integración, despliegue y comprobación de acceso público productivo. Sin SQL, Apps Script, Excel, R2, planes, precios ni pasarelas.
+
+#### Cierre visual integral verificado — 2026-10-14 04:31 UTC
+
+- [x] PR #65 integrado: commit aplicación `2525844988f7dd909cb7bc3852d3f18dc3a53cdd`, corrección `7cb89adbb541a9511714155198b44dc58819b7d5`.
+- [x] GitHub Actions `38511473440`, job `115680736947`, SUCCESS: legacy, compilación, Docker y suite completa aislada PostgreSQL. Focalizadas: 28 aprobadas, 0 fallos.
+- [x] Railway deployment `0b666b9e-ec01-4de2-a5bf-7b320e293a34`: SUCCESS con commit exacto `25258449`; únicamente fuente del servicio existente actualizada, sin variables ni recursos nuevos.
+- [x] Navegador público productivo: ventana única abierta con Costa Rica y +506 conservados; 440px ancho y 498.375px alto en la vista observada. Google dentro del contenedor y visible, sin desbordamiento horizontal ni pantalla blanca. Mostrar/Ocultar cambia tipo de campo; modo Ingresar y recuperación muestran sus controles correctos; Cerrar y reapertura funcionan. Google llega al selector real de cuentas; no se eligió identidad ni introdujeron credenciales.
+- [x] Confirmación visual responsive anterior al merge: cinco tamaños Chromium reales, capturas inspeccionadas, panel autenticado con respuestas API de prueba aisladas (no sesión productiva). Paginación, formulario, marcas y botones aprobados. Se conserva deshabilitado Enviar solicitud · Próximamente; no se realizaron envíos ni pagos.
+- [x] Checklist final actualizado. Sin bloqueos técnicos pendientes de esta intervención visual.
+
+### Fichas públicas: rediseño visual inferior responsive — 2026-10-14
+
+- Solo plantilla compartida `ad507.template.html`: presentación inferior reorganizada en izquierda (acciones, redes disponibles, navegación 2×2) y derecha (un contenedor carbón de horario/referencia/código postal opcional/QR/estadísticas). En móvil se apila en ese orden; estilos nuevos limitados a `.public-lower-layout`.
+- Se movieron los nodos originales, conservando IDs, atributos, condiciones y eventos. No se añadió JavaScript ni se cambió API, endpoint, navegación, teléfono, QR, estadísticas, OWNER, privacidad ni permisos. Teléfono fijo opcional conservado, sin desplazar las tres acciones principales.
+- Redes: título fuera del nodo cuyos hijos evalúa el script existente, por lo que su cálculo de visibilidad no cambia; wrapper oculto por CSS cuando redes-container está hidden. Ninguna red nueva sin configurar.
+- Regresión automatizada: hash de todos los scripts idéntico al baseline, identidad superior y galería idénticas byte por byte; controles originales únicos y condiciones hidden/display conservadas. 2 pruebas / 26 aserciones aprobadas.
+- Chromium aislado, usando lecturas reales de datos públicos sin modificarlos: THE1920 Premium Pro, FJSPORTGYM Premium, LABDIESELMONTERO Negocio; tamaños 390×844, 320×568, 768×1024 y 1440×900. Doce combinaciones aprobadas: enlaces/targets/visibilidad y QR idénticos antes/después, dimensiones de identidad/galería/descripción iguales, dos columnas equilibradas desde tablet, una en móvil, tres acciones uniformes, desplegables/QR y lectura de estadísticas simulada funcionando, sin desbordamientos ni errores JS. Imágenes aisladas sustituidas por fixtures solo durante las mediciones.
+- Caso adicional sin redes configuradas en fixture local: wrapper y título ausentes sin modificar el script. Capturas de teléfono/tablet/escritorio inspeccionadas. Ningún clic ni dato estadístico real escrito por las pruebas.
+- Pendiente: CI completo, integración/publicación mediante generador Pages existente y verificación productiva. Railway permanece sin cambios por restricción expresa.
+
+
+## 2026-10-14 · Portada LATAM responsive y textos (solo presentación)
+
+- Base main 5dc8f539 (PR #66 preservado). Cambios limitados a latam-presentation.ts y prueba de portada; sin cambios en panel, fichas, datos, proveedores ni infraestructura.
+- Portada horizontal desde tablet: texto/CTA y mapa existente en columnas; países separados con cuatro tarjetas por fila y selección destacada. Móvil: título, descripción, mapa, CTA, países, beneficios, planes, disponibilidad y ayuda.
+- Beneficios uniformes; planes centrados con dimensiones comunes y ajuste de texto; disponibilidad en franja y footer con marca/enlaces en dos grupos compactos. Mismos colores, logo, bytes de mapa, países e indicativos.
+- Textos: “enlace”, descripción de navegación sin promesa absoluta, Premium con código postal/zona postal y nombre completo del plan base; Premium Pro mantiene descripción comercial y hasta cinco fotos, contrastado con index.html y capacidades existentes. Sin nuevos beneficios/precios/condiciones. Tarjeta Panamá identifica Direcciones507 sin duplicar “Panamá”.
+- 24 pruebas aprobadas / 183 aserciones en acceso, portada, contexto comercial y panel. Scripts generados y ventana de acceso idénticos byte por byte respecto a la base.
+- Chromium aislado: 320×568, 390×844, 768×1024, 1024×768 y 1440×900; sin desbordamientos, hero horizontal/vertical correcto, footer compacto, apertura/cierre del acceso, país CO conservado, ocho banderas y aviso legal funcionando. Sin llamadas productivas ni envíos.
+- CI e integración se registran en el PR de esta única intervención al completarse. No se opera Railway por restricción expresa.
+
+## 2026-10-14 · Restauración móvil de fichas individuales
+
+- Referencia histórica: 4568281e, inmediatamente anterior al rediseño PR #66. Base de trabajo: main 1d7ab58d; portada LATAM del PR #61 y página principal de Panamá intactas.
+- La plantilla ad507.template.html conserva todas las reglas históricas y limita el bloque visual de PR #66 a min-width:768px. No se inventan valores de color, dimensiones ni separaciones móviles.
+- Se reutilizan los mismos nodos: navegación antes del contenedor inferior; luego galería, acciones, redes, QR/estadísticas, horario, postal y referencia en el orden histórico. Un adaptador exclusivamente de presentación cambia su ubicación al cruzar 767/768px y la restaura a sus posiciones actuales en pantallas anchas; no clona ni modifica enlaces, datos, hidden, permisos o eventos.
+- Los scripts funcionales anteriores conservan exactamente su SHA-256 49da00046e9d33aa619da670a6abe8122d31e767e4ba2f375539890a7238b66f. Identidad y galería conservan sus hashes. El adaptador se comprueba separadamente.
+- 4 pruebas de plantilla aprobadas, 38 aserciones: scripts parseables, controles únicos, hidden/configuración y teléfonos conservados. Sin cambios en runtime residencial/OWNER, PIN, QR privado, sesiones ni generadores/filtrado residencial.
+- Comparación Chromium con datos simulados, sin llamadas productivas: posición/tamaño, margen/padding/gap, colores/fondos/bordes, fuentes y colores/tamaños de iconos, enlaces y hidden contrastados contra la referencia histórica en móvil y contra main actual en tablet/escritorio. Resultados finales de navegador y CI registrados en el PR de esta única corrección.
+
+## 2026-10-14 · Fichas: íconos y alineación tablet/escritorio
+
+- Base PR #67 / d84a6524. Solo plantilla individual, prueba de plantilla, licencia de íconos y este checklist; páginas principales y scripts funcionales sin cambios.
+- Colores históricos recuperados para Ver mapa (#b45309), Llamar (#15803d), Compartir (#7c3aed) e íconos informativos; navegación conserva sus colores y Uber tiene tarjeta negra con borde visible. Instagram compacto, sin expandirse para ocupar la fila; mismas condiciones de redes configuradas.
+- Se incrustan los mismos trazados oficiales Font Awesome Free 6.0.0-beta3 en SVG, con licencia/atribución, exclusivamente para los íconos inferiores desde 768px. Esto evita depender de la fuente externa para los íconos de tablet/escritorio. En móvil los SVG permanecen ocultos y la presentación aprobada conserva sus reglas y glifos.
+- Navegación de 60px y separación de columnas ajustada; el espacio flexible queda entre secciones, sin estirar botones. Borde inferior de WhatsApp y contenedor de información con diferencia medida de 0px a 768, 1024 y 1440px.
+- 5 pruebas de plantilla aprobadas / 77 aserciones. Hashes de scripts funcionales, identidad y galería conservados. Referencias SVG locales verificadas.
+- Chromium con datos públicos leídos de THE1920, imágenes aisladas y estadísticas simuladas: 390, 768, 1024 y 1440px aprobados, sin desbordamientos/errores JS. A 390px se compararon antes/después posiciones, tamaños, estilos, fuentes, colores, enlaces y hidden sin diferencias. En anchos >=768px se bloqueó el CSS/fuentes del CDN: todos los SVG visibles tienen trazados y dimensiones reales; se comprobaron colores, Uber, Instagram y alineación. QR, horario, referencia y estadísticas simuladas operativos; enlaces y condiciones de visibilidad idénticos a la base.
+- Publicación y CI finales se registran en el PR de esta corrección; solo se publica después de las verificaciones aprobadas. No se opera Railway ni se modifican datos productivos.

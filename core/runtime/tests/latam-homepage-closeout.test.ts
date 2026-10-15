@@ -23,3 +23,20 @@ test('outside pointer closes Natalie, internal taps retain it and launcher can r
  listeners.pointerdown({target:'outside'});expect(opened).toBe(false);expect(closed).toBe(1);
  opened=true;listeners.pointerdown({target:'inside'});expect(opened).toBe(true);
 });
+
+test('responsive homepage separates hero, country selection and balanced footer without duplicating controls',async()=>{
+ const html=commercialEntryHtml(true,new URL('https://direcciones.lat/'));
+ const count:Record<string,number>={};
+ for(const selector of ['#commercialWelcome>.latam-hero>.latam-copy','#commercialWelcome>.latam-hero>#latamArt','#commercialWelcome>#paises','.latam-footer>.latam-footer-inner>nav','#latamCreate','#commercialCountry','#natalieLauncher']){
+  count[selector]=0;
+  await new HTMLRewriter().on(selector,{element(){count[selector]++;}}).transform(new Response(html)).text();
+  expect(count[selector]).toBe(1);
+ }
+ expect(html).toContain('#commercialWelcome .latam-copy{display:contents}');
+ expect(html).toContain('Todo lo incluido en Negocio Gratis, código con nombre, redes sociales, código postal, zona postal y estadísticas.');
+ expect(html).toContain('Todo lo incluido en Premium, descripción comercial y galería de hasta 5 fotos.');
+ const countries:string[]=[];
+ await new HTMLRewriter().on('[data-commercial-country]',{element(e){countries.push(e.getAttribute('data-commercial-country')!);}}).transform(new Response(html)).text();
+ expect(countries).toEqual(['PA','CR','CO','MX','GT','SV','HN','NI']);
+ expect(html.match(/id="latamAccess"/g)?.length).toBe(1);
+});

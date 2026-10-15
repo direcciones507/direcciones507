@@ -6,18 +6,174 @@ export function latamPresentation(html:string){
  const start=legacy.indexOf('<div id="modalPoliticas"'),end=legacy.indexOf('<button id="natalieLauncher"',start);
  if(start<0||end<0)throw Error('EXISTING_LEGAL_NOTICE_REQUIRED');
  const notice=legacy.slice(start,end).replace('onclick="cerrarPoliticas()"','data-legal-close');
- const footer=`<footer class="latam-footer"><div><a href="#inicio"><strong>Direcciones LATAM</strong></a><p>Tu ubicación, más fácil de compartir.</p><small>AD507 Technologies</small></div><nav aria-label="Información y contacto"><a href="#planes">Planes y servicios</a><button type="button" data-latam-legal>Privacidad</button><button type="button" data-latam-legal>Términos y condiciones</button><a href="https://wa.me/50765996532" target="_blank" rel="noopener noreferrer">Contacto</a></nav></footer>`;
- const header=`<header class="latam-header"><a class="latam-brand" href="#inicio"><svg width="32" height="38" viewBox="0 0 24 28" fill="none" stroke="#438bff" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><div>Direcciones <strong>LATAM</strong><small>Direcciones digitales para Latinoamérica</small></div></a><details class="latam-menu"><summary>Menú</summary><nav aria-label="Navegación principal"><a href="#inicio">Inicio</a><a href="#paises">Países</a><a href="#planes">Planes</a><a href="#ayuda" id="latamHelpLink">Ayuda</a></nav></details><div class="latam-account"><a class="latam-outline hidden" data-latam-session="guest" href="/auth/google/login">Ingresar</a><a class="button hidden" data-latam-session="guest" href="/auth/google/login">Crear cuenta</a><a class="latam-outline hidden" data-latam-session="authenticated" href="/panel">Mi cuenta</a><button id="logout" data-latam-session="authenticated" class="hidden">Cerrar sesión</button></div></header>`;
+ const footer=`<footer class="latam-footer"><div class="latam-footer-inner"><div class="latam-footer-brand"><a href="#inicio" class="latam-footer-logo"><svg width="48" height="56" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><strong>Direcciones LATAM</strong></a><p>Tu ubicación, más fácil de compartir.</p><small>AD507 Technologies</small><div class="latam-footer-social" aria-label="Redes sociales"><a href="https://www.facebook.com/share/18ezKyzYvg/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.23.19 2.23.19v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z"/></svg></a><a href="https://instagram.com/direcciones507" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.8" cy="6.3" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://tiktok.com/@direcciones507" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor" aria-hidden="true"><path d="M16.7 2c.3 2.6 1.7 4.2 4.3 4.4v3.6a9.2 9.2 0 0 1-4.3-1.2v6.6c0 4.2-2.8 6.6-6.3 6.6a6.3 6.3 0 0 1-6.4-6.3c0-4 3.2-6.7 7.2-6.3v3.8c-2.1-.5-3.5.5-3.5 2.4 0 1.5 1.1 2.6 2.6 2.6 1.7 0 2.6-1.2 2.6-3V2h3.8Z"/></svg></a></div></div><nav aria-label="Información y contacto"><div><strong>Planes y servicios</strong><a href="#planes">Ver todos los planes</a><a href="#planes">Residencial</a><a href="#planes">Negocio Gratis</a><a href="#planes">Premium y Premium Pro</a></div><div><strong>Información</strong><button type="button" data-latam-legal>Términos y condiciones</button><button type="button" data-latam-legal>Privacidad</button></div><div><strong>Contacto</strong><a href="https://wa.me/50765996532" target="_blank" rel="noopener noreferrer">Escríbenos</a><a href="#ayuda">Ayuda y soporte</a></div></nav></div></footer>`;
+ const header=`<header class="latam-header"><a class="latam-brand" href="#inicio"><svg width="32" height="38" viewBox="0 0 24 28" fill="none" stroke="#438bff" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><div>Direcciones <strong>LATAM</strong><small>Direcciones digitales para Latinoamérica</small></div></a><details class="latam-menu"><summary>Menú</summary><nav aria-label="Navegación principal"><a href="#inicio">Inicio</a><a href="#paises">Países</a><a href="#planes">Planes</a><a href="#ayuda" id="latamHelpLink">Ayuda</a></nav></details><div class="latam-account"><a class="latam-outline hidden" data-latam-session="guest" href="#latamAccess">Ingresar</a><a class="button hidden" data-latam-session="guest" href="#latamAccess">Crear cuenta</a><a class="latam-outline hidden" data-latam-session="authenticated" href="/panel">Mi cuenta</a><button id="logout" data-latam-session="authenticated" class="hidden">Cerrar sesión</button></div></header>`;
  const css=`
 .latam-footer{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:28px 0 92px;border-top:1px solid #263951;color:#aabbd0}.latam-footer strong{font-size:21px;color:#fff}.latam-footer p{font-size:14px}.latam-footer nav{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:12px 24px;align-content:start}.latam-footer button{padding:0;min-height:36px;background:none!important;box-shadow:none!important;color:#cbd8ec!important;text-align:left;justify-content:start;font-weight:400;font-size:14px}.latam-footer a{min-height:36px;display:inline-flex;align-items:center}.latam-plan-card p{font-size:13px;line-height:1.6;color:#b8c7da;margin:0 0 16px}.latam-plan-card>span{margin-top:auto}.latam-plan-card h3{margin-bottom:10px!important}body.latam .natalie-chat{max-height:min(540px,70dvh);bottom:84px;width:min(360px,calc(100vw - 32px));right:16px}body.latam .natalie-launcher{right:16px;bottom:16px}body.latam .natalie-messages{min-height:80px;max-height:35dvh}body.latam .latam-benefit-grid article{padding:20px}body.latam .latam-benefits{padding-bottom:24px}@media(max-width:620px){.latam-footer nav{width:100%}.latam-plan-card{min-height:230px}}
 
 body.latam{background:#071321;color:#f4f7fc;color-scheme:dark}body.latam header a{background:transparent}body.latam header a.button{background:#1f6fff}body.latam a{color:#cbd8ec;text-decoration:none}body.latam a:hover{color:white}body.latam a:focus-visible,body.latam summary:focus-visible{outline:3px solid #8bbcff;outline-offset:4px}body.latam main{max-width:1280px;margin:0 auto;padding:0 32px}body.latam .card,body.latam .section-card,body.latam .request-shell,body.latam .review-card,body.latam .address-card,body.latam .address-empty,body.latam .upload-box{background:#0e2036;color:#f4f7fc;border:1px solid #263951;box-shadow:none}body.latam input,body.latam select,body.latam textarea{background:#091827;color:#f4f7fc;border-color:#40516b}body.latam .muted{color:#b8c7da}body.latam button,body.latam .button{background:#1f6fff;color:white}body.latam .error{color:#ffaaa3}body.latam .latam-header{max-width:1440px;margin:auto;background:#071321;border-bottom:1px solid #203047;padding:22px 32px;gap:24px}body.latam .latam-brand{display:flex;align-items:center;gap:12px;font-size:23px;font-weight:750;color:white;white-space:nowrap}.latam-brand>span{color:#438bff;font-size:38px}.latam-brand strong{color:#438bff}.latam-brand small{display:block;font-size:11px;font-weight:400;color:#aabbd0;margin-top:4px}.latam-menu summary{display:none}.latam-menu nav{gap:22px;font-size:14px}.latam-account{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.latam-account a{min-height:44px;padding:12px 16px;border-radius:9px;font-size:14px}.latam-outline{border:1px solid #32445e}.latam-hero{position:relative;isolation:isolate;min-height:570px;padding:64px 0 36px}.latam-art{position:absolute;z-index:-1;right:-32px;top:0;width:78%;height:100%;object-fit:contain;object-position:right;mask-image:linear-gradient(90deg,transparent 0%,#000 40%),linear-gradient(180deg,transparent,#000 15%,#000 80%,transparent);mask-composite:intersect;opacity:.95}.latam-copy{max-width:520px}.latam-copy h1{font-size:clamp(40px,4.6vw,64px);line-height:1.06;letter-spacing:-.035em;margin:0 0 24px}.latam-copy>p{max-width:460px;color:#c5d2e4;line-height:1.65;font-size:18px}.latam-cta{display:flex!important;justify-content:space-between!important;width:100%;margin:26px 0 30px;min-height:56px!important}.latam-country-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.latam-country-grid a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:98px;background:#0d1f35e6;border:1px solid #2a3c55;border-radius:12px;padding:12px 5px;font-size:13px;text-align:center}.latam-country-grid a[aria-current=true]{border-color:#6fa6ff;background:#163355}.latam-country-grid .flag{display:block;margin:4px 0 7px}.latam-country-grid small{font-size:10px;color:#b3c3d7;margin-top:5px}.latam-country-label{font-weight:700;margin-bottom:14px}.latam-secondary-countries{margin-top:16px}.latam-secondary-countries summary{padding:10px 0}.latam-benefits{padding:20px 0 36px}.latam-benefits h2{font-size:20px;margin:0 0 22px}.latam-benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.latam-benefit-grid article{background:#0e2036;border:1px solid #263951;border-radius:15px;padding:26px}.latam-benefit-grid .symbol{color:#438bff;font-size:32px}.latam-benefit-grid h3{font-size:17px}.latam-benefit-grid p{font-size:14px;line-height:1.65;color:#b8c7da}.latam-info{padding:26px 0;line-height:1.65;border-top:1px solid #203047}.latam-info h2{font-size:21px}.latam-info p{color:#b8c7da}.latam-info a{text-decoration:underline!important}body.latam footer.card{margin-top:30px;color:#aabbd0!important}body.latam #commercialWelcome{background:transparent;border:0;padding:0;box-shadow:none}body.latam #commercialIdentity,body.latam #commercialAvailability{color:#aabbd0;font-size:12px;line-height:1.5}body.latam #commercialCountry{max-width:320px}body.latam #loading,body.latam #login{margin-top:20px}body.latam #login h1{font-size:24px}body.latam #cuenta{scroll-margin-top:24px}
-.latam-plan-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.latam-info a.latam-plan-card{text-decoration:none!important}.latam-plan-card{display:flex;flex-direction:column;justify-content:space-between;min-height:142px;padding:22px 16px;background:#0e2036;border:1px solid #263951;border-radius:14px;text-decoration:none!important}.latam-plan-card h3{font-size:17px;margin:0 0 20px;color:#fff}.latam-plan-card>span{font-size:13px;color:#8db8ff}.latam-plan-card[aria-disabled=true]{opacity:.65}#latamRequestDialog{width:min(1120px,94vw);max-height:90vh;border:1px solid #40516b;border-radius:18px;background:#071321;color:#f4f7fc;padding:24px}#latamRequestDialog::backdrop{background:#020b16cc}#latamRequestClose{margin-bottom:18px}body.latam #latamActionStatus{color:#b8c7da;font-size:13px;line-height:1.5}#latamActionStatus:empty{display:none}@media(max-width:1099px){.latam-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:620px){.latam-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.latam-plan-card{padding:18px 12px}.latam-plan-card h3{font-size:16px}#latamRequestDialog{padding:16px}}@media(max-width:359px){.latam-plan-grid{grid-template-columns:1fr}}
+.latam-plan-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.latam-info a.latam-plan-card{text-decoration:none!important}.latam-plan-card[hidden]{display:none!important}.latam-plan-card{display:flex;flex-direction:column;justify-content:space-between;min-height:142px;padding:22px 16px;background:#0e2036;border:1px solid #263951;border-radius:14px;text-decoration:none!important}.latam-plan-card h3{font-size:17px;margin:0 0 20px;color:#fff}.latam-plan-card>span{font-size:13px;color:#8db8ff}.latam-plan-card[aria-disabled=true]{opacity:.65}#latamRequestDialog{width:min(1120px,94vw);max-height:90vh;border:1px solid #40516b;border-radius:18px;background:#071321;color:#f4f7fc;padding:24px}#latamRequestDialog::backdrop{background:#020b16cc}#latamRequestClose{margin-bottom:18px}body.latam #latamActionStatus{color:#b8c7da;font-size:13px;line-height:1.5}#latamActionStatus:empty{display:none}@media(max-width:1099px){.latam-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:620px){.latam-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.latam-plan-card{padding:18px 12px}.latam-plan-card h3{font-size:16px}#latamRequestDialog{padding:16px}}@media(max-width:359px){.latam-plan-grid{grid-template-columns:1fr}}
 @media(min-width:1100px){.latam-title-line{white-space:nowrap}.latam-copy h1{font-size:60px}.latam-menu:not([open]) nav{display:flex}.latam-menu{display:block}.latam-header{flex-wrap:nowrap!important}.latam-account{justify-content:flex-end}.latam-country-grid{max-width:500px}}
 @media(min-width:621px) and (max-width:1099px){.latam-hero{min-height:620px}.latam-art{width:100%;object-position:center bottom;opacity:.35}.latam-copy{max-width:570px}.latam-benefit-grid{gap:12px}.latam-benefit-grid article{padding:20px}.latam-header .latam-account{margin-left:auto}}
 @media(max-width:1099px){.latam-menu summary{display:block;cursor:pointer;min-height:44px;padding:12px;border:1px solid #32445e;border-radius:9px}.latam-menu[open]{order:3;width:100%}.latam-menu nav{padding:18px 0}.latam-menu:not([open]) nav{display:none}}
 @media(max-width:620px){body.latam main{padding:0 20px}body.latam .latam-header{padding:18px 20px;gap:12px}.latam-brand{font-size:20px!important}.latam-brand small{font-size:10px}.latam-account{width:100%}.latam-account a{flex:1;text-align:center;padding:12px 8px}.latam-hero{min-height:0;padding:36px 0 24px}.latam-art{display:block;width:100%;right:0;top:16px;height:270px;object-fit:contain;opacity:.17;pointer-events:none}.latam-copy{text-align:center;max-width:none}.latam-copy h1{font-size:clamp(34px,9vw,44px)}.latam-copy>p{font-size:16px;margin-left:auto;margin-right:auto}.latam-country-label{text-align:left}.latam-country-grid{gap:7px}.latam-country-grid a{font-size:11px;padding:10px 3px;min-height:96px}.latam-country-grid .flag{font-size:26px}.latam-secondary-countries{text-align:left}.latam-benefits{padding-top:8px}.latam-benefits h2{font-size:18px}.latam-benefit-grid{gap:8px}.latam-benefit-grid article{padding:16px 9px;text-align:center}.latam-benefit-grid h3{font-size:13px;line-height:1.4}.latam-benefit-grid p{font-size:12px;line-height:1.6}.latam-info{padding:20px 0}body.latam #commercialCountry{max-width:none}}
 @media(max-width:359px){.latam-country-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.latam-benefit-grid{grid-template-columns:1fr}.latam-benefit-grid article{text-align:left}.latam-brand{white-space:normal}}
+`;
+ const homeCss=`
+/* Homepage layout only; existing palette, map, forms and account remain unchanged. */
+body.latam #commercialWelcome{max-width:1180px;margin-inline:auto}
+#commercialWelcome .latam-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:32px;min-height:0;padding:44px 0 28px}
+#commercialWelcome .latam-copy{max-width:none;min-width:0}
+#commercialWelcome .latam-copy h1{font-size:clamp(36px,4.3vw,60px);margin-bottom:20px}
+#commercialWelcome .latam-title-line{white-space:normal}
+#commercialWelcome .latam-copy>p{font-size:17px;margin:0;max-width:480px}
+#commercialWelcome .latam-art{position:static;z-index:auto;width:100%;height:clamp(240px,28vw,360px);max-height:380px;object-fit:cover;object-position:right center;opacity:.95;mask-image:none}
+#commercialWelcome .latam-cta{width:fit-content;max-width:100%;gap:28px;justify-content:center!important;min-height:50px!important;margin:24px 0 0;padding:14px 22px}
+#commercialWelcome #paises{padding:22px 0 26px;border-top:1px solid #203047}
+#commercialWelcome .latam-country-label{margin:0 0 16px;font-size:18px}
+#commercialWelcome .latam-country-grid{max-width:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#commercialWelcome .latam-country-grid a{min-height:96px;padding:12px 8px}
+#commercialWelcome .latam-country-grid a[aria-current=true]{outline:2px solid #6fa6ff;outline-offset:2px;font-weight:750}
+#commercialWelcome .latam-secondary-countries{margin-top:12px}
+#commercialWelcome #commercialIdentity{margin:14px 0 8px}
+#commercialWelcome #commercialAvailability,#commercialWelcome .latam-availability{padding:12px 16px;border:1px solid #263951;border-radius:10px;line-height:1.6;font-size:13px;margin:10px 0 0}
+#commercialWelcome .latam-benefits{padding:24px 0 28px}
+#commercialWelcome .latam-benefit-grid{gap:18px;align-items:stretch}
+#commercialWelcome .latam-benefit-grid article{padding:22px;min-width:0}
+#commercialWelcome .latam-benefit-grid h3{line-height:1.4}
+#commercialWelcome .latam-benefit-grid p{margin-bottom:0}
+#commercialWelcome .latam-plan-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+#commercialWelcome .latam-plan-card{flex:0 1 calc((100% - 32px)/3);min-width:0;min-height:210px;padding:22px;overflow-wrap:anywhere}
+#commercialWelcome .latam-plan-card h3{line-height:1.4}
+#commercialWelcome .latam-plan-card p{font-size:14px}
+#commercialWelcome #ayuda{padding:22px 0}
+#commercialWelcome #ayuda p{margin-bottom:0}
+body.latam .latam-footer{display:block;padding:24px 0 48px;margin-top:12px}
+.latam-footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;max-width:1180px;margin-inline:auto}
+.latam-footer-inner>div{min-width:0}
+.latam-footer-inner p{margin:6px 0 10px;line-height:1.5}
+.latam-footer-inner nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 24px;max-width:420px}
+.latam-footer-inner nav a,.latam-footer-inner nav button{font-size:14px;white-space:normal;line-height:1.5}
+@media(min-width:621px) and (max-width:899px){
+#commercialWelcome .latam-hero{gap:20px;padding-top:32px}
+#commercialWelcome .latam-copy h1{font-size:36px}
+#commercialWelcome .latam-copy>p{font-size:15px}
+#commercialWelcome .latam-benefit-grid{gap:12px}
+#commercialWelcome .latam-benefit-grid article{padding:18px 14px}
+#commercialWelcome .latam-plan-card{flex-basis:calc((100% - 16px)/2)}
+}
+@media(max-width:620px){
+#commercialWelcome .latam-hero{grid-template-columns:minmax(0,1fr);gap:16px;padding:28px 0 24px;text-align:center}
+#commercialWelcome .latam-copy{display:contents}
+#commercialWelcome .latam-copy h1{order:0;font-size:clamp(34px,9vw,44px);margin:0}
+#commercialWelcome .latam-copy>p{order:1;font-size:16px;margin-inline:auto}
+#commercialWelcome .latam-art{order:2;height:230px;max-height:230px}
+#commercialWelcome .latam-cta{order:3;margin:0 auto}
+#commercialWelcome .latam-country-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#commercialWelcome .latam-country-grid a{font-size:13px}
+#commercialWelcome .latam-benefit-grid{grid-template-columns:1fr;gap:12px}
+#commercialWelcome .latam-benefit-grid article{text-align:left;padding:20px}
+#commercialWelcome .latam-benefit-grid h3{font-size:17px;margin:10px 0}
+#commercialWelcome .latam-benefit-grid p{font-size:14px}
+#commercialWelcome .latam-plan-card{flex-basis:100%;min-height:0;padding:20px}
+#commercialWelcome .latam-plan-card>span{margin-top:8px}
+.latam-footer-inner{flex-direction:column;gap:18px}
+.latam-footer-inner nav{width:100%;max-width:none;gap:6px 16px}
+}
+
+/* Homepage-only polish; retain existing colors and functional controls. */
+#commercialWelcome .latam-hero{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(24px,4vw,56px)}
+#commercialWelcome .latam-copy h1{font-size:clamp(38px,4.1vw,58px);line-height:1.12;letter-spacing:-.035em;text-wrap:balance}
+#commercialWelcome .latam-copy>p{max-width:530px;line-height:1.7;color:#d1def0}
+#commercialWelcome .latam-art{object-fit:cover;object-position:right center;max-height:390px;border-radius:18px}
+#commercialWelcome .latam-benefit-grid article{display:flex;flex-direction:column;gap:8px;border-radius:18px;background:linear-gradient(150deg,#132b48,#0e2036)}
+#commercialWelcome .latam-benefit-grid h3{margin:2px 0;font-size:18px}
+#commercialWelcome .latam-benefit-grid p{line-height:1.65}
+#commercialWelcome .latam-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:stretch}
+#commercialWelcome .latam-plan-card{flex:auto;min-height:208px;padding:24px;border-radius:18px;background:linear-gradient(155deg,#142d4c,#0e2036);border-color:#344d6b;overflow-wrap:break-word}
+#commercialWelcome .latam-plan-card h3{margin-bottom:10px!important;font-size:19px}
+#commercialWelcome .latam-plan-card p{font-size:14px;line-height:1.65;flex:1}
+#commercialWelcome .latam-plan-card>span{display:inline-flex;align-items:center;font-weight:700;margin-top:16px}
+body.latam .latam-footer-inner{justify-content:center;align-items:center;gap:clamp(24px,6vw,88px)}
+body.latam .latam-footer-inner>div{flex:0 1 300px}
+body.latam .latam-footer-inner nav{flex:0 1 440px;justify-items:start}
+/* Prices are informative only; no checkout or billing changes. */
+#commercialWelcome .latam-plan-price{font-size:27px;line-height:1.2;font-weight:800;letter-spacing:-.025em;color:#f2f8ff;margin:0 0 14px}
+#commercialWelcome .latam-plan-card[data-latam-type="PLACE"] .latam-plan-price,#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_FREE"] .latam-plan-price{color:#8af0b0}
+/* Recognizable plan icons and clear visual hierarchy. */
+#commercialWelcome .latam-plan-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+#commercialWelcome .latam-plan-icon{width:54px;height:54px;display:inline-flex;align-items:center;justify-content:center;border-radius:16px;background:#224e60;color:#83ead2;flex-shrink:0}
+#commercialWelcome .latam-plan-label{font-size:11px;line-height:1.35;font-weight:700;letter-spacing:.025em;text-align:right;color:#d5e6f4;background:#ffffff12;border:1px solid #ffffff1a;border-radius:999px;padding:6px 10px}
+#commercialWelcome .latam-plan-card[data-latam-type="PLACE"] .latam-plan-icon{background:#244b60;color:#8cddff}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_FREE"] .latam-plan-icon{background:#244c40;color:#8af0b0}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM"] .latam-plan-icon{background:#49375c;color:#d9afff}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM_PRO"] .latam-plan-icon{background:#55422e;color:#ffd489}
+#commercialWelcome .latam-plan-grid .latam-plan-card h3{margin-bottom:8px!important;font-size:21px}
+#commercialWelcome .latam-plan-grid .latam-plan-card p{margin-top:0}
+
+/* LATAM compact help strip and premium footer; presentation only. */
+#commercialWelcome .latam-help-strip{display:flex;align-items:center;gap:22px;padding:22px 28px;margin:28px 0 18px;border:1px solid #2468aa;border-radius:20px;background:linear-gradient(125deg,#102a56,#071b37 75%);box-shadow:0 12px 32px #020d2240}
+#commercialWelcome .latam-help-heading{display:flex;align-items:center;gap:14px;flex-shrink:0}
+#commercialWelcome .latam-help-heading h2{font-size:29px;margin:0;color:white}
+#commercialWelcome .latam-help-icon{display:grid;place-items:center;width:56px;height:56px;border-radius:18px;background:linear-gradient(140deg,#00a5ef,#2446b7);font-size:29px;color:white}
+#commercialWelcome .latam-help-strip p{margin:0;flex:1;color:#cbdcf4;line-height:1.55}
+#commercialWelcome .latam-help-strip p strong{display:block;color:#fff;font-size:18px}
+#commercialWelcome .latam-help-action{display:inline-flex;align-items:center;justify-content:center;text-decoration:none!important;white-space:nowrap;padding:14px 20px;border-radius:999px;background:#078df2;color:white;font-weight:700}
+body.latam .latam-footer{display:block;padding:36px 20px 60px;background:linear-gradient(135deg,#061223,#0a1c32);border-top:1px solid #23486c;border-radius:18px 18px 0 0}
+body.latam .latam-footer-inner{max-width:1180px;display:grid;grid-template-columns:minmax(240px,1.1fr) minmax(0,1.9fr);gap:44px;margin:auto}
+body.latam .latam-footer-logo{display:flex;align-items:center;gap:14px;text-decoration:none!important;color:#fff}
+body.latam .latam-footer-logo svg{color:#11a9ff;flex-shrink:0}
+body.latam .latam-footer-logo strong{font-size:24px}
+body.latam .latam-footer-brand p{margin:2px 0 12px 62px}
+body.latam .latam-footer-brand small{display:block;margin-left:62px}
+body.latam .latam-footer-social{display:flex;gap:12px;margin:20px 0 0 62px}
+body.latam .latam-footer-social a{width:42px;height:42px;min-height:42px;border-radius:50%;display:grid;place-items:center;background:#1a3453;color:white;font-size:23px;font-weight:800;text-decoration:none!important}
+body.latam .latam-footer-social a:hover{background:#086ec1}
+body.latam .latam-footer-inner nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;max-width:none}
+body.latam .latam-footer-inner nav>div{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+body.latam .latam-footer-inner nav strong{color:#fff;font-size:15px;margin-bottom:7px}
+body.latam .latam-footer-inner nav a,body.latam .latam-footer-inner nav button{min-height:0;padding:0;font-size:14px;color:#cbd8ec!important;text-align:left}
+@media(max-width:850px){#commercialWelcome .latam-help-strip{flex-wrap:wrap;gap:14px;padding:18px}#commercialWelcome .latam-help-strip p{flex-basis:calc(100% - 100px)}#commercialWelcome .latam-help-action{margin-left:auto}body.latam .latam-footer-inner{grid-template-columns:1fr;gap:28px}}
+@media(max-width:560px){#commercialWelcome .latam-help-strip{display:block}#commercialWelcome .latam-help-heading{margin-bottom:12px}#commercialWelcome .latam-help-strip p{margin-bottom:15px}#commercialWelcome .latam-help-action{width:100%;white-space:normal}body.latam .latam-footer-inner nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}body.latam .latam-footer-brand p,body.latam .latam-footer-brand small,body.latam .latam-footer-social{margin-left:0}}
+/* Help alignment and recognizable social logos across screen sizes. */
+#commercialWelcome .latam-help-strip{box-sizing:border-box;min-width:0;min-height:112px;overflow:visible;gap:24px;padding:22px 28px}
+#commercialWelcome .latam-help-heading{min-width:0;gap:16px;align-items:center}
+#commercialWelcome .latam-help-icon{box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:0 0 52px;width:52px;height:52px;line-height:1;margin:0;overflow:hidden}
+#commercialWelcome .latam-help-heading h2{line-height:1.2;white-space:nowrap}
+#commercialWelcome .latam-help-strip p{min-width:0;overflow-wrap:break-word}
+body.latam .latam-footer-social a{display:flex;align-items:center;justify-content:center;flex:0 0 42px;line-height:1}
+body.latam .latam-footer-social svg{display:block;flex-shrink:0}
+@media(max-width:850px){#commercialWelcome .latam-help-strip{min-height:0;padding:18px 20px;gap:16px}#commercialWelcome .latam-help-strip p{flex:1 1 230px}}
+@media(max-width:560px){#commercialWelcome .latam-help-strip{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:18px;border-radius:16px}#commercialWelcome .latam-help-heading{gap:12px}#commercialWelcome .latam-help-icon{flex-basis:46px;width:46px;height:46px;font-size:23px}#commercialWelcome .latam-help-heading h2{font-size:23px}#commercialWelcome .latam-help-strip p{flex:none;margin:0;font-size:14px}#commercialWelcome .latam-help-strip p strong{font-size:16px}body.latam .latam-footer-logo strong{font-size:20px}body.latam .latam-footer-logo svg{width:38px;height:44px}body.latam .latam-footer-inner nav{grid-template-columns:repeat(2,minmax(0,1fr))}body.latam .latam-footer-inner nav>div{min-width:0}body.latam .latam-footer-inner nav a,body.latam .latam-footer-inner nav button{overflow-wrap:anywhere}}
+/* Center and constrain the help banner without affecting the footer. */
+#commercialWelcome .latam-help-strip{width:min(100%,860px);max-width:860px;margin:26px auto 22px;min-height:0;padding:20px 26px;display:flex;justify-content:center;align-items:center;gap:22px}
+#commercialWelcome .latam-help-heading{justify-content:center;flex:0 0 auto}
+#commercialWelcome .latam-help-strip p{flex:0 1 auto;max-width:490px;text-align:center;margin:0}
+@media(max-width:850px){#commercialWelcome .latam-help-strip{width:calc(100% - 20px);padding:18px 20px;gap:16px}#commercialWelcome .latam-help-strip p{flex:1 1 220px}}
+@media(max-width:560px){#commercialWelcome .latam-help-strip{width:100%;padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:10px}#commercialWelcome .latam-help-heading{justify-content:center}#commercialWelcome .latam-help-strip p{flex:none;max-width:100%;text-align:center;margin:0}}
+/* LATAM plan cards: centered 3+2 layout and refined presentation only. */
+@media(min-width:1100px){
+#commercialWelcome .latam-plan-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
+#commercialWelcome .latam-plan-grid .latam-plan-card{flex:0 1 calc((100% - 36px)/3);max-width:calc((100% - 36px)/3)}
+}
+#commercialWelcome .latam-plan-grid .latam-plan-card{position:relative;min-width:0;background:linear-gradient(145deg,#193c61 0%,#112c4a 65%,#10243d 100%);border:1px solid #446d92;border-radius:20px;box-shadow:0 10px 28px #020a1840,inset 0 1px 0 #ffffff14;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+#commercialWelcome .latam-plan-grid .latam-plan-card:hover{transform:translateY(-3px);border-color:#78b5d5;box-shadow:0 15px 30px #020a1860}
+#commercialWelcome .latam-plan-grid .latam-plan-card:focus-visible{outline:3px solid #9dd9f7;outline-offset:3px}
+#commercialWelcome .latam-plan-grid .latam-plan-card>span{display:inline-flex;align-items:center;align-self:flex-start;padding:9px 13px;border-radius:999px;background:#234e70;color:#d6f5ff;font-weight:700;font-size:13px;letter-spacing:.01em}
+#commercialWelcome .latam-plan-grid .latam-plan-card h3{color:#fff}
+@media(prefers-reduced-motion:reduce){#commercialWelcome .latam-plan-grid .latam-plan-card{transition:none}#commercialWelcome .latam-plan-grid .latam-plan-card:hover{transform:none}}
+/* LATAM benefit cards: colorful scalable SVG icons, responsive and presentation-only. */
+#commercialWelcome .latam-benefit-grid article{background:#142c45;border:1px solid #2a425f;border-radius:18px;gap:9px;box-shadow:0 8px 24px #020b1640}
+#commercialWelcome .latam-benefit-icon{display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:16px;flex-shrink:0}
+#commercialWelcome .latam-benefit-icon .symbol{width:30px;height:30px;display:block}
+#commercialWelcome .latam-benefit-green .latam-benefit-icon{background:#214f44;color:#65e6a4}
+#commercialWelcome .latam-benefit-purple .latam-benefit-icon{background:#49365d;color:#d7a6ff}
+#commercialWelcome .latam-benefit-gold .latam-benefit-icon{background:#51402c;color:#ffd17d}
+#commercialWelcome .latam-benefit-green .latam-benefit-icon .symbol{color:#65e6a4}
+#commercialWelcome .latam-benefit-purple .latam-benefit-icon .symbol{color:#d7a6ff}
+#commercialWelcome .latam-benefit-gold .latam-benefit-icon .symbol{color:#ffd17d}
+@media(min-width:621px) and (max-width:1099px){#commercialWelcome .latam-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#commercialWelcome .latam-hero{gap:20px}#commercialWelcome .latam-art{height:300px}}
+@media(max-width:620px){#commercialWelcome .latam-hero{grid-template-columns:1fr}#commercialWelcome .latam-copy h1{font-size:clamp(34px,9vw,44px)}#commercialWelcome .latam-art{height:220px}#commercialWelcome .latam-plan-grid{grid-template-columns:1fr}#commercialWelcome .latam-plan-card{min-height:0}body.latam .latam-footer-inner{align-items:stretch;gap:20px}body.latam .latam-footer-inner>div,body.latam .latam-footer-inner nav{flex:auto}}
 `;
  const sessionScript = `
 let latamSessionState='loading',latamCanPrepare=false;
@@ -25,14 +181,14 @@ function updateLatamSession(){
  if(['guest','error'].includes(latamSessionState)&&document.getElementById('latamRequestDialog').open)document.getElementById('latamRequestDialog').close();
  document.querySelectorAll('[data-latam-session]').forEach(a=>a.classList.toggle('hidden',a.dataset.latamSession!==latamSessionState));
  const c=document.getElementById('commercialCountry').value,cta=document.getElementById('latamCreate');
- cta.href=c!=='PA'?'#commercialAvailability':latamSessionState==='authenticated'?'#requestForm':'/auth/google/login';
- cta.setAttribute('aria-disabled',String(c!=='PA'||latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&!latamCanPrepare)));
+ cta.href=latamSessionState==='authenticated'?(c==='PA'?'#requestForm':'#commercialAvailability'):'#latamAccess';
+ cta.setAttribute('aria-disabled',String(latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&(c!=='PA'||!latamCanPrepare))));
  document.querySelectorAll('[data-latam-type]').forEach(a=>{a.href=cta.href;a.setAttribute('aria-disabled',cta.getAttribute('aria-disabled'));});
 }
 function prepareLatamRequest(e,type,plan){
  const status=document.getElementById('latamActionStatus');
+ if(latamSessionState==='guest'){e.preventDefault();openLatamAccess();return;}
  if(document.getElementById('commercialCountry').value!=='PA'){e.preventDefault();status.textContent='País en preparación: solicitudes, publicación y cobros deshabilitados.';status.scrollIntoView({block:'center'});return;}
- if(latamSessionState==='guest')return;
  e.preventDefault();
  if(latamSessionState!=='authenticated'||!latamCanPrepare){status.textContent=latamSessionState==='loading'?'Verificando tu sesión…':latamSessionState==='error'?'No se pudo verificar tu sesión. Intenta actualizar.':'La preparación de solicitudes no está habilitada para esta cuenta.';return;}
  const select=document.getElementById('plan');
@@ -45,11 +201,56 @@ function prepareLatamRequest(e,type,plan){
  document.getElementById('requestForm').scrollIntoView({block:'start'});
 }
 `;
+ const accessCss=`
+#latamAccess{box-sizing:border-box;width:min(440px,calc(100vw - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);margin:auto;padding:20px;border:1px solid #dce6ef;border-radius:18px;background:#fff;color:#18324b;box-shadow:0 20px 70px #001a3670;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+#latamAccess::backdrop{background:#020b16cc}
+#latamAccess>form{display:flex;justify-content:flex-end;margin:0}
+#latamAccess>form button{min-height:32px;padding:5px 12px;border-radius:9px;background:#eff5ff;color:#17458b;box-shadow:none;font-size:13px}
+#latamAccess h2{margin:4px 0 6px;color:#102e49;font-size:23px;line-height:1.2}
+#latamAccessCountry{margin:0 0 12px;font-size:13px;color:#526981;line-height:1.4}
+#latamAccess label{margin:10px 0 5px;font-size:14px;font-weight:700}
+#latamAccess input{display:block;width:100%;height:42px;margin:0;padding:10px 12px;border:1px solid #cad8e5;border-radius:11px;background:#fff;color:#142f46;font-size:16px;min-width:0}
+#latamAccess .latam-password-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+#latamAccess .latam-password-row input{flex:1}
+#latamAccess #latamTogglePassword{flex-shrink:0;min-height:42px;padding:10px;border:1px solid #cad8e5;border-radius:11px;background:#f3f7fc;color:#204668;box-shadow:none;font-size:13px}
+#latamAccess #latamEmailSubmit,#latamAccess #latamGoogleAccess{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;padding:11px 14px;border-radius:11px;font-size:14px;font-weight:750;line-height:1.25}
+#latamAccess #latamEmailSubmit{border:0;background:#0b57d0;color:#fff}
+#latamAccess #latamGoogleAccess{border:1px solid #ccd8e5;background:#fff;color:#233b54;text-decoration:none;box-shadow:none}
+#latamAccess #latamPasswordNotice{margin:8px 0 0;font-size:12px;line-height:1.4;color:#526981}
+#latamAccess .latam-auth-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 14px;margin:7px 0}
+#latamAccess .latam-auth-links button{min-height:32px;padding:4px 0;border:0;border-radius:4px;background:transparent;color:#0b57d0;font-size:12px;font-weight:700;box-shadow:none;transform:none}
+#latamAccess .latam-auth-divider{display:flex;align-items:center;gap:12px;margin:8px 0;color:#63778c;font-size:13px}
+#latamAccess .latam-auth-divider:before,#latamAccess .latam-auth-divider:after{content:'';flex:1;border-top:1px solid #dbe3eb}
+/* Refined accessible account dialog, presentation-only. */
+#latamAccess{width:min(470px,calc(100vw - 28px));padding:26px 28px 28px;border:1px solid #e5edf8;border-radius:24px;background:linear-gradient(180deg,#ffffff 0%,#f6faff 100%);box-shadow:0 28px 90px #0011259c,0 0 0 1px #ffffff75}
+#latamAccess::backdrop{background:#030b1dd9;backdrop-filter:blur(5px)}
+#latamAccess>form button{background:#edf4ff;color:#244a76;font-weight:700;border:1px solid #dae6f4;border-radius:999px;padding:6px 14px}
+#latamAccess h2{font-size:27px;letter-spacing:-.035em;margin:12px 0 7px;color:#112e53}
+#latamAccessCountry{display:inline-block;padding:7px 12px;margin:0 0 16px;border-radius:999px;background:#eaf4ff;color:#345a7b;font-size:13px}
+#latamAccess label{color:#253e5b;font-size:14px;margin:12px 0 7px}
+#latamAccess input{height:48px;border:1px solid #cbd9ea;border-radius:13px;background:#fff;box-shadow:0 1px 3px #0e376b0b;transition:border-color .15s,box-shadow .15s}
+#latamAccess input:focus{outline:2px solid #61c6ee;outline-offset:1px;border-color:#198ad5;box-shadow:0 0 0 4px #1a9bf01c}
+#latamAccess .latam-password-row{gap:10px}
+#latamAccess #latamTogglePassword{height:48px;min-height:48px;padding:0 15px;border-radius:12px;font-weight:700}
+#latamAccess #latamEmailSubmit,#latamAccess #latamGoogleAccess{min-height:49px;border-radius:13px;font-size:15px}
+#latamAccess #latamEmailSubmit{background:linear-gradient(110deg,#0b57d0,#147be4);box-shadow:0 7px 18px #0b57d02b}
+#latamAccess #latamGoogleAccess{background:#fff;border:1px solid #c8d6e7;color:#1d3249;box-shadow:0 2px 8px #12345610}
+#latamAccess #latamGoogleAccess:hover{border-color:#8da8c8;background:#f9fcff}
+#latamAccess .latam-google-logo{display:block;flex:0 0 23px}
+#latamAccess #latamPasswordNotice{font-size:12px;line-height:1.5;margin:10px 0 8px}
+#latamAccess .latam-auth-links{gap:6px 18px;margin:10px 0}
+#latamAccess .latam-auth-links button{font-size:13px}
+#latamAccess .latam-auth-divider{margin:12px 0}
+@media(max-width:480px){#latamAccess{padding:19px 17px 22px;border-radius:20px;width:calc(100vw - 22px)}#latamAccess h2{font-size:23px}#latamAccess .latam-auth-links{gap:4px 12px}#latamAccess .latam-auth-links button{font-size:12px}#latamAccess #latamTogglePassword{padding:0 11px}}
+@media(prefers-reduced-motion:reduce){#latamAccess input{transition:none}}
+#latamAccess [hidden]{display:none!important}
+@media(max-width:480px),(max-height:600px){#latamAccess{padding:16px}#latamAccess h2{font-size:21px}}
+`;
  return html.replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
- .replace('</style>',css+'</style>')
+ .replace('</style>',css+accessCss+homeCss+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
- .replace('</body>',notice+'</body>')
+ .replace('<script>',notice+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><svg class="latam-google-logo" viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.88 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.9 23.9 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48Z"/></svg> Continuar con Google</a></dialog>`+'<script>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')
  .replace('<section id="panel" class="hidden">','<dialog id="latamRequestDialog" aria-label="Preparar dirección"><button type="button" id="latamRequestClose" class="secondary">Cerrar preparación</button><section id="panel" class="hidden">')
  .replace('</section><p id="message" role="status">','</section></dialog><span id="latamMessageAnchor"></span><p id="message" role="status">')
@@ -60,10 +261,56 @@ function prepareLatamRequest(e,type,plan){
  .replace("const d=await r.json();$('login')", "const d=await r.json();latamSessionState='authenticated';latamCanPrepare=!!d.actions.prepareRequest;updateLatamSession();$('login')")
  .replace("}catch{$('panel').classList.add('hidden');$('message')", "}catch{latamSessionState='error';updateLatamSession();$('panel').classList.add('hidden');$('message')")
  .replace('</script>',`
+const accessDialog=document.getElementById('latamAccess');
+function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+(document.getElementById('commercialCountry')?.selectedOptions[0]?.textContent||'Panamá');if(!accessDialog.open)accessDialog.showModal();document.getElementById('latamAccessEmail').focus();}
+document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
+let latamEmailMode='register';
+const latamEmailSubmit=document.getElementById('latamEmailSubmit');
+const latamEmailNotice=document.getElementById('latamPasswordNotice');
+const latamEmailPassword=document.getElementById('latamAccessPassword');
+const latamEmailField=document.getElementById('latamAccessEmail');
+function setLatamEmailMode(mode){
+ latamEmailMode=mode;
+ latamEmailSubmit.textContent=mode==='register'?'Crear cuenta con correo':mode==='login'?'Ingresar con correo':mode==='forgot'?'Enviar recuperación':mode==='verify'?'Verificar correo':'Cambiar contraseña';
+ document.getElementById('latamPasswordRow').hidden=mode==='forgot'||mode==='verify';
+ document.getElementById('latamPasswordLabel').hidden=mode==='forgot'||mode==='verify';
+ document.getElementById('latamHaveAccount').hidden=mode==='login';
+ document.getElementById('latamCreateAccount').hidden=mode==='register';
+ document.getElementById('latamForgotPassword').hidden=mode==='forgot'||mode==='verify'||mode==='reset';
+ latamEmailPassword.autocomplete=mode==='register'||mode==='reset'?'new-password':'current-password';
+ latamEmailNotice.textContent=mode==='register'?'Utiliza una contraseña de al menos 12 caracteres. Te enviaremos un enlace de verificación.':mode==='forgot'?'Te enviaremos un enlace para recuperar tu contraseña.':mode==='verify'?'Introduce el código del enlace recibido.':mode==='reset'?'Introduce el código del enlace recibido y tu nueva contraseña.':'Introduce tu correo y contraseña.';
+}
+document.getElementById('latamHaveAccount').onclick=()=>setLatamEmailMode('login');
+document.getElementById('latamCreateAccount').onclick=()=>setLatamEmailMode('register');
+document.getElementById('latamForgotPassword').onclick=()=>setLatamEmailMode('forgot');
+document.getElementById('latamTogglePassword').onclick=()=>{const visible=latamEmailPassword.type==='text';latamEmailPassword.type=visible?'password':'text';const button=document.getElementById('latamTogglePassword');button.textContent=visible?'Mostrar':'Ocultar';button.setAttribute('aria-pressed',String(!visible));button.setAttribute('aria-label',visible?'Mostrar contraseña':'Ocultar contraseña');};
+latamEmailSubmit.onclick=async()=>{
+ const email=latamEmailField.value.trim(),password=latamEmailPassword.value;
+ const route={register:'register',login:'login',forgot:'forgot',verify:'verify',reset:'reset'}[latamEmailMode];
+ const token=new URLSearchParams(location.search).get('token')||'';
+ if(!latamEmailField.checkValidity()){latamEmailField.reportValidity();return;}
+ if(['register','login','reset'].includes(route)&&password.length<12){latamEmailNotice.textContent='La contraseña debe tener al menos 12 caracteres.';return;}
+ latamEmailSubmit.disabled=true;latamEmailNotice.textContent='Procesando solicitud…';
+ try{
+  const response=await fetch('/v1/auth/email/'+route,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({email,password,token})});
+  const result=await response.json();
+  if(!response.ok)throw Error(result.error||'No se pudo completar la solicitud.');
+  if(route==='login'){location.assign('/panel');return;}
+  latamEmailNotice.textContent=route==='register'||route==='forgot'?'Si el correo cumple las condiciones, recibirás un mensaje con las instrucciones.':'Solicitud completada. Ya puedes ingresar.';
+  if(route==='verify'||route==='reset'){setLatamEmailMode('login');latamEmailPassword.value='';history.replaceState({},'',location.pathname+'?country='+encodeURIComponent(document.getElementById('commercialCountry')?.value||'PA'));latamEmailNotice.textContent='Solicitud completada. Ya puedes ingresar.';}
+ }catch(err){latamEmailNotice.textContent=err instanceof Error?err.message:'No se pudo completar la solicitud.';}
+ finally{latamEmailSubmit.disabled=false;}
+};
+const authParams=new URLSearchParams(location.search);
+if(authParams.has('token')&&authParams.has('email')){
+ latamEmailField.value=authParams.get('email')||'';
+ setLatamEmailMode(authParams.get('action')==='reset'||location.pathname==='/recuperar-contrasena'?'reset':'verify');
+ openLatamAccess();
+}else {setLatamEmailMode('register');if(authParams.get('access')==='1')openLatamAccess();}
 const countrySelect=document.getElementById('commercialCountry');
 const countryState=document.getElementById('latamCountryState'),countryField=document.getElementById('countryField');
 countryField.appendChild(countryState);countryState.hidden=false;document.getElementById('countryCode').hidden=true;countryField.querySelector('label[for="countryCode"]').hidden=true;
-const markCountry=()=>{document.querySelectorAll('[data-commercial-country]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.commercialCountry===countrySelect.value)));updateLatamSession();};
+const markCountry=()=>{document.querySelectorAll('[data-commercial-country]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.commercialCountry===countrySelect.value)));document.querySelectorAll('[data-latam-type="PLACE"]').forEach(a=>{a.hidden=!['PA','CR'].includes(countrySelect.value);});updateLatamSession();};
 countrySelect.addEventListener('change',markCountry);window.addEventListener('popstate',markCountry);
 const menu=document.querySelector('.latam-menu'),desktop=matchMedia('(min-width:1100px)');
 const syncMenu=()=>menu.open=desktop.matches;syncMenu();desktop.addEventListener('change',syncMenu);
@@ -76,22 +323,23 @@ document.getElementById('latamRequestDialog').addEventListener('close',()=>docum
 document.getElementById('latamRequestClose').onclick=()=>document.getElementById('latamRequestDialog').close();
 document.getElementById('latamHelpLink').onclick=()=>document.getElementById('natalieLauncher').click();
 (${bindLatamOverlays.toString()})();
-updateLatamSession();
+markCountry();
 </script>`);
 
 }
 export function latamWelcome(country:string,countries:Record<string,{name:string}>,initial:readonly string[]){
- const details:Record<string,string>={Residencial:'Ubicación y referencia para tu hogar. Acceso residencial privado.',Lugar:'Ubicación, referencia y fotografía de un sitio de interés.','Negocio Gratis':'Logo, horario y contacto. Navegación y código QR.',Premium:'Todo Gratis, código con nombre, redes sociales, zona postal y estadísticas.','Premium Pro':'Todo Premium, descripción comercial y galería de hasta 5 fotos.'};
+ const details:Record<string,string>={Residencial:'Ubicación y referencia para tu hogar. Acceso residencial privado.',Lugar:'Ubicación, referencia y fotografía de un sitio de interés.','Negocio Gratis':'Logo, horario y contacto. Navegación y código QR.',Premium:'Todo lo incluido en Negocio Gratis, código con nombre, redes sociales, código postal, zona postal y estadísticas.','Premium Pro':'Todo lo incluido en Premium, descripción comercial y galería de hasta 5 fotos.'};
  const flag=(c:string)=>{const colors:Record<string,string[]>={CR:['#16489c','#fff','#d92235','#fff','#16489c'],CO:['#f9d526','#f9d526','#174da6','#ce253c'],GT:['#55a5d8','#fff','#55a5d8'],SV:['#1752b8','#fff','#1752b8'],HN:['#149bd7','#fff','#149bd7'],NI:['#1a62bc','#fff','#1a62bc'],MX:['#087044','#fff','#cf2536']};if(c==='PA')return '<svg viewBox="0 0 36 24" width="36" height="24"><path fill="#fff" d="M0 0h36v24H0z"/><path fill="#d82235" d="M18 0h18v12H18z"/><path fill="#1556a4" d="M0 12h18v12H0z"/><text x="9" y="10" text-anchor="middle" font-size="11" fill="#1556a4">★</text><text x="27" y="22" text-anchor="middle" font-size="11" fill="#d82235">★</text></svg>';const stripes=colors[c];const vertical=['MX','GT'].includes(c);return '<svg viewBox="0 0 36 24" width="36" height="24">'+stripes.map((color,i)=>'<rect fill="'+color+'" x="'+(vertical?i*36/stripes.length:0)+'" y="'+(vertical?0:i*24/stripes.length)+'" width="'+(vertical?36/stripes.length:36)+'" height="'+(vertical?24:24/stripes.length)+'"/>').join('')+'</svg>';};
- const card=(c:string)=>`<a href="?country=${c}" data-commercial-country="${c}" aria-current="${c===country}"><span class="flag" aria-hidden="true">${flag(c)}</span>${countries[c].name}<small>${c==='PA'?'Panamá':'En preparación'}</small></a>`;
- return `<section id="commercialWelcome"><div class="latam-hero" id="inicio"><img id="latamArt" class="latam-art" alt="" width="2400" height="1400"><div class="latam-copy"><h1>Crea tu<br><span class="latam-title-line">Dirección Digital</span></h1><p>Comparte un solo link o código QR y facilita que te encuentren. Funciona con Google Maps, Waze, Uber y WhatsApp.</p><a id="latamCreate" class="button latam-cta" href="/auth/google/login">Crear mi Dirección <span aria-hidden="true">→</span></a><div id="paises"><div class="latam-country-label">Elige tu país</div><div class="latam-country-grid">${['PA','CR','CO','MX'].map(card).join('')}</div><details class="latam-secondary-countries"><summary>Más países</summary><div class="latam-country-grid">${initial.filter(c=>!['PA','CR','CO','MX'].includes(c)).map(card).join('')}</div></details><div id="latamCountryState" hidden><label for="commercialCountry">País seleccionado</label><select id="commercialCountry">${initial.map(c=>`<option value="${c}"${c===country?' selected':''}>${countries[c].name}</option>`).join('')}</select></div><p id="commercialIdentity">${'Direcciones LATAM · '+countries[country].name}</p><p id="commercialAvailability" role="status"></p><p id="latamActionStatus" role="status"></p></div></div></div><section class="latam-benefits"><h2>¿Por qué usar Direcciones LATAM?</h2><div class="latam-benefit-grid"><article><span class="symbol" aria-hidden="true">↗</span><h3>Un solo link</h3><p>Comparte toda tu información de contacto y ubicación en un solo lugar.</p></article><article><svg class="symbol" width="32" height="36" viewBox="0 0 24 28" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg><h3>Llegan más fácil</h3><p>Guía a tus clientes, amigos o repartidores directo a ti sin errores.</p></article><article><span class="symbol" aria-hidden="true">▦</span><h3>QR listo para imprimir</h3><p>Usa tu código QR en tarjetas, redes, sitios web y más.</p></article></div></section><section id="planes" class="latam-info"><h2>Servicios y planes</h2><div class="latam-plan-grid">${[
+ const card=(c:string)=>`<a href="?country=${c}" data-commercial-country="${c}" aria-current="${c===country}"><span class="flag" aria-hidden="true">${flag(c)}</span>${countries[c].name}<small>${c==='PA'?'Direcciones507':'En preparación'}</small></a>`;
+ return `<section id="commercialWelcome"><div class="latam-hero" id="inicio"><div class="latam-copy"><h1>Crea tu<br><span class="latam-title-line">Dirección Digital</span></h1><p>Comparte un solo enlace o código QR y facilita que te encuentren. Funciona con Google Maps, Waze, Uber y WhatsApp.</p><a id="latamCreate" class="button latam-cta" href="/auth/google/login">Crear mi Dirección <span aria-hidden="true">→</span></a></div><img id="latamArt" class="latam-art" alt="" width="2400" height="1400"></div><section id="paises" aria-label="Selección de país"><div class="latam-country-label">Elige tu país</div><div class="latam-country-grid">${['PA','CR','CO','MX'].map(card).join('')}</div><details class="latam-secondary-countries"><summary>Más países</summary><div class="latam-country-grid">${initial.filter(c=>!['PA','CR','CO','MX'].includes(c)).map(card).join('')}</div></details><div id="latamCountryState" hidden><label for="commercialCountry">País seleccionado</label><select id="commercialCountry">${initial.map(c=>`<option value="${c}"${c===country?' selected':''}>${countries[c].name}</option>`).join('')}</select></div><p id="commercialIdentity">${'Direcciones LATAM · '+countries[country].name}</p><p id="commercialAvailability" role="status"></p><p id="latamActionStatus" role="status"></p></section><section class="latam-benefits"><h2>¿Por qué usar Direcciones LATAM?</h2><div class="latam-benefit-grid"><article class="latam-benefit-green"><span class="latam-benefit-icon"><svg class="symbol" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 9h8M8 13h5M15 16l2 2 3-3"/></svg></span><h3>Un solo enlace</h3><p>Comparte toda tu información de contacto y ubicación en un solo lugar.</p></article><article class="latam-benefit-purple"><span class="latam-benefit-icon"><svg class="symbol" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s-7-6.3-7-12a7 7 0 1 1 14 0c0 5.7-7 12-7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><h3>Llegan más fácil</h3><p>Guía a tus clientes, amigos o repartidores hasta tu ubicación.</p></article><article class="latam-benefit-gold"><span class="latam-benefit-icon"><svg class="symbol" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v3M18 21h3M14 21v-2"/></svg></span><h3>QR listo para imprimir</h3><p>Usa tu código QR en tarjetas, redes, sitios web y más.</p></article></div></section><section id="planes" class="latam-info"><h2>Servicios y planes</h2><div class="latam-plan-grid">${[
  ['Residencial','RESIDENTIAL',''],['Lugar','PLACE',''],['Negocio Gratis','BUSINESS','BUSINESS_FREE'],['Premium','BUSINESS','BUSINESS_PREMIUM'],['Premium Pro','BUSINESS','BUSINESS_PREMIUM_PRO'],
-].map(([name,type,plan])=>`<a class="latam-plan-card" href="/auth/google/login" data-latam-type="${type}" data-latam-plan="${plan}"><h3>${name}</h3><p>${details[name]}</p><span>Preparar dirección <span aria-hidden="true">→</span></span></a>`).join('')}</div><p>La disponibilidad y las condiciones de cada servicio se conservan. Los países extranjeros están en preparación.</p></section><section id="ayuda" class="latam-info"><h2>Ayuda</h2><p>Consulta a Natalie desde Ayuda en el menú o desde su botón flotante.</p></section></section>`;
+].map(([name,type,plan])=>`<a class="latam-plan-card" ${type==='PLACE'&&!['PA','CR'].includes(country)?'hidden':''} href="/auth/google/login" data-latam-type="${type}" data-latam-plan="${plan}"><div class="latam-plan-top"><span class="latam-plan-icon" aria-hidden="true">${({"Residencial":"<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m3 11 9-8 9 8\"/><path d=\"M5 10v11h14V10M9 21v-7h6v7\"/></svg>","Lugar":"<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 22s-7-6.3-7-12a7 7 0 1 1 14 0c0 5.7-7 12-7 12Z\"/><circle cx=\"12\" cy=\"10\" r=\"2.5\"/></svg>","Negocio Gratis":"<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 10h18l-2-6H5l-2 6ZM5 10v11h14V10M9 21v-7h6v7\"/></svg>","Premium":"<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 2 3 6 7 .9-5 4.8 1.2 7-6.2-3.3-6.2 3.3 1.2-7-5-4.8L9 8z\"/></svg>","Premium Pro":"<svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m2 9 4 3 6-8 6 8 4-3-2 11H4L2 9Z\"/><path d=\"M7 16h10\"/></svg>"})[name]}</span><span class="latam-plan-label">${({Residencial:"Hogar",Lugar:"Sitios de interés","Negocio Gratis":"Para comenzar",Premium:"Más herramientas","Premium Pro":"Mayor presencia"})[name]}</span></div><h3>${name}</h3><div class="latam-plan-price" aria-label="Precio del plan">${({Residencial:"$12.99",Lugar:"GRATIS","Negocio Gratis":"GRATIS",Premium:"$19.99","Premium Pro":"$39.99"})[name]}</div><p>${details[name]}</p><span>Preparar dirección <span aria-hidden="true">→</span></span></a>`).join('')}</div><p class="latam-availability">Los servicios están sujetos a la disponibilidad de cada país. Los demás países están en preparación.</p></section><section id="ayuda" class="latam-info latam-help-strip"><div class="latam-help-heading"><span class="latam-help-icon" aria-hidden="true">✦</span><h2>Ayuda</h2></div><p><strong>¿Necesitas orientación?</strong> Abre Natalie desde Ayuda en el menú o desde su botón flotante.</p></section></section>`;
 }
 
 /** Visual lifecycle only: reuse the current launcher and close handlers. */
 export function bindLatamOverlays(){
  const panel=document.getElementById('natalieChat'),launcher=document.getElementById('natalieLauncher'),close=document.getElementById('natalieClose');
+
  document.addEventListener('pointerdown',event=>{const target=event.target as Node|null;if(panel?.classList.contains('open')&&target&&!panel.contains(target)&&!launcher?.contains(target))close?.click();});
  const legal=document.getElementById('modalPoliticas');
  const hide=()=>{if(legal)legal.style.display='none';};

@@ -16,7 +16,7 @@ test('C02/C03/C08 reuse OAuth and preserve session and error nodes',()=>{
 });
 test('C04/C06/C07 retain country support and request types without another Natalie control',()=>{
  const page=html();expect(page).toContain('id="latamCountryState" hidden');expect(page).toContain('id="commercialCountry"');expect(page).toContain('id="countryCode"');expect(page).toContain('Más países');
- expect([...page.matchAll(/class="latam-plan-card"[^>]*><h3>(.*?)<\/h3>/g)].map(m=>m[1])).toEqual(['Residencial','Lugar','Negocio Gratis','Premium','Premium Pro']);
+ expect([...page.matchAll(/class="latam-plan-card"[^>]*>[\s\S]*?<h3>(.*?)<\/h3>/g)].map(m=>m[1])).toEqual(['Residencial','Lugar','Negocio Gratis','Premium','Premium Pro']);
  expect(page).not.toContain('id="latamHelp"');expect(page).toContain('id="latamHelpLink"');expect(page.match(/id="natalieLauncher"/g)?.length).toBe(1);
 });
 test('C05 original hero is an embedded WebP image with correct MIME',()=>{

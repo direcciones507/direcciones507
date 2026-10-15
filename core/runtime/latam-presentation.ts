@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-import {latamHeroImage} from './latam-hero-image';
+// Hero replacement uploaded by owner; keep the image hosted in the existing GitHub repository.
 /** Presentation only: the existing panel, country policy and Natalie remain authoritative. */
 export function latamPresentation(html:string){
  const legacy=readFileSync(new URL('../../index.html',import.meta.url),'utf8');
@@ -314,9 +314,8 @@ const markCountry=()=>{document.querySelectorAll('[data-commercial-country]').fo
 countrySelect.addEventListener('change',markCountry);window.addEventListener('popstate',markCountry);
 const menu=document.querySelector('.latam-menu'),desktop=matchMedia('(min-width:1100px)');
 const syncMenu=()=>menu.open=desktop.matches;syncMenu();desktop.addEventListener('change',syncMenu);
-const heroBytes=Uint8Array.from(atob('${latamHeroImage}'),c=>c.charCodeAt(0));
-const heroUrl=URL.createObjectURL(new Blob([heroBytes],{type:'image/webp'}));
-const hero=document.getElementById('latamArt');hero.onload=()=>URL.revokeObjectURL(heroUrl);hero.src=heroUrl;
+const hero=document.getElementById('latamArt');
+hero.src='https://raw.githubusercontent.com/direcciones507/direcciones507/feat/admin-ui-20261006/direcciones-latam-mapa-sin-cuadro-azul.png';
 document.getElementById('latamCreate').onclick=e=>prepareLatamRequest(e,'BUSINESS','');
 document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>prepareLatamRequest(e,a.dataset.latamType,a.dataset.latamPlan));
 document.getElementById('latamRequestDialog').addEventListener('close',()=>document.getElementById('latamMessageAnchor').after(document.getElementById('message')));

@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {inspectHistoricalCodes,inspectPublicationSources,publicationSources,PLANES_AUTHORITY} from '../scripts/integration-preflight';
+import {inspectCanonicalSchema,inspectHistoricalCodes,inspectPublicationSources,publicationSources,PLANES_AUTHORITY} from '../scripts/integration-preflight';
 
 test('historical audit detects normalized collisions and never treats a highest code as a reservation',()=>{
   const report=inspectHistoricalCodes(['AD507-0001',' ad507-0001 ',{codigo:'AD507-0038'},{codigo:'AD507-FIXTURE'},null,'invalid']);
@@ -43,4 +43,15 @@ test('source audit rejects login HTML, malformed JSON, oversized responses and u
   }
   const failure=await inspectPublicationSources((async()=>{throw Error('upstream-private-token');})as typeof fetch);
   expect(JSON.stringify(failure)).not.toContain('upstream-private-token');
+});
+
+
+test('preflight reports country migration when request columns exist but country metadata is missing',async()=>{
+ const names=['landline_phone','request_key_hash','request_payload_hash','request_data','review_decision','reviewed_by','publication_receipt'];
+ const columns=[...names.map(column_name=>({table_name:'addresses',column_name})),{table_name:'address_media',column_name:'upload_status'}];
+ const tx={unsafe:async(query:string)=>query.includes('transaction_read_only')?[{read_only:'on'}]:query.includes('information_schema.columns')?columns:[]};
+ const sql={begin:async(mode:string,fn:any)=>{expect(mode).toContain('read only');return fn(tx);}} as any;
+ expect((await inspectCanonicalSchema(sql)).missingRequestColumns).toEqual(['country_code']);
+ columns.push({table_name:'addresses',column_name:'country_code'});
+ expect((await inspectCanonicalSchema(sql)).missingRequestColumns).toEqual([]);
 });

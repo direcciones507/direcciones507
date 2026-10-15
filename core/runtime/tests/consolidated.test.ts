@@ -581,7 +581,7 @@ test('ADMIN creation reuses the multipart route; transfer protects CSRF and expe
   for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
 });
 
-test('eight-column controlled migration rollback preserves historical rows and rejects new data',async()=>{
+test('commercial and country rollback preserves historical rows and rejects new data',async()=>{
   const name='ad507_rollback_'+crypto.randomUUID().replaceAll('-','');
   await sql.unsafe('CREATE DATABASE '+name);
   const url=new URL(isolatedDatabase);url.pathname='/'+name;const db=postgres(url.href,{max:1});const connection=await db.reserve();
@@ -589,13 +589,18 @@ test('eight-column controlled migration rollback preserves historical rows and r
     for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql']){await connection.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));console.info('rollback proof: applied '+file);}
     await connection.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source) VALUES('AD507-OLD','BUSINESS','ACTIVE','Untouched historical','LEGACY')");
     const before=await connection.unsafe('SELECT code,name,source,status FROM ad507.addresses');
-    for(const file of ['landline.sql','requests.sql']){await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));console.info('rollback proof: applied '+file);}
+    for(const file of ['landline.sql','requests.sql','countries.sql']){await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));console.info('rollback proof: applied '+file);}
     const columns=await connection.unsafe("SELECT column_name FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses' AND column_name IN ('landline_phone','request_key_hash','request_payload_hash','request_data','review_decision','reviewed_by','publication_receipt')");expect(columns).toHaveLength(7);
+    await connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-countries.sql',import.meta.url),'utf8'));
     await connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'));console.info('rollback proof: restored original schema');
     expect(await connection.unsafe('SELECT code,name,source,status FROM ad507.addresses')).toEqual(before);
     expect((await connection.unsafe("SELECT is_nullable FROM information_schema.columns WHERE table_schema='ad507' AND table_name='addresses' AND column_name='code'"))[0].is_nullable).toBe('NO');
-    for(const file of ['landline.sql','requests.sql']){await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));console.info('rollback proof: applied '+file);}
-    await connection.unsafe("UPDATE ad507.addresses SET request_data='{}'::jsonb WHERE code='AD507-OLD'");
+    for(const file of ['landline.sql','requests.sql','countries.sql']){await connection.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));console.info('rollback proof: applied '+file);}
+    await connection.unsafe("UPDATE ad507.addresses SET request_data='{}'::jsonb,source='USER_REQUEST' WHERE code='AD507-OLD'");
+    let countryRollbackError='';
+    try{await connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-countries.sql',import.meta.url),'utf8'));}catch(error){countryRollbackError=String(error);}finally{await connection.unsafe('ROLLBACK');}
+    expect(countryRollbackError).toContain('COUNTRY_ROLLBACK_REQUIRES_DATA_PRESERVATION');
+    expect((await connection.unsafe("SELECT country_code FROM ad507.addresses WHERE code='AD507-OLD'"))[0].country_code).toBe('PA');
     let rollbackError='';
     try{await connection.unsafe(readFileSync(new URL('../schema-proposals/rollback-requests.sql',import.meta.url),'utf8'));}catch(error){rollbackError=String(error);}finally{await connection.unsafe('ROLLBACK');}
     expect(rollbackError).toContain('ROLLBACK_REQUIRES_DATA_PRESERVATION');
@@ -896,8 +901,8 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
  }) as typeof fetch;
  const auth=createGeneralAuth(db,env,googleHttp);
  const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'isolated',secretAccessKey:'isolated',configurationVerified:true as const};
- const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:providers})});
- const blocked=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:providers})});
+ const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:providers}),paymentEnvironment:'production'});
+ const blocked=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:providers}),paymentEnvironment:'production'});
  let fixtureEvidenceVerified=false;
  const server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:async incoming=>{
   // Test-only HTTPS edge simulation; actual transport is local HTTP, no production ingress.
@@ -913,7 +918,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const c=session(done),me=await(await call('/v1/auth/me',c)).json();return {cookie:c,user:me.user};
  };
  const png=await sharp({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
- const raw={type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Isolated full commercial journey '+unique,reference:'Synthetic reference',description:'Synthetic description',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
+ const raw={type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Iglesia Catedral — fixture aislado '+unique,reference:'Synthetic reference',description:'Synthetic description',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
  const form=(data:any)=>{const body=new FormData();body.append('payload',JSON.stringify(data));body.append('logo',new Blob([png],{type:'image/png'}),'synthetic.png');return body;};
  try{
   const client=await loginHttp('client'),admin=await loginHttp('admin');

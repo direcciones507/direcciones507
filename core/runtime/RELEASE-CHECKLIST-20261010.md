@@ -1,5 +1,55 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Ejecución operativa — 15 octubre 2026, continuación
+
+| Componente | Estado | Evidencia / siguiente dependencia |
+|---|---|---|
+| Respaldo lógico actual | Probado | pg_dump completo restaurado sin errores en ad507_restorecheck_20261015 dentro del mismo PostgreSQL; 43 tablas AD507 y hash de datos idéntico. Backup persistente en volumen existente; no es un ensayo del snapshot físico ni de pérdida del volumen. |
+| Migraciones comerciales | Aplicado | releases/20261015-commercial-schema.sql: hash verificado, ensayo aislado PASS, COMMIT productivo PASS; cuerpos existentes reutilizados y ledger 0006–0008 atómico. Sin payments.sql. |
+| Esquema/ledger productivo | Probado | Postconsulta: ledger 0000–0008, ocho columnas comerciales, cuatro índices comerciales, cero constraints sin validar y cero direcciones igual al inicio. No se cambiaron datos históricos. |
+| Exclusividad de códigos | Pendiente | Falta evidencia del contrato de emisores históricos; AD507_HISTORICAL_NAMESPACE_VERIFIED permanece sin activar. |
+| R2 | Probado previamente | Se reutiliza evidencia aprobada; no se repite ni se activan permisos nuevos. |
+| Core actual | Operativo para servicios existentes | Deployment 6d5821d6-ff4b-4b14-a99d-85f962ae0937 SUCCESS sobre main d0113d6. No demuestra creación/publicación nueva. |
+| Circuito nuevo productivo | Pendiente | Sin activación, merge ni publicación de prueba; después de exclusividad: propietario/ADMIN prueba completa, URL/QR/foto/Mi cuenta/compartir/Maps/Waze. |
+| Pagos y países adicionales | Cerrados | Sin Yappy/PayPal ni apertura de países sin configuración. |
+
+Registro detallado: docs/reviews/panama-production-execution-pr62.md.
+PR único: #62. Se conserva la evidencia de 166 PASS/0 FAIL del HEAD c93f0d6;
+no se atribuye ese resultado al SQL preparado ni a producción.
+Incidencia de consola recuperada; transferencia completa y hash comprobado antes
+del ensayo. CI #203: test C05 antiguo esperaba WebP; main PR81 usa PNG aprobado.
+Se ajusta solo ese test al cambio publicado: focal 6 PASS/0 FAIL, diseño intacto.
+
+## Continuación funcional del generador — 15 octubre 2026
+
+Base real inspeccionada: main `1cef22758c3528353a6bf29e40bb83b80708dac0`.
+Se continúa PR #62, rama `fix/panama-panel-publication-20261012`, incorporando
+main sin revertir el diseño aprobado. No se crea otro panel, Core ni PR.
+
+| Componente | Estado | Evidencia / pendiente exacto |
+|---|---|---|
+| Formulario → receptor persistente | En desarrollo | El formulario existente usa `/v1/user/requests`; panel y receptor están cerrados por `AD507_COMMERCIAL_WORKFLOW_ENABLED`. No es una ruta de envío inexistente. |
+| ADMIN → aprobación/publicación | Probado en fixture previo | Reutiliza `request-routes.ts` y `request-repository.ts`; falta recorrido autenticado productivo. |
+| Separación pago/publicación | En desarrollo | `server.ts` exige confirmación productiva aun con Yappy apagado. Gratis no consulta órdenes; Premium/Pro sin confirmación quedan pendientes. No se activa proveedor ni se altera precio. |
+| Iglesia Catedral | En desarrollo | Nombre usado exclusivamente en el ensayo HTTP aislado existente; imagen y coordenadas sintéticas identificadas como fixture. No se crea registro público ni se inventan datos reales del lugar. |
+| Ocho países / generador único | Probado en configuración | PA, CR, CO, GT, SV, HN, NI, MX comparten configuración y formulario. `assertCountryCommerce` solo admite PA. Los otros siete NO se declaran operativos ni se abren sin configuración comercial suficiente. |
+| Producción | Operativo solo para servicios actuales | Railway ad507-core: SUCCESS `ff0c79d9-f76c-4e61-ae5e-546058c1777c`, sin staged; `/ready` LATAM/Core 200. La variable comercial no está definida. Esto no acredita publicación comercial. |
+| Esquema y exclusividad | Pendiente | Sigue vigente el preflight de PR62: columnas comerciales/country_code, recuperación aislada del respaldo y exclusividad histórica deben acreditarse antes de activar. No se aplica SQL, no se declara namespace verificado ni se cambia flag. |
+
+Archivos funcionales de esta continuación: `core/runtime/server.ts`.
+Pruebas: `tests/publication-errors.test.ts` y el ensayo existente en
+`tests/consolidated.test.ts`, ahora con el mismo control de pago de producción.
+Compatibilidad legacy y compilación PASS. La suite local sin PostgreSQL accesible
+da 121 PASS, 1 skip y 3 fallos de prerrequisitos de PostgreSQL; la certificación
+completa corresponde a Actions con PostgreSQL aislado. No confundir ese resultado
+local con un fallo comercial verificado ni con producción operativa.
+
+Antes de publicar de verdad: cerrar evidencias pendientes, autorizar/aplicar el
+esquema verificado y activar el flujo; después el propietario envía Iglesia
+Catedral con sus datos y logo reales y ADMIN revisa, aprueba y publica. Comprobar
+URL, QR, Maps/Waze y la tarjeta en Mi cuenta desde ambos dominios. No ejecutar
+esa prueba con datos sintéticos en producción.
+
 Actualizado 11 octubre 2026. Este es el checklist de release existente, ampliado documentalmente; no añade funcionalidades ni un segundo sistema. No desplegar hasta verificar asignación de códigos y publicación canónica. PR51:7535f2cdaa38b475538769fa5d90c31a38134713; PR52 funcional:9735178634d467551fe1f05e4c26c8a698158fc4. El cierre READ ONLY está en566b231; la preparación posterior reutiliza únicamente el widgetNatalie existente en el renderer comercial, sin alterar backend/históricos. Sus pruebas se registran en PR52.
 
 **VERDE:** hecho concreto con evidencia. **AMARILLO:** preparado, pendiente de prueba/autorización. **ROJO:** bloqueo de la acción indicada. Un VERDE de CI no sustituye una validación productiva.

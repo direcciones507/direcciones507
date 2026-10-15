@@ -81,13 +81,6 @@ body.latam .latam-footer{display:block;padding:24px 0 48px;margin-top:12px}
 .latam-footer-inner nav{width:100%;max-width:none;gap:6px 16px}
 }
 
-/* LATAM benefit cards: colorful scalable SVG icons, responsive and presentation-only. */
-#commercialWelcome .latam-benefit-grid article{background:#142c45;border:1px solid #2a425f;border-radius:18px;gap:9px;box-shadow:0 8px 24px #020b1640}
-#commercialWelcome .latam-benefit-icon{display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:16px;flex-shrink:0}
-#commercialWelcome .latam-benefit-icon .symbol{width:30px;height:30px;display:block}
-#commercialWelcome .latam-benefit-green .latam-benefit-icon{background:#214f44;color:#65e6a4}
-#commercialWelcome .latam-benefit-purple .latam-benefit-icon{background:#49365d;color:#d7a6ff}
-#commercialWelcome .latam-benefit-gold .latam-benefit-icon{background:#51402c;color:#ffd17d}
 /* Homepage-only polish; retain existing colors and functional controls. */
 #commercialWelcome .latam-hero{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(24px,4vw,56px)}
 #commercialWelcome .latam-copy h1{font-size:clamp(38px,4.1vw,58px);line-height:1.12;letter-spacing:-.035em;text-wrap:balance}
@@ -104,6 +97,13 @@ body.latam .latam-footer{display:block;padding:24px 0 48px;margin-top:12px}
 body.latam .latam-footer-inner{justify-content:center;align-items:center;gap:clamp(24px,6vw,88px)}
 body.latam .latam-footer-inner>div{flex:0 1 300px}
 body.latam .latam-footer-inner nav{flex:0 1 440px;justify-items:start}
+/* LATAM benefit cards: colorful scalable SVG icons, responsive and presentation-only. */
+#commercialWelcome .latam-benefit-grid article{background:#142c45;border:1px solid #2a425f;border-radius:18px;gap:9px;box-shadow:0 8px 24px #020b1640}
+#commercialWelcome .latam-benefit-icon{display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:16px;flex-shrink:0}
+#commercialWelcome .latam-benefit-icon .symbol{width:30px;height:30px;display:block}
+#commercialWelcome .latam-benefit-green .latam-benefit-icon{background:#214f44;color:#65e6a4}
+#commercialWelcome .latam-benefit-purple .latam-benefit-icon{background:#49365d;color:#d7a6ff}
+#commercialWelcome .latam-benefit-gold .latam-benefit-icon{background:#51402c;color:#ffd17d}
 @media(min-width:621px) and (max-width:1099px){#commercialWelcome .latam-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#commercialWelcome .latam-hero{gap:20px}#commercialWelcome .latam-art{height:300px}}
 @media(max-width:620px){#commercialWelcome .latam-hero{grid-template-columns:1fr}#commercialWelcome .latam-copy h1{font-size:clamp(34px,9vw,44px)}#commercialWelcome .latam-art{height:220px}#commercialWelcome .latam-plan-grid{grid-template-columns:1fr}#commercialWelcome .latam-plan-card{min-height:0}body.latam .latam-footer-inner{align-items:stretch;gap:20px}body.latam .latam-footer-inner>div,body.latam .latam-footer-inner nav{flex:auto}}
 `;

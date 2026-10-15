@@ -85,7 +85,7 @@ body.latam .latam-footer{display:block;padding:24px 0 48px;margin-top:12px}
 #commercialWelcome .latam-hero{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(24px,4vw,56px)}
 #commercialWelcome .latam-copy h1{font-size:clamp(38px,4.1vw,58px);line-height:1.12;letter-spacing:-.035em;text-wrap:balance}
 #commercialWelcome .latam-copy>p{max-width:530px;line-height:1.7;color:#d1def0}
-#commercialWelcome .latam-art{object-fit:contain;object-position:center;max-height:390px;border-radius:18px}
+#commercialWelcome .latam-art{object-fit:cover;object-position:right center;max-height:390px;border-radius:18px}
 #commercialWelcome .latam-benefit-grid article{display:flex;flex-direction:column;gap:8px;border-radius:18px;background:linear-gradient(150deg,#132b48,#0e2036)}
 #commercialWelcome .latam-benefit-grid h3{margin:2px 0;font-size:18px}
 #commercialWelcome .latam-benefit-grid p{line-height:1.65}

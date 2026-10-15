@@ -1,5 +1,6 @@
 import {readFileSync} from 'node:fs';
-import {latamHeroImage} from './latam-hero-image';
+// Read the replacement LATAM artwork from the repository root, preserving the existing hero layout.
+const latamHeroImage=readFileSync(new URL('../../direcciones-latam-mapa-sin-cuadro-azul.png',import.meta.url)).toString('base64');
 /** Presentation only: the existing panel, country policy and Natalie remain authoritative. */
 export function latamPresentation(html:string){
  const legacy=readFileSync(new URL('../../index.html',import.meta.url),'utf8');
@@ -68,7 +69,7 @@ countrySelect.addEventListener('change',markCountry);window.addEventListener('po
 const menu=document.querySelector('.latam-menu'),desktop=matchMedia('(min-width:1100px)');
 const syncMenu=()=>menu.open=desktop.matches;syncMenu();desktop.addEventListener('change',syncMenu);
 const heroBytes=Uint8Array.from(atob('${latamHeroImage}'),c=>c.charCodeAt(0));
-const heroUrl=URL.createObjectURL(new Blob([heroBytes],{type:'image/webp'}));
+const heroUrl=URL.createObjectURL(new Blob([heroBytes],{type:'image/png'}));
 const hero=document.getElementById('latamArt');hero.onload=()=>URL.revokeObjectURL(heroUrl);hero.src=heroUrl;
 document.getElementById('latamCreate').onclick=e=>prepareLatamRequest(e,'BUSINESS','');
 document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>prepareLatamRequest(e,a.dataset.latamType,a.dataset.latamPlan));

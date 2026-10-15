@@ -1,4 +1,53 @@
-# PR62 — plan productivo condicionado, no ejecutado
+# PR62 — ejecución productiva y dependencias
+
+## Estado real de continuación — 15 octubre 2026
+
+Esta sección actualiza la evidencia anterior. Autorización actual: preparar y
+aplicar migraciones tras respaldo recuperable; no exige restaurar destructivamente
+el snapshot del día 11 ni contratar recursos nuevos.
+
+- **Respaldo actual ejecutado y restaurado:** `pg_dump -Fc` completo de `railway`,
+  conservado con umask 077 en el volumen PostgreSQL existente:
+  `/var/lib/postgresql/data/ad507-before-commercial-20261015.dump`.
+  `pg_restore --exit-on-error` a la base separada `ad507_restorecheck_20261015`
+  terminó correctamente (`AD507_LOGICAL_RESTORE_PASS`). No se restauró producción.
+  Ambas bases: 43 tablas AD507, cero direcciones en PostgreSQL. SHA256 del dump
+  de datos AD507 normalizado, excluyendo los tokens aleatorios restrict/unrestrict
+  de PostgreSQL 18, idéntico en origen y restauración, observado en consola.
+  El respaldo está en el mismo volumen; no acredita recuperación ante pérdida
+  del volumen ni una restauración del snapshot físico del 11 de octubre.
+  No se crearon servicios ni se contrataron recursos adicionales.
+- **Ledger verificado:** 0000–0005 y sus SHA256 coinciden con los seis archivos
+  del repositorio. Propuestas comerciales pendientes: landline/requests/countries.
+- **SQL de release preparado, NO ejecutado:**
+  `docs/reviews/releases/20261015-commercial-schema.sql`, SHA256
+  `6bce765b9c5b073b7424d5e9217bf8c01abe96db4799e60dc3b876dbd495287b`.
+  Reutiliza los cuerpos existentes; transacción única, locks y timeouts acotados,
+  guardas del ledger y sus seis checksums, registro atómico 0006–0008 con hash de
+  cada propuesta y postcondiciones. No se invoca en startup ni deployment.
+  Rechaza repetición o drift. Probar primero en la restauración aislada y cotejar
+  antes de ejecutar en producción. No aplicar payments.sql.
+- **Bloqueo de consola:** entrada larga interrumpida antes de ejecutar; se
+  descartó mediante recarga. El intento posterior de subir el SQL por Files
+  agotó el tiempo del navegador; la comprobación de estado también falló.
+  No se envió ningún comando psql para ejecutar ese archivo. Puede haber quedado
+  una copia temporal subida; NO equivale a DDL aplicado. Esquema y ledger
+  productivos no modificados por esta ejecución.
+- **PostgreSQL:** advertencia investigada: muestra de 151 entradas internas LOG
+  de checkpoint, cero mensajes PostgreSQL ERROR/FATAL/PANIC. Sin tuning aplicado.
+- **Core:** deployment `6d5821d6-ff4b-4b14-a99d-85f962ae0937` SUCCESS,
+  main `d0113d6feb532bd9414ab2f00d70b6d8dc933290`. No se fusionó este PR ni
+  se cambiaron flags, pagos, R2, Excel, Apps Script o Pages histórico.
+- **Exclusividad:** sigue pendiente el contrato de los emisores históricos.
+  No se activó AD507_HISTORICAL_NAMESPACE_VERIFIED. Los 40 códigos actuales sin
+  duplicados no certifican exclusividad futura de un emisor independiente.
+- **Operación final:** NO probada en producción. No existe nueva publicación
+  ni URL/QR entregable de esta ejecución. Países adicionales cerrados. Pagos OFF.
+
+La evidencia de R2 y las 166 pruebas aprobadas del HEAD c93f0d6 se reutilizan.
+Este cambio documental no convierte aquellas pruebas en validación productiva.
+
+## Evidencia anterior, conservada como historial
 
 ## Evidencia
 - Backup visible Railway: 11 octubre 2026 11:39, 245 MB, acción Restore disponible. No se demostró restauración aislada ni se pulsó Restore. Menú del backup solo ofrece Delete backup; no exportación/clonación.

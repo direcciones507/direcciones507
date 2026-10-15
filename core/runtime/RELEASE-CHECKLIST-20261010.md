@@ -1,5 +1,22 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Ejecución operativa — 15 octubre 2026, continuación
+
+| Componente | Estado | Evidencia / siguiente dependencia |
+|---|---|---|
+| Respaldo lógico actual | Probado | pg_dump completo restaurado sin errores en ad507_restorecheck_20261015 dentro del mismo PostgreSQL; 43 tablas AD507 y hash de datos idéntico. Backup persistente en volumen existente; no es un ensayo del snapshot físico ni de pérdida del volumen. |
+| Migraciones comerciales | Preparado, no aplicado | releases/20261015-commercial-schema.sql en docs/reviews: transacción, ledger 0006–0008, guardas de los seis hashes y postcondiciones; cuerpos existentes reutilizados. La consola falló al transferir el archivo, antes de ejecutar SQL. |
+| Esquema/ledger productivo | Pendiente | Se verificaron 0000–0005; no se ejecutó DDL ni se alteraron datos. Primero ensayar archivo completo en base restaurada y verificar postcondiciones. |
+| Exclusividad de códigos | Pendiente | Falta evidencia del contrato de emisores históricos; AD507_HISTORICAL_NAMESPACE_VERIFIED permanece sin activar. |
+| R2 | Probado previamente | Se reutiliza evidencia aprobada; no se repite ni se activan permisos nuevos. |
+| Core actual | Operativo para servicios existentes | Deployment 6d5821d6-ff4b-4b14-a99d-85f962ae0937 SUCCESS sobre main d0113d6. No demuestra creación/publicación nueva. |
+| Circuito nuevo productivo | Pendiente | Sin activación, merge ni publicación de prueba; después de esquema y exclusividad: propietario/ADMIN prueba completa, URL/QR/foto/Mi cuenta/compartir/Maps/Waze. |
+| Pagos y países adicionales | Cerrados | Sin Yappy/PayPal ni apertura de países sin configuración. |
+
+Registro detallado: docs/reviews/panama-production-execution-pr62.md.
+PR único: #62. Se conserva la evidencia de 166 PASS/0 FAIL del HEAD c93f0d6;
+no se atribuye ese resultado al SQL preparado ni a producción.
+
 ## Continuación funcional del generador — 15 octubre 2026
 
 Base real inspeccionada: main `1cef22758c3528353a6bf29e40bb83b80708dac0`.

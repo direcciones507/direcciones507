@@ -97,6 +97,17 @@ body.latam .latam-footer{display:block;padding:24px 0 48px;margin-top:12px}
 body.latam .latam-footer-inner{justify-content:center;align-items:center;gap:clamp(24px,6vw,88px)}
 body.latam .latam-footer-inner>div{flex:0 1 300px}
 body.latam .latam-footer-inner nav{flex:0 1 440px;justify-items:start}
+/* LATAM plan cards: centered 3+2 layout and refined presentation only. */
+@media(min-width:1100px){
+#commercialWelcome .latam-plan-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
+#commercialWelcome .latam-plan-grid .latam-plan-card{flex:0 1 calc((100% - 36px)/3);max-width:calc((100% - 36px)/3)}
+}
+#commercialWelcome .latam-plan-grid .latam-plan-card{position:relative;min-width:0;background:linear-gradient(145deg,#193c61 0%,#112c4a 65%,#10243d 100%);border:1px solid #446d92;border-radius:20px;box-shadow:0 10px 28px #020a1840,inset 0 1px 0 #ffffff14;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+#commercialWelcome .latam-plan-grid .latam-plan-card:hover{transform:translateY(-3px);border-color:#78b5d5;box-shadow:0 15px 30px #020a1860}
+#commercialWelcome .latam-plan-grid .latam-plan-card:focus-visible{outline:3px solid #9dd9f7;outline-offset:3px}
+#commercialWelcome .latam-plan-grid .latam-plan-card>span{display:inline-flex;align-items:center;align-self:flex-start;padding:9px 13px;border-radius:999px;background:#234e70;color:#d6f5ff;font-weight:700;font-size:13px;letter-spacing:.01em}
+#commercialWelcome .latam-plan-grid .latam-plan-card h3{color:#fff}
+@media(prefers-reduced-motion:reduce){#commercialWelcome .latam-plan-grid .latam-plan-card{transition:none}#commercialWelcome .latam-plan-grid .latam-plan-card:hover{transform:none}}
 /* LATAM benefit cards: colorful scalable SVG icons, responsive and presentation-only. */
 #commercialWelcome .latam-benefit-grid article{background:#142c45;border:1px solid #2a425f;border-radius:18px;gap:9px;box-shadow:0 8px 24px #020b1640}
 #commercialWelcome .latam-benefit-icon{display:inline-flex;align-items:center;justify-content:center;width:62px;height:62px;border-radius:16px;flex-shrink:0}

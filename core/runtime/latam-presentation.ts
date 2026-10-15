@@ -145,6 +145,12 @@ body.latam .latam-footer-social a{display:flex;align-items:center;justify-conten
 body.latam .latam-footer-social svg{display:block;flex-shrink:0}
 @media(max-width:850px){#commercialWelcome .latam-help-strip{min-height:0;padding:18px 20px;gap:16px}#commercialWelcome .latam-help-strip p{flex:1 1 230px}}
 @media(max-width:560px){#commercialWelcome .latam-help-strip{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:18px;border-radius:16px}#commercialWelcome .latam-help-heading{gap:12px}#commercialWelcome .latam-help-icon{flex-basis:46px;width:46px;height:46px;font-size:23px}#commercialWelcome .latam-help-heading h2{font-size:23px}#commercialWelcome .latam-help-strip p{flex:none;margin:0;font-size:14px}#commercialWelcome .latam-help-strip p strong{font-size:16px}body.latam .latam-footer-logo strong{font-size:20px}body.latam .latam-footer-logo svg{width:38px;height:44px}body.latam .latam-footer-inner nav{grid-template-columns:repeat(2,minmax(0,1fr))}body.latam .latam-footer-inner nav>div{min-width:0}body.latam .latam-footer-inner nav a,body.latam .latam-footer-inner nav button{overflow-wrap:anywhere}}
+/* Center and constrain the help banner without affecting the footer. */
+#commercialWelcome .latam-help-strip{width:min(100%,860px);max-width:860px;margin:26px auto 22px;min-height:0;padding:20px 26px;display:flex;justify-content:center;align-items:center;gap:22px}
+#commercialWelcome .latam-help-heading{justify-content:center;flex:0 0 auto}
+#commercialWelcome .latam-help-strip p{flex:0 1 auto;max-width:490px;text-align:center;margin:0}
+@media(max-width:850px){#commercialWelcome .latam-help-strip{width:calc(100% - 20px);padding:18px 20px;gap:16px}#commercialWelcome .latam-help-strip p{flex:1 1 220px}}
+@media(max-width:560px){#commercialWelcome .latam-help-strip{width:100%;padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:10px}#commercialWelcome .latam-help-heading{justify-content:center}#commercialWelcome .latam-help-strip p{flex:none;max-width:100%;text-align:center;margin:0}}
 /* LATAM plan cards: centered 3+2 layout and refined presentation only. */
 @media(min-width:1100px){
 #commercialWelcome .latam-plan-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}

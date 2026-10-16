@@ -1,5 +1,42 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## INCIDENTE — recuperación de publicación, 16 octubre 2026
+
+Este registro sustituye la afirmación anterior de activación bloqueada como un
+estado aceptable: be4e02b introdujo una REGRESIÓN en el generador que funcionaba.
+createNewAddressPublication.reserve exigía productNamespaceExclusive=true;
+server.ts lo calculaba de AD507_PRODUCT_CODE_NAMESPACE_VERIFIED, ausente en
+producción. Por tanto toda solicitud sin código fallaba ANTES de reservar, con
+PRODUCT_CODE_NAMESPACE_NOT_VERIFIED. No era un cambio de diseño ni caída de DB.
+La nueva compuerta no debía sustituir al asignador anterior ya autorizado.
+
+- CORRECCIÓN MÍNIMA026d31ab98b64200c2fee572d3bebca92c88ddeb: restaurado
+  únicamente el asignador N32 de ed30bec y su conexión en server.ts. Se conserva
+  AD507_HISTORICAL_NAMESPACE_VERIFIED, lector histórico, comparación normalizada,
+  consulta PostgreSQL, índice único e idempotencia. Sin activar numeración/nombres
+  nuevos. No se cambian códigos/URL ya asignados, datos, fotos, pagos o permisos.
+- CI38911328966 SUCCESS:184PASS/0FAIL/2888 expectativas; recorrido HTTP aislado
+  con OAuth, envío→ADMIN→aprobación→publicación→URL/QR/foto/Mi cuenta, más ediciones
+  y permisos. Bun/Docker/legacy/validación de migraciones PASS. No ejecutar DDL.
+- DESPLEGADO: Railway3df5227c-b716-4fc1-ad64-1cdc374dd82a SUCCESS sobre026d31a.
+  Comprobación posterior: portadas507/LATAM, ready y ficha nueva200; ADMIN200,
+  session-check401 sin sesión (denegación correcta); logs de este deploy sin errores.
+- Antes de corrección: ambas portadas200 y ficha nueva existente200 con datos;
+  R2WebP200 y1254px decodificados. No hubo caída global. Logs disponibles muestran
+  panel autenticado del propietario200; no hay POST de publicación del incidente
+  en la ventana recuperada. La regresión se acredita por código y reproducción
+  del contrato, sin inventar una publicación productiva autenticada.
+- Bloqueo separado: https://direcciones507.com/AD507-ARTEMARY/ y versión minúscula
+  devuelven404 de GitHub.com/Pages; THE1920 minúscula también404. Artemary404 ya
+  constaba en registros anteriores a be4e02b. AD507-0025/0001 abren páginas de acceso
+  residencial (no fichas comerciales). No se modifican Pages/históricos para
+  disimular estos resultados ni se certifican los40 negocios como disponibles.
+- PENDIENTE físico/autenticado: Mi cuenta/ADMIN y una nueva solicitud real hasta
+  publicar con sesión del propietario. Navegador disponible sin sesión. No crear
+  comercios sintéticos ni elevar roles productivos para fabricar evidencia.
+- Desarrollo de formatos, edición adicional, pagos y mejoras visuales suspendido
+  mientras se verifica la recuperación. No se repiten respaldo ni migraciones.
+
 ## Edición gratuita y códigos por producto — 16 octubre 2026
 
 Base reutilizada: ed30bec; continuación de PR #62 y #82, misma rama existente.

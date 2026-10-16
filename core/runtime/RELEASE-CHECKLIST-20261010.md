@@ -613,3 +613,11 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - **Cerrar sesión LATAM: CÓDIGO CORREGIDO, PRUEBA PRODUCTIVA PENDIENTE.** `core/runtime/user-panel.ts` ya redirige a `https://direcciones.lat/` si el host es `direcciones.lat`, y a `https://direcciones507.com/` en caso contrario (commit `30b6e68`). Probar desde la entrada LATAM y verificar el host real del panel compartido y el retorno tras OAuth; si el panel se aloja en otro host, preservar el portal de origen de forma segura y sin redirección abierta.
 - **Nuevos códigos automáticos: PENDIENTE DE DISEÑO/IMPLEMENTACIÓN.** Solicitud actual del propietario: prefijo de país existente más máximo ocho **dígitos numéricos** si no se solicita nombre personalizado. Nombre personalizado opcional, único y validado. Contrastar con la regla anterior de máximo ocho caracteres alfanuméricos; prevalece esta precisión del propietario para generación automática, sin tocar los 40 códigos históricos ni renombrar URLs/QR existentes. Verificar colisiones, concurrencia, reservas y unicidad antes de activar generación.
 - No declarar completado por CI verde ni por commit aislado. Registrar evidencia de pruebas físicas, despliegue y ausencia de regresiones.
+
+## 2026-10-15 · Descripción breve por tipo de plan (decisión del propietario)
+
+- **PENDIENTE DE IMPLEMENTACIÓN Y PRUEBA.** Mostrar y permitir el campo «Descripción breve» **únicamente** para solicitudes de **Lugar** y **Negocio Premium Pro**.
+- **Ocultar y no exigir** «Descripción breve» en **Negocio Gratis** y **Negocio Premium**. No mostrarlo tampoco en Residencial salvo decisión posterior expresa.
+- Aplicar la regla tanto en el formulario cliente (cambio dinámico de tipo/plan y al volver a editar) como en validación y persistencia del servidor; impedir que un valor oculto de otro plan se envíe accidentalmente. No alterar descripciones históricas.
+- Confirmar nombres/identificadores reales de planes antes de modificar código; mantener independiente el campo «Referencia» y cualquier descripción extensa que tenga finalidad diferente.
+- Probar cambios Gratis → Premium → Premium Pro → Lugar y viceversa en móvil/tablet, guardado, revisión ADMIN y ficha pública. CI verde no sustituye prueba productiva.

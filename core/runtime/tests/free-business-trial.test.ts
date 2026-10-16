@@ -26,3 +26,15 @@ test('Panama local month boundary near midnight UTC rollover',()=>{
  // Oct 30, 23:30 in Panama remains the 30th in November.
  expect(freeBusinessTrialEndsAt(new Date('2026-10-31T04:30:00Z')).toISOString()).toBe('2026-12-01T04:30:00.000Z');
 });
+
+test('rejects activation after Panama offer cutoff and invalid dates',()=>{
+ expect(()=>freeBusinessTrialEndsAt(new Date('2026-11-10T05:00:00.000Z'))).toThrow('FREE_BUSINESS_OFFER_CLOSED');
+ expect(()=>freeBusinessTrialEndsAt(new Date('invalid'))).toThrow('INVALID_ACTIVATION_DATE');
+});
+test('Panama Oct 31 evening ends on Nov 30 evening',()=>{
+ const activated=new Date('2026-11-01T04:30:00.000Z');
+ const end=freeBusinessTrialEndsAt(activated);
+ expect(end.toISOString()).toBe('2026-12-01T04:30:00.000Z');
+ expect(freeBusinessTrialState(end,new Date('2026-12-01T04:29:59.999Z'))).toBe('ACTIVE');
+ expect(freeBusinessTrialState(end,new Date('2026-12-01T04:30:00.000Z'))).toBe('EXPIRED');
+});

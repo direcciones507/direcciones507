@@ -522,7 +522,7 @@ test('ADMIN creates without client identity; transfer and reversal only change o
   const db=postgres(isolatedDatabase,{max:8});
   const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
-  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:http})});
+  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
   const file={role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:12,height:12,channels:3,background:'green'}}).png().toBuffer()};
   const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'ADMIN temporary address',reference:'Near park',latitude:8.1,longitude:-80.9};
   try{
@@ -536,7 +536,7 @@ test('ADMIN creates without client identity; transfer and reversal only change o
     const results=await Promise.all(Array.from({length:4},()=>repo.publish(adminId,created.id)));
     expect(new Set(results.map(r=>r.code)).size).toBe(1);
     expect(results.every(r=>r.status==='ACTIVE')).toBe(true);
-    expect(results[0].code).toMatch(/^AD507-[0-9]{8}$/);
+    expect(results[0].code).toBe('AD507-N'+created.id.replaceAll('-','').toUpperCase());
     const pub=await newPublicAddress(db,results[0].code,origin);expect(pub?.name).toBe(raw.name);
     expect(JSON.stringify(pub)).not.toContain('storageKey');expect(JSON.stringify(pub)).not.toContain('createdByAdmin');
     const html=renderNewPublicAddress(pub!);expect(html).toContain(raw.name);expect(html).toContain('const data = {');
@@ -557,8 +557,8 @@ test('ADMIN creates without client identity; transfer and reversal only change o
     expect(await db.unsafe('SELECT to_jsonb(m) AS row FROM ad507.address_media m WHERE address_id=$1::uuid',[created.id])).toEqual(media);
     const disabled=createNewAddressPublication(db,{namespaceExclusive:false,fetch:http});
     await expect(disabled.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).rejects.toThrow('HISTORICAL_NAMESPACE_NOT_VERIFIED');
-    const collision=createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:(async()=>Response.json({ok:true,codes:[{codigo:results[0].code}]})) as typeof fetch});
-    expect(await collision.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).not.toBe(results[0].code);
+    const collision=createNewAddressPublication(db,{namespaceExclusive:true,fetch:(async()=>Response.json({ok:true,codes:[{codigo:results[0].code}]})) as typeof fetch});
+    await expect(collision.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).rejects.toThrow('CANONICAL_CODE_COLLISION');
     const residential=await repo.createAdmin(adminId,'admin-residential-00000001',{type:'RESIDENTIAL',name:'New residential',reference:'Park',latitude:8,longitude:-80},[]);
     await repo.review(adminId,residential.id,'APPROVED');await expect(repo.publish(adminId,residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');
     expect(await newPublicAddress(db,(await repo.read(adminId,residential.id)).code,origin)).toBeNull();
@@ -630,7 +630,7 @@ test('ADMIN five products reuse quotas and concurrent distinct reservations have
   const sharp=(await import('sharp')).default;const db=postgres(isolatedDatabase,{max:8});
   const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
-  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:http})});
+  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
   const png=await sharp({create:{width:8,height:8,channels:3,background:'yellow'}}).png().toBuffer();const logo={role:'logo' as const,bytes:png,mime:'image/png'},photo={...logo,role:'photo' as const};
   const products=[{type:'RESIDENTIAL',plan:'RESIDENTIAL',files:[]},{type:'PLACE',plan:'PLACE',files:[photo]},{type:'BUSINESS',plan:'BUSINESS_FREE',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',files:[logo,photo]}];
   try{
@@ -720,7 +720,7 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
   const files=[{role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:6,height:6,channels:3,background:'blue'}}).png().toBuffer()}];
   const calls:string[]=[];
   const http=(async(url:any,init:any)=>{if(String(url).includes('action=list'))return Response.json({ok:true,codes:[{codigo:'AD507-0038'}]});calls.push(init.method);return new Response(null,{status:200});}) as typeof fetch;
-  const repo=createRequestRepository(db,{r2:{accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture',configurationVerified:true},fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:http})});
+  const repo=createRequestRepository(db,{r2:{accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture',configurationVerified:true},fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
   const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'LATAM isolated',reference:'Park',latitude:8.2,longitude:-80.1,region:'Región',municipality:'Municipio',locality:'Localidad',city:'Ciudad',sector:'Sector'};
   try{
     for(const countryCode of INITIAL_COUNTRIES){
@@ -902,7 +902,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
  }) as typeof fetch;
  const auth=createGeneralAuth(db,env,googleHttp);
  const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'isolated',secretAccessKey:'isolated',configurationVerified:true as const};
- const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:providers}),paymentEnvironment:'production'});
+ const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:providers}),paymentEnvironment:'production'});
  const blocked=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:providers}),paymentEnvironment:'production'});
  let fixtureEvidenceVerified=false;
  const server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:async incoming=>{
@@ -940,7 +940,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const unchanged=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;expect(unchanged.code).toBeNull();expect(unchanged.publicUrl).toBeNull();expect(unchanged.status).toBe('PENDING_REVIEW');
   fixtureEvidenceVerified=true; // Synthetic historical registry only; never sets a production gate.
   await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir dirección digital');expect(link).toBeDefined();
-  const canonical=link.href;expect(canonical).toMatch(/^https:\/\/direcciones.lat\/AD507-[0-9]{8}\/$/);expect(link.href).toBe(canonical);
+  const canonical='https://direcciones.lat/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
   const delivered=await(await call('/v1/user/panel',client.cookie)).json();const card=delivered.addresses.find((a:any)=>a.id===initial.id);expect(card.status).toBe('ACTIVE');expect(card.publicUrl).toBe(canonical);
   const page=await call(new URL(card.publicUrl).pathname);expect(page.status).toBe(200);const html=await page.text();expect(html).toContain(raw.name);expect(html).toContain('DIRECCIONES<span>507</span>');
   const qr=new Function(html.match(/const qrUrl = [^\n]+/)![0]+';return qrUrl;')();expect(new URL(qr).searchParams.get('data')).toBe(canonical);expect(html).toContain('navigator.clipboard.writeText('+JSON.stringify(canonical)+')');

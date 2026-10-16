@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { assertCountryCommerce, prepareCountryTemplate, proposedCountryUrl, COUNTRIES } from './country-configuration';
 import { createR2Storage, type R2Settings } from './r2-storage';
 import type { Sql } from 'postgres';
@@ -8,19 +7,15 @@ import { PLANES_AUTHORITY } from './scripts/integration-preflight';
 import type { CanonicalPublication } from './request-repository';
 import { readFileSync } from 'node:fs';
 
-export function normalizeCodeName(name:string):string {
-  const normalized=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,60);
-  if(!normalized||!/[A-Z]/.test(normalized))throw Error('INVALID_CODE_NAME');
-  return normalized;
-}
-/** New product formats require their own evidence: the prior N32 exclusivity is insufficient. */
-export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;productNamespaceExclusive?:boolean;fetch?:typeof fetch}):CanonicalPublication {
+/** No counter: new reservations use their durable UUID, outside the historical numeric sequence.
+ * Release still requires confirmation that this namespace is exclusive across all historical channels.
+ */
+export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
     historicalRegistryVerified:options.namespaceExclusive,
-    async reserve({id,countryCode='PA',type,plan,name,requestedName}) {
+    async reserve({id,countryCode='PA'}) {
       assertCountryCommerce(countryCode);
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
-      if(!options.productNamespaceExclusive)throw Error('PRODUCT_CODE_NAMESPACE_NOT_VERIFIED');
       // Canonical UUID layout makes removing separators injective: malformed
       // IDs must not collapse onto another request's code or shorten the suffix.
       if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id))throw Error('INVALID_REQUEST');
@@ -32,19 +27,11 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       const body=Buffer.concat(chunks).toString('utf8');
       const data=JSON.parse(body);
       if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/i.test(v.codigo.trim())))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
-      const free=type==='BUSINESS'&&plan==='BUSINESS_FREE';
-      if(!free&&type!=='PLACE'&&type!=='RESIDENTIAL'&&!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan))throw Error('INVALID_PLAN');
-      const prefix='AD'+COUNTRIES[countryCode as keyof typeof COUNTRIES].prefix+'-';
-      const stem=free?'':normalizeCodeName(requestedName||name);
-      const historical=new Set(data.codes.map((v:any)=>v.codigo.trim().toUpperCase()));
-      for(let attempt=0;attempt<100;attempt++){
-        const suffix=free?String(10000000+Number(BigInt('0x'+createHash('sha256').update(id+':'+attempt).digest('hex').slice(0,12))%90000000n)):stem+(attempt?String(attempt+1):'');
-        const code=prefix+suffix;
-        if(historical.has(code))continue;
-        const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
-        if(!existing.length)return code;
-      }
-      throw Error('CANONICAL_CODE_COLLISION');
+      const code='AD507-N'+id.replaceAll('-','').toUpperCase();
+      if(data.codes.some((v:any)=>v.codigo.trim().toUpperCase()===code))throw Error('CANONICAL_CODE_COLLISION');
+      const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
+      if(existing.length)throw Error('CANONICAL_CODE_COLLISION');
+      return code;
     },
     async publish({id,code,type}) {
       // The existing PostgreSQL reader is the new system's publication destination.

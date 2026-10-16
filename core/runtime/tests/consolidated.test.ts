@@ -65,55 +65,6 @@ function google(profile: Record<string, unknown>, tokenFailure = false) {
 function request(path: string, headers: Record<string, string> = {}, method = 'GET') { return new Request(origin + path, { method, headers }); }
 function binding(res: Response) { return res.headers.getSetCookie().find(x => x.startsWith('ad507_oauth_state='))!.split(';')[0]; }
 
-test('panel correction: OAuth admin intent is state-bound and requires the canonical ADMIN role',async()=>{
-  const flow=async(auth:ReturnType<typeof createGeneralAuth>,admin:boolean)=>{
-    const begin=(await auth.handle(request('/auth/google/login'+(admin?'?returnTo=%2Fadmin':''))))!;
-    expect(begin.status).toBe(302);
-    return {path:'/auth/google/callback?state='+new URL(begin.headers.get('location')!).searchParams.get('state')+'&code=test',cookie:begin.headers.getSetCookie().map(v=>v.split(';')[0]).join('; ')};
-  };
-  const admin=createGeneralAuth(sql,env,google({sub:'panel-return-admin',email:'admin@example.test',email_verified:true,hd:'example.test'}));
-  const begin=await flow(admin,true),done=(await admin.handle(request(begin.path,{cookie:begin.cookie})))!;
-  expect(done.status).toBe(302);expect(done.headers.get('location')).toBe(origin+'/admin');
-  expect((await admin.handle(request('/v1/admin/session-check',{cookie:session(done)})))?.status).toBe(200);
-  const client=createGeneralAuth(sql,env,google({sub:'panel-return-client',email:'client@gmail.com',email_verified:true}));
-  const clientBegin=await flow(client,true),denied=(await client.handle(request(clientBegin.path,{cookie:clientBegin.cookie})))!;
-  expect(denied.status).toBe(403);expect(denied.headers.getSetCookie().some(v=>v.startsWith('ad507_session='))).toBe(false);
-  const normal=await flow(client,false),normalDone=(await client.handle(request(normal.path,{cookie:normal.cookie})))!;
-  expect(normalDone.headers.get('location')).toBe(origin+'/');
-  const tampered=await flow(admin,true);
-  expect((await admin.handle(request(tampered.path,{cookie:tampered.cookie.split('; ').filter(v=>!v.startsWith('ad507_oauth_admin=')).join('; ')})))?.status).toBe(400);
-  for(const suffix of ['?returnTo=https://evil.test','?returnTo=%2Fadmin&returnTo=%2Fadmin','?returnTo=%2Fadmin&other=1'])expect((await admin.handle(request('/auth/google/login'+suffix)))?.status).toBe(400);
-});
-
-test('panel correction: owner detail and photograph are private; ADMIN reuses place review actions',async()=>{
-  const {createRequestRepository}=await import('../request-repository');
-  const {handleRequestRoutes}=await import('../request-routes');
-  const sharp=(await import('sharp')).default;
-  const objects=new Map<string,Uint8Array>();
-  const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
-  const http=(async(url:any,init:any)=>{if(init.method==='PUT'){objects.set(String(url),new Uint8Array(init.body));return new Response(null,{status:200})}const bytes=objects.get(String(url));return bytes?new Response(bytes,{headers:{'content-type':'image/webp'}}):new Response(null,{status:404});}) as typeof fetch;
-  const repo=createRequestRepository(sql,{r2,fetch:http});
-  const photo={role:'photo' as const,mime:'image/png',bytes:await sharp({create:{width:10,height:10,channels:3,background:'blue'}}).png().toBuffer()};
-  const item=await repo.submit(clientId,'panel-detail-isolated-0000001',{countryCode:'PA',type:'PLACE',plan:'PLACE',name:'Panel fixture',reference:'Fixture reference',description:'Fixture description',latitude:8.1,longitude:-80.9},[photo]);
-  const call=(path:string,user:any,method='GET')=>handleRequestRoutes(new Request(origin+path,{method,headers:{origin}}),{enabled:true,sql,auth:{currentUser:async()=>user},repository:repo,r2,fetch:http});
-  const client={id:clientId,roles:['CLIENT']},admin={id:adminId,roles:['ADMIN']};
-  const detail=await call('/v1/user/requests/'+item.id,client);expect(detail?.status).toBe(200);const data=(await detail!.json()).request;
-  expect(data.name).toBe('Panel fixture');expect(data.status).toBe('PENDING_REVIEW');expect(data.media).toHaveLength(1);
-  const outsider=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'panel-outsider@gmail.com')",[outsider]);
-  const denied=await call('/v1/user/requests/'+item.id,{id:outsider,roles:['CLIENT']});expect(denied?.status).toBe(404);
-  const mediaPath='/v1/user/requests/'+item.id+'/media/'+data.media[0].id;
-  expect((await call(mediaPath,client))?.headers.get('content-type')).toBe('image/webp');
-  expect((await call(mediaPath,{id:outsider,roles:['CLIENT']}))?.status).toBe(404);
-  expect((await call('/v1/user/requests/'+item.id,null))?.status).toBe(401);
-  expect((await call('/v1/admin/requests/'+item.id,client))?.status).toBe(403);
-  expect((await call('/v1/admin/requests/'+item.id,admin))?.status).toBe(200);
-  expect((await call('/v1/admin/requests/'+item.id+'/approve',client,'POST'))?.status).toBe(403);
-  expect((await call('/v1/admin/requests/'+item.id+'/approve',admin,'POST'))?.status).toBe(200);
-  expect((await repo.read(clientId,item.id)).review).toBe('APPROVED');
-  const rejected=await repo.submit(clientId,'panel-detail-isolated-0000002',{countryCode:'PA',type:'PLACE',plan:'PLACE',name:'Panel rejected fixture',reference:'Fixture reference',description:'Fixture description',latitude:8.2,longitude:-80.9},[photo]);
-  expect((await call('/v1/admin/requests/'+rejected.id+'/reject',admin,'POST'))?.status).toBe(200);
-  expect((await repo.read(clientId,rejected.id)).status).toBe('ARCHIVED');
-});
 function session(res: Response) { return res.headers.getSetCookie().find(x => x.startsWith('ad507_session='))!.split(';')[0]; }
 async function login(auth: ReturnType<typeof createGeneralAuth>) {
   const res = (await auth.handle(request('/auth/google/login')))!;
@@ -1090,3 +1041,59 @@ test('email registration, verification, login and reset reuse canonical identity
   const denied=await auth.handle(new Request(origin+'/v1/auth/email/register',{method:'POST',headers:{origin:'https://evil.test','content-type':'application/json'},body:JSON.stringify({email,password})}));expect(denied!.status).toBe(403);
  }finally{await sql.unsafe('DELETE FROM ad507.users WHERE email=$1',[email]);}
 },15000);
+
+test('panel correction: OAuth admin intent is state-bound and requires the canonical ADMIN role',async()=>{
+  const adminId=crypto.randomUUID(),clientId=crypto.randomUUID();
+  await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'panel-admin@example.test'),($2::uuid,'panel-client@gmail.com')",[adminId,clientId]);
+  await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'ADMIN'),($2::uuid,'CLIENT')",[adminId,clientId]);
+  const flow=async(auth:ReturnType<typeof createGeneralAuth>,admin:boolean)=>{
+    const begin=(await auth.handle(request('/auth/google/login'+(admin?'?returnTo=%2Fadmin':''))))!;
+    expect(begin.status).toBe(302);
+    return {path:'/auth/google/callback?state='+new URL(begin.headers.get('location')!).searchParams.get('state')+'&code=test',cookie:begin.headers.getSetCookie().map(v=>v.split(';')[0]).join('; ')};
+  };
+  const admin=createGeneralAuth(sql,env,google({sub:'panel-return-admin',email:'panel-admin@example.test',email_verified:true,hd:'example.test'}));
+  const begin=await flow(admin,true),done=(await admin.handle(request(begin.path,{cookie:begin.cookie})))!;
+  expect(done.status).toBe(302);expect(done.headers.get('location')).toBe(origin+'/admin');
+  expect((await admin.handle(request('/v1/admin/session-check',{cookie:session(done)})))?.status).toBe(200);
+  const client=createGeneralAuth(sql,env,google({sub:'panel-return-client',email:'panel-client@gmail.com',email_verified:true}));
+  const clientBegin=await flow(client,true),denied=(await client.handle(request(clientBegin.path,{cookie:clientBegin.cookie})))!;
+  expect(denied.status).toBe(403);expect(denied.headers.getSetCookie().some(v=>v.startsWith('ad507_session='))).toBe(false);
+  const normal=await flow(client,false),normalDone=(await client.handle(request(normal.path,{cookie:normal.cookie})))!;
+  expect(normalDone.headers.get('location')).toBe(origin+'/');
+  const tampered=await flow(admin,true);
+  expect((await admin.handle(request(tampered.path,{cookie:tampered.cookie.split('; ').filter(v=>!v.startsWith('ad507_oauth_admin=')).join('; ')})))?.status).toBe(400);
+  for(const suffix of ['?returnTo=https://evil.test','?returnTo=%2Fadmin&returnTo=%2Fadmin','?returnTo=%2Fadmin&other=1'])expect((await admin.handle(request('/auth/google/login'+suffix)))?.status).toBe(400);
+});
+
+test('panel correction: owner detail and photograph are private; ADMIN reuses place review actions',async()=>{
+  const {createRequestRepository}=await import('../request-repository');
+  const {handleRequestRoutes}=await import('../request-routes');
+  const sharp=(await import('sharp')).default;
+  const clientId=crypto.randomUUID(),adminId=crypto.randomUUID();
+  await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'panel-photo-owner@gmail.com'),($2::uuid,'panel-photo-admin@gmail.com')",[clientId,adminId]);
+  await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')",[clientId,adminId]);
+  const objects=new Map<string,Uint8Array>();
+  const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
+  const http=(async(url:any,init:any)=>{if(init.method==='PUT'){objects.set(String(url),new Uint8Array(init.body));return new Response(null,{status:200})}const bytes=objects.get(String(url));return bytes?new Response(bytes,{headers:{'content-type':'image/webp'}}):new Response(null,{status:404});}) as typeof fetch;
+  const repo=createRequestRepository(sql,{r2,fetch:http});
+  const photo={role:'photo' as const,mime:'image/png',bytes:await sharp({create:{width:10,height:10,channels:3,background:'blue'}}).png().toBuffer()};
+  const item=await repo.submit(clientId,'panel-detail-isolated-0000001',{countryCode:'PA',type:'PLACE',plan:'PLACE',name:'Panel fixture',reference:'Fixture reference',description:'Fixture description',latitude:8.1,longitude:-80.9},[photo]);
+  const call=(path:string,user:any,method='GET')=>handleRequestRoutes(new Request(origin+path,{method,headers:{origin}}),{enabled:true,sql,auth:{currentUser:async()=>user},repository:repo,r2,fetch:http});
+  const client={id:clientId,roles:['CLIENT']},admin={id:adminId,roles:['ADMIN']};
+  const detail=await call('/v1/user/requests/'+item.id,client);expect(detail?.status).toBe(200);const data=(await detail!.json()).request;
+  expect(data.name).toBe('Panel fixture');expect(data.status).toBe('PENDING_REVIEW');expect(data.media).toHaveLength(1);
+  const outsider=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'panel-outsider@gmail.com')",[outsider]);
+  const denied=await call('/v1/user/requests/'+item.id,{id:outsider,roles:['CLIENT']});expect(denied?.status).toBe(404);
+  const mediaPath='/v1/user/requests/'+item.id+'/media/'+data.media[0].id;
+  expect((await call(mediaPath,client))?.headers.get('content-type')).toBe('image/webp');
+  expect((await call(mediaPath,{id:outsider,roles:['CLIENT']}))?.status).toBe(404);
+  expect((await call('/v1/user/requests/'+item.id,null))?.status).toBe(401);
+  expect((await call('/v1/admin/requests/'+item.id,client))?.status).toBe(403);
+  expect((await call('/v1/admin/requests/'+item.id,admin))?.status).toBe(200);
+  expect((await call('/v1/admin/requests/'+item.id+'/approve',client,'POST'))?.status).toBe(403);
+  expect((await call('/v1/admin/requests/'+item.id+'/approve',admin,'POST'))?.status).toBe(200);
+  expect((await repo.read(clientId,item.id)).review).toBe('APPROVED');
+  const rejected=await repo.submit(clientId,'panel-detail-isolated-0000002',{countryCode:'PA',type:'PLACE',plan:'PLACE',name:'Panel rejected fixture',reference:'Fixture reference',description:'Fixture description',latitude:8.2,longitude:-80.9},[photo]);
+  expect((await call('/v1/admin/requests/'+rejected.id+'/reject',admin,'POST'))?.status).toBe(200);
+  expect((await repo.read(clientId,rejected.id)).status).toBe('ARCHIVED');
+});

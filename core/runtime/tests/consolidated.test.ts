@@ -939,7 +939,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   await publish.onclick();expect(message.textContent).toContain('Publicación bloqueada');
   const unchanged=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;expect(unchanged.code).toBeNull();expect(unchanged.publicUrl).toBeNull();expect(unchanged.status).toBe('PENDING_REVIEW');
   fixtureEvidenceVerified=true; // Synthetic historical registry only; never sets a production gate.
-  await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir ficha, enlace y QR');expect(link).toBeDefined();
+  await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir dirección digital');expect(link).toBeDefined();
   const canonical='https://direcciones.lat/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
   const delivered=await(await call('/v1/user/panel',client.cookie)).json();const card=delivered.addresses.find((a:any)=>a.id===initial.id);expect(card.status).toBe('ACTIVE');expect(card.publicUrl).toBe(canonical);
   const page=await call(new URL(card.publicUrl).pathname);expect(page.status).toBe(200);const html=await page.text();expect(html).toContain(raw.name);expect(html).toContain('DIRECCIONES<span>507</span>');

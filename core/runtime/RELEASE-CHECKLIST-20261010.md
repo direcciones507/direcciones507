@@ -697,3 +697,19 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - Aplicar la regla tanto en el formulario cliente (cambio dinámico de tipo/plan y al volver a editar) como en validación y persistencia del servidor; impedir que un valor oculto de otro plan se envíe accidentalmente. No alterar descripciones históricas.
 - Confirmar nombres/identificadores reales de planes antes de modificar código; mantener independiente el campo «Referencia» y cualquier descripción extensa que tenga finalidad diferente.
 - Probar cambios Gratis → Premium → Premium Pro → Lugar y viceversa en móvil/tablet, guardado, revisión ADMIN y ficha pública. CI verde no sustituye prueba productiva.
+
+
+## Cierre visual completo solicitado 16-oct-2026 — implementación
+
+Base real: main `3a69b9f19f883c4550895511df9a388455b92942`. Reutiliza la rama existente de PR #62 (fusionado) y seguimiento #82. El propietario confirma OAuth, +506, generación, copiar/abrir y portada+3 fotografías: no se reconstruyeron.
+
+- [x] Botones compartidos: altura táctil mínima 44 px, radio 12 px, tipografía, ajuste de texto, separación, foco, disabled/loading visual.
+- [x] Mi cuenta: nombre/acciones superiores conservados, estado a la derecha, tarjetas y nueva solicitud compactadas; contenedor de formulario aplanado.
+- [x] Detalle: eliminación de segundo Abrir dirección digital debajo de fotos; se conserva el botón superior de la tarjeta, fotografías privadas y Google Maps válido.
+- [x] ADMIN: tarjetas de navegación, listas, detalles, acciones y ajuste de columnas para teléfono/tablet; estados comprensibles en español sin cambiar valores ni permisos.
+- [x] Portadas: CTA de Panamá y estilos compartidos LATAM/planes/acceso corregidos sin alterar contenido comercial. Copyright centrado conservado.
+- [x] Reglas responsive móvil (<768), tablet (768–1099), escritorio; revisión de sintaxis/diff y pruebas locales: 133 PASS, 1 escala SKIP, 0 FAIL; build Core y check-legacy PASS.
+- [ ] CI completo y despliegue: registrar resultado después de ejecución.
+- [ ] Aceptación visual física móvil/tablet/escritorio autenticados: pendiente. Cloud Browser actual está en acceso sin sesión; no se alteró autenticación ni se simularon datos. Las reglas y pruebas no equivalen a validación física.
+
+Archivos: index.html (solo CSS CTA), shared-visual-style.ts, user-panel.ts, latam-presentation.ts, server.ts, request-client-ui.ts, request-admin-ui.ts y pruebas visuales/de detalle. Sin cambios en Excel, Apps Script, históricos, generación, medios/R2, pagos, auth, permisos, esquema ni migraciones. Filtros territoriales, edición/códigos y pagos siguen fuera de esta etapa.

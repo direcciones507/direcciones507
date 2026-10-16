@@ -440,6 +440,11 @@
     .hero-phone-showcase::before { content:""; position:absolute; top:10px; left:50%; transform:translateX(-50%); width:96px; height:20px; border-radius:0 0 14px 14px; background:#020617; z-index:2; }
     .hero-phone-showcase img { display:block; width:100%; height:auto; border-radius:34px; }
     @media (max-width:640px) { .hero-phone-showcase { width: min(315px, 88%); transform: rotate(-4deg); } }
+
+/* Shared button proportions, homepage CTAs only. */
+:is(.btn-nav-action,.btn-search-trigger,.btn-premium-cta-trigger,.btn-plan-action-trigger){display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;max-width:100%;border-radius:12px;padding:12px 18px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;text-align:center}
+:is(.btn-nav-action,.btn-search-trigger,.btn-premium-cta-trigger,.btn-plan-action-trigger):focus-visible{outline:3px solid #93c5fd;outline-offset:4px}
+:is(.btn-nav-action,.btn-search-trigger,.btn-premium-cta-trigger,.btn-plan-action-trigger):disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
 </style>
 </head>
 <body>

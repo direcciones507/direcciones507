@@ -68,6 +68,23 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   if(record.type==='PLACE') {
     // Place-only responsive layout: leave historical and all commercial plans untouched.
     const placeCss = `<style id="place-responsive-layout">
+      /* QR occupies the full available row when statistics are disabled. */
+      html[data-public-place] .public-business-info .double-row-buttons {
+        display:flex !important;
+        flex-direction:column !important;
+        width:100% !important;
+        gap:0 !important;
+        grid-column:1 / -1 !important;
+      }
+      html[data-public-place] .public-business-info .double-row-buttons #btnQR {
+        display:flex !important;
+        width:100% !important;
+        max-width:none !important;
+        grid-column:1 / -1 !important;
+        grid-row:auto !important;
+        margin:0 !important;
+      }
+      html[data-public-place] .public-business-info .double-row-buttons #btnStats {display:none !important;}
       /* Reset legacy fixed grid slots that keep empty rows on tablets. */
       @media (min-width:768px) {
         html[data-public-place] .white-sheet,

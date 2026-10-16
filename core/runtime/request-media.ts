@@ -21,7 +21,7 @@ export function createRequestMediaStorage(sql: Sql, actorId: string, settings: R
         FROM ad507.addresses a LEFT JOIN ad507.plans p ON p.id=a.plan_id WHERE a.id=$1::uuid`, [scope.addressId, mediaType]);
       const row = rows[0];
       const limit = scope.role === 'logo' ? (row.address_type === 'BUSINESS' ? 1 : 0)
-        : row.address_type === 'PLACE' ? 1 : row.plan === 'BUSINESS_PREMIUM_PRO' ? 5 : 0;
+        : row.address_type === 'PLACE' ? 4 : row.plan === 'BUSINESS_PREMIUM_PRO' ? 5 : 0;
       if (row.count >= limit) throw new Error('MEDIA_LIMIT_EXCEEDED');
       const inserted = await tx.unsafe(`INSERT INTO ad507.address_media(address_id,media_type,storage_key,position,is_primary,upload_status)
         VALUES($1::uuid,$2,$3,$4,$5,'PENDING') RETURNING id::text`, [scope.addressId, mediaType, scope.storageKey, row.count, row.count === 0]);

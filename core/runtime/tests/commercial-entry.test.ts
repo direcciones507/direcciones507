@@ -126,7 +126,9 @@ test('same Natalie widget is prepared for LATAM only after exact verified-domain
   process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED='true';
   const html=commercialEntryHtml(true,new URL('https://direcciones.lat/'));
   expect(html).toContain('const SESSION_ENDPOINT = CORE');expect(html).not.toContain('id="natalieLauncher" disabled');
-  expect(html).toContain("location.replace('/')");
+  const logoutSource=html.match(/const panelLogoutDestination=([\s\S]*?);const countrySettings=/)![1];
+  const logout=new Function('return ('+logoutSource+')')();
+  expect(logout('https://direcciones.lat/panel?country=CR')).toBe('https://direcciones.lat/?country=CR');
   expect(commercialEntryHtml(true,new URL('https://direcciones.lat.evil.test/'))).toContain('id="natalieLauncher" disabled');
  }finally{if(old===undefined)delete process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED;else process.env.AD507_INTERNATIONAL_DOMAIN_VERIFIED=old;}
 });

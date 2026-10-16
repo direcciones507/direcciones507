@@ -38,7 +38,7 @@ export function validateRequestMedia(type: string, plan: string, media: { logos:
   const { logos, placePhotos, galleryPhotos } = media;
   if (![logos, placePhotos, galleryPhotos].every(n => Number.isInteger(n) && n >= 0)) return false;
   if (type === 'RESIDENTIAL') return logos === 0 && placePhotos === 0 && galleryPhotos === 0;
-  if (type === 'PLACE') return logos === 0 && placePhotos === 1 && galleryPhotos === 0;
+  if (type === 'PLACE') return logos === 0 && placePhotos >= 1 && placePhotos <= 4 && galleryPhotos === 0;
   if (type !== 'BUSINESS' || !['BUSINESS_FREE', 'BUSINESS_PREMIUM', 'BUSINESS_PREMIUM_PRO'].includes(plan)) return false;
   return logos === 1 && placePhotos === 0 && mediaCountAllowed(type, plan, galleryPhotos);
 }

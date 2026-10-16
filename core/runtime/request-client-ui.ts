@@ -25,6 +25,19 @@ async function openUserRequest(id){
     title.focus({preventScroll:true});
   }catch{if(version===requestDetailVersion)content.textContent='No se pudo cargar la solicitud. Cierra el detalle e intenta nuevamente.'}
 }
-document.getElementById('addresses').addEventListener('click',e=>{const card=e.target.closest('[data-request]');if(card&&!e.target.closest('a'))openUserRequest(card.dataset.request)});
-document.getElementById('addresses').addEventListener('keydown',e=>{if(e.target.matches('[data-request]')&&['Enter',' '].includes(e.key)){e.preventDefault();openUserRequest(e.target.dataset.request)}});
+document.getElementById('addresses').addEventListener('click',async e=>{
+  const copy=e.target.closest('[data-copy-code]');
+  if(copy){
+    copy.disabled=true;
+    try{
+      const code=copy.dataset.copyCode;
+      if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(code);
+      else{const input=document.createElement('textarea');input.value=code;input.style.cssText='position:fixed;left:-9999px';document.body.append(input);input.select();const ok=document.execCommand('copy');input.remove();copy.focus();if(!ok)throw Error()}
+      document.getElementById('message').textContent='Código copiado.';
+    }catch{document.getElementById('message').textContent='No se pudo copiar. Puedes seleccionar el código de la tarjeta.'}
+    finally{copy.disabled=false}return;
+  }
+  const card=e.target.closest('[data-request]');
+  if(card&&!e.target.closest('a')&&(!e.target.closest('button')||e.target.closest('[data-request-detail]')))openUserRequest(card.dataset.request);
+});
 `;

@@ -1097,3 +1097,42 @@ test('panel correction: owner detail and photograph are private; ADMIN reuses pl
   expect((await call('/v1/admin/requests/'+rejected.id+'/reject',admin,'POST'))?.status).toBe(200);
   expect((await repo.read(clientId,rejected.id)).status).toBe('ARCHIVED');
 });
+
+test('client82: four ordered place photos persist privately, survive retry and reach ADMIN and public delivery',async()=>{
+  const {createRequestRepository}=await import('../request-repository');
+  const {createRequestMediaStorage}=await import('../request-media');
+  const {newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
+  const sharp=(await import('sharp')).default;
+  const owner=crypto.randomUUID(),admin=crypto.randomUUID();
+  await sql.unsafe('INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2),($3::uuid,$4)',[owner,owner+'@example.test',admin,admin+'@example.test']);
+  await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($2::uuid,'ADMIN')",[owner,admin]);
+  const objects=new Map<string,Uint8Array>();
+  const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture',configurationVerified:true as const};
+  const http=(async(url:any,init:any={})=>{if(init.method==='PUT'){objects.set(String(url),new Uint8Array(init.body));return new Response(null,{status:200})}const bytes=objects.get(String(url));return bytes?new Response(bytes,{headers:{'content-type':'image/webp'}}):new Response(null,{status:404})}) as typeof fetch;
+  const canonical={historicalRegistryVerified:true as const,reserve:async({id}:{id:string})=>'AD507-N'+id.replaceAll('-','').toUpperCase(),publish:async({id}:{id:string})=>({confirmed:true as const,receipt:'fixture:'+id})};
+  const repo=createRequestRepository(sql,{r2,fetch:http,canonical,paymentEnvironment:'production'});
+  const photos=await Promise.all(['red','blue','yellow','purple'].map(async background=>({role:'photo' as const,mime:'image/png',bytes:await sharp({create:{width:12,height:12,channels:3,background}}).png().toBuffer()})));
+  const raw={countryCode:'PA',type:'PLACE',name:'Four photo fixture',reference:'Fixture',description:'Controlled test',latitude:8,longitude:-80};
+  const item=await repo.submit(owner,'four-photo-fixture-0001',raw,photos);expect(item.status).toBe('PENDING_REVIEW');expect(objects.size).toBe(4);
+  const detail=await repo.read(owner,item.id),review=await repo.read(admin,item.id);
+  expect(review.media).toHaveLength(4);expect(detail.media.map((m:any)=>m.position)).toEqual([0,1,2,3]);
+  expect(detail.media.every((m:any)=>m.status==='READY')).toBe(true);
+  const storage=createRequestMediaStorage(sql,owner,r2,http);
+  const stored=await sql.unsafe('SELECT storage_key,is_primary FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position',[item.id]);
+  expect(stored.map((m:any)=>m.is_primary)).toEqual([true,false,false,false]);
+  const cover=await storage.readPrivate({ownerId:owner,addressId:item.id,role:'photo',storageKey:stored[0].storage_key});
+  const pixel=await sharp(cover.bytes).raw().toBuffer();expect(pixel[0]).toBeGreaterThan(200);expect(pixel[1]).toBeLessThan(30);
+  // Only this isolated fixture returns to DRAFT to exercise the storage quota directly.
+  await sql.unsafe("UPDATE ad507.addresses SET status='DRAFT' WHERE id=$1::uuid",[item.id]);
+  const fifth=await sharp({create:{width:12,height:12,channels:3,background:'green'}}).webp().toBuffer();
+  await expect(storage.storeOptimized({bytes:fifth,mime:'image/webp',ownerId:owner,addressId:item.id,role:'photo',countryCode:'PA'})).rejects.toThrow('MEDIA_LIMIT_EXCEEDED');
+  await sql.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW' WHERE id=$1::uuid",[item.id]);
+  expect((await repo.submit(owner,'four-photo-fixture-0001',raw,photos)).id).toBe(item.id);expect(objects.size).toBe(4);
+  await expect(repo.submit(owner,'four-photo-fixture-0002',raw,[...photos,photos[0]])).rejects.toThrow('INVALID_MEDIA');
+  await repo.review(admin,item.id,'APPROVED');await repo.publish(admin,item.id);
+  const record=await newPublicAddress(sql,'AD507-N'+item.id.replaceAll('-','').toUpperCase(),origin);
+  expect(record!.media).toHaveLength(4);const html=renderNewPublicAddress(record!);
+  const data=JSON.parse(html.match(/const data = (\{"ok":true,[^\n]+\});/)![1]);
+  expect(data.fotos).toHaveLength(4);expect(data.logo).toBe(data.fotos[0]);
+  for(let i=0;i<4;i++)expect(data.fotos[i]).toContain('/media/'+detail.media[i].id);
+});

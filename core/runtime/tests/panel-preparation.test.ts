@@ -44,7 +44,7 @@ test('rendered coordinate parser preserves regex escapes and geographical bounds
 
 test('form review requires a place photo and a business logo before submission', async () => {
   const { userPanelHtml } = await import('../user-panel');
-  expect(userPanelHtml).toContain("requestType==='PLACE'&&galleryCount!==1");
+  expect(userPanelHtml).toContain("requestType==='PLACE'&&($('cover').files.length!==1||galleryCount>3)");
   expect(userPanelHtml).toContain("requestType==='BUSINESS'&&$('logo').files.length!==1");
   expect(userPanelHtml).toContain("requestType==='PLACE'?0:galleryCount");
 });

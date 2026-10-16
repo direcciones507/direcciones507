@@ -36,7 +36,8 @@ test('all five products enforce counts from actual uploads even when declared co
   expect(validateRequestFiles({...base,type:'RESIDENTIAL'},[]).media).toEqual(noMedia);
   expect(()=>validateRequestFiles({...base,type:'RESIDENTIAL'},[file('photo')])).toThrow('INVALID_MEDIA');
   expect(validateRequestFiles({...base,type:'PLACE',media:noMedia},[file('photo')]).media.placePhotos).toBe(1);
-  expect(()=>validateRequestFiles({...base,type:'PLACE'},[file('photo'),file('photo')])).toThrow('INVALID_MEDIA');
+  expect(validateRequestFiles({...base,type:'PLACE'},Array.from({length:4},()=>file('photo'))).media.placePhotos).toBe(4);
+  expect(()=>validateRequestFiles({...base,type:'PLACE'},Array.from({length:5},()=>file('photo')))).toThrow('INVALID_MEDIA');
   for (const plan of ['BUSINESS_FREE','BUSINESS_PREMIUM']) {
     expect(validateRequestFiles({...base,plan,media:noMedia},[file('logo')]).media.logos).toBe(1);
     expect(()=>validateRequestFiles({...base,plan},[])).toThrow('INVALID_MEDIA');

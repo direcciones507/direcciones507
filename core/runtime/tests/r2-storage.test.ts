@@ -59,10 +59,11 @@ describe('R2 configuration', () => {
 });
 
 describe('Server-side request media policy', () => {
-  test('Lugar requires exactly one photo', () => {
+  test('Lugar accepts its cover plus up to three additional photos, including legacy one-photo places', () => {
     expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos: 1, galleryPhotos: 0 })).toBe(true);
     expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos: 0, galleryPhotos: 0 })).toBe(false);
-    expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos: 2, galleryPhotos: 0 })).toBe(false);
+    for (const placePhotos of [2,3,4]) expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos, galleryPhotos: 0 })).toBe(true);
+    expect(validateRequestMedia('PLACE', 'PLACE', { logos: 0, placePhotos: 5, galleryPhotos: 0 })).toBe(false);
   });
   test('business requires one logo and restricts galleries by plan', () => {
     expect(validateRequestMedia('BUSINESS', 'BUSINESS_FREE', { logos: 1, placePhotos: 0, galleryPhotos: 0 })).toBe(true);

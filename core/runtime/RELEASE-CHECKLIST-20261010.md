@@ -1,5 +1,29 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Tarea82 — panel cliente y cuatro fotos de Lugares,16 octubre2026
+
+- IMPLEMENTADO sobre main ddbb539f911df6fc1fd30e4f906a7d53a7b3266f:
+  tarjeta compartida compacta, una etiqueta de tipo, nombre destacado, estado
+  arriba a la derecha, código completo con ajuste seguro y Copiar código.
+  Abrir dirección digital y Ver detalles son controles separados y accesibles.
+- IMPLEMENTADO: botones uniformes, Actualizar visible también en LATAM,
+  columnas sin ancho mínimo que desborde móvil, formularios sin revisión vacía.
+  El aviso de panel en preparación se oculta solo al recibir activación real.
+- IMPLEMENTADO: portada obligatoria y0–3 fotos adicionales para PLACE.
+  FormData envía portada primero; servidor exige1–4 fotos y R2 limita a4 bajo
+  el bloqueo existente. Una foto histórica sigue válida. Sin migración ni datos.
+  ADMIN etiqueta portada/adicionales; ficha pública reutiliza fotos ordenadas,
+  galería y lightbox actuales, sin cambiar la plantilla pública.
+- IMPLEMENTADO: logout conserva direcciones.lat y país válido seleccionado;
+  mantiene revocación y controles existentes. No acepta destinos arbitrarios.
+- PROBADO local:129PASS,1 prueba de escala optativa omitida,0FAIL,
+  1011 expectativas; build Bun, scripts inline, legacy y diff --check PASS.
+  Suites PostgreSQL se ejecutan en CI aislado (no hay DB local disponible).
+- PENDIENTE: CI completo en la rama de continuación existente, integración,
+  Railway y comprobación visual productiva. No se declara desplegado aún.
+- No se modifican códigos, Excel, Apps Script, pagos, QR ni esquema productivo.
+  Prueba de4 fotos usa solo datos sintéticos y almacenamiento simulado aislado.
+
 ## Continuación ADMIN y primera publicación — 15 octubre 2026
 
 - OPERATIVO: retorno OAuth a /admin, rol ADMIN real de ventas@direcciones507.com,

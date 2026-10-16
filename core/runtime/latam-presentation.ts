@@ -112,6 +112,19 @@ body.latam .latam-footer-inner nav{flex:0 1 440px;justify-items:start}
 #commercialWelcome .latam-plan-grid .latam-plan-card h3{margin-bottom:8px!important;font-size:21px}
 #commercialWelcome .latam-plan-grid .latam-plan-card p{margin-top:0}
 
+/* Premium presentation for plan cards; registration behavior unchanged. */
+#commercialWelcome .latam-plan-grid{gap:20px}
+#commercialWelcome .latam-plan-card{position:relative;display:flex;flex-direction:column;min-height:285px;padding:24px;border:1px solid #45617e;border-radius:22px;background:linear-gradient(145deg,#1b3b5b,#0e213a);box-shadow:0 14px 30px #07192e38;transition:transform .18s ease,box-shadow .18s ease}
+#commercialWelcome .latam-plan-card:hover{transform:translateY(-3px);box-shadow:0 20px 38px #07192e55}
+#commercialWelcome .latam-plan-card:focus-visible{outline:3px solid #a7d8ff;outline-offset:3px}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM"]{background:linear-gradient(145deg,#39285a,#16243f);border-color:#9275d2}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM_PRO"]{background:linear-gradient(145deg,#513c24,#19273d);border-color:#e4ba75}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM_PRO"]::before{content:"DESTACADO";position:absolute;top:0;right:20px;padding:6px 12px;border-radius:0 0 10px 10px;background:#f5d08a;color:#35250c;font-size:10px;font-weight:900;letter-spacing:.08em}
+#commercialWelcome .latam-plan-card .latam-plan-price{font-size:32px}
+#commercialWelcome .latam-plan-card>span:last-child{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:auto;padding:13px 15px;border-radius:12px;background:#edf5ff;color:#193a64;font-weight:800;box-shadow:0 4px 14px #0002}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM"]>span:last-child{background:#dacaff;color:#31204d}
+#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM_PRO"]>span:last-child{background:#f5d08a;color:#35250c}
+@media(prefers-reduced-motion:reduce){#commercialWelcome .latam-plan-card{transition:none}#commercialWelcome .latam-plan-card:hover{transform:none}}
 /* LATAM compact help strip and premium footer; presentation only. */
 #commercialWelcome .latam-help-strip{display:flex;align-items:center;gap:22px;padding:22px 28px;margin:28px 0 18px;border:1px solid #2468aa;border-radius:20px;background:linear-gradient(125deg,#102a56,#071b37 75%);box-shadow:0 12px 32px #020d2240}
 #commercialWelcome .latam-help-heading{display:flex;align-items:center;gap:14px;flex-shrink:0}

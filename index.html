@@ -445,6 +445,30 @@
 :is(.btn-nav-action,.btn-search-trigger,.btn-premium-cta-trigger,.btn-plan-action-trigger){display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;max-width:100%;border-radius:12px;padding:12px 18px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;text-align:center}
 :is(.btn-nav-action,.btn-search-trigger,.btn-premium-cta-trigger,.btn-plan-action-trigger):focus-visible{outline:3px solid #93c5fd;outline-offset:4px}
 :is(.btn-nav-action,.btn-search-trigger,.btn-premium-cta-trigger,.btn-plan-action-trigger):disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* Header only: one account link, unbroken labels and an expandable compact menu. */
+#mainAppHeader .nav-wrap{gap:24px;flex-wrap:nowrap}
+#mainAppHeader .brand-group{flex:0 0 auto}
+#mainAppHeader .brand-meta h1,#mainAppHeader .brand-meta span{white-space:nowrap}
+#mainAppHeader #headerNavigation{margin-left:auto;min-width:0}
+#mainAppHeader .nav-menu{display:flex;gap:18px;flex-wrap:nowrap}
+#mainAppHeader .nav-menu li{flex:0 0 auto}
+#mainAppHeader .nav-menu a{white-space:nowrap;overflow-wrap:normal;line-height:1.25}
+#mainAppHeader .nav-menu .btn-nav-action{min-height:44px;padding:10px 13px;gap:7px;border-radius:10px;letter-spacing:0;font-size:12px!important}
+#mainAppHeader .header-menu-toggle{display:none;flex:0 0 auto;min-height:44px;padding:10px 12px;border:1px solid #334155;border-radius:10px;background:#0f172a;color:#f3f4f6;font-size:13px;font-weight:700;cursor:pointer}
+#mainAppHeader .header-menu-toggle:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+@media(max-width:1179px){
+ #mainAppHeader .nav-wrap{flex-wrap:wrap;gap:12px;justify-content:space-between}
+ #mainAppHeader .header-menu-toggle{display:inline-flex;align-items:center;justify-content:center;margin-left:auto}
+ #mainAppHeader #headerNavigation{display:none;flex:0 0 100%;width:100%;margin:0}
+ #mainAppHeader .menu-open #headerNavigation{display:block}
+ #mainAppHeader .nav-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding-top:12px;border-top:1px solid #1e293b}
+ #mainAppHeader .nav-menu li{min-width:0}
+ #mainAppHeader .nav-menu a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 8px;font-size:12px;letter-spacing:0}
+ #mainAppHeader .nav-menu .btn-nav-action{width:100%}
+ #mainAppHeader .nav-menu li:last-child{grid-column:1/-1}
+}
+@media(max-width:359px){#mainAppHeader .nav-menu{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -461,8 +485,8 @@
         </div>
       </a>
       
-      <a href="https://direcciones.lat/?country=PA&amp;access=1" class="btn-nav-action mobile-account-link"><i class="fa-solid fa-user"></i> Mi cuenta</a>
-      <nav>
+      <button type="button" id="headerMenuToggle" class="header-menu-toggle" aria-controls="headerNavigation" aria-expanded="false" onclick="const expanded=this.getAttribute('aria-expanded')!=='true';this.setAttribute('aria-expanded',String(expanded));this.closest('.nav-wrap').classList.toggle('menu-open',expanded)">Menú</button>
+      <nav id="headerNavigation" aria-label="Navegación principal" onclick="if(event.target.closest('a')){const wrap=this.closest('.nav-wrap');wrap.classList.remove('menu-open');document.getElementById('headerMenuToggle').setAttribute('aria-expanded','false')}">
         <ul class="nav-menu">
           <li><a onclick="irInicio()" id="lnkInicio" class="active">Inicio</a></li>
           <li><a onclick="toggleSeccion('secNosotros')" id="lnkNosotros">Sobre Nosotros</a></li>

@@ -52,13 +52,14 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   if(!rows.length)return null;
   if(!rows[0].request_data?.migration)assertCountryCommerce(rows[0].request_data?.countryCode??'PA');
   const media=await sql.unsafe("SELECT id::text,media_type,url FROM ad507.address_media WHERE address_id=$1::uuid AND upload_status='READY' ORDER BY position,id",[rows[0].id]);
-  const urls=media.map((m:any)=>({type:m.media_type,url:m.url??origin+'/v1/addresses/'+record.code+'/media/'+m.id}));
+  const mediaOrigin=new URL(proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)).origin;
+  const urls=media.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
   const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
   return {...record,url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
-  const data={ok:true,nombre:record.name,referencia:record.reference,descripcionComercial:record.commercialDescription,plan:record.plan?.name,lat:record.coordinates.latitude,lng:record.coordinates.longitude,telefono:record.phone,telefonoFijo:record.landlinePhone,horario:record.hours,codigoPostal:record.extras.postalCode,logo:record.media.find(m=>m.type==='LOGO')?.url,fotos:record.media.filter(m=>m.type==='IMAGE').map(m=>m.url),...social};
+  const data={ok:true,nombre:record.name,referencia:record.reference,descripcionComercial:record.commercialDescription,plan:record.plan?.name,lat:record.coordinates.latitude,lng:record.coordinates.longitude,telefono:record.phone,telefonoFijo:record.landlinePhone,horario:record.hours,codigoPostal:record.extras.postalCode,logo:record.media.find(m=>m.type==='LOGO')?.url??(record.type==='PLACE'?record.media.find(m=>m.type==='IMAGE')?.url:undefined),fotos:record.media.filter(m=>m.type==='IMAGE').map(m=>m.url),...social};
   // Reuse the maintained template; adapt only its data transport for new records.
   let template=readFileSync(new URL('../../ad507.template.html',import.meta.url),'utf8');
   if(!record.extras.historical)template=prepareCountryTemplate(template,record.extras.countryCode);

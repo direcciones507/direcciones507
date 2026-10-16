@@ -1,5 +1,24 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Continuación ADMIN y primera publicación — 15 octubre 2026
+
+- OPERATIVO: retorno OAuth a /admin, rol ADMIN real de ventas@direcciones507.com,
+  apertura desde Lugares y aprobación real verificados en navegador.
+- Solicitud56f413fa-caaa-4755-89ab-112bc1efc9a3 aprobada/publicada ACTIVE:
+  AD507-N56F413FACAAA475589AB112BC1EFC9A3. Sin otra fila, cambio de código ni pago.
+- Primer intento mostró fallo genérico; reintento idempotente confirmó ACTIVE.
+  Diagnóstico seguro añadido en91e0884: tipo/código/frame, sin payload/SQL/secretos.
+  No se atribuye una causa no demostrada a ese fallo inicial.
+- Bloqueo real posterior: URL .com nueva404 (Pages histórico), mientras el mismo
+  código en direcciones.lat devuelve la ficha. Corrección general: nuevas URLs,
+  QR/copy y fotos usan el Core HTTPS direcciones.lat; códigos/país/marca no cambian.
+  Importaciones con URL original mantienen .com. Sin DNS, Pages ni Apps Script.
+- Adaptador existente: PLACE utiliza su foto IMAGE como imagen de identidad
+  cuando no existe LOGO; negocios conservan LOGO. No modifica plantilla ni diseño.
+- PENDIENTE: CI/despliegue de entrega canónica y validación pública final de foto,
+  QR, Maps/Waze y Mi cuenta con la misma solicitud. Histórico y pagos intactos.
+
+
 ## Correcciones operativas de panel — 15 octubre 2026, prueba tablet
 
 - OPERATIVO según prueba del propietario: Lugar guardado; cliente En revisión y

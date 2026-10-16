@@ -59,7 +59,7 @@ test('server country/territory validation and international phones preserve Pana
  for(const c of Object.keys(COUNTRIES).filter(c=>!['PA','PE','EC'].includes(c)))expect(()=>assertCountryCommerce(c)).toThrow('COUNTRY_NOT_ENABLED');
 });
 test('domains enforce country/prefix, methods and informative rates do not enable charges',()=>{
- for(const c of Object.keys(COUNTRIES))expect(new URL(proposedCountryUrl(c,proposedInternationalCode(c,id))).origin).toBe(c==='PA'?'https://direcciones507.com':'https://direcciones.lat');
+ for(const c of Object.keys(COUNTRIES))expect(new URL(proposedCountryUrl(c,proposedInternationalCode(c,id))).origin).toBe('https://direcciones.lat');
  expect(()=>proposedCountryUrl('CO','AD507-123')).toThrow('CANONICAL_CODE_INVALID');
  expect(paymentMethods('PA')).toEqual(['PAYPAL','YAPPY']);expect(paymentMethods('CO')).toEqual(['PAYPAL']);
  expect(informativeLocalAmount(1999,4000)).toBe(79960);expect(()=>informativeLocalAmount(1999,NaN)).toThrow('INVALID_EXCHANGE_RATE');

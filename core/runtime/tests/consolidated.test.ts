@@ -750,7 +750,7 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
         await expect((async()=>await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[second.id,code]))()).rejects.toMatchObject({code:'23505'});
       }else{
         const published=await repo.publish(adminId,results[0].id),pub=await newPublicAddress(db,published.code,origin);
-        expect(pub?.url).toBe('https://direcciones507.com/'+published.code+'/');
+        expect(pub?.url).toBe('https://direcciones.lat/'+published.code+'/');
         expect(renderNewPublicAddress(pub!)).toContain('DIRECCIONES<span>507</span>');
       }
     }
@@ -940,7 +940,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const unchanged=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;expect(unchanged.code).toBeNull();expect(unchanged.publicUrl).toBeNull();expect(unchanged.status).toBe('PENDING_REVIEW');
   fixtureEvidenceVerified=true; // Synthetic historical registry only; never sets a production gate.
   await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir ficha, enlace y QR');expect(link).toBeDefined();
-  const canonical='https://direcciones507.com/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
+  const canonical='https://direcciones.lat/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
   const delivered=await(await call('/v1/user/panel',client.cookie)).json();const card=delivered.addresses.find((a:any)=>a.id===initial.id);expect(card.status).toBe('ACTIVE');expect(card.publicUrl).toBe(canonical);
   const page=await call(new URL(card.publicUrl).pathname);expect(page.status).toBe(200);const html=await page.text();expect(html).toContain(raw.name);expect(html).toContain('DIRECCIONES<span>507</span>');
   const qr=new Function(html.match(/const qrUrl = [^\n]+/)![0]+';return qrUrl;')();expect(new URL(qr).searchParams.get('data')).toBe(canonical);expect(html).toContain('navigator.clipboard.writeText('+JSON.stringify(canonical)+')');

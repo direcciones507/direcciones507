@@ -25,9 +25,17 @@ test('prepared individual historical renderer preserves original URL for QR and 
 });
 
 test('delivery reuses canonical URL policy and only preserves a validated original Panama URL',()=>{
+ expect(proposedCountryUrl('PA','AD507-N12345678123412341234123456789ABC')).toBe('https://direcciones.lat/AD507-N12345678123412341234123456789ABC/');
  expect(proposedCountryUrl('PA','AD507-0038','https://direcciones507.com/ad507-0038/')).toBe('https://direcciones507.com/ad507-0038/');
  for(const bad of ['javascript:alert(1)','https://evil.test/ad507-0038/','https://direcciones507.com/ad507-0038/?token=private','https://user:pass@direcciones507.com/ad507-0038/','https://direcciones507.com/ad507-9999/'])expect(()=>proposedCountryUrl('PA','AD507-0038',bad)).toThrow();
  expect(()=>proposedCountryUrl('CO','AD57-0038','https://direcciones507.com/ad507-0038/')).toThrow();
+});
+
+test('Lugar uses its submitted photograph as the existing visible identity image without changing business logos',()=>{
+ const photo='https://direcciones.lat/v1/addresses/AD507-N123/media/123';
+ const record={type:'PLACE',name:'Fixture place',url:'https://direcciones.lat/AD507-N123/',code:'AD507-N123',socials:[],media:[{type:'IMAGE',url:photo}],coordinates:{latitude:8,longitude:-80},extras:{countryCode:'PA',historical:false}} as any;
+ expect(renderNewPublicAddress(record)).toContain('"logo":'+JSON.stringify(photo));
+ expect(renderNewPublicAddress({...record,type:'BUSINESS'})).not.toContain('"logo":'+JSON.stringify(photo));
 });
 
 

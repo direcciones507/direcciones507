@@ -58,7 +58,9 @@ export function codeMatchesCountry(code:string,country:unknown='PA') {
 export function proposedCountryUrl(country:unknown,code:string,originalUrl?:string|null) {
  if(!codeMatchesCountry(code,country))throw Error('CANONICAL_CODE_INVALID');
  if(originalUrl){const u=new URL(originalUrl);if(country!=='PA'||u.protocol!=='https:'||u.hostname!=='direcciones507.com'||u.username||u.password||u.port||u.search||u.hash||u.pathname!=='/'+code.toLowerCase()+'/')throw Error('INVALID_HISTORICAL_URL');return u.href;}
- return (countryConfiguration(country).prefix==='507'?'https://direcciones507.com':FUTURE_PUBLIC_ORIGIN)+'/'+code+'/';
+ // New publications are served by the shared Core. Panama's Pages host remains
+ // exclusively historical; imported records above retain their original URL.
+ return FUTURE_PUBLIC_ORIGIN+'/'+code+'/';
 }
 export function paymentMethods(country:unknown='PA') {
  requestCountry(country);return country==='PA'?['PAYPAL','YAPPY']:['PAYPAL'];

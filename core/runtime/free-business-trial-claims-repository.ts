@@ -43,3 +43,15 @@ export async function insertBusinessTrialClaim(tx:Sql,addressId:string,identity:
  * Never call this after an irreversible external publication without recovery.
  */
 export const FREE_BUSINESS_TRIAL_LOCK_KEY='free-business-trial-claims:v1';
+
+/** Atomically reserve a trial before invoking an external publisher.
+ * Caller must hold an open transaction until the claim and address update commit.
+ * All trial-claim writers MUST use the same advisory lock.
+ */
+export async function reserveBusinessTrialInTransaction(tx:Sql,addressId:string,identity:BusinessIdentity,activatedAt:Date){
+ await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[FREE_BUSINESS_TRIAL_LOCK_KEY]);
+ const history=await inspectBusinessTrialHistory(tx,identity);
+ if(history.decision==='ALREADY_USED')throw Error('FREE_TRIAL_ALREADY_USED');
+ if(history.decision==='ADMIN_REVIEW')throw Error('FREE_TRIAL_IDENTITY_REVIEW_REQUIRED');
+ return insertBusinessTrialClaim(tx,addressId,identity,activatedAt);
+}

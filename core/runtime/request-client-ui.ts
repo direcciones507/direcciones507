@@ -5,6 +5,7 @@ let requestDetailVersion=0;
 async function openUserRequest(id,editing=false){
   if(!/^[a-f0-9-]{36}$/.test(id))return;
   const version=++requestDetailVersion,view=document.getElementById('requestDetail');
+  document.getElementById('newRequestContent')?.classList.add('hidden');document.getElementById('requestForm')?.classList.add('hidden');const toggle=document.getElementById('toggleNewRequest');if(toggle)toggle.setAttribute('aria-expanded','false');const chevron=document.getElementById('newRequestChevron');if(chevron)chevron.textContent='▾';
   view.classList.remove('hidden');view.replaceChildren();
   const close=document.createElement('button');close.type='button';close.textContent='Cerrar detalle';close.className='secondary';
   close.onclick=()=>{requestDetailVersion++;view.classList.add('hidden');document.querySelector('[data-request="'+id+'"]')?.focus()};view.append(close);

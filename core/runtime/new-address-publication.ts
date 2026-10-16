@@ -68,23 +68,43 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   if(record.type==='PLACE') {
     // Place-only responsive layout: leave historical and all commercial plans untouched.
     const placeCss = `<style id="place-responsive-layout">
-      /* QR occupies the full available row when statistics are disabled. */
-      html[data-public-place] .public-business-info .double-row-buttons {
-        display:flex !important;
-        flex-direction:column !important;
-        width:100% !important;
-        gap:0 !important;
-        grid-column:1 / -1 !important;
+      /* PLACE only: QR and location/reference share one row. The
+         legacy template nests QR in a separate wrapper, so flatten it. */
+      html[data-public-place] .white-sheet .public-lower-layout .public-business-info {
+        display:grid !important;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:12px !important;
+        align-items:stretch;
+        min-width:0;
       }
-      html[data-public-place] .public-business-info .double-row-buttons #btnQR {
+      html[data-public-place] .white-sheet .public-business-info .double-row-buttons {
+        display:contents !important;
+      }
+      html[data-public-place] .white-sheet .public-business-info #btnQR,
+      html[data-public-place] .white-sheet .public-business-info #btnRef {
         display:flex !important;
+        grid-row:auto !important;
+        grid-column:auto !important;
         width:100% !important;
         max-width:none !important;
-        grid-column:1 / -1 !important;
-        grid-row:auto !important;
+        min-width:0 !important;
         margin:0 !important;
+        align-self:stretch;
       }
-      html[data-public-place] .public-business-info .double-row-buttons #btnStats {display:none !important;}
+      html[data-public-place] .white-sheet .public-business-info #btnQR {order:2 !important;}
+      html[data-public-place] .white-sheet .public-business-info #btnRef {order:3 !important;}
+      html[data-public-place] .white-sheet .public-business-info #btnHorario,
+      html[data-public-place] .white-sheet .public-business-info #codigoPostalContainer,
+      html[data-public-place] .white-sheet .public-business-info .public-lower-title {
+        grid-column:1 / -1 !important;
+      }
+      html[data-public-place] .white-sheet .public-business-info #btnStats,
+      html[data-public-place] .white-sheet .public-business-info #qrSection {display:none !important;}
+      @media(max-width:420px) {
+        html[data-public-place] .white-sheet .public-business-info #btnQR,
+        html[data-public-place] .white-sheet .public-business-info #btnRef {padding:10px 7px !important;font-size:13px;}
+        html[data-public-place] .white-sheet .public-business-info .accordion-label {font-size:12px !important;overflow-wrap:anywhere;}
+      }
       /* Reset legacy fixed grid slots that keep empty rows on tablets. */
       @media (min-width:768px) {
         html[data-public-place] .white-sheet,

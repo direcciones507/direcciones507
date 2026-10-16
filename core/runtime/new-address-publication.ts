@@ -68,6 +68,45 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   if(record.type==='PLACE') {
     // Place-only responsive layout: leave historical and all commercial plans untouched.
     const placeCss = `<style id="place-responsive-layout">
+      /* Reset legacy fixed grid slots that keep empty rows on tablets. */
+      @media (min-width:768px) {
+        html[data-public-place] .white-sheet,
+        html[data-public-place] .white-sheet .public-lower-layout,
+        html[data-public-place] .white-sheet .public-lower-left {
+          display:flex !important;
+          flex-direction:column !important;
+          gap:16px !important;
+          width:100%;
+          min-width:0;
+        }
+        html[data-public-place] .white-sheet .public-lower-layout > *,
+        html[data-public-place] .white-sheet .public-lower-left > *,
+        html[data-public-place] .white-sheet .public-business-info,
+        html[data-public-place] .white-sheet .public-social-section,
+        html[data-public-place] .white-sheet .public-navigation-section {
+          grid-row:auto !important;
+          grid-column:auto !important;
+          order:initial !important;
+          width:100%;
+          min-width:0;
+          margin:0 !important;
+        }
+        html[data-public-place] .white-sheet .actions-triple-row,
+        html[data-public-place] .white-sheet .main-nav-grid {
+          display:grid !important;
+          grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr)) !important;
+        }
+        html[data-public-place] .white-sheet .actions-triple-row > *,
+        html[data-public-place] .white-sheet .main-nav-grid > * {
+          grid-row:auto !important;
+          grid-column:auto !important;
+          order:initial !important;
+        }
+      }
+      html[data-public-place] .public-social-section:has(#redes-container > :not([hidden]):not([style*="display:none"]):not([style*="display: none"])) { display:block; }
+      html[data-public-place] .public-social-section:not(:has(#redes-container > :not([hidden]):not([style*="display:none"]):not([style*="display: none"]))) { display:none !important; }
+      html[data-public-place] .public-navigation-section:not(:has(.nav-box:not([hidden]):not([style*="display:none"]):not([style*="display: none"]))) { display:none !important; }
+      html[data-public-place] .public-business-info:not(:has(#btnHorario:not([hidden]),#btnRef:not([hidden]),#codigoPostalContainer:not([style*="display:none"]):not([style*="display: none"]),#btnQR:not([hidden]))) { display:none !important; }
       html[data-public-place] .main-nav-grid,
       html[data-public-place] .actions-triple-row {
         display:grid !important;

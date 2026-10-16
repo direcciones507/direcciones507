@@ -26,3 +26,17 @@ export function businessTrialDuplicateSignal(a:BusinessIdentity,b:BusinessIdenti
 export function freeTrialReviewDecision(signals:readonly DuplicateSignal[]):'REVIEW_REQUIRED'|'NO_MATCH' {
  return signals.some(signal=>signal!=='NONE')?'REVIEW_REQUIRED':'NO_MATCH';
 }
+
+/** A new free trial is never granted if a past claim shares a strong identity.
+ * Weak signals must be adjudicated by ADMIN before any new trial is issued.
+ */
+export function evaluateFreeTrialClaims(candidate:BusinessIdentity,prior:readonly BusinessIdentity[]):
+ 'ELIGIBLE'|'ALREADY_USED'|'ADMIN_REVIEW' {
+ let needsReview=false;
+ for(const claimed of prior){
+  const signal=businessTrialDuplicateSignal(candidate,claimed);
+  if(signal==='SAME_NAME_AND_PHONE'||signal==='SAME_NAME_AND_LOCATION'||signal==='SAME_PHONE_AND_LOCATION')return 'ALREADY_USED';
+  if(signal==='REVIEW_REQUIRED')needsReview=true;
+ }
+ return needsReview?'ADMIN_REVIEW':'ELIGIBLE';
+}

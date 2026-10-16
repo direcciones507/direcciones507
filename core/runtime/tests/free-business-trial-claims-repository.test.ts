@@ -10,3 +10,19 @@ test('ambiguous identity requires admin review',async()=>{
  const fake={unsafe:async(q:string)=>q.includes('FROM ad507.free_business_trial_claims')?[{name:'another business',phone:'50760001111',countryCode:'PA',latitude:null,longitude:null}]:[]};
  await expect(reserveBusinessTrialInTransaction(fake as any,'00000000-0000-0000-0000-000000000001',{name:'Fonda Tatiana',phone:'50760001111',countryCode:'PA'},new Date('2026-10-16T12:00:00Z'))).rejects.toThrow('FREE_TRIAL_IDENTITY_REVIEW_REQUIRED');
 });
+
+test('ineligible address cannot create a permanent claim',async()=>{
+ const statements:string[]=[];
+ const fake={unsafe:async(q:string)=>{statements.push(q);if(q.includes('UPDATE ad507.addresses'))return [];return [];}};
+ await expect(reserveBusinessTrialInTransaction(fake as any,'00000000-0000-0000-0000-000000000001',{name:'Fonda Tatiana',phone:'50760001111',countryCode:'PA'},new Date('2026-10-16T12:00:00Z'))).rejects.toThrow('FREE_TRIAL_ADDRESS_NOT_ELIGIBLE');
+ expect(statements.some(q=>q.includes('INSERT INTO ad507.free_business_trial_claims'))).toBe(false);
+});
+test('eligible address writes one claim after successful address update',async()=>{
+ const statements:string[]=[];
+ const fake={unsafe:async(q:string)=>{statements.push(q);if(q.includes('UPDATE ad507.addresses'))return [{id:'00000000-0000-0000-0000-000000000001'}];return [];}};
+ await reserveBusinessTrialInTransaction(fake as any,'00000000-0000-0000-0000-000000000001',{name:'Fonda Tatiana',phone:'50760001111',countryCode:'PA'},new Date('2026-10-16T12:00:00Z'));
+ const update=statements.findIndex(q=>q.includes('UPDATE ad507.addresses'));
+ const insert=statements.findIndex(q=>q.includes('INSERT INTO ad507.free_business_trial_claims'));
+ expect(update).toBeGreaterThan(-1);
+ expect(insert).toBeGreaterThan(update);
+});

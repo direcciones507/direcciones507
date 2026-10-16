@@ -10,9 +10,12 @@ test('two calendar months and expiration boundary',()=>{
  expect(freeBusinessTrialState(end,new Date(end.getTime()-1))).toBe('ACTIVE');
  expect(freeBusinessTrialState(end,end)).toBe('EXPIRED');
 });
-test('discount only first premium/pro upgrade',()=>{
- expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,true,false)).toBe(1499);
- expect(firstUpgradeAmountCents('BUSINESS_PREMIUM_PRO',3999,true,false)).toBe(2999);
- expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,true,true)).toBe(1999);
- expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,false,false)).toBe(1999);
+test('discount only before expiry and on first premium/pro upgrade',()=>{
+ const end=new Date('2026-12-16T12:00:00Z'),before=new Date(end.getTime()-1),after=new Date('2026-12-22T12:00:00Z');
+ expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,true,false,end,before)).toBe(1499);
+ expect(firstUpgradeAmountCents('BUSINESS_PREMIUM_PRO',3999,true,false,end,before)).toBe(2999);
+ expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,true,true,end,before)).toBe(1999);
+ expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,false,false,end,before)).toBe(1999);
+ expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,true,false,end,end)).toBe(1999);
+ expect(firstUpgradeAmountCents('BUSINESS_PREMIUM_PRO',3999,true,false,end,after)).toBe(3999);
 });

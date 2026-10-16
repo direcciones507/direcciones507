@@ -14,10 +14,25 @@
   países configurados y destino fijo /panel. ADMIN conserva intención /admin y
   consulta real de rol; no se concede acceso administrativo por contexto cliente.
   Entrada Panamá al panel compartido conserva país válido. Sin destinos externos.
-- PROBADO local:130PASS/0FAIL,1escalaoptativaSKIP,1022 expectativas;
+- PROBADO local:131PASS/0FAIL,1escalaoptativaSKIP,1027 expectativas;
   build Bun, scripts inline y diff --check PASS. Prueba nueva CI cubre ocho países,
   logout/reingreso, eliminación/cambio de cookie y separación ADMIN/cliente.
-- PENDIENTE: CI integral, despliegue y comprobación productiva del nuevo acabado.
+- PROBADO EN CI:38852897102 SUCCESS,180PASS/0FAIL/2765 expectativas,
+  HEAD funcional fd859c5. Bun/Docker/legacy/inlineJS/diff PASS. Se probaron retorno
+  ADMIN sujeto a rol, detalle cliente/ADMIN, ocho países, logout/reingreso y
+  rechazo de contexto alterado. El fixture nuevo reemplaza una cookie ADMIN
+  vacía para simular correctamente una única cookie manipulada.
+- VERIFICADO EN PRODUCCIÓN: copyright LATAM computado center; Google y Mi cuenta
+  enlazan con country=CR conservado; viewport1363px sin overflow horizontal.
+  Se detectó y corrigió salto anónimo http detrás de Railway: destino fijo HTTPS.
+- DESPLEGADO: ef15efc2-226d-4459-9223-e231bc33f668 SUCCESS parafd859c5.
+  Prueba pública posterior: cuenta507/panel?country=CR devuelve302 hacia panel
+  LATAM conCR; panel anónimo devuelve302 hacia https://direcciones.lat/?country=CR&access=1.
+  No hay descenso aHTTP ni pérdida de país. Cambios registrados en #82 y PR62.
+- PENDIENTE: selección manual de cuenta Google para comprobar callback real de
+  la versión nueva y aceptación visual de tarjeta por propietario en tablet/móvil.
+  El retorno ADMIN ya fue probado físicamente antes y sigue cubierto en CI;
+  no se declara repetida esa prueba autenticada en esta continuación.
 - CONTINÚA POSTERGADO: filtro de Lugares por país/provincia; no implementado.
   Sin cambios en fotos, cuotas, históricos, Excel, Apps Script, pagos o migraciones.
 

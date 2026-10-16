@@ -1163,7 +1163,8 @@ test('account closeout: country-bound OAuth returns to client panel and cannot s
  const stripped=tamper.cookies.split('; ').filter(v=>!v.startsWith('ad507_oauth_country=')).join('; ');
  expect((await auth.handle(new Request(tamper.path,{headers:{cookie:stripped}})))?.status).toBe(400);
  const adminCookie=tamper.cookies.split('; ').find(v=>v.startsWith('ad507_oauth_state='))!.replace('ad507_oauth_state=','ad507_oauth_admin=');
- expect((await auth.handle(new Request(tamper.path,{headers:{cookie:tamper.cookies+'; '+adminCookie}})))?.status).toBe(400);
+ const forgedAdmin=tamper.cookies.split('; ').filter(v=>!v.startsWith('ad507_oauth_admin=')).concat(adminCookie).join('; ');
+ expect((await auth.handle(new Request(tamper.path,{headers:{cookie:forgedAdmin}})))?.status).toBe(400);
  for(const suffix of ['?country=XX','?country=CR&returnTo=%2Fadmin','?country=CR&country=PA','?country=https://evil.test'])expect((await auth.handle(new Request(host+'/auth/google/login'+suffix)))?.status).toBe(400);
  const again=await begin('CR');
  expect((await auth.handle(new Request(again.path,{headers:{cookie:again.cookies}})))?.headers.get('location')).toBe(host+'/panel?country=CR');

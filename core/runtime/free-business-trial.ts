@@ -9,11 +9,13 @@ export function freeBusinessOfferEligible(activatedAt:Date):boolean {
 }
 export function freeBusinessTrialEndsAt(activatedAt:Date):Date {
  if(!freeBusinessOfferEligible(activatedAt))throw Error('FREE_BUSINESS_OFFER_CLOSED');
- const year=activatedAt.getUTCFullYear(),month=activatedAt.getUTCMonth()+FREE_BUSINESS_TRIAL_MONTHS,day=activatedAt.getUTCDate();
- const first=new Date(Date.UTC(year,month,1,activatedAt.getUTCHours(),activatedAt.getUTCMinutes(),activatedAt.getUTCSeconds(),activatedAt.getUTCMilliseconds()));
+ const offset=5*60*60*1000; // Panama local time is UTC-5
+ const local=new Date(activatedAt.getTime()-offset);
+ const year=local.getUTCFullYear(),month=local.getUTCMonth()+FREE_BUSINESS_TRIAL_MONTHS,day=local.getUTCDate();
+ const first=new Date(Date.UTC(year,month,1,local.getUTCHours(),local.getUTCMinutes(),local.getUTCSeconds(),local.getUTCMilliseconds()));
  const last=new Date(Date.UTC(year,month+1,0)).getUTCDate();
  first.setUTCDate(Math.min(day,last));
- return first;
+ return new Date(first.getTime()+offset);
 }
 export function freeBusinessTrialState(endsAt:Date,now:Date):TrialState {
  if(!Number.isFinite(endsAt.getTime())||!Number.isFinite(now.getTime()))throw Error('INVALID_TRIAL_DATE');

@@ -67,7 +67,8 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   const cfg=primary;
   const forRequest=(req:Request)=>new URL(req.url).hostname==='direcciones.lat'&&latam?latam:primary;
   // Preserve hashes of already-issued primary-domain states; bind LATAM states to LATAM.
-  const stateHash=(state:string,origin:string,admin=false)=>hash((admin?'admin|':'')+(origin===primary?.origin?state:origin+'|'+state));
+  const accountCountries=new Set(['PA','CO','CR','GT','SV','HN','NI','MX']);
+  const stateHash=(state:string,origin:string,admin=false,country='')=>hash((admin?'admin|':country?'client:'+country+'|':'')+(origin===primary?.origin?state:origin+'|'+state));
   const sessionOrigin=(p:Payload,origin:string)=>p.origin===origin||(p.origin===undefined&&origin===primary?.origin);
   const respond = (status: number, body: Record<string, unknown>, cookies: string[] = []) => {
     const headers = new Headers({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
@@ -76,6 +77,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   };
   const clearState = () => cookie('ad507_oauth_state', '', 0);
   const clearAdminReturn = () => cookie('ad507_oauth_admin', '', 0);
+  const clearCountryReturn = () => cookie('ad507_oauth_country', '', 0);
   async function currentUser(req: Request) {
     const cfg=forRequest(req);
     if (!cfg) return null;
@@ -192,16 +194,19 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     try {
       if (url.pathname === '/auth/google/login') {
         const adminReturn=url.searchParams.get('returnTo')==='/admin';
-        if (url.search && (!adminReturn||url.searchParams.size!==1)) return respond(400, { ok: false, error: 'REDIRECT_OVERRIDE_DENIED' });
+        const country=url.searchParams.get('country')??'';
+        if (url.search && (url.searchParams.size!==1 || !(adminReturn || accountCountries.has(country)))) return respond(400, { ok: false, error: 'REDIRECT_OVERRIDE_DENIED' });
         const state = random(), binding = random(), verifier = random();
-        await sql.unsafe("INSERT INTO ad507.oauth_transactions(state_hash,binding_hash,verifier,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')", [stateHash(state,cfg.origin,adminReturn), hash(binding), verifier]);
+        await sql.unsafe("INSERT INTO ad507.oauth_transactions(state_hash,binding_hash,verifier,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')", [stateHash(state,cfg.origin,adminReturn,country), hash(binding), verifier]);
         const target = new URL('https://accounts.google.com/o/oauth2/v2/auth');
         for (const [k, v] of Object.entries({ client_id: cfg.clientId, redirect_uri: cfg.redirect, response_type: 'code', scope: 'openid email profile', state, prompt: 'select_account', code_challenge: Buffer.from(hash(verifier), 'hex').toString('base64url'), code_challenge_method: 'S256' })) target.searchParams.set(k, v);
-        return new Response(null, { status: 302, headers: [['location',target.toString()],['set-cookie',cookie('ad507_oauth_state',binding,600)],['set-cookie',adminReturn?cookie('ad507_oauth_admin',binding,600):clearAdminReturn()],['cache-control','no-store'],['referrer-policy','no-referrer']] });
+        return new Response(null, { status: 302, headers: [['location',target.toString()],['set-cookie',cookie('ad507_oauth_state',binding,600)],['set-cookie',adminReturn?cookie('ad507_oauth_admin',binding,600):clearAdminReturn()],['set-cookie',country?cookie('ad507_oauth_country',binding+'|'+country,600):clearCountryReturn()],['cache-control','no-store'],['referrer-policy','no-referrer']] });
       }
       if (callback) {
         const state = url.searchParams.get('state'), binding = readCookie(req, 'ad507_oauth_state');
         const adminReturn=!!binding&&readCookie(req,'ad507_oauth_admin')===binding;
+        const countryContext=readCookie(req,'ad507_oauth_country');
+        const countryReturn=binding&&countryContext?.startsWith(binding+'|')?countryContext.slice(binding.length+1):'';
         const fail = (status: number, error: string) => {
           if (error === 'INVALID_OAUTH_STATE') {
             const html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Direcciones507</title><style>body{margin:0;font-family:system-ui;background:#f4f6f9;color:#12213a;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box}.card{max-width:460px;background:#fff;padding:28px;border-radius:18px;box-shadow:0 8px 28px #10244a18;text-align:center}a{display:inline-block;margin-top:14px;background:#0b57d0;color:#fff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:700}</style></head><body><main class="card"><h1>Acceso ya utilizado</h1><p>Este enlace de acceso ya fue procesado. Tu sesión puede seguir activa.</p><a href="/panel">Volver a Mi cuenta</a></main></body></html>';
@@ -210,8 +215,9 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
           return respond(status, { ok: false, error }, [clearState()]);
         };
         if (url.searchParams.getAll('state').length !== 1 || !state || !binding || !/^[A-Za-z0-9_-]{43}$/.test(state) || !/^[A-Za-z0-9_-]{43}$/.test(binding)) return fail(400, 'INVALID_OAUTH_STATE');
+        if(countryContext&&(!accountCountries.has(countryReturn)||adminReturn))return fail(400,'INVALID_OAUTH_STATE');
         // Atomic database consumption works across replicas and even when Google fails.
-        const consumed = await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier", [stateHash(state,cfg.origin,adminReturn), hash(binding)]);
+        const consumed = await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier", [stateHash(state,cfg.origin,adminReturn,countryReturn), hash(binding)]);
         if (consumed.length !== 1) return fail(400, 'INVALID_OAUTH_STATE');
         const code = url.searchParams.get('code');
         if (url.searchParams.has('error') || url.searchParams.getAll('code').length !== 1 || !code || code.length > 4096) return fail(400, 'OAUTH_DENIED');
@@ -244,7 +250,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         const sid = random(), exp = Math.floor(Date.now() / 1000) + 28800;
         await sql.unsafe('INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))', [hash(sid), user.id, exp]);
         const signed = await sign({ uid: user.id, email: user.email, sid, exp, origin:cfg.origin }, cfg.secret);
-        return new Response(null, { status: 302, headers: [['location', adminReturn?cfg.origin+'/admin':cfg.success], ['set-cookie', cookie('ad507_session', signed, 28800)], ['set-cookie', clearState()], ['set-cookie',clearAdminReturn()], ['cache-control', 'no-store'], ['referrer-policy', 'no-referrer']] });
+        return new Response(null, { status: 302, headers: [['location', adminReturn?cfg.origin+'/admin':countryReturn?cfg.origin+'/panel?country='+countryReturn:cfg.success], ['set-cookie', cookie('ad507_session', signed, 28800)], ['set-cookie', clearState()], ['set-cookie',clearAdminReturn()], ['set-cookie',clearCountryReturn()], ['cache-control', 'no-store'], ['referrer-policy', 'no-referrer']] });
       }
       if (url.pathname === '/auth/logout') {
         if (req.headers.get('origin') !== cfg.origin || req.headers.get('sec-fetch-site') === 'cross-site') return respond(403, { ok: false, error: 'CSRF_DENIED' });

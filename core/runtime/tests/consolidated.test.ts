@@ -1136,3 +1136,35 @@ test('client82: four ordered place photos persist privately, survive retry and r
   expect(data.fotos).toHaveLength(4);expect(data.logo).toBe(data.fotos[0]);
   for(let i=0;i<4;i++)expect(data.fotos[i]).toContain('/media/'+detail.media[i].id);
 });
+
+test('account closeout: country-bound OAuth returns to client panel and cannot switch to ADMIN or another country',async()=>{
+ const host='https://direcciones.lat',id=crypto.randomUUID(),email=id+'@gmail.com';
+ await sql.unsafe('INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)',[id,email]);
+ await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'ADMIN')",[id]);
+ const cfg={...env,AD507_PUBLIC_BASE_URL:host,AD507_GOOGLE_REDIRECT_URI:host+'/auth/google/callback',AD507_AUTH_SUCCESS_URL:'/panel'};
+ const auth=createGeneralAuth(sql,cfg,google({sub:'country-context-'+id,email,email_verified:true}));
+ const begin=async(country:string)=>{
+   const res=(await auth.handle(new Request(host+'/auth/google/login?country='+country)))!;
+   expect(res.status).toBe(302);
+   return {path:host+'/auth/google/callback?state='+new URL(res.headers.get('location')!).searchParams.get('state')+'&code=test',cookies:res.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ')};
+ };
+ for(const country of ['PA','CR','CO','GT','SV','HN','NI','MX']){
+   const flow=await begin(country),done=(await auth.handle(new Request(flow.path,{headers:{cookie:flow.cookies}})))!;
+   expect(done.status).toBe(302);expect(done.headers.get('location')).toBe(host+'/panel?country='+country);
+   expect(done.headers.getSetCookie().some(c=>c.startsWith('ad507_oauth_country=;'))).toBe(true);
+   const signed=session(done);
+   expect((await auth.handle(new Request(host+'/v1/auth/me',{headers:{cookie:signed}})))?.status).toBe(200);
+   expect((await auth.handle(new Request(host+'/auth/logout',{method:'POST',headers:{origin:host,cookie:signed}})))?.status).toBe(204);
+   expect((await auth.handle(new Request(host+'/v1/auth/me',{headers:{cookie:signed}})))?.status).toBe(401);
+ }
+ const tamper=await begin('CR');
+ const changed=tamper.cookies.replace('%7CCR','%7CCO');
+ expect((await auth.handle(new Request(tamper.path,{headers:{cookie:changed}})))?.status).toBe(400);
+ const stripped=tamper.cookies.split('; ').filter(v=>!v.startsWith('ad507_oauth_country=')).join('; ');
+ expect((await auth.handle(new Request(tamper.path,{headers:{cookie:stripped}})))?.status).toBe(400);
+ const adminCookie=tamper.cookies.split('; ').find(v=>v.startsWith('ad507_oauth_state='))!.replace('ad507_oauth_state=','ad507_oauth_admin=');
+ expect((await auth.handle(new Request(tamper.path,{headers:{cookie:tamper.cookies+'; '+adminCookie}})))?.status).toBe(400);
+ for(const suffix of ['?country=XX','?country=CR&returnTo=%2Fadmin','?country=CR&country=PA','?country=https://evil.test'])expect((await auth.handle(new Request(host+'/auth/google/login'+suffix)))?.status).toBe(400);
+ const again=await begin('CR');
+ expect((await auth.handle(new Request(again.path,{headers:{cookie:again.cookies}})))?.headers.get('location')).toBe(host+'/panel?country=CR');
+});

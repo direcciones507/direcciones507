@@ -17,6 +17,24 @@ test('client cards preserve long codes, deduplicate Lugar and expose separate ac
  expect(unsafe).not.toContain('javascript:');expect(unsafe).not.toContain('password');
 });
 
+test('card actions precede photographs and account footer stays single and centered',async()=>{
+ const card=renderPanelAddressCard({id:'11111111-1111-4111-8111-111111111111',source:'USER_REQUEST',name:'Lugar',code:'AD507-N123',status:'ACTIVE',addressType:'PLACE',imageUrl:'https://direcciones.lat/image.webp',publicUrl:'https://direcciones.lat/AD507-N123/'});
+ expect(card.indexOf('address-name')).toBeLessThan(card.indexOf('address-actions'));
+ expect(card.indexOf('data-copy-code')).toBeLessThan(card.indexOf('class="address-image"'));
+ expect(card.indexOf('address-open')).toBeLessThan(card.indexOf('class="address-image"'));
+ expect(card.indexOf('data-request-detail')).toBeLessThan(card.indexOf('class="address-image"'));
+ const {userPanelPresentation,commercialEntryHtml}=await import('../user-panel');
+ const panel=userPanelPresentation(new URL('https://direcciones.lat/panel?country=CR'));
+ expect(panel).toContain('const commercialInitialCountry="CR";');
+ expect(panel.match(/<footer class="account-footer">/g)).toHaveLength(1);
+ expect(panel).toContain('.account-footer{width:100%;text-align:center');
+ expect(commercialEntryHtml(true,new URL('https://direcciones.lat/'))).not.toContain('<footer class="account-footer">');
+ const html=commercialEntryHtml(true,new URL('https://direcciones.lat/?country=CR'));
+ expect(html).toContain("'/auth/google/login?country='+encodeURIComponent(c)");
+ expect(html).toContain("'/panel?country='+encodeURIComponent(c)");
+ for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
+});
+
 test('logout retains LATAM and selected country without allowing an external return URL',()=>{
  expect(panelLogoutDestination('https://direcciones.lat/panel?country=CO')).toBe('https://direcciones.lat/?country=CO');
  expect(panelLogoutDestination('https://direcciones.lat/panel','CR')).toBe('https://direcciones.lat/?country=CR');

@@ -1,5 +1,26 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Cierre visual Mi cuenta — continuación82,16 octubre2026
+
+- CONFIRMADO POR EL PROPIETARIO: generación, Copiar código y Abrir dirección
+  funcionan; soporte portada+3 adicionales implementado, Railway y177 pruebas
+  aprobados. No se reconstruyen ni se crean solicitudes para repetir esa prueba.
+- IMPLEMENTADO: nombre/código y acciones antes de la foto; estado arriba a la
+  derecha, controles en grid con detalle separado y código completo sin renombrar.
+  Tarjeta compacta de dos columnas en tablet/desktop y una en móvil; se reduce
+  anidación del formulario y se centra ©2026 Todos los derechos reservados.
+- IMPLEMENTADO: Mi cuenta y Google/correo transportan país al panel compartido.
+  OAuth liga contexto de país al state/binding de un solo uso; acepta únicamente
+  países configurados y destino fijo /panel. ADMIN conserva intención /admin y
+  consulta real de rol; no se concede acceso administrativo por contexto cliente.
+  Entrada Panamá al panel compartido conserva país válido. Sin destinos externos.
+- PROBADO local:130PASS/0FAIL,1escalaoptativaSKIP,1022 expectativas;
+  build Bun, scripts inline y diff --check PASS. Prueba nueva CI cubre ocho países,
+  logout/reingreso, eliminación/cambio de cookie y separación ADMIN/cliente.
+- PENDIENTE: CI integral, despliegue y comprobación productiva del nuevo acabado.
+- CONTINÚA POSTERGADO: filtro de Lugares por país/provincia; no implementado.
+  Sin cambios en fotos, cuotas, históricos, Excel, Apps Script, pagos o migraciones.
+
 ## Tarea82 — panel cliente y cuatro fotos de Lugares,16 octubre2026
 
 - IMPLEMENTADO sobre main ddbb539f911df6fc1fd30e4f906a7d53a7b3266f:

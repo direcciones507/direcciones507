@@ -8,7 +8,7 @@ test('LATAM presentation changes display brand while Panama and execution logic 
  expect(latam).toContain('Preparar Dirección LATAM de negocio');
  for(const host of ['direcciones507.com','cuenta.direcciones507.com'])expect(userPanelPresentation(new URL('https://'+host+'/panel'))).toBe(userPanelHtml);
  const scripts=(html:string)=>[...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]);
- expect(scripts(latam).map(s=>s.replaceAll('Aún no tienes Direcciones LATAM vinculadas.','Aún no tienes Direcciones507 vinculadas.').replaceAll('Preparar Dirección LATAM Residencial','Preparar Dirección507 Residencial').replaceAll('Preparar Dirección LATAM de negocio','Preparar Dirección507 de negocio'))).toEqual(scripts(userPanelHtml));
+ expect(scripts(latam).map(s=>s.replace('const commercialInitialCountry="PA";','').replaceAll('Aún no tienes Direcciones LATAM vinculadas.','Aún no tienes Direcciones507 vinculadas.').replaceAll('Preparar Dirección LATAM Residencial','Preparar Dirección507 Residencial').replaceAll('Preparar Dirección LATAM de negocio','Preparar Dirección507 de negocio'))).toEqual(scripts(userPanelHtml));
  expect(latam).toContain('id="send" type="button" disabled');
  expect(latam).toContain('https://direcciones507.com/assets/icon-192.png');
 });

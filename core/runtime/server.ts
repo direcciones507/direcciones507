@@ -36,7 +36,8 @@ startLegacyCore(async req => {
   // Only redirect account entry paths; preserve historical AD507 pages and assets.
   if(req.method==='GET' && ['direcciones507.com','cuenta.direcciones507.com'].includes(url.hostname) && ['/panel','/panel/','/mi-cuenta','/crear-cuenta'].includes(url.pathname)){
     const destination=new URL('/panel','https://direcciones.lat');
-    destination.searchParams.set('country','PA');
+    const country=url.searchParams.get('country')||'PA';
+    destination.searchParams.set('country',/^(PA|CO|CR|GT|SV|HN|NI|MX)$/.test(country)?country:'PA');
     // Panama account entry opens the shared centered dialog, not a second login page.
     if(url.pathname==='/crear-cuenta'||url.pathname==='/mi-cuenta'||url.searchParams.get('access')==='1')destination.searchParams.set('access','1');
     return new Response(null,{status:302,headers:{location:destination.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});

@@ -181,6 +181,8 @@ function updateLatamSession(){
  if(['guest','error'].includes(latamSessionState)&&document.getElementById('latamRequestDialog').open)document.getElementById('latamRequestDialog').close();
  document.querySelectorAll('[data-latam-session]').forEach(a=>a.classList.toggle('hidden',a.dataset.latamSession!==latamSessionState));
  const c=document.getElementById('commercialCountry').value,cta=document.getElementById('latamCreate');
+ document.querySelectorAll('a[data-latam-session="authenticated"]').forEach(a=>a.href='/panel?country='+encodeURIComponent(c));
+ document.getElementById('latamGoogleAccess').href='/auth/google/login?country='+encodeURIComponent(c);
  cta.href=latamSessionState==='authenticated'?(c==='PA'?'#requestForm':'#commercialAvailability'):'#latamAccess';
  cta.setAttribute('aria-disabled',String(latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&(c!=='PA'||!latamCanPrepare))));
  document.querySelectorAll('[data-latam-type]').forEach(a=>{a.href=cta.href;a.setAttribute('aria-disabled',cta.getAttribute('aria-disabled'));});
@@ -246,7 +248,7 @@ function prepareLatamRequest(e,type,plan){
 #latamAccess [hidden]{display:none!important}
 @media(max-width:480px),(max-height:600px){#latamAccess{padding:16px}#latamAccess h2{font-size:21px}}
 `;
- return html.replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
+ return html.replace(/<footer class="account-footer">[\s\S]*?<\/footer>/,'').replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
  .replace('</style>',css+accessCss+homeCss+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
@@ -295,7 +297,7 @@ latamEmailSubmit.onclick=async()=>{
   const response=await fetch('/v1/auth/email/'+route,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({email,password,token})});
   const result=await response.json();
   if(!response.ok)throw Error(result.error||'No se pudo completar la solicitud.');
-  if(route==='login'){location.assign('/panel');return;}
+  if(route==='login'){location.assign('/panel?country='+encodeURIComponent(document.getElementById('commercialCountry').value));return;}
   latamEmailNotice.textContent=route==='register'||route==='forgot'?'Si el correo cumple las condiciones, recibirás un mensaje con las instrucciones.':'Solicitud completada. Ya puedes ingresar.';
   if(route==='verify'||route==='reset'){setLatamEmailMode('login');latamEmailPassword.value='';history.replaceState({},'',location.pathname+'?country='+encodeURIComponent(document.getElementById('commercialCountry')?.value||'PA'));latamEmailNotice.textContent='Solicitud completada. Ya puedes ingresar.';}
  }catch(err){latamEmailNotice.textContent=err instanceof Error?err.message:'No se pudo completar la solicitud.';}

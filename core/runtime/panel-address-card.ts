@@ -16,10 +16,12 @@ export function renderPanelAddressCard(a: Record<string, any>): string {
   const plan = a.planName && String(a.planName).toLocaleLowerCase() !== type.toLocaleLowerCase() ? '<span class="address-plan">'+esc(a.planName)+'</span>' : '';
   return '<article class="address-card"'+(detail?' data-request="'+esc(a.id)+'"':'')+'>'+
     '<div class="address-top"><span class="address-kind">'+type+'</span><span class="badge address-status'+(a.status==='ACTIVE'?' is-active':'')+'">'+esc(labels[String(a.status)]||'En proceso')+'</span></div>'+
-    (image?'<img class="address-image" src="'+esc(image)+'" alt="Imagen de la dirección" loading="lazy" referrerpolicy="no-referrer">':'')+
     '<h3 class="address-name">'+esc(a.name)+'</h3>'+plan+
-    (a.code?'<div class="address-code-row"><code class="address-code">'+esc(a.code)+'</code><button type="button" class="copy-code secondary" data-copy-code="'+esc(a.code)+'" aria-label="Copiar código de '+esc(a.name)+'">Copiar código</button></div>':'')+
-    (a.addressType==='RESIDENTIAL'?'<p class="muted">Tu acceso residencial conserva su proceso de activación independiente.</p>':'')+
-    '<div class="address-actions">'+(url?'<a class="button address-open" href="'+esc(url)+'" target="_blank" rel="noopener">Abrir dirección digital <span aria-hidden="true">↗</span></a>':'')+
-    (detail?'<button type="button" class="secondary address-detail" data-request-detail="'+esc(a.id)+'">Ver detalles de solicitud</button>':'')+'</div></article>';
+    (a.code?'<div class="address-code-row"><code class="address-code">'+esc(a.code)+'</code></div>':'')+
+    '<div class="address-actions">'+
+    (a.code?'<button type="button" class="copy-code secondary" data-copy-code="'+esc(a.code)+'" aria-label="Copiar código de '+esc(a.name)+'">Copiar código</button>':'')+
+    (url?'<a class="button address-open" href="'+esc(url)+'" target="_blank" rel="noopener">Abrir dirección digital <span aria-hidden="true">↗</span></a>':'')+
+    (detail?'<button type="button" class="secondary address-detail" data-request-detail="'+esc(a.id)+'">Ver detalles de solicitud</button>':'')+'</div>'+
+    (image?'<img class="address-image" src="'+esc(image)+'" alt="Imagen de la dirección" loading="lazy" referrerpolicy="no-referrer">':'')+
+    (a.addressType==='RESIDENTIAL'?'<p class="muted">Tu acceso residencial conserva su proceso de activación independiente.</p>':'')+'</article>';
 }

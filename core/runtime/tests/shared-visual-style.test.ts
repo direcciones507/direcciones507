@@ -9,6 +9,8 @@ test('shared visual rules reach client, public entry and admin without hiding or
   expect(html).toContain(sharedVisualStyle);
   for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
  }
+ const account=userPanelPresentation(new URL('https://direcciones.lat/panel'));
+ expect(account.lastIndexOf(sharedVisualStyle)).toBeGreaterThan(account.indexOf('/* LATAM account presentation'));
  const server=readFileSync(new URL('../server.ts',import.meta.url),'utf8');expect(server).toContain('${sharedVisualStyle}');
  expect(sharedVisualStyle).toContain('min-height:44px');expect(sharedVisualStyle).toContain('focus-visible');expect(sharedVisualStyle).toContain('max-width:767px');expect(sharedVisualStyle).toContain('max-width:1099px');
  expect(sharedVisualStyle).not.toMatch(/display\s*:\s*none|pointer-events\s*:\s*none/);

@@ -1,4 +1,6 @@
 export const sharedVisualStyle = `/* Shared visual contract; no event handlers, data or access rules. */
+body .hidden,body [hidden]{display:none!important}
+body header.top .btn{min-height:44px}
 :where(button,a.button,a.btn,.latam-cta,.latam-secondary){font-family:inherit;line-height:1.35;text-decoration:none;box-sizing:border-box}
 body :is(#panel,#login,#requestDetail,#latamAccess,.latam-header,.latam-hero,.latam-plan-grid,.wrap) :is(button:not(.tile):not([data-latam-legal]),a.button,a.btn,.latam-cta,.latam-secondary),body header :is(button,a.btn){min-height:44px;max-width:100%;padding:11px 18px;border-radius:12px;font-size:15px;font-weight:700;line-height:1.35;white-space:normal;overflow-wrap:anywhere;align-items:center;justify-content:center;gap:8px;text-align:center;text-decoration:none}
 body :is(a.button,a.btn,.latam-cta,.latam-secondary){display:inline-flex}

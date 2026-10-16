@@ -25,6 +25,7 @@ export async function insertBusinessTrialClaim(tx:Sql,addressId:string,identity:
  const end=freeBusinessTrialEndsAt(activatedAt);
  const name=normalizeBusinessName(identity.name),phone=normalizeBusinessPhone(identity.phone);
  if(!name||phone.length<7)throw Error('FREE_TRIAL_IDENTITY_INCOMPLETE');
+ if(!Number.isFinite(activatedAt.getTime()))throw Error('INVALID_ACTIVATION_DATE');
  await tx.unsafe(`INSERT INTO ad507.free_business_trial_claims
  (address_id,country_code,business_name_normalized,business_phone_normalized,location_latitude,location_longitude,claimed_at,trial_ends_at)
  VALUES($1::uuid,$2,$3,$4,$5,$6,$7::timestamptz,$8::timestamptz)`,
@@ -35,3 +36,10 @@ export async function insertBusinessTrialClaim(tx:Sql,addressId:string,identity:
  if(updated.length!==1)throw Error('FREE_TRIAL_ADDRESS_NOT_ELIGIBLE');
  return end;
 }
+
+/** A claim insertion must be called from an already-open transaction, after
+ * acquiring the global free-business-trial-claims advisory transaction lock,
+ * rechecking ALL claims inside that same transaction, and deciding eligibility.
+ * Never call this after an irreversible external publication without recovery.
+ */
+export const FREE_BUSINESS_TRIAL_LOCK_KEY='free-business-trial-claims:v1';

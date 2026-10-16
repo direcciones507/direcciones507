@@ -206,6 +206,18 @@ function prepareLatamRequest(e,type,plan){
 }
 `;
  const accessCss=`
+#latamPlanDetails{width:min(570px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(18px,4vw,30px);border:1px solid #d5e5f5;border-radius:20px;background:#fff;color:#16324d;box-shadow:0 24px 75px #0009;color-scheme:light}
+#latamPlanDetails::backdrop{background:#031326bb}
+#latamPlanDetails h2{font-size:clamp(22px,4vw,29px);color:#13365a;margin:0 0 12px}
+#latamPlanDetails p{color:#40546b;line-height:1.55}
+#latamPlanDetailsPrice{font-size:21px;font-weight:800;color:#0c5bb4!important}
+#latamPlanDetailsFeatures{padding-left:23px;line-height:1.65;color:#203b54}
+#latamPlanDetailsFeatures li{margin:7px 0}
+#latamPlanDetails .latam-plan-detail-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+#latamPlanDetails button{min-height:46px;border-radius:11px;padding:10px 17px}
+#latamPlanDetailsBack{background:#e8eef5;color:#173653}
+#latamPlanDetailsContinue{background:#1269d2;color:white}
+
 #latamAccess{box-sizing:border-box;width:min(440px,calc(100vw - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);margin:auto;padding:20px;border:1px solid #dce6ef;border-radius:18px;background:#fff;color:#18324b;box-shadow:0 20px 70px #001a3670;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 #latamAccess::backdrop{background:#020b16cc}
 #latamAccess>form{display:flex;justify-content:flex-end;margin:0}
@@ -254,7 +266,7 @@ function prepareLatamRequest(e,type,plan){
  .replace(/<header>[\s\S]*?<\/header>/,header)
  .replace('</style>',css+accessCss+homeCss+sharedVisualStyle+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
- .replace('<script>',notice+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><svg class="latam-google-logo" viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.88 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.9 23.9 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48Z"/></svg> Continuar con Google</a></dialog>`+'<script>')
+ .replace('<script>',notice+`<dialog id="latamPlanDetails" aria-labelledby="latamPlanDetailsTitle"><h2 id="latamPlanDetailsTitle"></h2><p id="latamPlanDetailsPrice"></p><p id="latamPlanDetailsCountry"></p><ul id="latamPlanDetailsFeatures"></ul><p id="latamPlanDetailsTerms"></p><div class="latam-plan-detail-actions"><button type="button" id="latamPlanDetailsBack">Regresar</button><button type="button" id="latamPlanDetailsContinue">Continuar al formulario</button></div></dialog>`+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><svg class="latam-google-logo" viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.88 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.9 23.9 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48Z"/></svg> Continuar con Google</a></dialog>`+'<script>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')
  .replace('<section id="panel" class="hidden">','<dialog id="latamRequestDialog" aria-label="Preparar dirección"><button type="button" id="latamRequestClose" class="secondary">Cerrar preparación</button><section id="panel" class="hidden">')
  .replace('</section><p id="message" role="status">','</section></dialog><span id="latamMessageAnchor"></span><p id="message" role="status">')
@@ -321,7 +333,35 @@ const syncMenu=()=>menu.open=desktop.matches;syncMenu();desktop.addEventListener
 const hero=document.getElementById('latamArt');
 hero.src='https://raw.githubusercontent.com/direcciones507/direcciones507/feat/admin-ui-20261006/direcciones-latam-mapa-sin-cuadro-azul.png';
 document.getElementById('latamCreate').onclick=e=>prepareLatamRequest(e,'BUSINESS','');
-document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>prepareLatamRequest(e,a.dataset.latamType,a.dataset.latamPlan));
+const latamPlanCatalog={
+ RESIDENTIAL:{title:'Residencial',price:'US$12.99',features:['Dirección digital para tu hogar','Código digital y acceso mediante enlace o QR','Ubicación y referencia para compartir','Acceso residencial privado según sus controles de seguridad']},
+ BUSINESS_FREE:{title:'Negocio Gratis',price:'US$0',features:['Dirección digital de negocio y código QR','Logo, horario, contacto y referencia','Navegación para llegar al negocio','Promoción de un mes gratuito por negocio para solicitudes hasta el 9 de noviembre de 2026; sujeta a aprobación','Sin descripción breve ni código personalizado incluido']},
+ BUSINESS_PREMIUM:{title:'Premium',price:'US$19.99',features:['Todo lo incluido en Negocio Gratis','Código personalizado con nombre sujeto a disponibilidad','Redes sociales y código postal o zona postal','Sin reporte mensual de estadísticas']},
+ BUSINESS_PREMIUM_PRO:{title:'Premium Pro',price:'US$39.99',features:['Todo lo incluido en Premium','Descripción comercial','Galería de hasta cinco fotografías','Funciones adicionales según el catálogo vigente']}
+};
+let latamSelectedPlan=null;
+const latamPlanDialog=document.getElementById('latamPlanDetails');
+function showLatamPlanDetails(e,type,plan){
+ if(!latamPlanCatalog[plan]){prepareLatamRequest(e,type,plan);return;}
+ e.preventDefault();
+ const item=latamPlanCatalog[plan],country=document.getElementById('commercialCountry');
+ latamSelectedPlan={type,plan};
+ document.getElementById('latamPlanDetailsTitle').textContent=item.title;
+ document.getElementById('latamPlanDetailsPrice').textContent=item.price+(item.price==='Gratis'?'':' · Precio de referencia, confirmar vigencia');
+ document.getElementById('latamPlanDetailsCountry').textContent='País seleccionado: '+country.options[country.selectedIndex].textContent;
+ document.getElementById('latamPlanDetailsFeatures').replaceChildren(...item.features.map(feature=>{const li=document.createElement('li');li.textContent=feature;return li;}));
+ document.getElementById('latamPlanDetailsTerms').textContent='La disponibilidad, promociones, vigencia, renovación y medios de pago se confirman antes de contratar. La preparación no realiza ningún cobro. Las solicitudes y publicaciones internacionales siguen sujetas a habilitación por país.';
+ latamPlanDialog.showModal();
+}
+document.getElementById('latamPlanDetailsBack').onclick=()=>latamPlanDialog.close();
+document.getElementById('latamPlanDetailsContinue').onclick=()=>{
+ if(!latamSelectedPlan)return;
+ const {type,plan}=latamSelectedPlan;
+ latamPlanDialog.close();
+ prepareLatamRequest({preventDefault(){}},type,plan);
+};
+
+document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>showLatamPlanDetails(e,a.dataset.latamType,a.dataset.latamPlan));
 document.getElementById('latamRequestDialog').addEventListener('close',()=>document.getElementById('latamMessageAnchor').after(document.getElementById('message')));
 document.getElementById('latamRequestClose').onclick=()=>document.getElementById('latamRequestDialog').close();
 document.getElementById('latamHelpLink').onclick=()=>document.getElementById('natalieLauncher').click();

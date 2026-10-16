@@ -112,19 +112,6 @@ body.latam .latam-footer-inner nav{flex:0 1 440px;justify-items:start}
 #commercialWelcome .latam-plan-grid .latam-plan-card h3{margin-bottom:8px!important;font-size:21px}
 #commercialWelcome .latam-plan-grid .latam-plan-card p{margin-top:0}
 
-/* Premium presentation for plan cards; registration behavior unchanged. */
-#commercialWelcome .latam-plan-grid{gap:20px}
-#commercialWelcome .latam-plan-card{position:relative;display:flex;flex-direction:column;min-height:285px;padding:24px;border:1px solid #45617e;border-radius:22px;background:linear-gradient(145deg,#1b3b5b,#0e213a);box-shadow:0 14px 30px #07192e38;transition:transform .18s ease,box-shadow .18s ease}
-#commercialWelcome .latam-plan-card:hover{transform:translateY(-3px);box-shadow:0 20px 38px #07192e55}
-#commercialWelcome .latam-plan-card:focus-visible{outline:3px solid #a7d8ff;outline-offset:3px}
-#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM"]{background:linear-gradient(145deg,#39285a,#16243f);border-color:#9275d2}
-#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM_PRO"]{background:linear-gradient(145deg,#513c24,#19273d);border-color:#e4ba75}
-#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM_PRO"]::before{content:"DESTACADO";position:absolute;top:0;right:20px;padding:6px 12px;border-radius:0 0 10px 10px;background:#f5d08a;color:#35250c;font-size:10px;font-weight:900;letter-spacing:.08em}
-#commercialWelcome .latam-plan-card .latam-plan-price{font-size:32px}
-#commercialWelcome .latam-plan-card>span:last-child{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:auto;padding:13px 15px;border-radius:12px;background:#edf5ff;color:#193a64;font-weight:800;box-shadow:0 4px 14px #0002}
-#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM"]>span:last-child{background:#dacaff;color:#31204d}
-#commercialWelcome .latam-plan-card[data-latam-plan="BUSINESS_PREMIUM_PRO"]>span:last-child{background:#f5d08a;color:#35250c}
-@media(prefers-reduced-motion:reduce){#commercialWelcome .latam-plan-card{transition:none}#commercialWelcome .latam-plan-card:hover{transform:none}}
 /* LATAM compact help strip and premium footer; presentation only. */
 #commercialWelcome .latam-help-strip{display:flex;align-items:center;gap:22px;padding:22px 28px;margin:28px 0 18px;border:1px solid #2468aa;border-radius:20px;background:linear-gradient(125deg,#102a56,#071b37 75%);box-shadow:0 12px 32px #020d2240}
 #commercialWelcome .latam-help-heading{display:flex;align-items:center;gap:14px;flex-shrink:0}
@@ -231,6 +218,21 @@ function prepareLatamRequest(e,type,plan){
 #latamPlanDetailsBack{background:#e8eef5;color:#173653}
 #latamPlanDetailsContinue{background:#1269d2;color:white}
 
+/* Premium details dialog: outer plan cards remain unchanged. */
+#latamPlanDetails{border:1px solid #9bbde0;border-radius:24px;background:linear-gradient(165deg,#fff,#f2f7ff);box-shadow:0 30px 90px #001a3970;padding:clamp(22px,5vw,34px)}
+#latamPlanDetails h2{font-size:clamp(26px,5vw,34px);font-weight:900;letter-spacing:-.025em;color:#15385e}
+#latamPlanDetailsPrice{display:inline-block;padding:9px 16px;border-radius:13px;background:#e3efff;color:#1456a0!important;font-size:26px;font-weight:900}
+#latamPlanDetailsCountry{font-weight:700;color:#516b85!important}
+#latamPlanDetailsFeatures{list-style:none;padding:0;margin:20px 0;display:grid;gap:10px}
+#latamPlanDetailsFeatures li{position:relative;margin:0;padding:13px 14px 13px 42px;border:1px solid #e0e9f4;border-radius:13px;background:white;color:#23405e;font-weight:600;line-height:1.5}
+#latamPlanDetailsFeatures li::before{content:"✓";position:absolute;left:14px;top:12px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:#e0f5e9;color:#147447;font-weight:900}
+#latamPlanDetailsTerms{padding:12px 14px;border-left:3px solid #79a9dc;background:#edf4fd;border-radius:0 10px 10px 0;font-size:13px}
+#latamPlanDetails .latam-plan-detail-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;margin-top:22px}
+#latamPlanDetails .latam-plan-detail-actions button{min-height:50px;border-radius:13px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer}
+#latamPlanDetailsBack{background:#e7edf5;color:#254663;border:1px solid #c8d6e6}
+#latamPlanDetailsContinue{background:linear-gradient(135deg,#1878e8,#064fae);color:#fff;box-shadow:0 8px 20px #0866d144}
+#latamPlanDetails .latam-plan-detail-actions button:focus-visible{outline:3px solid #7cb9ff;outline-offset:3px}
+@media(max-width:440px){#latamPlanDetails .latam-plan-detail-actions{grid-template-columns:1fr}}
 #latamAccess{box-sizing:border-box;width:min(440px,calc(100vw - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);margin:auto;padding:20px;border:1px solid #dce6ef;border-radius:18px;background:#fff;color:#18324b;box-shadow:0 20px 70px #001a3670;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 #latamAccess::backdrop{background:#020b16cc}
 #latamAccess>form{display:flex;justify-content:flex-end;margin:0}

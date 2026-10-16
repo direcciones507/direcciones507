@@ -5,7 +5,7 @@ async function openUserRequest(id){
   if(!/^[a-f0-9-]{36}$/.test(id))return;
   const version=++requestDetailVersion,view=document.getElementById('requestDetail');
   view.classList.remove('hidden');view.replaceChildren();
-  const close=document.createElement('button');close.type='button';close.textContent='Cerrar detalle';
+  const close=document.createElement('button');close.type='button';close.textContent='Cerrar detalle';close.className='secondary';
   close.onclick=()=>{requestDetailVersion++;view.classList.add('hidden');document.querySelector('[data-request="'+id+'"]')?.focus()};view.append(close);
   const content=document.createElement('div');content.textContent='Cargando solicitud…';view.append(content);
   view.scrollIntoView({block:'start',behavior:'smooth'});
@@ -21,7 +21,7 @@ async function openUserRequest(id){
     add('Teléfono',r.phone);add('Teléfono fijo',r.landlinePhone);add('Correo',r.extras?.email);add('Horario',r.hours);add('Descripción comercial',r.commercialDescription);
     for(const m of r.media||[]){if(m.status!=='READY')continue;const img=document.createElement('img');img.alt=m.type==='LOGO'?'Logo enviado':'Fotografía enviada';img.loading='lazy';img.style.cssText='display:block;max-width:100%;max-height:360px;object-fit:contain;margin:14px 0';img.src='/v1/user/requests/'+id+'/media/'+m.id;content.append(img)}
     if(r.latitude!=null&&r.longitude!=null){const link=document.createElement('a');link.textContent='Ver ubicación en Google Maps';link.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.latitude+','+r.longitude);link.target='_blank';link.rel='noopener';content.append(link)}
-    if(r.publicUrl){const link=document.createElement('a');link.textContent='Abrir ficha, enlace y QR';link.href=r.publicUrl;link.className='btn';link.target='_blank';link.rel='noopener';content.append(link)}
+    if(r.publicUrl){const link=document.createElement('a');link.textContent='Abrir dirección digital';link.href=r.publicUrl;link.className='btn';link.target='_blank';link.rel='noopener';content.append(link)}
     title.focus({preventScroll:true});
   }catch{if(version===requestDetailVersion)content.textContent='No se pudo cargar la solicitud. Cierra el detalle e intenta nuevamente.'}
 }

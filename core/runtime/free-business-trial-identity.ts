@@ -21,3 +21,8 @@ export function businessTrialDuplicateSignal(a:BusinessIdentity,b:BusinessIdenti
  if(samePhone&&sameLocation)return 'SAME_PHONE_AND_LOCATION';
  return sameName||samePhone||sameLocation?'REVIEW_REQUIRED':'NONE';
 }
+
+/** Require a human review for any signal; never auto-approve a second free trial. */
+export function freeTrialReviewDecision(signals:readonly DuplicateSignal[]):'REVIEW_REQUIRED'|'NO_MATCH' {
+ return signals.some(signal=>signal!=='NONE')?'REVIEW_REQUIRED':'NO_MATCH';
+}

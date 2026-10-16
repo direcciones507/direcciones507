@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { assertCountryCommerce, prepareCountryTemplate, proposedCountryUrl, COUNTRIES } from './country-configuration';
 import { createR2Storage, type R2Settings } from './r2-storage';
 import type { Sql } from 'postgres';
@@ -7,7 +8,7 @@ import { PLANES_AUTHORITY } from './scripts/integration-preflight';
 import type { CanonicalPublication } from './request-repository';
 import { readFileSync } from 'node:fs';
 
-/** No counter: new reservations use their durable UUID, outside the historical numeric sequence.
+/** No counter: new reservations derive a stable eight-digit numeric identifier from their UUID, outside the historical numeric sequence.
  * Release still requires confirmation that this namespace is exclusive across all historical channels.
  */
 export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
@@ -27,7 +28,11 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       const body=Buffer.concat(chunks).toString('utf8');
       const data=JSON.parse(body);
       if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/i.test(v.codigo.trim())))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
-      const code='AD507-N'+id.replaceAll('-','').toUpperCase();
+      // Keep the new namespace separate from historical sequential AD507 codes.
+      // A deterministic digest makes repeat reservations idempotent. Fail closed on
+      // the rare eight-digit collision rather than assigning a duplicate code.
+      const numericCode=(BigInt('0x'+createHash('sha256').update(id).digest('hex'))%100000000n).toString().padStart(8,'0');
+      const code='AD507-N'+numericCode;
       if(data.codes.some((v:any)=>v.codigo.trim().toUpperCase()===code))throw Error('CANONICAL_CODE_COLLISION');
       const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
       if(existing.length)throw Error('CANONICAL_CODE_COLLISION');

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { beforeAll, afterAll, test, expect } from 'bun:test';
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -536,7 +537,7 @@ test('ADMIN creates without client identity; transfer and reversal only change o
     const results=await Promise.all(Array.from({length:4},()=>repo.publish(adminId,created.id)));
     expect(new Set(results.map(r=>r.code)).size).toBe(1);
     expect(results.every(r=>r.status==='ACTIVE')).toBe(true);
-    expect(results[0].code).toBe('AD507-N'+created.id.replaceAll('-','').toUpperCase());
+    expect(results[0].code).toBe('AD507-N'+(BigInt('0x'+createHash('sha256').update(created.id).digest('hex'))%100000000n).toString().padStart(8,'0'));
     const pub=await newPublicAddress(db,results[0].code,origin);expect(pub?.name).toBe(raw.name);
     expect(JSON.stringify(pub)).not.toContain('storageKey');expect(JSON.stringify(pub)).not.toContain('createdByAdmin');
     const html=renderNewPublicAddress(pub!);expect(html).toContain(raw.name);expect(html).toContain('const data = {');
@@ -940,7 +941,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const unchanged=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;expect(unchanged.code).toBeNull();expect(unchanged.publicUrl).toBeNull();expect(unchanged.status).toBe('PENDING_REVIEW');
   fixtureEvidenceVerified=true; // Synthetic historical registry only; never sets a production gate.
   await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir dirección digital');expect(link).toBeDefined();
-  const canonical='https://direcciones.lat/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
+  const canonical='https://direcciones.lat/AD507-N'+(BigInt('0x'+createHash('sha256').update(initial.id).digest('hex'))%100000000n).toString().padStart(8,'0')+'/';expect(link.href).toBe(canonical);
   const delivered=await(await call('/v1/user/panel',client.cookie)).json();const card=delivered.addresses.find((a:any)=>a.id===initial.id);expect(card.status).toBe('ACTIVE');expect(card.publicUrl).toBe(canonical);
   const page=await call(new URL(card.publicUrl).pathname);expect(page.status).toBe(200);const html=await page.text();expect(html).toContain(raw.name);expect(html).toContain('DIRECCIONES<span>507</span>');
   const qr=new Function(html.match(/const qrUrl = [^\n]+/)![0]+';return qrUrl;')();expect(new URL(qr).searchParams.get('data')).toBe(canonical);expect(html).toContain('navigator.clipboard.writeText('+JSON.stringify(canonical)+')');

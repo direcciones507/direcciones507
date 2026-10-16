@@ -1,8 +1,9 @@
+import { createHash } from 'node:crypto';
 import { test, expect } from 'bun:test';
 import { createNewAddressPublication } from '../new-address-publication';
 
 const id = '123e4567-e89b-42d3-a456-426614174000';
-const code = 'AD507-N' + id.replaceAll('-', '').toUpperCase();
+const code = 'AD507-N' + (BigInt('0x' + createHash('sha256').update(id).digest('hex')) % 100000000n).toString().padStart(8, '0');
 const request = { id, type: 'BUSINESS', plan: 'FREE', name: 'Ejemplo', requestedName: '' };
 
 test('new AD507 codes remain uppercase even when PLANES contains lowercase legacy codes', async () => {
@@ -36,22 +37,22 @@ test('malformed UUIDs cannot shorten or alias the reserved suffix', async () => 
   expect(contacted).toBe(false);
 });
 
-test('distinct canonical UUIDs keep distinct codes with exactly 32 hex digits', async () => {
+test('distinct canonical UUIDs produce eight-digit numeric codes', async () => {
   const publisher = createNewAddressPublication({ unsafe: async () => [] } as any,
     { namespaceExclusive: true, fetch: (async () => Response.json({ok:true,codes:[{codigo:'AD507-0001'}]})) as typeof fetch });
   const first = await publisher.reserve(request);
   const second = await publisher.reserve({...request,id:'123e4567-e89b-42d3-a456-426614174001'});
-  expect(first).toMatch(/^AD507-N[0-9A-F]{32}$/);
-  expect(second).toMatch(/^AD507-N[0-9A-F]{32}$/);
+  expect(first).toMatch(/^AD507-N[0-9]{8}$/);
+  expect(second).toMatch(/^AD507-N[0-9]{8}$/);
   expect(first).not.toBe(second);
 });
 
-test('existing PLACE emitter cannot enter the new N32 namespace (source contract only)',async()=>{
+test('existing PLACE emitter cannot enter the new N8 namespace (source contract only)',async()=>{
  const {generatePlaceCodeCandidate}=await import('../../postgres/place-code');
  for(const name of ['N'+'A'.repeat(32),'','AD507-N'+id.replaceAll('-',''),'Parque Central']){
   for(const entropy of ['abcdef','','0'.repeat(32)]){
    const candidate=generatePlaceCodeCandidate(name,entropy);
-   expect(candidate).not.toMatch(/^AD507-N[0-9A-F]{32}$/);
+   expect(candidate).not.toMatch(/^AD507-N[0-9]{8}$/);
    expect(candidate).toMatch(/^AD507-[A-Z0-9-]+-[A-F0-9]{1,6}$/);
   }
  }

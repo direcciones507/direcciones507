@@ -24,7 +24,19 @@
   permisos, reintento idempotente y publicación PASS. Builds Bun/Docker PASS.
   Primer run detectó expectativa vieja de etiqueta ADMIN; test actualizado
   al texto ya publicado, sin alterar lógica para satisfacer la prueba.
-- PENDIENTE: Railway y comprobación visual productiva tras integración.
+- DESPLEGADO: Railway27593317-d30b-46b6-b022-0f295039940b SUCCESS,
+  main c462256. Código funcional idéntico a22516cc probado en CI.
+- OPERATIVO comprobado en navegador: formulario Lugar muestra portada requerida,
+  tres adicionales y cuatro en total; Actualizar visible; aviso obsoleto oculto.
+  Panel desktop1363px sin overflow horizontal y revisión vacía oculta.
+  Cierre real de sesión tras elegirCR volvió a https://direcciones.lat/?country=CR;
+  se mostró Costa Rica/+506, sin activar publicación ni cobros extranjeros.
+  Core/health y dirección existente de una foto responden200.
+- PENDIENTE FÍSICO: cuenta cliente titular para comprobar su tarjeta real,
+  copiar código y revisión visual en teléfono/tablet. La sesión disponible era
+  ADMIN sin direcciones propias. No se transfieren propietarios ni se crean datos
+  productivos para fabricar esa evidencia. Responsive por CSS y acciones se
+  probaron en suites; no se afirma una prueba física completa de tres dispositivos.
 - No se modifican códigos, Excel, Apps Script, pagos, QR ni esquema productivo.
   Prueba de4 fotos usa solo datos sintéticos y almacenamiento simulado aislado.
 

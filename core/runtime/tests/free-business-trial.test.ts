@@ -28,7 +28,8 @@ test('Panama local month boundary near midnight UTC rollover',()=>{
 });
 
 test('rejects activation after Panama offer cutoff and invalid dates',()=>{
- expect(()=>freeBusinessTrialEndsAt(new Date('2026-11-10T05:00:00.000Z'))).toThrow('FREE_BUSINESS_OFFER_CLOSED');
+ expect(freeBusinessOfferEligible(new Date('2026-11-10T05:00:00.000Z'))).toBe(false);
+ expect(freeBusinessTrialEndsAt(new Date('2026-11-10T05:00:00.000Z')).toISOString()).toBe('2026-12-10T05:00:00.000Z');
  expect(()=>freeBusinessTrialEndsAt(new Date('invalid'))).toThrow('INVALID_ACTIVATION_DATE');
 });
 test('Panama Oct 31 evening ends on Nov 30 evening',()=>{
@@ -37,4 +38,11 @@ test('Panama Oct 31 evening ends on Nov 30 evening',()=>{
  expect(end.toISOString()).toBe('2026-12-01T04:30:00.000Z');
  expect(freeBusinessTrialState(end,new Date('2026-12-01T04:29:59.999Z'))).toBe('ACTIVE');
  expect(freeBusinessTrialState(end,new Date('2026-12-01T04:30:00.000Z'))).toBe('EXPIRED');
+});
+
+test('submission before cutoff can activate after cutoff',()=>{
+ const submitted=new Date('2026-11-10T04:59:59.999Z');
+ const activated=new Date('2026-11-15T15:00:00.000Z');
+ expect(freeBusinessOfferEligible(submitted)).toBe(true);
+ expect(freeBusinessTrialEndsAt(activated).toISOString()).toBe('2026-12-15T15:00:00.000Z');
 });

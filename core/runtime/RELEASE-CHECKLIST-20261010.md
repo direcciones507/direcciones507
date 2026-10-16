@@ -1,5 +1,31 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Cierre de verificación — 16 octubre 2026
+
+Esta entrada sustituye los pendientes de CI/publicación descritos en entradas anteriores.
+
+- OPERATIVO: solicitud existente publicada ACTIVE, sin duplicarla ni cobrar:
+  https://direcciones.lat/AD507-N56F413FACAAA475589AB112BC1EFC9A3/.
+  Nueva comprobación anónima: página HTTP200 y foto R2 image/webp HTTP200.
+- PROBADO en navegador productivo: ADMIN vuelve a /admin con rol real;
+  Lugares abre revisión/aprobación/publicación y conserva un registro ACTIVE.
+  Página pública muestra nombre/código/foto, galería, Maps/Waze y QR con URL .lat.
+  Compartir mostró «Enlace copiado»; contenido del portapapeles no confirmado.
+- CI funcional38836792564 SUCCESS:172 pruebas,0 fallos,2612 expectativas;
+  builds Bun/Docker, legacy y validación de migraciones PASS sobre65eeae4.
+- MAIN posterior preservado:008aa4afbe18d06d028d522a647b740cdb2d51b0.
+  Railway ac64a00b-fb66-40be-8acc-790d840e55b0 SUCCESS para ese HEAD.
+  Pages y Generate AD507 Pages SUCCESS; normalizador Drive SKIPPED.
+- PENDIENTE DE PRUEBA FÍSICA: propietario refresca Mi cuenta con su cuenta cliente
+  y abre la dirección ACTIVE; prueba compartir y escanear QR desde tablet.
+  Detalle cliente/foto sí se comprobó antes de publicación; no se afirma una
+  comprobación física posterior con la sesión cliente.
+- LIMITACIÓN HISTÓRICA: lectura actual de /AD507-0025/ en direcciones507.com
+  devuelve404. No se declara comprobada la disponibilidad de los40 históricos.
+  Ningún dato histórico, Excel, Apps Script ni contador fue modificado aquí.
+- Pagos siguen desactivados. No se habilitan países/productos sin configuración.
+  Sin nuevas migraciones, respaldo, prueba de escritura R2 ni solicitud duplicada.
+
 ## Continuación ADMIN y primera publicación — 15 octubre 2026
 
 - OPERATIVO: retorno OAuth a /admin, rol ADMIN real de ventas@direcciones507.com,
@@ -250,164 +276,7 @@ PITR soporta un Postgres hermano sin tocar fuente, pero estaba desactivado: habi
 
 pg_dump custom + pg_restore en destino aislado es el ensayo lógico soportado, pero un dump actual NO verifica el snapshot existente. No se ejecutó pg_dump ni Restore, no se creó base de ensayo en el servidor productivo, servicio, bucket o volumen. No se solicita instalar herramientas para esta revisión.
 
-ROJO (snapshot real): las fuentes/UI no documentan exportación o clonación de ESE snapshot a otro servicio sin sustituir montaje; no inventar esa capacidad. Acción exacta propietario: consultar soporteRailway con proyecto2b6d4e6c-e1d4-471d-a77d-c9bdb711650d, Postgresce124693-1fef-432f-9824-e315d5cabd9d, volumen9cccf287-430d-43f3-8f12-d1cd0d3670bb y snapshot2026-10-11T16:39:30.690Z/245MB: «¿Puede exportarse o clonarse este backup a un destino aislado, sin preparar/reemplazar montajelive ni redesplegar producción? Indiquen procedimiento soportado y costo mínimo del ensayo». No se envió solicitud en nombre del propietario. Antes de cualquier creación: revisar respuesta, presupuesto/retención, autorizar operación concreta; restaurar con misma versiónPG18, verificar ledger/checksums/conteos/restricciones sin PII, registrar tiempos e integridad y cerrar solo destino autorizado. Hasta entonces recuperación ROJO.
-
-### Natalie: reutilización real preparada en código
-
-AMARILLO (preparada, sin despliegue): commercialEntryHtml reutiliza una lectura estática cacheada por proceso del index.html existente los tres fragmentos de widget (estilo/HTML/script), sin clonarlo en otra implementación ni modificarindex. Docker incluye ese archivo solo como fuente estática de extracción; no lo sirve como segunda aplicación. Falta de marcadores rechaza render en vez de fabricar otrochat. Misma identidadcontrolada, endpoints y contrato de sesión; sin DB/proveedor en renderer. Script delwidget se integra dentro del único script de página, conservando nonceCSP. connect-src admite solo self y el hostHTTPSCore que ya usaNatalie; no wildcard ni relajación de roles/CORS/backend.
-
-Panamá ywww507 reutilizan el script exacto; LATAM/preview/hostmalicioso muestran launcherdesactivado y no ejecutan llamadasNatalie porque backend existente no acepta esos orígenes. Se mantiene independencia del teléfono; WhatsApp no participa en sesión/conversación. No se afirma función privada exclusiva delpropietario, historial entre dispositivos ni capacidad LATAM fuera del conocimiento aprobado.
-
-Pruebas: rendererPA/LATAM, unwidget/un script, script original y JavaScript sintácticamente válido, nonce/CSP, cuenta/ADMIN intactos; simulación local de dos consultas con una sesión y respuestas mediante textContent, cero llamadasalproveedor real. Esto es VERDE de contrato aislado, no VERDE de respuesta productiva. Prueba positiva existente sigue AMARILLO: requerirá alcance designado y autorización de consumo/estado si corresponde. LATAM sigue AMARILLO/ROJO antes de activar: mismo backend deberá aprobar origen/escope y conservar límites, sin otra autenticación ni asistente. No alterarlegacy en este encargo.
-
-### Dominios/OAuth: continuidad preparada sin cambios productivos
-
-VERDE de revisión/contrato: sharedCommercialRoot intercepta únicamenteGET / con gates explícitos y hosts exactos; no toma códigos antiguos, assets, APIs o callbacks. Navegación de país permanece en el mismo documento; no promete conservar File/cookie al navegar entre dominios. URLs nuevasPA y extranjeras mantienen los dominios aprobados; QR usa URLcanónica. Códigos históricos y Pages siguen intactos.
-
-ROJO de activación: DNS no enruta por path. No apuntar todo direcciones507.com aCore hasta acreditar cómo se sirven también las rutas/archivos históricos. Reutilizar únicamente el frente de enrutamiento existente si puede hacerlo selectivamente; si no existe, no inventar proxy/infraestructura ni activar raíz. direcciones.lat debe registrarse en el servicio existente para obtener sus propiosCNAME/TXT antes de DNS/TLS; no reutilizar TXT507.
-
-OAuth real: una configuración de redirect/success/origen; cookies host-only Secure HttpOnly SameSite=Lax. general-auth.ts rechaza un host diferente con AUTH_ORIGIN_DENIED incluso con x-forwarded-host falso. Prueba negativa añadida usa authactual y mocks que fallan si se consultaSQL/proveedor. No cambiar producción ni crear SSO/authnuevo; documentado que activarlat DNS no conecta Mi cuenta automáticamente. Se necesita autorizar/verificar la configuración compatible del MISMOauth para amboshosts (callback/state/CSRF/roles/logout), con pruebas aisladas antes de activación. No transportar cookies/tokens porURL ni compartir dominio de cookie entre507.com ylat.
-
-### Autorizaciones mínimas y estado de entrega
-
-No pedir otra autorización para revisar fuentes o el diagnóstico ya completado: falta acceso de lectura aPLANES, no permiso deSQL. Snapshot requiere respuesta de soporte/método aislado y luego presupuesto autorizado si aplica. WidgetPA queda preparado enPR52; ensayo productivo con estado/proveedor y activaciónCORSLATAM necesitan autorización posterior. DNS/configuraciónOAuth/DDL/merge/deploy permanecen prohibidos. PR51 intacto; no nuevoADMIN/auth/DB/almacenamiento/publicador ni pagos activados. CI final de esta preparación se registra en descripción dePR52.
-
-
-## Continuación autorizada desde6c345e8 — preparación aislada de OAuth y Natalie
-
-Esta sección actualiza los puntos pendientes y sustituye el requisito anterior de raíz comercial507: la instrucción más reciente exige CONSERVAR la página principal histórica. No se ejecutó de nuevo el diagnósticoPostgreSQL ni se releyó el maestro.
-
-|Punto pendiente|Estado actual y evidencia|Qué falta realmente|
-|---|---|---|
-|Lectura PLANES/emisores|ROJO: además de Necesitas acceso en editor, fetch autorizado del proyecto medianteDrive devolvió403/FORBIDDEN. No .gs en repo ni fuentes deversión44/triggers accesibles|Cuenta con permiso Lector sobre proyecto1A6hGG0gTBwZ6L6yHOqrf9k7Q7KtUa8MonInL3Nmsh8JSG0Bll_n8Tj4Z. No hace falta permisoEditor niDeploy. Triggers deotros usuarios pueden requerir evidencia/exportación delpropietario de cada trigger; lectura no garantiza inventario completo|
-|Exclusividad futura|ROJO: snapshot40/PG0 y pruebas N32/PLACE conservados. No fuentes suficientes para generadores/triggers/manuales|Revisión/exportación de funciones emisoras y canales manuales, contrato probado de exclusiónN32 y lectorcanónico válido. No activar gate por estadística actual|
-|Snapshot11octubre|ROJO: consulta oficial confirma Restore estándar, no clonación/exportación aislada de ESE snapshot. API documenta List/Create/Restore/Lock/Delete, sin procedimiento de exportación acreditado|Respuesta de soporte sobre extracción/clon aislado y costo concreto. No ejecutar mutationRestore ni montar volumenlive para investigar|
-|Natalie en dos entradas|AMARILLO: mismo widget ybackend preparados para507 yLATAM, con gateexacto AD507_INTERNATIONAL_DOMAIN_VERIFIED. Mismo scriptHTTPS, sesióncontrolada, identidad, provider ylímites. No llamadas reales|DNS/TLS/origen verificado y aprobación de activación posterior; prueba positiva designada sin afirmar alcanceprivado/datosentre dispositivos. No nuevoasistente|
-|OAuth dosdominios|AMARILLO: un createGeneralAuth, mismoGoogleclient/secreto/DB/roles, callbacks explícitos y estado/token vinculadoaorigen; LATAM cerrado por defecto|Registrar callbacklat en elmismoGoogleOAuthclient, configurar variables solo tras autorización, validar físicamente. NoSSO automático ni compartir cookies entre dominios|
-|Raíz507 y entradaLATAM|VERDE de preservación, AMARILLO deactivación: raíz507 nunca interceptada por sharedCommercialRoot. EntradaLATAM comparte renderer, rootLATAM requieregates. ComercialPA preparado en /commercial/panama concanonicalpropia|Enrutamiento del pathPA mediante frenteexistente ylatmismoservicio; no cambiosDNS/Pages/históricos. No nuevaaplicación ni duplicación|
-
-### OAuth preparado y pruebas que deben pasar
-
-Configuración primaria existente intacta cuando LATAM no está configurado. Segunda configuración solo si AD507_INTERNATIONAL_DOMAIN_VERIFIED=true y AD507_GOOGLE_REDIRECT_URI_LATAM=https://direcciones.lat/auth/google/callback; AD507_AUTH_SUCCESS_URL_LATAM por defecto/predeterminado /panel, validado en el mismoorigen. El mismoclientGoogle debe registrar elcallbacklat antes deactivar. No valoressecretos nuevos, servicios, tablasni migraciones.
-
-El origen se selecciona solo por URLhost exacto y callbackconfigurado; headersproxy no crean destinos. StateLATAM sehashea conorigen; estadosprimarios mantienen hash anterior. Cookies Secure/HttpOnly/SameSite=Lax yhost-only. Tokensnuevos firmados llevanorigen; tokensprimariosanteriores sinorigen continúan aceptados soloenprimario. No se aceptan enLATAM. Roles siguenPostgreSQL yOAuth no otorgaADMIN. Logout/CSRF revoca sesión propia, sin consumir la delotrodominio. MismoGoogleSub resuelve una solaidentidad/usuario enDBcentral, con sesionesseparadas porhost. No afirmar SSOsilencioso o continuidad deFile entrehosts.
-
-Pruebas añadidas enPG aislado: callbacks deamboshosts, login/mismaidentidad/CLIENT, statecruzado rechazado sin consumir primario, cookiecruzada rechazada, compatibilidad de tokenprimarioanterior, replay/CSRF/roles existentes, logout independiente. ConfiguracionesHTTP/userinfo/hostmalicioso/pathincorrecto/redirecciónexterna rechazadas. ProveedorGoogle simulado, no transacciones ni credencialesreales.
-
-### Natalie: configuración de origen dentro del mismo backend
-
-La única modificación delbackendlegacy candidato está en la extensionseam aprobada: al arrancar agrega el origenexacto https://direcciones.lat a NATALIE_ALLOWED_ORIGINS SOLO con AD507_INTERNATIONAL_DOMAIN_VERIFIED=true. check-legacy y su prueba comparan elresto EXACTAMENTE consnapshot; no modificarlegacy.snapshot.txt. Session/conversation/Residential/analytics/knowledge/provider/ratelimits siguenoriginales. Sin wildcardCORS, sinotroauth ni ampliar herramientas/permisos/conocimiento.
-
-Widgetreutilizado paraLATAM conelmismogate; por defecto desactivado. PreflightOPTIONS contra Bun yPG AISLADOS debeaceptar latverificado yrechazar hostparecido para sesión/conversación, sin crear sesiones ni llamarIA. Seconserva scriptHTTPS yfuncionamientoindependiente delteléfono. LogoutdelpanelLATAM retorna asupropiaentrada; panelPA conserva comportamiento. Respuesta real/proveedor no certificada porOPTIONS.
-
-### Recuperación y costo consultados, sin operaciones
-
-Fuentes oficiales adicionales: https://docs.railway.com/integrations/api/manage-volumes y https://docs.railway.com/pricing/plans (Resource usage pricing). Tarifascontainers: volumenUS$0.15/GB-mes; RAMUS$10/GB-mes; CPUUS$20/vCPU-mes; egressUS$0.05/GB. Se factura según uso; no confundir estas tarifas con cotización de recuperar el snapshot. Para ese ensayo no se conoce tamaño final/tiempoCPU/RAM ni método soportado. NO existe precio final acreditado, ni presupuesto aprobado, ni recursoscreados. Los245MB listados no prueban tamañofinalrestaurado ni coste total.
-
-Consulta que necesita respuesta delpropietario/soporte: con losIDs y fecha registrados previamente, confirmar mecanismo soportado de extracción/clon al destinoaislado SIN Restore/montajelive/redeploy; pedir costo y retenciónmínimos. No seenvía mensaje ni secontrata soporte premium en este encargo. Una copia lógica nueva podría ensayarse, pero no verifica elrespaldo11octubre yno se ejecutó.
-
-### Autorizaciones pendientes
-
-1. Facilitar permiso Lector aPLANES o fuenteexportada sinsecretos y evidencia detriggersemisores; noautorizarEditor ni cambioshistóricos.
-2. Obtener procedimiento/cotización deRailway; autorizar operaciónaislada/costo solo después de esa respuesta.
-3. Posteriormente: registrar callbacklat yhostRailway, variables/gates de configuración yDNS/TLS autorizados; validación física deOAuth/Natalie en la plataformaúnica, con presupuestoIA si la prueba tiene consumo.
-4. Solo tras exclusividad/recuperación/routing/verificaciones: DDLordenado/merge/deploy/activación autorizados. Ninguna deestas acciones fue realizada. El diagnósticoREADONLY permanececonsumido, nopermite repetición.
-
-CI final deestecommit y sus límites se registran en el reporte único dePR52; PR51 permanece7535f2c. No declarar operativo lo preparado.
-
-
-## Avance hacia activación desde8689e4e — evidencia adicional sin repetir pruebas
-
-Cambio exclusivamente documental. Se conserva la evidencia127/0,1970aserciones,20archivos, Actions38185952778 SUCCESS sobre8689e4e. No nuevo test, rerunCI, diagnósticoPG, roundtripR2, conversaciónIA o lectura masiva delmaestro. El commit documental utiliza [skip ci] para respetar la instrucción de no repetir pruebas; no atribuirle una nueva ejecuciónCI.
-
-### Barrera de emisión comprobada por lectura del código actual
-
-VERDE (garantía de bloqueo, no exclusividad histórica): server.ts calcula namespaceExclusive SOLO con AD507_HISTORICAL_NAMESPACE_VERIFIED==='true' y pasa ese valor al adaptador. request-repository.ts publish verifica canonical.historicalRegistryVerified===true ANTES de sql.reserve(), locks, consultas o escritura delcódigo. Si falta, CANONICAL_PUBLICATION_NOT_READY. new-address-publication.ts reserve comprueba namespaceExclusive ANTES del lectorPLANES y SQL: HISTORICAL_NAMESPACE_NOT_VERIFIED. El acceso directo al adaptador tampoco evita la barrera. No añadir otroallocator ocontrol duplicado, ni activar el existente con evidencia insuficiente.
-
-La preparación de solicitudes sin código no equivale aemisión; la aprobaciónADMIN noelimina elgate. UNIQUE ynormalización siguen como barreras adicionales deDB, sin atribuirles garantía frente aescritoreshistóricos externos. PLANES permaneceROJO por la evidencia reciente editorNecesitasacceso/Drive403: falta permisoLector deproyecto oexportación deasignadores/version44/triggers y canalesmanuales. No se solicitaron permisos ni se tocaron históricos. La lectura delproyecto no acredita por sísola triggers instaladospor otrascuentas.
-
-### Lectura nueva de Railway, sin secretos
-
-ad507-core b0da9f70-7790-4729-a728-aaa4aa3f571d, proyecto2b6d4e6c-e1d4-471d-a77d-c9bdb711650d, production909fdec4-8930-4405-ae53-6e8fb0d3f901: deployment e43bec48-2518-41bc-814a-a99da78eb6c4 SUCCESS, staged:null. Solo nombres devariables, no valores: AD507_HISTORICAL_NAMESPACE_VERIFIED ausente; AD507_INTERNATIONAL_DOMAIN_VERIFIED ausente; AD507_GOOGLE_REDIRECT_URI_LATAM ausente. Por ello no hay confirmación deexclusividad ni activaciónLATAM/callback secundaria enproducción. CandidatoPR52 no desplegado.
-
-Dominios delmismoservicio existentes: direcciones507.com, www.direcciones507.com, cuenta.direcciones507.com y ad507-core-production.up.railway.app, puerto8080. direcciones.lat ausente. No se registróhost, cambióDNS/TLS, variable oservicio. No afirmar valoresDNSlat hasta que Railwaylos emita.
-
-### Configuración exacta preparada para revisión posterior
-
-|Elemento|Valor/procedimiento preparado|Estado|
-|---|---|---|
-|GoogleOAuthlat|Registrar https://direcciones.lat/auth/google/callback en elmismoclienteGoogle actual; no otrocliente/auth|AMARILLO: sin cambiosCloud/credenciales|
-|Callbackbackendlat|AD507_GOOGLE_REDIRECT_URI_LATAM=https://direcciones.lat/auth/google/callback|AMARILLO: variable actualmenteausente|
-|RetornoMi cuentaLATAM|AD507_AUTH_SUCCESS_URL_LATAM=/panel, validado enorigenlat|AMARILLO: preparadocandidato|
-|Origen primarioPanamá|Conservar config primaria vigente; confirmar su callback público y routing real antes de cualquier activación. No asumir valorsecretamente leído ni sustituirlo ahora|AMARILLO: pruebas127 aprobadas, configuraciónproductiva sin cambios|
-|HostLATAM|Registrar direcciones.lat en ad507-core/production, puerto8080, obtenerCNAME/TXT específicos y validarDNS/TLS|AMARILLO: operaciónprohibida hasta autorización; sin crearotraapp|
-|GatesLATAM|AD507_INTERNATIONAL_DOMAIN_VERIFIED=true solo DESPUÉS deDNS/TLS/origen comprobados; AD507_SHARED_COMMERCIAL_ENTRY_ENABLED controla raízlat; root507 sepreserva|AMARILLO: ningunaactivación|
-|Natalie|Mismo widget/script/backend; origenlat condicionadoalmismogate, sesionesHTTPS y alcance/límites conservados|VERDE integraciónaislada127; AMARILLO respuesta real/activación|
-|EmisiónAD507|NO establecer AD507_HISTORICAL_NAMESPACE_VERIFIED hasta revisar TODOS los emisores ylectorcanónico|ROJO exclusividad, VERDE bloqueoactual|
-
-Respaldo11oct2026-10-11T16:39:30.690Z/245MB: identificaciónconservada, recuperaciónaisladaROJO. Procedimiento/IDs/consulta soportada ya documentados; no nuevos debates/tarifas/storage ni recursos. Solo falta respuesta concreta sobre cómo recuperar ESE snapshotaislado sin montaje/redeploylive; autorización de una operación/costo se decidirá después, no autorización genérica deRestore.
-
-Verificaciones Natalie/OAuth de código ydesarrollo quedan cerradas con las127 aprobadas; no repetirlas para obtener otroverde. Lo que queda es físico/configuraciónautorizada y evidenciasexternas. Sin desplegar el candidato no puede certificarse su funcionamiento productivo. Mantener estas filasAMARILLO hasta pruebasreales; no exigir teléfonoWhatsApp paraNatalie ni añadir identidad/asistente paralelo.
-
-### Qué puede continuar y qué requiere intervención
-
-Sin afectarproducción: revisar fuentePLANES si elpropietariofacilita lectura/exportación; cotejar evidencia detriggersemisores; evaluar respuesta desoporte sobre snapshot; revisar los valoresDNSqueRailway emita cuando suregistrose autorice. Estas revisiones no requieren nuevo permisoSQL, otrodiagnóstico o nuevasfunciones.
-
-Intervenciones concretas: (1) LectorPLANES/exportación y evidencia deemisores; (2) respuesta deRailway de recuperaciónaislada; (3) posteriormente autorizar callback/host/configuración/DNS/TLS yprueba real designadaGoogle/Natalie con costo si aplica; (4) DDL/merge/deploy solo tras resolverbloqueos yautorización. No nuevasautorizaciones para repetir trabajo completado. PR51 intacto, una arquitectura central ypagosapagados.
-
-
-## Intervenciones externas — procedimiento breve
-
-Evidencia nueva: búsqueda Drive autorizada PLANES/mimeAppsScript no devolvió proyectos accesibles. No usar este vacío para inferir que no existen; persisten editorNecesitasacceso/Drive403. Google documenta que proyectos vinculados heredan permisos delcontenedor y que cada cuenta solo ve sus propios triggers instalables. Fuentes: https://developers.google.com/apps-script/guides/collaborating y https://developers.google.com/apps-script/guides/triggers/installable.
-
-Propietario: abrir proyectoPLANES identificado con su cuenta autorizada, confirmar implementación44 y facilitar las funciones emisoras/normalización/altas/listado sin secretos. Proyecto independiente: compartir archivoAppsScript comoLector; vinculado: permisos heredados delcontenedor. No asegurar que compartir lector delmaestro siempre permite vercódigo; si eleditor no permite lectura, exportar/copiarsolo fuente necesaria desdecuentapropietaria en un documentoLector, sin concederEditor ni ejecutar funciones. Revisar Desencadenadores (reloj) con cuenta que los creó; aportar función/evento/frecuencia, y evidencia deotrascuentas si hay más emisores. Indicar altas manuales existentes. No modificarcompartición delhistórico ni ampliarpermisos automáticamente.
-
-Railway: documentación https://docs.railway.com/platform/support confirma Central Station como canal oficial y Private Threads paraPro; no soporteemail ni contratación adicional. Entrar https://station.railway.com con cuentaRailway, crear consulta privada sobre proyectoamused-enchantment/production/Postgres, proyecto2b6d4e6c-e1d4-471d-a77d-c9bdb711650d, snapshot2026-10-11T16:39:30.690Z/245MB. Pedir procedimiento soportado y costo de extracción/clonaislado sin sustituir montaje ni redesplegarfuente. NoRestore, Deploy, PITR, recursos o servicios contratados. RecuperaciónROJO hastarespuesta/pruebareal. Noenviada por asistente.
-
-Checklist FUTURO (no ejecutar hoy): [ ] autorización/configuración dominio/callback trasbloqueos; [ ] identidad/roles/Micuenta ylogout correctos enamboshosts; [ ] Natalie una solasesiónHTTPS por conversación, respuesta real ycontrol3mensajes enPanamá/LATAM; [ ] URLs/QR/home/indexación históricos intactos; [ ] no pagos/publicaciónextranjera sin autorización. Prueba positivaIA con costo debeautorizarse previamente. EmisiónAD507 siguebloqueada. 127pruebas/diagnósticos no repetidos.
-
-
-## Consolidación de evidencias10–11octubre — sin repetir trabajo
-
-Corrección documental de alcance: el10octubre23:08/23:10UTC (18:08/18:10Panamá) YA se registró revisión segura de PLANES vinculado alMáster, código y despliegue44. Su conclusión: lectura de direcciones/contadores, sin reserva idempotente/asignación concurrente ni endpoint de publicación de altas acreditados. Se recuperó el reporte previo; NO se volvió a abrir/revisar versión44. La ausencia actual deacceso al editor no invalida esa identificación/revisión anterior. No pedir alpropietario repetir elección dePLANES,44,40códigos oPG.
-
-Accesos existentes aprovechados: búsquedaDrive PLANES SIN limitarse a mimeAppsScript localizó maestro, respaldos ydocumentación. No se abrieron maestro/respaldos ni se releyeron sus códigos. Se leyeron documentos accesibles 04_Base_de_Datos_y_Datos_Maestros_v0.3 (ID1GcOnUjtiI6mB6Qs1-cEZy-KUCB8CcO7M), 01_Expediente_Maestro_Direcciones507_v0.4 (ID1XyWZEBHoppZhD55v6KuKX56aXuRK2-As) y 05_Automatizaciones_e_Integraciones_v0.3 (ID1WIay85Ocs3xXQwEoTEq3OTxp02aDNoMk). Son documentos históricos fechados13sept, no certificación de infraestructura actual.
-
-Nueva evidencia recuperada: Automatizaciones distingue explícitamente el proveedor AppsScript action=list del pipelineGitHub que normaliza y genera PÁGINAS. No identifica funciones que ASIGNAN códigos ni inventario completo deemisores/triggers. Los documentos remiten a procesos vinculados al maestro, pero no contienen unaexportación ejecutable deesos emisores. La documentación deNatalie distingue frontend/web, backend/PG, IA yplantilla n8n inactiva/placeholders; no activar/reconstruir n8n ni confundirla con el backendHTTPS actual ya probado. No se modificaron documentosDrive ni se inspeccionóotroproyecto.
-
-### Única evidencia de emisión futura que falta
-
-- Lista de TODOS los canales que pueden escribir/asignar la columnaCódigo AD507 en elfuturo, incluidos formularios/triggers, scripts separados yaltasmanuales.
-- Nombre/fuente de cada función asignadora y reglas de normalización/formatos que puede producir. No toda la auditoría dePLANES44 otra vez.
-- Cuenta creadora y función/evento/frecuencia de cada trigger que invoca esos emisores; evidencia individual si pertenecen aotrascuentas.
-- Regla verificable que excluya ^AD507-N[0-9A-F]{32}$ en TODOS esosemisores, o evidencia de que ya no emiten altas y lasnuevas pasan exclusivamente por la plataforma central. No asumir que se desactivaron canales antiguos.
-
-Estos cuatroelementos no aparecen en las fuentes recuperadas. Tener listaactual sincolisiones, PLANESlector y127pruebas no sustituye este contrato futuro. ExclusividadROJO; bloqueo previo aemisiónVERDE conservado. AD507_HISTORICAL_NAMESPACE_VERIFIED no se activa. El lectorcanónico requerido por cadareserva continúa convalidaciónpositiva pendiente; no se reemplaza porregistroestático.
-
-Intervención acotada, solo si no existe fuente ya accesible: propietario facilita lectura/exportación de ESASfunciones y listado deemisores/triggers/manuales; no pedir otra revisión44 ni lecturamasiva delmaestro. Si sefacilita fuente podemos cotejarla sinSQL/despliegue/modificaciones. No solicitarEditor/Deploy automáticamente; usar cuentaautorizada/exportación sinsecretos.
-
-### Continuidad de pendientes reales
-
-Recuperación del snapshot11octubre: IDs/fecha/procedimiento y canalCentralStation conservados, no búsquedasgenerales/Restore/nuevosrecursos. Falta respuesta deRailway sobre método soportado de extracción/clonaislado de ESEsnapshot sin montar/redeploylive. Esees elbloqueo, no tamaño/capacidad ni otra compra.
-
-Natalie/OAuth/dosentradas: código8689e4e y127aprobadas conservados; no funcionesnuevas, testsrepetidos, llamadasGoogle/IA reales oconfiguraciónproductiva. Una plataforma/ADMIN/DB/identidad; sesionespororigen; homepage507 preservada yentradaLATAM opt-in. ConservarNatalie comoasistente delpropietario con backendexistente, sin asignarleprivilegios/tareasnuevas. Validaciónreal pendiente debe comprobar acceso delpropietario, widget enambasentradas, sesiónHTTPS/límites ylogout; no afirmar privacidadexclusiva/continuidadentre dispositivos noacreditada por la identidadcontrolada actual.
-
-Soloautorizacionespendientes: acceso acotado aemisores si siguefaltando; procedimiento/costo concreto deRailway antes de recuperar; después callback/host/configuraciónDNS/TLS yvalidaciónrealdesignadaGoogle/Natalie con consumoautorizado siaplica. DDL/merge/deploy permanecenprohibidos. No pedir nuevo permiso dePG ni repetir127. Commitdoc [skip ci]; evidenciaverde delcódigo8689 no cambia.
-
-
-## Avance funcional: recorrido HTTP integral y entrega conectada
-
-Hallazgo concreto: la publicación existente confirmaba ACTIVE/código y la ficha compartida ya producía URLcanónica/QR/copiar/compartir, pero la revisiónADMIN y las tarjetas Mi cuenta no contenían un enlace a esa ficha. Se conecta únicamente eseúltimo tramo; no otropublicador, mensajería, QR o asistente.
-
-Corrección: request-repository.read y adminAddressPage reutilizan proposedCountryUrl para devolver publicUrl SOLO si elregistro nuevo comercialPA está ACTIVE y tiene publication_receipt. Nunca borrador/suspendido/residencial/paísextranjero. Las consultas paginadas proyectan receipt/originalUrl solo para calcular enlace y no exponen esos campos internos ni agregan N+1. OriginalURL de traslado validada conelmismopatrón histórico existente: host507HTTPS ypathcódigo original minúsculo, sincredenciales/query/hash. No se renumeran históricos.
-
-ADMIN yMi cuenta muestran Abrir ficha,enlace yQR, apuntandoalrenderer/ficha existente; allí seutilizan QR/copiar/compartir yaimplementados. No se envían mensajes/email/WhatsApp automáticamente. Recepción delcliente es mediante su panelautenticado. Fichas/QR/datos anteriores sin cambios.
-
-Prueba nueva preparada en tests/consolidated.test.ts: BunHTTP local yPG aislado existentes; OAuth real demódulo conGooglesimulado; proveedoresR2/PLANES simulados conredexterna inesperada rechazada. Solicitudmultipart/logooptimizado → persistencia/reintento sin duplicado → ADMINrevisión mediante script UIexistente → aprobación → publicación503 congatecerrado (código/URL siguenNULL) → confirmaciónEXCLUSIVAMENTEsintética defixture → ACTIVE → enlacecanónico enADMIN/Mi cuenta → GETfichaHTTP200 → payloadQR/copiarcanónico → GETimagenWebP200 → retry publicaciónúnico. Colombia: formulario/ADMIN/fotos/revisión funcionan; publishse detiene exactamente con503 COUNTRY_NOT_ENABLED ysin código/URL. Noactivar país para pasarprueba.
-
-Se ejecuta regresión delcambioconcreto y la nueva integral eninfraestructuraCI existente; la prohibición anterior de repetir127 sin cambios no exige omitir validación deestacorrección funcional autorizada. Resultados finales se registran enPR52. Navegadorreal/tablet, Google/R2/PLANES/productorIA yDNSproductivos no certificados por elharness: transportelocalHTTP simulaURLedgeHTTPS, sesionesHTTPS deconfigcandidate/headers contratadas, noTLSrealnuevo. ScriptADMIN se ejecuta conDOMmínimo de prueba yHTTP real local; no esprueba visualnavegador.
-
-Natalie/OAuth/países quedanimplementadosen8689e4e, conservados; ninguna funcióndeNatalie nueva. Emisores futuros/lectorrealPLANES yrecuperaciónsnapshot siguenROJO deactivación, no bloqueanestafaseaislada. Evidencia recuperada del10–11oct yconsulta soportadas no se repiten ni se amplían permisos. Producción/DNS/DDL/merge/deploy/cobros permanecenintactos.
+ROJO (snapshot real): las fuentes/UI no documentan exportación o clonación de ESE snapshot a otro servic…6882 tokens truncated…cuperaciónsnapshot siguenROJO deactivación, no bloqueanestafaseaislada. Evidencia recuperada del10–11oct yconsulta soportadas no se repiten ni se amplían permisos. Producción/DNS/DDL/merge/deploy/cobros permanecenintactos.
 
 La ejecución 38191592597 encontró EADDRINUSE en el puerto fijo del runtime aislado antes de ejecutar el recorrido. Se sustituye exclusivamente ese puerto de pruebas por uno disponible; no cambia ningún puerto ni servicio productivo. La repetición está justificada por este fallo nuevo del entorno.
 

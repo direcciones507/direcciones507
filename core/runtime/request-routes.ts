@@ -75,6 +75,14 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     const result=action![2]==='rollback'?await context.repository.rollbackHistorical(user.id,action![1]):action![2]==='publish'?await context.repository.publish(user.id,action![1]):await context.repository.review(user.id,action![1],action![2]==='approve'?'APPROVED':'REJECTED');
     return respond(200,{ok:true,request:result});
   } catch(error){
+    // Bounded operational diagnosis: no request data, SQL, upstream message or secrets.
+    if(action?.[2]==='publish'){
+      const failure=error as {name?:unknown;code?:unknown;stack?:unknown};
+      const type=typeof failure.name==='string'&&/^[A-Za-z]{1,40}$/.test(failure.name)?failure.name:'Error';
+      const code=typeof failure.code==='string'&&/^[A-Z0-9_]{1,50}$/.test(failure.code)?failure.code:null;
+      const frame=typeof failure.stack==='string'?failure.stack.match(/(?:new-address-publication|request-repository|payment-repository)\.ts:\d+:\d+/)?.[0]??null:null;
+      console.warn(JSON.stringify({event:'publication_failed',type,code,frame}));
+    }
     const name=error instanceof Error?error.message:'';
     const status=name==='FORBIDDEN'?403:name==='REQUEST_NOT_FOUND'?404:['PAYMENT_CONFIRMATION_REQUIRED','IDEMPOTENCY_CONFLICT','INVALID_STATE_TRANSITION','APPROVAL_REQUIRED','MEDIA_INCOMPLETE','CANONICAL_CODE_COLLISION','OWNERSHIP_CONFLICT','PUBLICATION_STATE_CONFLICT'].includes(name)?409:['COUNTRY_NOT_ENABLED','R2_NOT_READY','CANONICAL_PUBLICATION_NOT_READY','HISTORICAL_NAMESPACE_NOT_VERIFIED','HISTORICAL_REGISTRY_UNAVAILABLE','RESIDENTIAL_PUBLICATION_NOT_READY','PUBLICATION_UNCONFIRMED'].includes(name)?503:400;
     const safe=/^(INVALID_[A-Z_]+|COUNTRY_NOT_ENABLED|CAPABILITY_VIOLATION|IDEMPOTENCY_CONFLICT|DUPLICATE_MEDIA|PLAN_NOT_FOUND|REQUEST_NOT_FOUND|FORBIDDEN|PAYLOAD_TOO_LARGE|R2_NOT_READY|CANONICAL_PUBLICATION_NOT_READY|INVALID_STATE_TRANSITION|APPROVAL_REQUIRED|MEDIA_INCOMPLETE|CANONICAL_CODE_COLLISION|HISTORICAL_NAMESPACE_NOT_VERIFIED|HISTORICAL_REGISTRY_UNAVAILABLE|RESIDENTIAL_PUBLICATION_NOT_READY|OWNERSHIP_CONFLICT|ADMIN_CREATION_REQUIRED|HISTORICAL_DATA_CHANGED|HISTORICAL_MEDIA_UNVERIFIED|HISTORICAL_RESOURCE_UNAVAILABLE|MIGRATION_BRIDGE_NOT_VERIFIED|HISTORICAL_RESTORE_REQUIRED|PUBLICATION_STATE_CONFLICT|PUBLICATION_UNCONFIRMED|CANONICAL_CODE_INVALID)$/.test(name)?name:'REQUEST_OPERATION_FAILED';

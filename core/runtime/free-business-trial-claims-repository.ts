@@ -22,10 +22,10 @@ export async function inspectBusinessTrialHistory(sql:Sql,candidate:BusinessIden
 }
 /** Requires a transaction held by caller. No claim is issued for legacy migrations. */
 export async function insertBusinessTrialClaim(tx:Sql,addressId:string,identity:BusinessIdentity,activatedAt:Date){
+ if(!Number.isFinite(activatedAt.getTime()))throw Error('INVALID_ACTIVATION_DATE');
  const end=freeBusinessTrialEndsAt(activatedAt);
  const name=normalizeBusinessName(identity.name),phone=normalizeBusinessPhone(identity.phone);
  if(!name||phone.length<7)throw Error('FREE_TRIAL_IDENTITY_INCOMPLETE');
- if(!Number.isFinite(activatedAt.getTime()))throw Error('INVALID_ACTIVATION_DATE');
  const updated=await tx.unsafe(`UPDATE ad507.addresses SET free_trial_started_at=$2::timestamptz,free_trial_ends_at=$3::timestamptz
  WHERE id=$1::uuid AND source='USER_REQUEST' AND address_type='BUSINESS'
  AND free_trial_started_at IS NULL AND request_data->>'plan'='BUSINESS_FREE'

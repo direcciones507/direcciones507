@@ -335,7 +335,7 @@ hero.src='https://raw.githubusercontent.com/direcciones507/direcciones507/feat/a
 document.getElementById('latamCreate').onclick=e=>prepareLatamRequest(e,'BUSINESS','');
 const latamPlanCatalog={
  RESIDENTIAL:{title:'Residencial',price:'US$12.99',features:['Dirección digital para tu hogar','Código digital y acceso mediante enlace o QR','Ubicación y referencia para compartir','Acceso residencial privado según sus controles de seguridad']},
- BUSINESS_FREE:{title:'Negocio Gratis',price:'Gratis',features:['Dirección digital de negocio y código QR','Logo, horario, contacto y referencia','Navegación para llegar al negocio','Sin descripción breve ni código personalizado incluido']},
+ BUSINESS_FREE:{title:'Negocio Gratis',price:'US$0',features:['Dirección digital de negocio y código QR','Logo, horario, contacto y referencia','Navegación para llegar al negocio','Promoción de un mes gratuito por negocio para solicitudes hasta el 9 de noviembre de 2026; sujeta a aprobación','Sin descripción breve ni código personalizado incluido']},
  BUSINESS_PREMIUM:{title:'Premium',price:'US$19.99',features:['Todo lo incluido en Negocio Gratis','Código personalizado con nombre sujeto a disponibilidad','Redes sociales y código postal o zona postal','Sin reporte mensual de estadísticas']},
  BUSINESS_PREMIUM_PRO:{title:'Premium Pro',price:'US$39.99',features:['Todo lo incluido en Premium','Descripción comercial','Galería de hasta cinco fotografías','Funciones adicionales según el catálogo vigente']}
 };

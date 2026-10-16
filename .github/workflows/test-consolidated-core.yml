@@ -1,7 +1,7 @@
 name: Consolidated Core compatibility
 on:
   push:
-    branches: ["feat/core-consolidated-oauth-20261006"]
+    branches: ["feat/core-consolidated-oauth-20261006", "fix/panama-panel-publication-20261012"]
   pull_request:
     paths: ["core/runtime/**", "db/migrations/0005_general_google_auth.sql", ".github/workflows/test-consolidated-core.yml"]
 jobs:

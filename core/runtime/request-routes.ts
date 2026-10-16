@@ -34,10 +34,12 @@ export async function parseRequestForm(req:Request) {
 }
 export async function handleRequestRoutes(req:Request,context:{enabled:boolean;sql:Sql;auth:Pick<ReturnType<typeof createGeneralAuth>,'currentUser'>;repository:ReturnType<typeof createRequestRepository>;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null> {
   const url=new URL(req.url),adminCreate=url.pathname==='/v1/admin/requests'&&req.method==='POST',submit=url.pathname==='/v1/user/requests'||adminCreate;
+  const userDetail=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})$/);
+  const userMedia=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
   const action=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/(approve|reject|publish|transfer|rollback)$/);
   const bridge=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/bridge$/);
-  const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/);
-  const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
+  const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/)||userDetail;
+  const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/)||userMedia;
   if(!submit&&!action&&!detail&&!media&&!bridge)return null;
   const respond=(status:number,value:unknown)=>Response.json(value,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
   if(!context.enabled)return respond(503,{ok:false,error:'USER_PANEL_SUBMISSION_NOT_ENABLED'});
@@ -49,7 +51,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==requestOrigin)||(req.headers.has('origin')&&req.headers.get('origin')!==requestOrigin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
     const canCreateCommercial=adminCreate&&user.roles.includes('COMMERCIAL');
-    if(!(submit&&!adminCreate?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
+    if(!((submit&&!adminCreate||userDetail||userMedia)?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [id,item]of limits)if(now-item.at>60000)limits.delete(id);
     const item=limits.get(user.id);if(item&&++item.count>20||!item&&limits.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)limits.set(user.id,{at:now,count:1});
     if(adminCreate&&req.headers.get('content-type')?.startsWith('application/json')){const body=JSON.parse((await readRequestBody(req,64000)).toString('utf8'));if(!body||Object.keys(body).length!==1||!body.historicalSnapshot)throw Error('INVALID_REQUEST');return respond(200,{ok:true,request:await context.repository.stageHistorical(user.id,req.headers.get('idempotency-key')??'',body.historicalSnapshot)});}

@@ -1,0 +1,34 @@
+import {test,expect} from 'bun:test';
+import {userPanelHtml,userPanelPresentation} from '../user-panel';
+import {requestClientScript} from '../request-client-ui';
+import {readFileSync} from 'node:fs';
+
+test('request details remain in the shared account with syntactically valid scripts on both domains',()=>{
+  for(const html of [userPanelHtml,userPanelPresentation(new URL('https://direcciones.lat/panel'))]){
+    expect(html).toContain('id="requestDetail"');
+    expect(html).toContain('data-request=');
+    for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
+  }
+  expect(()=>new Function(requestClientScript)).not.toThrow();
+  const server=readFileSync(new URL('../server.ts',import.meta.url),'utf8');
+  expect(server).toContain('/auth/google/login?returnTo=%2Fadmin');
+  expect(server).toContain('data-place-request=');
+  expect(server).toContain('openRequestReview(b.dataset.placeRequest)');
+});
+
+test('client detail renders supplied text safely, exposes only read controls and supports close',async()=>{
+  class Node{
+    textContent='';children:any[]=[];dataset:any={};classList={remove(){},add(){}};style:any={};onclick:any;
+    append(...nodes:any[]){this.children.push(...nodes)} replaceChildren(...nodes:any[]){this.children=nodes;this.textContent=''}
+    scrollIntoView(){}focus(){}addEventListener(){}
+  }
+  const view=new Node(),addresses=new Node(),name='<img src=x onerror=alert(1)>';
+  const doc={getElementById:(id:string)=>id==='addresses'?addresses:view,createElement:()=>new Node(),createTextNode:(s:string)=>({textContent:s}),querySelector:()=>null};
+  const id='11111111-1111-4111-8111-111111111111';let calls=0;
+  const http=async(url:string)=>{calls++;expect(url).toBe('/v1/user/requests/'+id);return Response.json({request:{name,type:'PLACE',status:'PENDING_REVIEW',description:'Ñ y tildes á',reference:'Referencia',latitude:8,longitude:-80,countryCode:'PA',extras:{},media:[{id,type:'IMAGE',status:'READY'}]}})};
+  const open=new Function('document','fetch','countrySettings',requestClientScript+';return openUserRequest')(doc,http,{PA:{name:'Panamá'}});
+  await open(id);expect(calls).toBe(1);const content=view.children[1];expect(content.children[0].textContent).toBe(name);
+  expect(content.children.some((n:any)=>n.src==='/v1/user/requests/'+id+'/media/'+id)).toBe(true);
+  expect(JSON.stringify(content)).not.toContain('innerHTML');
+  view.children[0].onclick();await open('not-a-uuid');expect(calls).toBe(1);
+});

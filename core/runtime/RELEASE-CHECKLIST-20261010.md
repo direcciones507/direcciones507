@@ -1,5 +1,29 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Correcciones operativas de panel — 15 octubre 2026, prueba tablet
+
+- OPERATIVO según prueba del propietario: Lugar guardado; cliente En revisión y
+  ADMIN PENDING_REVIEW. Ya no es pendiente de envío inicial. Sin duplicar registro.
+- EN DESARROLLO: OAuth desde ADMIN admite únicamente returnTo=/admin, liga la
+  intención a state/binding y vuelve a /admin solo tras consultar rol ADMIN real.
+  Login general conserva destino; no alta/elevación de roles. Logout ADMIN vuelve allí.
+- EN DESARROLLO: fichas USER_REQUEST abren detalle dentro del panel existente,
+  con texto seguro, ubicación, foto privada y estado. Rutas de lectura reutilizan
+  repository.read y autorización R2; terceros reciben404 y clientes no moderan.
+- EN DESARROLLO: Lugares ADMIN enlaza el visor openRequestReview existente con
+  aprobar/rechazar/publicar según estados y permisos ya definidos.
+- PROBADO local:8 tests,0 fallos,42 expectativas; JS renderizado y buildBun PASS.
+  PostgreSQL aislado local bloqueado por permisos de creación/cambio de usuario;
+  nuevas pruebas de OAuth/propiedad/media/revisión se ejecutarán en Actions.
+- PR62 ya MERGED; continuación sobre su misma rama desde main3623e3f. Se amplía
+  el trigger push del workflow existente a esa rama para comprobar cambios posteriores
+  al merge sin duplicar PR. No se repiten respaldo/migraciones/R2 aprobados.
+- PENDIENTE: desplegar y verificar estas correcciones; aprobar/publicar la solicitud
+  real y comprobar URL/QR/foto/Mi cuenta. Pagos siguen desactivados; histórico intacto.
+- MEJORA FUTURA, SIN IMPLEMENTAR: filtros de Lugares por país, provincia y divisiones
+  administrativas correspondientes a cada país. No bloquea esta activación.
+
+
 ## Activación ejecutada — 15 octubre 2026, 23:11 UTC
 
 Esta entrada sustituye los bloqueos de acceso, merge y activación descritos más abajo;

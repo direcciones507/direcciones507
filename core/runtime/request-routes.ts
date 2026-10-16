@@ -38,7 +38,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
   const edit=url.pathname.match(/^\/v1\/(user|admin)\/requests\/([a-f0-9-]{36})\/(edit|history|location-approve|location-reject)$/);
   const userDetail=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})$/);
   const userMedia=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
-  const action=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/(approve|reject|publish|transfer|rollback)$/);
+  const action=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/(approve|reject|publish|transfer|rollback|archive-place)$/);
   const bridge=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/bridge$/);
   const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/)||userDetail;
   const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/)||userMedia;
@@ -74,6 +74,18 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
       const rows=await context.sql.unsafe("SELECT storage_key,media_type FROM ad507.address_media WHERE id=$1::uuid AND address_id=$2::uuid AND upload_status='READY'",[media[2],media[1]]);if(!rows.length)throw Error('REQUEST_NOT_FOUND');
       const file=await createRequestMediaStorage(context.sql,user.id,context.r2,context.fetch).readPrivate({ownerId:user.id,addressId:media[1],role:rows[0].media_type==='LOGO'?'logo':'photo',storageKey:rows[0].storage_key});
       return new Response(file.bytes,{headers:{'content-type':'image/webp','cache-control':'no-store','x-content-type-options':'nosniff','content-security-policy':"default-src 'none'; sandbox"}});
+    }
+    if(action![2]==='archive-place'){
+      const result=await context.sql.begin(async tx=>{
+        const rows=await tx.unsafe("SELECT a.id::text,a.code,a.status,a.address_type,a.request_data FROM ad507.addresses a WHERE a.id=$1::uuid AND a.source='USER_REQUEST' FOR UPDATE",[action![1]]);
+        const place=rows[0];
+        if(!place||place.address_type!=='PLACE'||place.request_data?.migration)throw Error('REQUEST_NOT_FOUND');
+        if(place.status==='ARCHIVED')throw Error('INVALID_STATE_TRANSITION');
+        await tx.unsafe("UPDATE ad507.addresses SET status='ARCHIVED',updated_at=now() WHERE id=$1::uuid",[place.id]);
+        await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id) VALUES($1::uuid,'ADMIN','PLACE_ARCHIVED','ADDRESS',$2::uuid)",[user.id,place.id]);
+        return {id:place.id,status:'ARCHIVED'};
+      });
+      return respond(200,{ok:true,request:result});
     }
     if(action![2]==='transfer'){
       if(Number(req.headers.get('content-length')??0)>4096)throw Error('PAYLOAD_TOO_LARGE');

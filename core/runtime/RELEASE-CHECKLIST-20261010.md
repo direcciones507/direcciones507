@@ -598,3 +598,11 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - Usar una única fuente de configuración de planes, sin duplicar lógica multinacional; diseño adaptable a móvil/tablet/escritorio y accesible por teclado. Validar que los cuatro detalles y el retorno al formulario funcionan físicamente.
 - Respetar decisiones comerciales vigentes: Negocio Gratis sin descripción breve; Premium sin reporte mensual/analytics; Premium Pro con hasta cinco fotos; promociones de fundadores hasta 9-nov-2026 y etapas posteriores según reglas comerciales. Verificar los textos contra la configuración vigente antes de publicar.
 - No modificar el flujo histórico Apps Script/Excel, los 40 códigos históricos, las migraciones productivas ni la pasarela de pagos. Registrar commit, CI, despliegue y prueba física antes de declarar OPERATIVO.
+
+## 2026-10-15 · Control de calidad y contacto obligatorio para Lugares
+
+- **Estado: PENDIENTE DE IMPLEMENTACIÓN Y PRUEBA.** Solicitud expresa del propietario: impedir que cualquier persona publique información falsa, ofensiva o arbitraria en Lugares; ADMIN debe poder contactar al solicitante por correo.
+- Hallazgo en código: `request-validation.ts` admite `email` vacío (`field('email',160,false)`), aunque valida formato cuando se proporciona. El detalle ADMIN muestra `r.extras.email` o «No indicado». La revisión manual `PENDING_REVIEW`/`APPROVED` ya existe; conservarla y verificar que ninguna ruta de publicación permita saltarla.
+- Exigir correo válido para nuevas solicitudes de tipo `PLACE`, tanto en formulario como en validación de servidor. Preservar compatibilidad con solicitudes históricas sin correo y no inventar direcciones de contacto. Determinar si el correo autenticado verificado puede reutilizarse con consentimiento visible.
+- ADMIN: presentar correo y solicitante claramente, revisión de nombre, descripción, ubicación, fotografías y contenido antes de aprobar/publicar; permitir rechazo con motivo y comunicación manual por correo. No prometer envío automático sin servicio de correo configurado.
+- Añadir pruebas de correo ausente/inválido, permisos de revisión y prohibición de publicación automática; comprobar en tablet y móvil. No tocar códigos históricos, pagos ni otras clases de dirección.

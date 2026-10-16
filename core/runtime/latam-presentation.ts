@@ -342,9 +342,10 @@ const latamPlanCatalog={
 let latamSelectedPlan=null;
 const latamPlanDialog=document.getElementById('latamPlanDetails');
 function showLatamPlanDetails(e,type,plan){
- if(!latamPlanCatalog[plan]){prepareLatamRequest(e,type,plan);return;}
+ const detailsKey=type==='RESIDENTIAL'?'RESIDENTIAL':plan;
+ if(!latamPlanCatalog[detailsKey]){prepareLatamRequest(e,type,plan);return;}
  e.preventDefault();
- const item=latamPlanCatalog[plan],country=document.getElementById('commercialCountry');
+ const item=latamPlanCatalog[detailsKey],country=document.getElementById('commercialCountry');
  latamSelectedPlan={type,plan};
  document.getElementById('latamPlanDetailsTitle').textContent=item.title;
  document.getElementById('latamPlanDetailsPrice').textContent=item.price+(item.price==='Gratis'?'':' · Precio de referencia, confirmar vigencia');

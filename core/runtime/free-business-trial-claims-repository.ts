@@ -32,7 +32,8 @@ export async function insertBusinessTrialClaim(tx:Sql,addressId:string,identity:
  [addressId,identity.countryCode,name,phone,identity.latitude??null,identity.longitude??null,activatedAt.toISOString(),end.toISOString()]);
  const updated=await tx.unsafe(`UPDATE ad507.addresses SET free_trial_started_at=$2::timestamptz,free_trial_ends_at=$3::timestamptz
  WHERE id=$1::uuid AND source='USER_REQUEST' AND address_type='BUSINESS'
- AND free_trial_started_at IS NULL RETURNING id`,[addressId,activatedAt.toISOString(),end.toISOString()]);
+ AND free_trial_started_at IS NULL AND request_data->>'plan'='BUSINESS_FREE'
+ AND request_data->'migration' IS NULL RETURNING id`,[addressId,activatedAt.toISOString(),end.toISOString()]);
  if(updated.length!==1)throw Error('FREE_TRIAL_ADDRESS_NOT_ELIGIBLE');
  return end;
 }

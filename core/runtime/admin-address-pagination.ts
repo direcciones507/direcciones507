@@ -21,6 +21,8 @@ export async function adminAddressPage(sql:Sql,params:URLSearchParams,kind:Kind,
  const o=addressPageOptions(params,kind),time=kind==='requests'?'created_at':'updated_at',asc=kind==='requests',args:any[]=[];
  const where:string[]=[];
  if(ownerId){if(!uuid.test(ownerId))throw Error('INVALID_PAGE');args.push(ownerId);where.push('EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=$'+args.length+'::uuid)');}
+ // Archived addresses are retired from normal ADMIN and client listings.
+ where.push("a.status<>'ARCHIVED'");
  if(kind==='requests')where.push("a.status='PENDING_REVIEW'");
  if(kind==='places')where.push("a.address_type='PLACE' AND a.status<>'ARCHIVED'");
  if(o.country){args.push(o.country);where.push("COALESCE(to_jsonb(a)->>'country_code','PA')=$"+args.length);}

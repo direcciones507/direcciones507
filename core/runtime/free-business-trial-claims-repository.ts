@@ -26,15 +26,15 @@ export async function insertBusinessTrialClaim(tx:Sql,addressId:string,identity:
  const name=normalizeBusinessName(identity.name),phone=normalizeBusinessPhone(identity.phone);
  if(!name||phone.length<7)throw Error('FREE_TRIAL_IDENTITY_INCOMPLETE');
  if(!Number.isFinite(activatedAt.getTime()))throw Error('INVALID_ACTIVATION_DATE');
- await tx.unsafe(`INSERT INTO ad507.free_business_trial_claims
- (address_id,country_code,business_name_normalized,business_phone_normalized,location_latitude,location_longitude,claimed_at,trial_ends_at)
- VALUES($1::uuid,$2,$3,$4,$5,$6,$7::timestamptz,$8::timestamptz)`,
- [addressId,identity.countryCode,name,phone,identity.latitude??null,identity.longitude??null,activatedAt.toISOString(),end.toISOString()]);
  const updated=await tx.unsafe(`UPDATE ad507.addresses SET free_trial_started_at=$2::timestamptz,free_trial_ends_at=$3::timestamptz
  WHERE id=$1::uuid AND source='USER_REQUEST' AND address_type='BUSINESS'
  AND free_trial_started_at IS NULL AND request_data->>'plan'='BUSINESS_FREE'
  AND request_data->'migration' IS NULL RETURNING id`,[addressId,activatedAt.toISOString(),end.toISOString()]);
  if(updated.length!==1)throw Error('FREE_TRIAL_ADDRESS_NOT_ELIGIBLE');
+ await tx.unsafe(`INSERT INTO ad507.free_business_trial_claims
+ (address_id,country_code,business_name_normalized,business_phone_normalized,location_latitude,location_longitude,claimed_at,trial_ends_at)
+ VALUES($1::uuid,$2,$3,$4,$5,$6,$7::timestamptz,$8::timestamptz)`,
+ [addressId,identity.countryCode,name,phone,identity.latitude??null,identity.longitude??null,activatedAt.toISOString(),end.toISOString()]);
  return end;
 }
 

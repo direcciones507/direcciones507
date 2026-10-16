@@ -110,6 +110,76 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         html[data-public-place] .white-sheet .public-business-info #btnRef {padding:10px 7px !important;font-size:13px;}
         html[data-public-place] .white-sheet .public-business-info .accordion-label {font-size:12px !important;overflow-wrap:anywhere;}
       }
+      /* Mobile PLACE identity follows the tablet hierarchy: name first, code second. */
+      @media (max-width:767px) {
+        html[data-public-place] .identity-block .title-details-header {
+          display:flex !important;
+          flex-direction:column !important;
+          align-items:flex-start;
+          gap:6px;
+        }
+        html[data-public-place] .identity-block #nombre {
+          order:0 !important;
+          color:#fff !important;
+          font-size:clamp(21px,5.4vw,30px) !important;
+          font-weight:800 !important;
+          line-height:1.14 !important;
+          letter-spacing:-.025em;
+          overflow-wrap:break-word;
+        }
+        html[data-public-place] .identity-block #codigo {
+          order:1 !important;
+          color:#d6c2a0 !important;
+          font-size:clamp(13px,3.4vw,17px) !important;
+          font-weight:750 !important;
+          line-height:1.3 !important;
+          letter-spacing:0;
+          margin:0 !important;
+        }
+        /* The QR button lives in a nested wrapper; flatten it so QR and
+           location/reference occupy the same two-column grid row. */
+        html[data-public-place] .white-sheet .public-business-info {
+          display:grid !important;
+          grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+          gap:12px !important;
+          align-items:stretch;
+        }
+        html[data-public-place] .white-sheet .public-business-info .double-row-buttons {
+          display:contents !important;
+        }
+        html[data-public-place] .white-sheet .public-business-info #btnQR,
+        html[data-public-place] .white-sheet .public-business-info #btnRef {
+          grid-row:auto !important;
+          grid-column:auto !important;
+          min-width:0;
+          width:100% !important;
+          min-height:90px;
+          margin:0 !important;
+          padding:10px 8px !important;
+          gap:7px;
+        }
+        html[data-public-place] .white-sheet .public-business-info #btnQR {order:1 !important;}
+        html[data-public-place] .white-sheet .public-business-info #btnRef {order:2 !important;}
+        html[data-public-place] .white-sheet .public-business-info #btnQR .accordion-label,
+        html[data-public-place] .white-sheet .public-business-info #btnRef .accordion-label {
+          font-size:11px !important;
+          overflow-wrap:anywhere;
+        }
+        html[data-public-place] .white-sheet .public-business-info #btnQR .accordion-value,
+        html[data-public-place] .white-sheet .public-business-info #btnRef .accordion-value {
+          font-size:12px !important;
+          overflow-wrap:anywhere;
+        }
+        html[data-public-place] .white-sheet .public-business-info #btnQR .accordion-icon-left,
+        html[data-public-place] .white-sheet .public-business-info #btnRef .accordion-icon-left {
+          flex-shrink:0;
+        }
+        html[data-public-place] .white-sheet .public-business-info #btnHorario,
+        html[data-public-place] .white-sheet .public-business-info #codigoPostalContainer,
+        html[data-public-place] .white-sheet .public-business-info .public-lower-title {
+          grid-column:1 / -1 !important;
+        }
+      }
       /* Reset legacy fixed grid slots that keep empty rows on tablets. */
       @media (min-width:768px) {
         html[data-public-place] .white-sheet,

@@ -616,7 +616,7 @@ test('new publication HTTP serves the existing template and PostgreSQL API; hist
   try{
     const base='http://127.0.0.1:'+server.port;
     const html=await fetch(base+'/'+code+'/');expect(html.status).toBe(200);const text=await html.text();expect(text).toContain('ADMIN temporary address');expect(text).not.toContain('{{CANONICAL}}');
-    expect(text).toContain('https://direcciones507.com/'+code+'/');
+    expect(text).toContain('https://direcciones.lat/'+code+'/');
     const api=await fetch(base+'/v1/addresses/'+code);expect(api.status).toBe(200);expect((await api.json()).address.code).toBe(code);
     expect((await fetch(base+'/AD507-TESTBUSINESS/')).status).toBe(404);
     const privatePhoto=(await sql.unsafe("SELECT m.id::text FROM ad507.address_media m JOIN ad507.addresses a ON a.id=m.address_id WHERE a.code=$1",[code]))[0].id;

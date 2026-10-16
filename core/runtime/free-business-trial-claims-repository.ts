@@ -1,6 +1,6 @@
 import type {Sql} from 'postgres';
 import {businessTrialDuplicateSignal,evaluateFreeTrialClaims,normalizeBusinessName,normalizeBusinessPhone,type BusinessIdentity} from './free-business-trial-identity';
-import {freeBusinessTrialEndsAt} from './free-business-trial';
+import {freeBusinessTrialEndsAt,freeBusinessOfferEligible} from './free-business-trial';
 
 /** Integration helper, not yet invoked by request approval/publication.
  * Requires reviewed free-business-trial.sql migration.
@@ -49,7 +49,8 @@ export const FREE_BUSINESS_TRIAL_LOCK_KEY='free-business-trial-claims:v1';
  * Caller must hold an open transaction until the claim and address update commit.
  * All trial-claim writers MUST use the same advisory lock.
  */
-export async function reserveBusinessTrialInTransaction(tx:Sql,addressId:string,identity:BusinessIdentity,activatedAt:Date){
+export async function reserveBusinessTrialInTransaction(tx:Sql,addressId:string,identity:BusinessIdentity,activatedAt:Date,submittedAt:Date){
+ if(!freeBusinessOfferEligible(submittedAt))throw Error('FREE_BUSINESS_OFFER_CLOSED');
  await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[FREE_BUSINESS_TRIAL_LOCK_KEY]);
  const history=await inspectBusinessTrialHistory(tx,identity);
  if(history.decision==='ALREADY_USED')throw Error('FREE_TRIAL_ALREADY_USED');

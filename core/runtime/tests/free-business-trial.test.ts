@@ -19,3 +19,10 @@ test('discount only before expiry and on first premium/pro upgrade',()=>{
  expect(firstUpgradeAmountCents('BUSINESS_PREMIUM',1999,true,false,end,end)).toBe(1999);
  expect(firstUpgradeAmountCents('BUSINESS_PREMIUM_PRO',3999,true,false,end,after)).toBe(3999);
 });
+
+test('Panama local month boundary near midnight UTC rollover',()=>{
+ // Oct 31, 23:30 in Panama is Nov 1, 04:30 UTC.
+ expect(freeBusinessTrialEndsAt(new Date('2026-11-01T04:30:00Z')).toISOString()).toBe('2026-12-01T04:30:00.000Z');
+ // Oct 30, 23:30 in Panama remains the 30th in November.
+ expect(freeBusinessTrialEndsAt(new Date('2026-10-31T04:30:00Z')).toISOString()).toBe('2026-12-01T04:30:00.000Z');
+});

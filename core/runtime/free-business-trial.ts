@@ -19,7 +19,8 @@ export function freeBusinessTrialState(endsAt:Date,now:Date):TrialState {
  if(!Number.isFinite(endsAt.getTime())||!Number.isFinite(now.getTime()))throw Error('INVALID_TRIAL_DATE');
  return now.getTime()>=endsAt.getTime()?'EXPIRED':'ACTIVE';
 }
-export function firstUpgradeAmountCents(plan:'BUSINESS_PREMIUM'|'BUSINESS_PREMIUM_PRO',baseAmountCents:number,eligible:boolean,alreadyRedeemed:boolean):number {
+export function firstUpgradeAmountCents(plan:'BUSINESS_PREMIUM'|'BUSINESS_PREMIUM_PRO',baseAmountCents:number,eligible:boolean,alreadyRedeemed:boolean,trialEndsAt:Date,paymentConfirmedAt:Date):number {
+ if(!Number.isFinite(trialEndsAt.getTime())||!Number.isFinite(paymentConfirmedAt.getTime()))throw Error('INVALID_PAYMENT_DATE');
  if(!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan)||!Number.isSafeInteger(baseAmountCents)||baseAmountCents<0)throw Error('INVALID_UPGRADE');
- return eligible&&!alreadyRedeemed?Math.round(baseAmountCents*0.75):baseAmountCents;
+ return eligible&&!alreadyRedeemed&&paymentConfirmedAt.getTime()<trialEndsAt.getTime()?Math.round(baseAmountCents*0.75):baseAmountCents;
 }

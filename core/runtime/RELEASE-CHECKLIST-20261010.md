@@ -589,3 +589,12 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - 5 pruebas de plantilla aprobadas / 77 aserciones. Hashes de scripts funcionales, identidad y galería conservados. Referencias SVG locales verificadas.
 - Chromium con datos públicos leídos de THE1920, imágenes aisladas y estadísticas simuladas: 390, 768, 1024 y 1440px aprobados, sin desbordamientos/errores JS. A 390px se compararon antes/después posiciones, tamaños, estilos, fuentes, colores, enlaces y hidden sin diferencias. En anchos >=768px se bloqueó el CSS/fuentes del CDN: todos los SVG visibles tienen trazados y dimensiones reales; se comprobaron colores, Uber, Instagram y alineación. QR, horario, referencia y estadísticas simuladas operativos; enlaces y condiciones de visibilidad idénticos a la base.
 - Publicación y CI finales se registran en el PR de esta corrección; solo se publica después de las verificaciones aprobadas. No se opera Railway ni se modifican datos productivos.
+
+## 2026-10-15 · Pendiente aprobado: detalle completo de planes en Direcciones LATAM
+
+- Estado: **PENDIENTE DE IMPLEMENTACIÓN**. Requisito solicitado por propietario; no confundir registro con función terminada.
+- En direcciones.lat, cada tarjeta de plan (Residencial, Negocio Gratis, Premium y Premium Pro) debe permitir abrir un contenedor/modal de **información completa del plan** al tocar «Preparar dirección», antes de continuar al formulario. Incluir acción clara para continuar o cerrar y conservar selección de país y plan.
+- Mostrar precio y moneda, periodicidad, promociones y vigencia, renovación, características y límites reales, código digital/QR, navegación, contactos, fotografías, y opciones de actualización según el plan. No inventar prestaciones ni prometer pagos no habilitados.
+- Usar una única fuente de configuración de planes, sin duplicar lógica multinacional; diseño adaptable a móvil/tablet/escritorio y accesible por teclado. Validar que los cuatro detalles y el retorno al formulario funcionan físicamente.
+- Respetar decisiones comerciales vigentes: Negocio Gratis sin descripción breve; Premium sin reporte mensual/analytics; Premium Pro con hasta cinco fotos; promociones de fundadores hasta 9-nov-2026 y etapas posteriores según reglas comerciales. Verificar los textos contra la configuración vigente antes de publicar.
+- No modificar el flujo histórico Apps Script/Excel, los 40 códigos históricos, las migraciones productivas ni la pasarela de pagos. Registrar commit, CI, despliegue y prueba física antes de declarar OPERATIVO.

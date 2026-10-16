@@ -1,5 +1,29 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Encabezado Panamá — corrección puntual,16 octubre2026
+
+El propietario confirma generación y apertura recuperadas tras026d31a.
+Esta intervención se limita al encabezado de index.html; sin cambios backend,
+fichas, códigos/URL, OAuth, paneles, pagos, solicitudes, DB/R2 o archivos históricos.
+
+- Causa del duplicado: el selector general :is(.btn-nav-action,...) posterior
+  imponía display:inline-flex sobre .mobile-account-link; coexistían dos enlaces.
+- f3fbe6d: eliminado el enlace duplicado; permanece un único Mi cuenta con URL
+  original https://direcciones.lat/?country=PA&access=1. Registrar mi Dirección
+  conserva su destino y papel de acción principal; callbacks de navegación intactos.
+- CSS circunscrito a #mainAppHeader: textos nowrap, logo/eslogan alineados,
+  botones44px con padding10x13px, separación18px. Navegación en una fila desde
+  1180px; por debajo, botón Menú accesible con aria-controls/aria-expanded,
+  desplegable de dos columnas; una columna hasta359px. Sin comprimir etiquetas.
+- Pruebas locales:10PASS/0FAIL; cuenta única/destino original, abrir/cerrar menú,
+  compilación sintáctica de todos los scripts inline y diff --check PASS.
+- CI38913527941 SUCCESS sobre f3fbe6d:184PASS/0FAIL/2888 expectativas;
+  PostgreSQL aislado, generación/apertura, compatibilidad, Bun y Docker PASS.
+- Despliegue/aceptación pública registrados en #82 y PR62 tras integración.
+  Vista desktop se comprueba con navegador. La aceptación física tablet/móvil
+  debe distinguirse de la implementación de media queries; el navegador de prueba
+  no permite cambiar viewport. No se afirma prueba física de dispositivos reales.
+
 ## INCIDENTE — recuperación de publicación, 16 octubre 2026
 
 Este registro sustituye la afirmación anterior de activación bloqueada como un

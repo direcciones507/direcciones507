@@ -1,6 +1,6 @@
 /** New USER_REQUEST business trials only. Historical addresses never enter this policy. */
 export const FREE_BUSINESS_OFFER_END='2026-11-09';
-export const FREE_BUSINESS_TRIAL_MONTHS=2;
+export const FREE_BUSINESS_TRIAL_MONTHS=1;
 export const FREE_BUSINESS_UPGRADE_DISCOUNT_PERCENT=25;
 export type TrialState='ACTIVE'|'EXPIRED';
 export function freeBusinessOfferEligible(activatedAt:Date):boolean {

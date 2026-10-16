@@ -254,6 +254,57 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
     </style>`;
     template=template.replace('<html lang="es">','<html lang="es" data-public-place>');
     template=template.replace('</head>',placeCss+'</head>');
+    // Place QR and reference in one real shared row. The template's QR
+    // originates inside a separate wrapper; CSS grid alone cannot reliably
+    // keep the two accordion items adjacent across mobile breakpoints.
+    const placePairCss = `<style id="place-qr-reference-pair">
+      html[data-public-place] .place-qr-reference-pair {
+        display:grid !important;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:12px !important;
+        grid-column:1 / -1 !important;
+        width:100%;
+        min-width:0;
+        align-items:stretch;
+      }
+      html[data-public-place] .place-qr-reference-pair #btnQR,
+      html[data-public-place] .place-qr-reference-pair #btnRef {
+        display:flex !important;
+        grid-column:auto !important;
+        grid-row:auto !important;
+        width:100% !important;
+        min-width:0 !important;
+        min-height:84px;
+        margin:0 !important;
+        padding:12px 8px !important;
+        box-sizing:border-box;
+      }
+      html[data-public-place] .place-qr-reference-pair .accordion-content-text {
+        min-width:0;
+        overflow-wrap:anywhere;
+      }
+      @media(max-width:420px) {
+        html[data-public-place] .place-qr-reference-pair {gap:9px !important;}
+        html[data-public-place] .place-qr-reference-pair .accordion-label {font-size:11px !important;}
+        html[data-public-place] .place-qr-reference-pair .accordion-value {font-size:12px !important;}
+      }
+    </style>`;
+    template=template.replace('</head>',placePairCss+'</head>');
+    template=template.replace('</body>',`<script>
+      (function(){
+        function alignPlaceControls(){
+          const qr=document.getElementById('btnQR');
+          const ref=document.getElementById('btnRef');
+          if(!qr||!ref||!ref.parentElement||document.querySelector('.place-qr-reference-pair'))return;
+          const pair=document.createElement('div');
+          pair.className='place-qr-reference-pair';
+          ref.parentElement.insertBefore(pair,ref);
+          pair.append(qr,ref);
+        }
+        if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',alignPlaceControls,{once:true});
+        else alignPlaceControls();
+      })();
+    </script></body>`);
   }
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
   // QR/share/copy must use the stored canonical URL, even on a preview host.

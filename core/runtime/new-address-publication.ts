@@ -82,10 +82,12 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         max-width:none;
         margin:0;
       }
-      html[data-public-place] .main-nav-grid > :last-child:nth-child(odd):not([hidden]),
-      html[data-public-place] .actions-triple-row > :last-child:nth-child(odd):not([hidden]) {
+      html[data-public-place] .main-nav-grid > :not([hidden]):not([style*="display: none"]):last-child:nth-child(odd),
+      html[data-public-place] .actions-triple-row > :not([hidden]):not([style*="display: none"]):last-child:nth-child(odd) {
         grid-column:1 / -1;
       }
+      html[data-public-place] .main-nav-grid,
+      html[data-public-place] .actions-triple-row { grid-auto-flow:row dense; }
       html[data-public-place] [hidden] { display:none !important; }
       html[data-public-place] .main-nav-grid > [style*="display: none"],
       html[data-public-place] .actions-triple-row > [style*="display: none"] { display:none !important; }

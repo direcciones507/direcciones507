@@ -44,7 +44,7 @@ export async function handleUserPanel(req: Request, sql: Sql, auth: ReturnType<t
     const user=await auth.currentUser(req);
     if(!user){
       const country=url.searchParams.get('country')||'PA';
-      const destination=new URL('/',url.origin);
+      const destination=new URL('/','https://direcciones.lat');
       destination.searchParams.set('country',/^(PA|CO|CR|GT|SV|HN|NI|MX)$/.test(country)?country:'PA');
       destination.searchParams.set('access','1');
       return new Response(null,{status:302,headers:{location:destination.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});

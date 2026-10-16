@@ -1,0 +1,35 @@
+import type {Sql} from 'postgres';
+import {businessTrialDuplicateSignal,evaluateFreeTrialClaims,normalizeBusinessName,normalizeBusinessPhone,type BusinessIdentity} from './free-business-trial-identity';
+import {freeBusinessTrialEndsAt} from './free-business-trial';
+
+/** Integration helper, not yet invoked by request approval/publication.
+ * Requires reviewed free-business-trial.sql migration.
+ * The caller MUST serialize claims for each identity and commit with publication.
+ */
+export async function inspectBusinessTrialHistory(sql:Sql,candidate:BusinessIdentity){
+ const name=normalizeBusinessName(candidate.name),phone=normalizeBusinessPhone(candidate.phone);
+ if(!name||phone.length<7)throw Error('FREE_TRIAL_IDENTITY_INCOMPLETE');
+ const rows=await sql.unsafe(`SELECT business_name_normalized AS name,business_phone_normalized AS phone,
+ country_code AS "countryCode",location_latitude AS latitude,location_longitude AS longitude
+ FROM ad507.free_business_trial_claims
+ WHERE country_code=$1 AND (business_name_normalized=$2 OR business_phone_normalized=$3
+ OR (location_latitude BETWEEN $4::numeric-0.0001 AND $4::numeric+0.0001
+ AND location_longitude BETWEEN $5::numeric-0.0001 AND $5::numeric+0.0001))`,
+ [candidate.countryCode,name,phone,candidate.latitude??null,candidate.longitude??null]);
+ const prior:BusinessIdentity[]=rows.map((r:any)=>({name:r.name,phone:r.phone,countryCode:r.countryCode,latitude:r.latitude==null?null:Number(r.latitude),longitude:r.longitude==null?null:Number(r.longitude)}));
+ return {decision:evaluateFreeTrialClaims(candidate,prior),signals:prior.map(v=>businessTrialDuplicateSignal(candidate,v))};
+}
+/** Requires a transaction held by caller. No claim is issued for legacy migrations. */
+export async function insertBusinessTrialClaim(tx:Sql,addressId:string,identity:BusinessIdentity,activatedAt:Date){
+ const end=freeBusinessTrialEndsAt(activatedAt);
+ const name=normalizeBusinessName(identity.name),phone=normalizeBusinessPhone(identity.phone);
+ if(!name||phone.length<7)throw Error('FREE_TRIAL_IDENTITY_INCOMPLETE');
+ await tx.unsafe(`INSERT INTO ad507.free_business_trial_claims
+ (address_id,country_code,business_name_normalized,business_phone_normalized,location_latitude,location_longitude,claimed_at,trial_ends_at)
+ VALUES($1::uuid,$2,$3,$4,$5,$6,$7::timestamptz,$8::timestamptz)`,
+ [addressId,identity.countryCode,name,phone,identity.latitude??null,identity.longitude??null,activatedAt.toISOString(),end.toISOString()]);
+ await tx.unsafe(`UPDATE ad507.addresses SET free_trial_started_at=$2::timestamptz,free_trial_ends_at=$3::timestamptz
+ WHERE id=$1::uuid AND source='USER_REQUEST' AND address_type='BUSINESS'
+ AND free_trial_started_at IS NULL`,[addressId,activatedAt.toISOString(),end.toISOString()]);
+ return end;
+}

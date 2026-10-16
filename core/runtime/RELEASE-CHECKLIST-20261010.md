@@ -1,5 +1,32 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Edición gratuita y códigos por producto — 16 octubre 2026
+
+Base reutilizada: ed30bec; continuación de PR #62 y #82, misma rama existente.
+Commit funcional be4e02b57306da7f8c3de895a346ebb6040abf1c integrado en main
+mediante fast-forward. No PR, panel, generador, migración ni recurso nuevo.
+
+| Función | Estado | Evidencia / alcance |
+|---|---|---|
+| Edición cliente Negocio/Lugar | Probado y desplegado; físico pendiente | Botón Editar en ficha/detalle. Solo OWNER activo; servidor vuelve a comprobar propiedad y rol. Datos, horario, referencia, contacto, redes según plan. Código, URL y plan inmutables. Sin pago ni orden. |
+| Edición ADMIN Negocio/Lugar | Probado y desplegado; físico pendiente | Mismo editor en detalle existente, rol ADMIN consultado en PostgreSQL. Edita registros nuevos ACTIVE publicados. Históricos/importados y Residencial conservan sus procesos existentes. |
+| Logo/portada/fotos | Probado y desplegado; físico pendiente | Cuotas actuales: negocio un logo; Pro hasta5 fotos; Lugar1–4 fotos. Selección de conservar/reemplazar y primera foto nueva como portada. R2 usa optimización/firmante existentes; intención auditada antes de PUT. Fallo de PUT conserva ficha y fotos anteriores. Objetos anteriores conservados para recuperación; asociaciones y snapshot cambian atómicamente. |
+| Cambios públicos / Mi cuenta | Probado en PostgreSQL aislado | Lectores existentes ven nuevos datos/media; al guardar se recarga detalle/panel. Control de versión rechaza escritura obsoleta. No se modificaron datos reales para fabricar una prueba productiva. |
+| Traslado solicitado | Probado y desplegado; físico pendiente | Coordenadas finitas dentro de rango. Cliente crea pendingLocation; ubicación vigente se conserva. ADMIN aprueba/rechaza con versión e identificador de solicitud; edición directa ADMIN valida/publica ubicación y audita. |
+| Historial | Probado y desplegado; físico pendiente | audit_log existente con antes/después/actor/fecha; vista Historial de cambios autorizada para titular o ADMIN. Últimos100 eventos visibles; registro completo conservado. |
+| Nuevos códigos por producto | Implementado y probado; ACTIVACIÓN BLOQUEADA | Gratis8 dígitos; Premium/Pro/Lugar nombre normalizado, acentos/puntuación eliminados, duplicados con sufijo y consulta SQL/registro histórico. Unicidad PostgreSQL y reintentos siguen activos. Códigos publicados no cambian. |
+| Protección histórica | Activa | AD507_HISTORICAL_NAMESPACE_VERIFIED conservada. La evidencia anterior cubría N32, no numeración ni nombres. Nueva compuerta AD507_PRODUCT_CODE_NAMESPACE_VERIFIED ausente/no activada. Falta acreditar exclusividad de los formatos numérico/nombre frente a TODOS los emisores históricos y los40 códigos, incluidos no listados; lectura de listado no demuestra ausencia de futuras escrituras. No basta reutilizar la prueba de separación N32. Sin esa evidencia no activar compuerta ni generar códigos largos como alternativa silenciosa. |
+| Descripción breve | Probado y desplegado | Formulario/edición/servidor/ficha pública: solo Pro y Lugar. Datos históricos persistidos no se borran. Adaptador de importación conserva campos originales sin aplicar retroactivamente esta regla. |
+| Solicitudes cliente / ADMIN | Reutilizado y probado | Detalles, fotos y estados existentes conservados; no reconstrucción visual. |
+| Automáticas | VERDE | Actions38909186445 SUCCESS,183PASS/0FAIL/2876 expectativas; PostgreSQL18 aislado, Bun1.4.0, build Bun/Docker, legacy y validación de migraciones PASS. Prueba nueva verifica propietario ajeno, rol falso, versión obsoleta, ubicación, reemplazo/fallo R2, historial, lectura pública y cero órdenes. |
+| Railway funcional | DESPLEGADO | 03e4ab49-184f-4b88-b9bb-9ca64d9ad3e5 SUCCESS,main be4e02b. /health200 ok:true, /ready200 database:true/authConfigured:true; ficha AD507-N56F413FACAAA475589AB112BC1EFC9A3 sigue200 con código original. |
+| Prueba física | PENDIENTE | Navegador disponible redirige panel a acceso; sin sesión cliente/ADMIN. En tablet: editar negocio y Lugar, cambiar logo/portada, guardar y abrir ficha pública, consultar historial, pedir traslado y aprobar/rechazar desde ADMIN. No se afirma recorrido autenticado productivo ni aceptación móvil/tablet. |
+
+Restricciones cumplidas: sin Excel, Apps Script, Pages históricos, migración de40,
+OAuth/redirecciones, pagos, nuevos recursos/costos, respaldos repetidos ni DDL.
+No se declara operación completa de edición hasta la prueba autenticada; nuevos
+formatos de código permanecen bloqueados por evidencia de exclusividad pendiente.
+
 ## Cierre visual Mi cuenta — continuación82,16 octubre2026
 
 - CONFIRMADO POR EL PROPIETARIO: generación, Copiar código y Abrir dirección

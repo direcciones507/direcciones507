@@ -65,6 +65,43 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   if(!record.extras.historical)template=prepareCountryTemplate(template,record.extras.countryCode);
   const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
   if(record.type==='PLACE')template=template.replace("if(planComercial === 'premium pro' && descripcionComercial","if(descripcionComercial");
+  if(record.type==='PLACE') {
+    // Place-only responsive layout: leave historical and all commercial plans untouched.
+    const placeCss = `<style id="place-responsive-layout">
+      html[data-public-place] .main-nav-grid,
+      html[data-public-place] .actions-triple-row {
+        display:grid !important;
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:12px !important;
+        align-items:stretch;
+      }
+      html[data-public-place] .main-nav-grid > *,
+      html[data-public-place] .actions-triple-row > * {
+        min-width:0;
+        width:100%;
+        max-width:none;
+        margin:0;
+      }
+      html[data-public-place] .main-nav-grid > :last-child:nth-child(odd):not([hidden]),
+      html[data-public-place] .actions-triple-row > :last-child:nth-child(odd):not([hidden]) {
+        grid-column:1 / -1;
+      }
+      html[data-public-place] [hidden] { display:none !important; }
+      html[data-public-place] .main-nav-grid > [style*="display: none"],
+      html[data-public-place] .actions-triple-row > [style*="display: none"] { display:none !important; }
+      html[data-public-place] .public-lower-layout,
+      html[data-public-place] .public-lower-left { min-width:0; }
+      html[data-public-place] #premiumGalleryContainer { max-width:100%; }
+      html[data-public-place] .identity-block,
+      html[data-public-place] .identity-block * { min-width:0;overflow-wrap:anywhere; }
+      @media(max-width:420px) {
+        html[data-public-place] .main-nav-grid,
+        html[data-public-place] .actions-triple-row { gap:9px !important; }
+      }
+    </style>`;
+    template=template.replace('<html lang="es">','<html lang="es" data-public-place>');
+    template=template.replace('</head>',placeCss+'</head>');
+  }
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
   // QR/share/copy must use the stored canonical URL, even on a preview host.
   // Only adapts this renderer; the historical template/files stay untouched.

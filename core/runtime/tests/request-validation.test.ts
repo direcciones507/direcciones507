@@ -47,3 +47,9 @@ test('all five products enforce counts from actual uploads even when declared co
   expect(()=>validateRequestFiles({...base,plan:'BUSINESS_PREMIUM_PRO'},Array.from({length:7},()=>file('photo')))).toThrow('INVALID_REQUEST');
   expect(()=>validateRequestFiles(base,[{...file('logo'),role:'other'} as any])).toThrow('INVALID_IMAGE');
 });
+
+test('brief description is accepted only for Pro and Lugar',()=>{
+ for(const plan of ['BUSINESS_FREE','BUSINESS_PREMIUM'])expect(()=>validateRequestDraft({...base,plan,description:'No permitido'})).toThrow('CAPABILITY_VIOLATION');
+ expect(validateRequestDraft({...base,plan:'BUSINESS_PREMIUM_PRO',description:'Permitido'}).description).toBe('Permitido');
+ expect(validateRequestDraft({...base,type:'PLACE',description:'Permitido',media:{logos:0,placePhotos:1,galleryPhotos:0}}).description).toBe('Permitido');
+});

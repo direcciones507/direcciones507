@@ -25,7 +25,7 @@ const namespaceExclusive = process.env.AD507_HISTORICAL_NAMESPACE_VERIFIED === '
 const paymentConfig = yappyConfiguration(process.env);
 const paymentRepository = YAPPY_PAYMENTS_ENABLED && paymentConfig ? createPaymentRepository(sql,paymentConfig) : null;
 const paymentProvider = YAPPY_PAYMENTS_ENABLED && paymentConfig ? createYappyProvider(paymentConfig) : null;
-const requestRepository = createRequestRepository(sql, { r2: requestR2, canonical: commercialWorkflowEnabled ? createNewAddressPublication(sql,{namespaceExclusive}) : null,
+const requestRepository = createRequestRepository(sql, { r2: requestR2, canonical: commercialWorkflowEnabled ? createNewAddressPublication(sql,{namespaceExclusive,productNamespaceExclusive:process.env.AD507_PRODUCT_CODE_NAMESPACE_VERIFIED==='true'}) : null,
   // Publication eligibility is independent of provider activation. Free requests
   // need no order; paid plans must remain pending until a real payment exists.
   paymentEnvironment:'production' });

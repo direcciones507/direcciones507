@@ -37,6 +37,7 @@ export function validateRequestDraft(raw: unknown): RequestDraft {
   const name = field('name', 160, true);
   const reference = field('reference', 1000, true);
   const description = field('description', 4000, false);
+  if(description && !['PLACE','BUSINESS_PREMIUM_PRO'].includes(plan))throw Error('CAPABILITY_VIOLATION');
   const latitude = value.latitude, longitude = value.longitude;
   if (typeof latitude !== 'number' || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
       typeof longitude !== 'number' || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) throw new Error('INVALID_COORDINATES');

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { assertCountryCommerce, prepareCountryTemplate, proposedCountryUrl, COUNTRIES } from './country-configuration';
 import { createR2Storage, type R2Settings } from './r2-storage';
 import type { Sql } from 'postgres';
@@ -7,15 +8,19 @@ import { PLANES_AUTHORITY } from './scripts/integration-preflight';
 import type { CanonicalPublication } from './request-repository';
 import { readFileSync } from 'node:fs';
 
-/** No counter: new reservations use their durable UUID, outside the historical numeric sequence.
- * Release still requires confirmation that this namespace is exclusive across all historical channels.
- */
-export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
+export function normalizeCodeName(name:string):string {
+  const normalized=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,60);
+  if(!normalized||!/[A-Z]/.test(normalized))throw Error('INVALID_CODE_NAME');
+  return normalized;
+}
+/** New product formats require their own evidence: the prior N32 exclusivity is insufficient. */
+export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;productNamespaceExclusive?:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
     historicalRegistryVerified:options.namespaceExclusive,
-    async reserve({id,countryCode='PA'}) {
+    async reserve({id,countryCode='PA',type,plan,name,requestedName}) {
       assertCountryCommerce(countryCode);
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
+      if(!options.productNamespaceExclusive)throw Error('PRODUCT_CODE_NAMESPACE_NOT_VERIFIED');
       // Canonical UUID layout makes removing separators injective: malformed
       // IDs must not collapse onto another request's code or shorten the suffix.
       if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id))throw Error('INVALID_REQUEST');
@@ -27,11 +32,19 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       const body=Buffer.concat(chunks).toString('utf8');
       const data=JSON.parse(body);
       if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/i.test(v.codigo.trim())))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
-      const code='AD507-N'+id.replaceAll('-','').toUpperCase();
-      if(data.codes.some((v:any)=>v.codigo.trim().toUpperCase()===code))throw Error('CANONICAL_CODE_COLLISION');
-      const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
-      if(existing.length)throw Error('CANONICAL_CODE_COLLISION');
-      return code;
+      const free=type==='BUSINESS'&&plan==='BUSINESS_FREE';
+      if(!free&&type!=='PLACE'&&type!=='RESIDENTIAL'&&!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan))throw Error('INVALID_PLAN');
+      const prefix='AD'+COUNTRIES[countryCode as keyof typeof COUNTRIES].prefix+'-';
+      const stem=free?'':normalizeCodeName(requestedName||name);
+      const historical=new Set(data.codes.map((v:any)=>v.codigo.trim().toUpperCase()));
+      for(let attempt=0;attempt<100;attempt++){
+        const suffix=free?String(10000000+Number(BigInt('0x'+createHash('sha256').update(id+':'+attempt).digest('hex').slice(0,12))%90000000n)):stem+(attempt?String(attempt+1):'');
+        const code=prefix+suffix;
+        if(historical.has(code))continue;
+        const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
+        if(!existing.length)return code;
+      }
+      throw Error('CANONICAL_CODE_COLLISION');
     },
     async publish({id,code,type}) {
       // The existing PostgreSQL reader is the new system's publication destination.
@@ -55,16 +68,17 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   const mediaOrigin=new URL(proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)).origin;
   const urls=media.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
   const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
-  return {...record,url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
+  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
-  const data={ok:true,nombre:record.name,referencia:record.reference,descripcionComercial:record.commercialDescription,plan:record.plan?.name,lat:record.coordinates.latitude,lng:record.coordinates.longitude,telefono:record.phone,telefonoFijo:record.landlinePhone,horario:record.hours,codigoPostal:record.extras.postalCode,logo:record.media.find(m=>m.type==='LOGO')?.url??(record.type==='PLACE'?record.media.find(m=>m.type==='IMAGE')?.url:undefined),fotos:record.media.filter(m=>m.type==='IMAGE').map(m=>m.url),...social};
+  const data={ok:true,nombre:record.name,referencia:record.reference,descripcionComercial:record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?[record.description,record.commercialDescription].filter(Boolean).join('\n\n'):null,plan:record.plan?.name,lat:record.coordinates.latitude,lng:record.coordinates.longitude,telefono:record.phone,telefonoFijo:record.landlinePhone,horario:record.hours,codigoPostal:record.extras.postalCode,logo:record.media.find(m=>m.type==='LOGO')?.url??(record.type==='PLACE'?record.media.find(m=>m.type==='IMAGE')?.url:undefined),fotos:record.media.filter(m=>m.type==='IMAGE').map(m=>m.url),...social};
   // Reuse the maintained template; adapt only its data transport for new records.
   let template=readFileSync(new URL('../../ad507.template.html',import.meta.url),'utf8');
   if(!record.extras.historical)template=prepareCountryTemplate(template,record.extras.countryCode);
   const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-  template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc(record.description??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
+  if(record.type==='PLACE')template=template.replace("if(planComercial === 'premium pro' && descripcionComercial","if(descripcionComercial");
+  template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
   // QR/share/copy must use the stored canonical URL, even on a preview host.
   // Only adapts this renderer; the historical template/files stay untouched.
   template=template.replaceAll('window.location.href',JSON.stringify(record.url).replaceAll('<','\\u003c'));

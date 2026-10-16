@@ -1,58 +1,29 @@
 import { test, expect } from 'bun:test';
-import { createNewAddressPublication } from '../new-address-publication';
-
-const id = '123e4567-e89b-42d3-a456-426614174000';
-const code = 'AD507-N' + id.replaceAll('-', '').toUpperCase();
-const request = { id, type: 'BUSINESS', plan: 'FREE', name: 'Ejemplo', requestedName: '' };
-
-test('new AD507 codes remain uppercase even when PLANES contains lowercase legacy codes', async () => {
-  const sql = { unsafe: async () => [] } as any;
-  const fetcher = (async () => Response.json({ ok: true, codes: [{ codigo: 'ad507-0001' }] })) as typeof fetch;
-  const publisher = createNewAddressPublication(sql, { namespaceExclusive: true, fetch: fetcher });
-  expect(await publisher.reserve(request)).toBe(code);
+import { createNewAddressPublication,normalizeCodeName } from '../new-address-publication';
+const id='123e4567-e89b-42d3-a456-426614174000';
+const request={id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'Fonda Tatiana',requestedName:''};
+const registry=(codes=['ad507-0001'])=>(async()=>Response.json({ok:true,codes:codes.map(codigo=>({codigo}))})) as typeof fetch;
+const publisher=(fetcher=registry(),sql:any={unsafe:async()=>[]})=>createNewAddressPublication(sql,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:fetcher});
+test('new Free codes have exactly eight numeric digits and retries are stable',async()=>{
+ const p=publisher(),a=await p.reserve(request);expect(a).toMatch(/^AD507-\d{8}$/);expect(await p.reserve(request)).toBe(a);
+ expect(await p.reserve({...request,id:'123e4567-e89b-42d3-a456-426614174001'})).not.toBe(a);
 });
-
-test('collision checks normalize lowercase historical codes before reserving', async () => {
-  const sql = { unsafe: async () => [] } as any;
-  const fetcher = (async () => Response.json({ ok: true, codes: [{ codigo: code.toLowerCase() }] })) as typeof fetch;
-  const publisher = createNewAddressPublication(sql, { namespaceExclusive: true, fetch: fetcher });
-  expect(publisher.reserve(request)).rejects.toThrow('CANONICAL_CODE_COLLISION');
-});
-
-test('reservation stays blocked until namespace exclusivity is confirmed', async () => {
-  const publisher = createNewAddressPublication({} as any, { namespaceExclusive: false });
-  expect(publisher.historicalRegistryVerified).toBe(false);
-  expect(publisher.reserve(request)).rejects.toThrow('HISTORICAL_NAMESPACE_NOT_VERIFIED');
-});
-
-test('malformed UUIDs cannot shorten or alias the reserved suffix', async () => {
-  let contacted = false;
-  const publisher = createNewAddressPublication({} as any, { namespaceExclusive: true,
-    fetch: (async () => { contacted = true; throw Error('UNEXPECTED_FETCH'); }) as typeof fetch });
-  for (const invalid of ['-'.repeat(36), 'a'.repeat(36),
-    '123e4567e-89b-42d3-a456-426614174000']) {
-    await expect(publisher.reserve({ ...request, id: invalid })).rejects.toThrow('INVALID_REQUEST');
-  }
-  expect(contacted).toBe(false);
-});
-
-test('distinct canonical UUIDs keep distinct codes with exactly 32 hex digits', async () => {
-  const publisher = createNewAddressPublication({ unsafe: async () => [] } as any,
-    { namespaceExclusive: true, fetch: (async () => Response.json({ok:true,codes:[{codigo:'AD507-0001'}]})) as typeof fetch });
-  const first = await publisher.reserve(request);
-  const second = await publisher.reserve({...request,id:'123e4567-e89b-42d3-a456-426614174001'});
-  expect(first).toMatch(/^AD507-N[0-9A-F]{32}$/);
-  expect(second).toMatch(/^AD507-N[0-9A-F]{32}$/);
-  expect(first).not.toBe(second);
-});
-
-test('existing PLACE emitter cannot enter the new N32 namespace (source contract only)',async()=>{
- const {generatePlaceCodeCandidate}=await import('../../postgres/place-code');
- for(const name of ['N'+'A'.repeat(32),'','AD507-N'+id.replaceAll('-',''),'Parque Central']){
-  for(const entropy of ['abcdef','','0'.repeat(32)]){
-   const candidate=generatePlaceCodeCandidate(name,entropy);
-   expect(candidate).not.toMatch(/^AD507-N[0-9A-F]{32}$/);
-   expect(candidate).toMatch(/^AD507-[A-Z0-9-]+-[A-F0-9]{1,6}$/);
-  }
+test('named plans normalize accents/punctuation and resolve historical and database duplicates',async()=>{
+ expect(normalizeCodeName('Fónda — Tatiana!')).toBe('FONDATATIANA');expect(()=>normalizeCodeName('---')).toThrow('INVALID_CODE_NAME');
+ for(const [type,plan]of [['BUSINESS','BUSINESS_PREMIUM'],['BUSINESS','BUSINESS_PREMIUM_PRO'],['PLACE','PLACE']]){
+ const r={...request,type,plan};expect(await publisher().reserve(r)).toBe('AD507-FONDATATIANA');
+ expect(await publisher(registry(['ad507-fondatatiana'])).reserve(r)).toBe('AD507-FONDATATIANA2');
+ expect(await publisher(registry(),{unsafe:async(_q:any,params:any)=>params[0]==='AD507-FONDATATIANA'?[{id:'occupied'}]:[]}).reserve(r)).toBe('AD507-FONDATATIANA2');
  }
+});
+test('both independent namespace gates fail closed',async()=>{
+ await expect(createNewAddressPublication({} as any,{namespaceExclusive:false}).reserve(request)).rejects.toThrow('HISTORICAL_NAMESPACE_NOT_VERIFIED');
+ await expect(createNewAddressPublication({} as any,{namespaceExclusive:true}).reserve(request)).rejects.toThrow('PRODUCT_CODE_NAMESPACE_NOT_VERIFIED');
+});
+test('numeric historical collision selects another bounded candidate',async()=>{
+ const first=await publisher().reserve(request);const next=await publisher(registry([first.toLowerCase()])).reserve(request);expect(next).toMatch(/^AD507-\d{8}$/);expect(next).not.toBe(first);
+});
+test('malformed UUID and unenabled countries cannot reserve',async()=>{
+ for(const invalid of ['-'.repeat(36),'a'.repeat(36),'123e4567e-89b-42d3-a456-426614174000'])await expect(publisher().reserve({...request,id:invalid})).rejects.toThrow('INVALID_REQUEST');
+ await expect(publisher().reserve({...request,countryCode:'CO'})).rejects.toThrow('COUNTRY_NOT_ENABLED');
 });

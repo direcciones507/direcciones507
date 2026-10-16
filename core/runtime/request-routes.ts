@@ -1,3 +1,4 @@
+import { createAddressEditing } from './address-editing';
 import type { Sql } from 'postgres';
 import type { createGeneralAuth } from './general-auth';
 import type { createRequestRepository } from './request-repository';
@@ -34,16 +35,17 @@ export async function parseRequestForm(req:Request) {
 }
 export async function handleRequestRoutes(req:Request,context:{enabled:boolean;sql:Sql;auth:Pick<ReturnType<typeof createGeneralAuth>,'currentUser'>;repository:ReturnType<typeof createRequestRepository>;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null> {
   const url=new URL(req.url),adminCreate=url.pathname==='/v1/admin/requests'&&req.method==='POST',submit=url.pathname==='/v1/user/requests'||adminCreate;
+  const edit=url.pathname.match(/^\/v1\/(user|admin)\/requests\/([a-f0-9-]{36})\/(edit|history|location-approve|location-reject)$/);
   const userDetail=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})$/);
   const userMedia=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
   const action=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/(approve|reject|publish|transfer|rollback)$/);
   const bridge=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/bridge$/);
   const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/)||userDetail;
   const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/)||userMedia;
-  if(!submit&&!action&&!detail&&!media&&!bridge)return null;
+  if(!submit&&!action&&!detail&&!media&&!bridge&&!edit)return null;
   const respond=(status:number,value:unknown)=>Response.json(value,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
   if(!context.enabled)return respond(503,{ok:false,error:'USER_PANEL_SUBMISSION_NOT_ENABLED'});
-  if(req.method!==(submit||action?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
+  if(req.method!==(submit||action||(edit&&edit[3]!=='history')?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
   try {
     // Railway terminates TLS before Bun. Keep the URL host authoritative (never
     // x-forwarded-host), using the same HTTPS proxy condition as general-auth.
@@ -51,9 +53,16 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==requestOrigin)||(req.headers.has('origin')&&req.headers.get('origin')!==requestOrigin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
     const canCreateCommercial=adminCreate&&user.roles.includes('COMMERCIAL');
-    if(!((submit&&!adminCreate||userDetail||userMedia)?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
+    if(!((submit&&!adminCreate||userDetail||userMedia||edit?.[1]==='user')?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [id,item]of limits)if(now-item.at>60000)limits.delete(id);
     const item=limits.get(user.id);if(item&&++item.count>20||!item&&limits.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)limits.set(user.id,{at:now,count:1});
+    if(edit){
+      const editor=createAddressEditing(context.sql,{r2:context.r2,fetch:context.fetch}),isAdmin=edit[1]==='admin';
+      if(edit[3]==='history')return respond(200,{ok:true,history:await editor.history(user.id,edit[2],isAdmin)});
+      if(edit[3]==='edit'){const {raw,files}=await parseRequestForm(req);return respond(200,{ok:true,request:await editor.edit(user.id,edit[2],raw,files,isAdmin)});}
+      if(!isAdmin)return respond(403,{ok:false,error:'FORBIDDEN'});
+      const raw=JSON.parse((await readRequestBody(req,4096)).toString('utf8'));return respond(200,{ok:true,request:await editor.reviewLocation(user.id,edit[2],raw,edit[3]==='location-approve')});
+    }
     if(adminCreate&&req.headers.get('content-type')?.startsWith('application/json')){const body=JSON.parse((await readRequestBody(req,64000)).toString('utf8'));if(!body||Object.keys(body).length!==1||!body.historicalSnapshot)throw Error('INVALID_REQUEST');return respond(200,{ok:true,request:await context.repository.stageHistorical(user.id,req.headers.get('idempotency-key')??'',body.historicalSnapshot)});}
     if(submit){const {raw,files}=await parseRequestForm(req);const result=await context.repository[adminCreate?'createAdmin':'submit'](user.id,req.headers.get('idempotency-key')??'',raw,files);return respond(200,{ok:true,request:result,...(YAPPY_PAYMENTS_ENABLED&&!adminCreate&&result.status==='PENDING_REVIEW'?{paymentUrl:'/panel/payments/'+result.id}:{})});}
     if(bridge){await context.repository.read(user.id,bridge[1]);const rows=await context.sql.unsafe("SELECT legacy_payload FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' AND request_data->>'origin'='HISTORICAL_IMPORT'",[bridge[1]]);if(!rows.length)throw Error('REQUEST_NOT_FOUND');return new Response(renderCommercialBridge(rows[0].legacy_payload,bridge[1],url.origin),{headers:{'content-type':'text/html; charset=utf-8','content-disposition':'attachment; filename="'+rows[0].legacy_payload.code+'.html"','cache-control':'no-store','x-content-type-options':'nosniff'}});}
@@ -84,8 +93,8 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
       console.warn(JSON.stringify({event:'publication_failed',type,code,frame}));
     }
     const name=error instanceof Error?error.message:'';
-    const status=name==='FORBIDDEN'?403:name==='REQUEST_NOT_FOUND'?404:['PAYMENT_CONFIRMATION_REQUIRED','IDEMPOTENCY_CONFLICT','INVALID_STATE_TRANSITION','APPROVAL_REQUIRED','MEDIA_INCOMPLETE','CANONICAL_CODE_COLLISION','OWNERSHIP_CONFLICT','PUBLICATION_STATE_CONFLICT'].includes(name)?409:['COUNTRY_NOT_ENABLED','R2_NOT_READY','CANONICAL_PUBLICATION_NOT_READY','HISTORICAL_NAMESPACE_NOT_VERIFIED','HISTORICAL_REGISTRY_UNAVAILABLE','RESIDENTIAL_PUBLICATION_NOT_READY','PUBLICATION_UNCONFIRMED'].includes(name)?503:400;
-    const safe=/^(INVALID_[A-Z_]+|COUNTRY_NOT_ENABLED|CAPABILITY_VIOLATION|IDEMPOTENCY_CONFLICT|DUPLICATE_MEDIA|PLAN_NOT_FOUND|REQUEST_NOT_FOUND|FORBIDDEN|PAYLOAD_TOO_LARGE|R2_NOT_READY|CANONICAL_PUBLICATION_NOT_READY|INVALID_STATE_TRANSITION|APPROVAL_REQUIRED|MEDIA_INCOMPLETE|CANONICAL_CODE_COLLISION|HISTORICAL_NAMESPACE_NOT_VERIFIED|HISTORICAL_REGISTRY_UNAVAILABLE|RESIDENTIAL_PUBLICATION_NOT_READY|OWNERSHIP_CONFLICT|ADMIN_CREATION_REQUIRED|HISTORICAL_DATA_CHANGED|HISTORICAL_MEDIA_UNVERIFIED|HISTORICAL_RESOURCE_UNAVAILABLE|MIGRATION_BRIDGE_NOT_VERIFIED|HISTORICAL_RESTORE_REQUIRED|PUBLICATION_STATE_CONFLICT|PUBLICATION_UNCONFIRMED|CANONICAL_CODE_INVALID)$/.test(name)?name:'REQUEST_OPERATION_FAILED';
+    const status=name==='FORBIDDEN'?403:name==='REQUEST_NOT_FOUND'?404:['EDIT_CONFLICT','PAYMENT_CONFIRMATION_REQUIRED','IDEMPOTENCY_CONFLICT','INVALID_STATE_TRANSITION','APPROVAL_REQUIRED','MEDIA_INCOMPLETE','CANONICAL_CODE_COLLISION','OWNERSHIP_CONFLICT','PUBLICATION_STATE_CONFLICT'].includes(name)?409:['HISTORICAL_EDIT_NOT_ENABLED','PRODUCT_CODE_NAMESPACE_NOT_VERIFIED','COUNTRY_NOT_ENABLED','R2_NOT_READY','CANONICAL_PUBLICATION_NOT_READY','HISTORICAL_NAMESPACE_NOT_VERIFIED','HISTORICAL_REGISTRY_UNAVAILABLE','RESIDENTIAL_PUBLICATION_NOT_READY','PUBLICATION_UNCONFIRMED'].includes(name)?503:400;
+    const safe=/^(EDIT_CONFLICT|HISTORICAL_EDIT_NOT_ENABLED|PRODUCT_CODE_NAMESPACE_NOT_VERIFIED|INVALID_[A-Z_]+|COUNTRY_NOT_ENABLED|CAPABILITY_VIOLATION|IDEMPOTENCY_CONFLICT|DUPLICATE_MEDIA|PLAN_NOT_FOUND|REQUEST_NOT_FOUND|FORBIDDEN|PAYLOAD_TOO_LARGE|R2_NOT_READY|CANONICAL_PUBLICATION_NOT_READY|INVALID_STATE_TRANSITION|APPROVAL_REQUIRED|MEDIA_INCOMPLETE|CANONICAL_CODE_COLLISION|HISTORICAL_NAMESPACE_NOT_VERIFIED|HISTORICAL_REGISTRY_UNAVAILABLE|RESIDENTIAL_PUBLICATION_NOT_READY|OWNERSHIP_CONFLICT|ADMIN_CREATION_REQUIRED|HISTORICAL_DATA_CHANGED|HISTORICAL_MEDIA_UNVERIFIED|HISTORICAL_RESOURCE_UNAVAILABLE|MIGRATION_BRIDGE_NOT_VERIFIED|HISTORICAL_RESTORE_REQUIRED|PUBLICATION_STATE_CONFLICT|PUBLICATION_UNCONFIRMED|CANONICAL_CODE_INVALID)$/.test(name)?name:'REQUEST_OPERATION_FAILED';
     return respond(status,{ok:false,error:name==='PAYMENT_CONFIRMATION_REQUIRED'?name:safe});
   }
 }

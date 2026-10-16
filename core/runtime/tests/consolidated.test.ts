@@ -409,7 +409,7 @@ test('request lifecycle persists all five products, deduplicates and separates m
   const repo=createRequestRepository(sql,{r2:settings,fetch:(async()=>{if(failUploads)throw Error('private upstream detail');return new Response(null,{status:200});}) as typeof fetch});
   const png=await sharp({create:{width:12,height:12,channels:3,background:'red'}}).png().toBuffer();
   const logo={role:'logo' as const,bytes:png,mime:'image/png'},photo={...logo,role:'photo' as const};
-  const base={type:'BUSINESS',plan:'BUSINESS_FREE',name:'Full request',reference:'Near park',description:'Description',latitude:8.1,longitude:-80.9,phone:'61234567',landlinePhone:'9981234',email:'customer@example.test',hours:'8 a 5'};
+  const base={type:'BUSINESS',plan:'BUSINESS_FREE',name:'Full request',reference:'Near park',description:'',latitude:8.1,longitude:-80.9,phone:'61234567',landlinePhone:'9981234',email:'customer@example.test',hours:'8 a 5'};
   const products=[{type:'RESIDENTIAL',plan:'RESIDENTIAL',files:[]},{type:'PLACE',plan:'PLACE',files:[photo]},{type:'BUSINESS',plan:'BUSINESS_FREE',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',files:[logo,photo]}];
   for(const [i,p]of products.entries()){
     const raw={...base,type:p.type,plan:p.plan,name:base.name+i,...(p.plan==='BUSINESS_PREMIUM_PRO'?{commercialDescription:'Commercial text',namedCode:'Test name',postalCode:'0901',instagram:'https://www.instagram.com/test/'}:{})};
@@ -522,7 +522,7 @@ test('ADMIN creates without client identity; transfer and reversal only change o
   const db=postgres(isolatedDatabase,{max:8});
   const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
-  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
+  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:http})});
   const file={role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:12,height:12,channels:3,background:'green'}}).png().toBuffer()};
   const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'ADMIN temporary address',reference:'Near park',latitude:8.1,longitude:-80.9};
   try{
@@ -536,7 +536,7 @@ test('ADMIN creates without client identity; transfer and reversal only change o
     const results=await Promise.all(Array.from({length:4},()=>repo.publish(adminId,created.id)));
     expect(new Set(results.map(r=>r.code)).size).toBe(1);
     expect(results.every(r=>r.status==='ACTIVE')).toBe(true);
-    expect(results[0].code).toBe('AD507-N'+created.id.replaceAll('-','').toUpperCase());
+    expect(results[0].code).toMatch(/^AD507-[0-9]{8}$/);
     const pub=await newPublicAddress(db,results[0].code,origin);expect(pub?.name).toBe(raw.name);
     expect(JSON.stringify(pub)).not.toContain('storageKey');expect(JSON.stringify(pub)).not.toContain('createdByAdmin');
     const html=renderNewPublicAddress(pub!);expect(html).toContain(raw.name);expect(html).toContain('const data = {');
@@ -557,8 +557,8 @@ test('ADMIN creates without client identity; transfer and reversal only change o
     expect(await db.unsafe('SELECT to_jsonb(m) AS row FROM ad507.address_media m WHERE address_id=$1::uuid',[created.id])).toEqual(media);
     const disabled=createNewAddressPublication(db,{namespaceExclusive:false,fetch:http});
     await expect(disabled.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).rejects.toThrow('HISTORICAL_NAMESPACE_NOT_VERIFIED');
-    const collision=createNewAddressPublication(db,{namespaceExclusive:true,fetch:(async()=>Response.json({ok:true,codes:[{codigo:results[0].code}]})) as typeof fetch});
-    await expect(collision.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).rejects.toThrow('CANONICAL_CODE_COLLISION');
+    const collision=createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:(async()=>Response.json({ok:true,codes:[{codigo:results[0].code}]})) as typeof fetch});
+    expect(await collision.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).not.toBe(results[0].code);
     const residential=await repo.createAdmin(adminId,'admin-residential-00000001',{type:'RESIDENTIAL',name:'New residential',reference:'Park',latitude:8,longitude:-80},[]);
     await repo.review(adminId,residential.id,'APPROVED');await expect(repo.publish(adminId,residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');
     expect(await newPublicAddress(db,(await repo.read(adminId,residential.id)).code,origin)).toBeNull();
@@ -630,7 +630,7 @@ test('ADMIN five products reuse quotas and concurrent distinct reservations have
   const sharp=(await import('sharp')).default;const db=postgres(isolatedDatabase,{max:8});
   const settings={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
   const http=(async(url:any)=>String(url).includes('action=list')?Response.json({ok:true,codes:[{codigo:'AD507-0038'}]}):new Response(null,{status:200})) as typeof fetch;
-  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
+  const repo=createRequestRepository(db,{r2:settings,fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:http})});
   const png=await sharp({create:{width:8,height:8,channels:3,background:'yellow'}}).png().toBuffer();const logo={role:'logo' as const,bytes:png,mime:'image/png'},photo={...logo,role:'photo' as const};
   const products=[{type:'RESIDENTIAL',plan:'RESIDENTIAL',files:[]},{type:'PLACE',plan:'PLACE',files:[photo]},{type:'BUSINESS',plan:'BUSINESS_FREE',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM',files:[logo]},{type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',files:[logo,photo]}];
   try{
@@ -720,7 +720,7 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
   const files=[{role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:6,height:6,channels:3,background:'blue'}}).png().toBuffer()}];
   const calls:string[]=[];
   const http=(async(url:any,init:any)=>{if(String(url).includes('action=list'))return Response.json({ok:true,codes:[{codigo:'AD507-0038'}]});calls.push(init.method);return new Response(null,{status:200});}) as typeof fetch;
-  const repo=createRequestRepository(db,{r2:{accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture',configurationVerified:true},fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:http})});
+  const repo=createRequestRepository(db,{r2:{accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture',configurationVerified:true},fetch:http,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:http})});
   const raw={type:'BUSINESS',plan:'BUSINESS_FREE',name:'LATAM isolated',reference:'Park',latitude:8.2,longitude:-80.1,region:'Región',municipality:'Municipio',locality:'Localidad',city:'Ciudad',sector:'Sector'};
   try{
     for(const countryCode of INITIAL_COUNTRIES){
@@ -902,7 +902,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
  }) as typeof fetch;
  const auth=createGeneralAuth(db,env,googleHttp);
  const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'isolated',secretAccessKey:'isolated',configurationVerified:true as const};
- const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,fetch:providers}),paymentEnvironment:'production'});
+ const repo=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:true,productNamespaceExclusive:true,fetch:providers}),paymentEnvironment:'production'});
  const blocked=createRequestRepository(db,{r2,fetch:providers,canonical:createNewAddressPublication(db,{namespaceExclusive:false,fetch:providers}),paymentEnvironment:'production'});
  let fixtureEvidenceVerified=false;
  const server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:async incoming=>{
@@ -919,7 +919,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const c=session(done),me=await(await call('/v1/auth/me',c)).json();return {cookie:c,user:me.user};
  };
  const png=await sharp({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
- const raw={type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Iglesia Catedral — fixture aislado '+unique,reference:'Synthetic reference',description:'Synthetic description',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
+ const raw={type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Iglesia Catedral — fixture aislado '+unique,reference:'Synthetic reference',description:'',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
  const form=(data:any)=>{const body=new FormData();body.append('payload',JSON.stringify(data));body.append('logo',new Blob([png],{type:'image/png'}),'synthetic.png');return body;};
  try{
   const client=await loginHttp('client'),admin=await loginHttp('admin');
@@ -940,7 +940,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const unchanged=(await(await call('/v1/admin/requests/'+initial.id,admin.cookie)).json()).request;expect(unchanged.code).toBeNull();expect(unchanged.publicUrl).toBeNull();expect(unchanged.status).toBe('PENDING_REVIEW');
   fixtureEvidenceVerified=true; // Synthetic historical registry only; never sets a production gate.
   await publish.onclick();const link=actions.children.find((x:any)=>x.textContent==='Abrir dirección digital');expect(link).toBeDefined();
-  const canonical='https://direcciones.lat/AD507-N'+initial.id.replaceAll('-','').toUpperCase()+'/';expect(link.href).toBe(canonical);
+  const canonical=link.href;expect(canonical).toMatch(/^https:\/\/direcciones.lat\/AD507-[0-9]{8}\/$/);expect(link.href).toBe(canonical);
   const delivered=await(await call('/v1/user/panel',client.cookie)).json();const card=delivered.addresses.find((a:any)=>a.id===initial.id);expect(card.status).toBe('ACTIVE');expect(card.publicUrl).toBe(canonical);
   const page=await call(new URL(card.publicUrl).pathname);expect(page.status).toBe(200);const html=await page.text();expect(html).toContain(raw.name);expect(html).toContain('DIRECCIONES<span>507</span>');
   const qr=new Function(html.match(/const qrUrl = [^\n]+/)![0]+';return qrUrl;')();expect(new URL(qr).searchParams.get('data')).toBe(canonical);expect(html).toContain('navigator.clipboard.writeText('+JSON.stringify(canonical)+')');
@@ -1169,3 +1169,44 @@ test('account closeout: country-bound OAuth returns to client panel and cannot s
  const again=await begin('CR');
  expect((await auth.handle(new Request(again.path,{headers:{cookie:again.cookies}})))?.headers.get('location')).toBe(host+'/panel?country=CR');
 });
+
+test('owner and ADMIN edit for free, preserve code/URL, audit, review locations and safely replace media',async()=>{
+ const {createRequestRepository}=await import('../request-repository'),{createAddressEditing}=await import('../address-editing'),{newPublicAddress}=await import('../new-address-publication'),{handleRequestRoutes}=await import('../request-routes');
+ const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:8}),other=crypto.randomUUID();
+ await db.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[other,other+'@test.invalid']);await db.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[other]);
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
+ let failPut=false;const http=(async(_url:any,init:any={})=>new Response(null,{status:init.method==='PUT'&&failPut?503:200})) as typeof fetch;
+ const repo=createRequestRepository(db,{r2,fetch:http,canonical:{historicalRegistryVerified:true,reserve:async({id})=>'AD507-EDIT'+id.replaceAll('-','').toUpperCase(),publish:async({id})=>({confirmed:true,receipt:'test:'+id})}}),editor=createAddressEditing(db,{r2,fetch:http});
+ const image=async(color:string,role:'logo'|'photo')=>({role,mime:'image/png',bytes:await sharp({create:{width:14,height:14,channels:3,background:color}}).png().toBuffer()});
+ try{for(const [type,plan]of [['BUSINESS','BUSINESS_FREE'],['PLACE','PLACE'],['BUSINESS','BUSINESS_PREMIUM_PRO']]){
+  const role=type==='PLACE'?'photo':'logo';
+  const item=await repo.createAdmin(adminId,'edit-'+crypto.randomUUID(),{type,plan,name:'Edit fixture '+plan,reference:'Fixture only',latitude:8.1,longitude:-80.9},[await image('blue',role)]);
+  await repo.review(adminId,item.id,'APPROVED');await repo.publish(adminId,item.id);await repo.transfer(adminId,item.id,adminId,clientId);
+  let r=await repo.read(clientId,item.id);const id=r.id,code=r.code,url=r.publicUrl,version=r.version;
+  await expect(editor.edit(other,id,{version,name:'Intruder'},[],false)).rejects.toThrow('REQUEST_NOT_FOUND');
+  await expect(editor.edit(clientId,id,{version,name:'Fake admin'},[],true)).rejects.toThrow('REQUEST_NOT_FOUND');
+  await expect(editor.history(other,id,false)).rejects.toThrow('REQUEST_NOT_FOUND');
+  await expect(editor.edit(clientId,id,{version,code:'AD507-CHANGED'},[],false)).rejects.toThrow('INVALID_REQUEST');
+  await expect(editor.edit(clientId,id,{version,latitude:91,longitude:0},[],false)).rejects.toThrow('INVALID_COORDINATES');
+  if(plan==='BUSINESS_FREE')await expect(editor.edit(clientId,id,{version,description:'Blocked'},[],false)).rejects.toThrow('CAPABILITY_VIOLATION');
+  await editor.edit(clientId,id,{version,name:'Edited '+plan,hours:'9–5',latitude:9.2,longitude:-79.5,...(plan!=='BUSINESS_FREE'?{description:'Brief updated'}:{})},[],false);
+  await expect(editor.edit(clientId,id,{version,name:'Stale'},[],false)).rejects.toThrow('EDIT_CONFLICT');
+  r=await repo.read(clientId,id);expect(r.code).toBe(code);expect(r.publicUrl).toBe(url);expect(Number(r.latitude)).toBe(8.1);expect(r.extras.pendingLocation.latitude).toBe(9.2);
+  await expect(editor.reviewLocation(other,id,{version:r.version,requestId:r.extras.pendingLocation.requestId},true)).rejects.toThrow('REQUEST_NOT_FOUND');
+  await editor.reviewLocation(adminId,id,{version:r.version,requestId:r.extras.pendingLocation.requestId},false);r=await repo.read(clientId,id);expect(Number(r.latitude)).toBe(8.1);expect(r.extras.pendingLocation).toBeUndefined();
+  await editor.edit(clientId,id,{version:r.version,latitude:9.2,longitude:-79.5},[],false);r=await repo.read(clientId,id);
+  await editor.reviewLocation(adminId,id,{version:r.version,requestId:r.extras.pendingLocation.requestId},true);r=await repo.read(clientId,id);expect(Number(r.latitude)).toBe(9.2);
+  const oldMedia=r.media;failPut=true;await expect(editor.edit(clientId,id,{version:r.version,retainMedia:[],name:'Must not save'},[await image('red',role)],false)).rejects.toThrow('R2_UPLOAD_FAILED');
+  r=await repo.read(clientId,id);expect(r.media).toEqual(oldMedia);expect(r.name).not.toBe('Must not save');failPut=false;
+  await editor.edit(adminId,id,{version:r.version,retainMedia:[],name:'Final '+plan,latitude:7.9,longitude:-80.1},[await image('red',role)],true);
+  r=await repo.read(clientId,id);expect(r.code).toBe(code);expect(r.media).toHaveLength(1);expect(r.media[0].id).not.toBe(oldMedia[0].id);expect(Number(r.latitude)).toBe(7.9);
+  const pub=await newPublicAddress(db,code,origin);expect(pub?.name).toBe(r.name);expect(pub?.hours).toBe('9–5');expect(pub?.coordinates.latitude).toBe(7.9);expect(pub?.description).toBe(plan==='BUSINESS_FREE'?null:'Brief updated');
+  const history=await editor.history(clientId,id,false);expect(history.some(h=>h.action==='ADDRESS_EDITED'&&h.before.name!==h.after.name)).toBe(true);expect(history.some(h=>h.action==='LOCATION_APPROVED')).toBe(true);expect(history.some(h=>h.action==='LOCATION_REJECTED')).toBe(true);
+  const context={enabled:true,sql:db,repository:repo,r2,fetch:http,auth:{currentUser:async()=>({id:clientId,roles:['CLIENT']})} as any};
+  const path='/v1/user/requests/'+id+'/edit',body=new FormData();body.append('payload',JSON.stringify({version:r.version,name:'Route edit'}));
+  expect((await handleRequestRoutes(new Request(origin+path,{method:'POST',headers:{origin:'https://evil.test'},body}),context))?.status).toBe(403);
+  expect((await handleRequestRoutes(new Request(origin+path,{method:'POST',headers:{origin},body}),context))?.status).toBe(200);
+  expect((await handleRequestRoutes(new Request(origin+'/v1/admin/requests/'+id+'/history'),context))?.status).toBe(403);
+  expect((await db.unsafe('SELECT count(*)::int AS n FROM ad507.orders WHERE address_id=$1::uuid',[id]))[0].n).toBe(0);
+ }}finally{await db.end();}
+},30000);

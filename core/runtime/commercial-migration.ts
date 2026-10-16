@@ -25,7 +25,7 @@ export function validateHistoricalSnapshot(raw:any) {
   if(raw.type==='PLACE'?logos!==0||photos!==1:raw.type!=='BUSINESS'||logos!==1)throw Error('INVALID_HISTORICAL_MEDIA');
   // Reuse the canonical field/type validator; historical media and existing capabilities
   // are preserved, rather than applying the new-upload quotas retroactively.
-  const data=validateRequestDraft({...raw,commercialDescription:'',namedCode:'',postalCode:'',postalZone:'',instagram:'',facebook:'',tiktok:'',media:{logos,placePhotos:raw.type==='PLACE'?1:0,galleryPhotos:0}});
+  const data=validateRequestDraft({...raw,description:'',commercialDescription:'',namedCode:'',postalCode:'',postalZone:'',instagram:'',facebook:'',tiktok:'',media:{logos,placePhotos:raw.type==='PLACE'?1:0,galleryPhotos:0}});
   for(const key of ['name','reference','description','hours','commercialDescription','postalCode','postalZone','email']){
     if(raw[key]!==undefined){if(typeof raw[key]!=='string'||raw[key].length>4000)throw Error('INVALID_HISTORICAL_SNAPSHOT');(data as any)[key]=raw[key];}
   }

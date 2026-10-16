@@ -21,6 +21,7 @@ export function renderPanelAddressCard(a: Record<string, any>): string {
     '<div class="address-actions">'+
     (a.code?'<button type="button" class="copy-code secondary" data-copy-code="'+esc(a.code)+'" aria-label="Copiar código de '+esc(a.name)+'">Copiar código</button>':'')+
     (url?'<a class="button address-open" href="'+esc(url)+'" target="_blank" rel="noopener">Abrir dirección digital <span aria-hidden="true">↗</span></a>':'')+
+    (detail&&a.status==='ACTIVE'&&a.addressType!=='RESIDENTIAL'?'<button type="button" class="secondary" data-edit-address="'+esc(a.id)+'">Editar</button>':'')+
     (detail?'<button type="button" class="secondary address-detail" data-request-detail="'+esc(a.id)+'">Ver detalles de solicitud</button>':'')+'</div>'+
     (image?'<img class="address-image" src="'+esc(image)+'" alt="Imagen de la dirección" loading="lazy" referrerpolicy="no-referrer">':'')+
     (a.addressType==='RESIDENTIAL'?'<p class="muted">Tu acceso residencial conserva su proceso de activación independiente.</p>':'')+'</article>';

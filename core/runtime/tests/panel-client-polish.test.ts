@@ -30,6 +30,7 @@ test('card actions precede photographs and account footer stays single and cente
  expect(panel).toContain('.account-footer{width:100%;text-align:center');
  expect(commercialEntryHtml(true,new URL('https://direcciones.lat/'))).not.toContain('<footer class="account-footer">');
  const html=commercialEntryHtml(true,new URL('https://direcciones.lat/?country=CR'));
+ expect(html).toContain('.latam-copyright{text-align:center;width:100%');
  expect(html).toContain("'/auth/google/login?country='+encodeURIComponent(c)");
  expect(html).toContain("'/panel?country='+encodeURIComponent(c)");
  for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();

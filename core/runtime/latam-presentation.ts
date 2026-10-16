@@ -120,6 +120,7 @@ body.latam .latam-footer-inner nav{flex:0 1 440px;justify-items:start}
 #commercialWelcome .latam-help-strip p strong{display:block;color:#fff;font-size:18px}
 #commercialWelcome .latam-help-action{display:inline-flex;align-items:center;justify-content:center;text-decoration:none!important;white-space:nowrap;padding:14px 20px;border-radius:999px;background:#078df2;color:white;font-weight:700}
 body.latam .latam-footer{display:block;padding:36px 20px 60px;background:linear-gradient(135deg,#061223,#0a1c32);border-top:1px solid #23486c;border-radius:18px 18px 0 0}
+body.latam .latam-copyright{text-align:center;width:100%;margin:26px auto 0;font-size:13px;line-height:1.5;color:#b8c9dd}
 body.latam .latam-footer-inner{max-width:1180px;display:grid;grid-template-columns:minmax(240px,1.1fr) minmax(0,1.9fr);gap:44px;margin:auto}
 body.latam .latam-footer-logo{display:flex;align-items:center;gap:14px;text-decoration:none!important;color:#fff}
 body.latam .latam-footer-logo svg{color:#11a9ff;flex-shrink:0}

@@ -625,4 +625,27 @@ Intervenciones que siguen siendo necesarias: aportar acceso de lectura o exporta
 - Mostrar precio y moneda, periodicidad, promociones y vigencia, renovación, características y límites reales, código digital/QR, navegación, contactos, fotografías, y opciones de actualización según el plan. No inventar prestaciones ni prometer pagos no habilitados.
 - Usar una única fuente de configuración de planes, sin duplicar lógica multinacional; diseño adaptable a móvil/tablet/escritorio y accesible por teclado. Validar que los cuatro detalles y el retorno al formulario funcionan físicamente.
 - Respetar decisiones comerciales vigentes: Negocio Gratis sin descripción breve; Premium sin reporte mensual/analytics; Premium Pro con hasta cinco fotos; promociones de fundadores hasta 9-nov-2026 y etapas posteriores según reglas comerciales. Verificar los textos contra la configuración vigente antes de publicar.
-- No modificar el flujo histórico Apps Script/Excel, los 40 código
+- No modificar el flujo histórico Apps Script/Excel, los 40 códigos históricos, las migraciones productivas ni la pasarela de pagos. Registrar commit, CI, despliegue y prueba física antes de declarar OPERATIVO.
+
+## 2026-10-15 · Control de calidad y contacto obligatorio para Lugares
+
+- **Estado: PENDIENTE DE IMPLEMENTACIÓN Y PRUEBA.** Solicitud expresa del propietario: impedir que cualquier persona publique información falsa, ofensiva o arbitraria en Lugares; ADMIN debe poder contactar al solicitante por correo.
+- Hallazgo en código: `request-validation.ts` admite `email` vacío (`field('email',160,false)`), aunque valida formato cuando se proporciona. El detalle ADMIN muestra `r.extras.email` o «No indicado». La revisión manual `PENDING_REVIEW`/`APPROVED` ya existe; conservarla y verificar que ninguna ruta de publicación permita saltarla.
+- Exigir correo válido para nuevas solicitudes de tipo `PLACE`, tanto en formulario como en validación de servidor. Preservar compatibilidad con solicitudes históricas sin correo y no inventar direcciones de contacto. Determinar si el correo autenticado verificado puede reutilizarse con consentimiento visible.
+- ADMIN: presentar correo y solicitante claramente, revisión de nombre, descripción, ubicación, fotografías y contenido antes de aprobar/publicar; permitir rechazo con motivo y comunicación manual por correo. No prometer envío automático sin servicio de correo configurado.
+- Añadir pruebas de correo ausente/inválido, permisos de revisión y prohibición de publicación automática; comprobar en tablet y móvil. No tocar códigos históricos, pagos ni otras clases de dirección.
+
+## 2026-10-15 · Seguimiento de correcciones visuales, retorno LATAM y códigos cortos
+
+- **Correcciones visuales: EN DESARROLLO, no OPERATIVO.** Finalizar botones y tarjetas del panel cliente y ADMIN: tamaño, alineación, contraste, tipografía, estados, apertura de detalle y adaptación móvil/tablet/escritorio. Revisar en producción en ambos dominios antes de cerrar.
+- **Cerrar sesión LATAM: CÓDIGO CORREGIDO, PRUEBA PRODUCTIVA PENDIENTE.** `core/runtime/user-panel.ts` ya redirige a `https://direcciones.lat/` si el host es `direcciones.lat`, y a `https://direcciones507.com/` en caso contrario (commit `30b6e68`). Probar desde la entrada LATAM y verificar el host real del panel compartido y el retorno tras OAuth; si el panel se aloja en otro host, preservar el portal de origen de forma segura y sin redirección abierta.
+- **Nuevos códigos automáticos: PENDIENTE DE DISEÑO/IMPLEMENTACIÓN.** Solicitud actual del propietario: prefijo de país existente más máximo ocho **dígitos numéricos** si no se solicita nombre personalizado. Nombre personalizado opcional, único y validado. Contrastar con la regla anterior de máximo ocho caracteres alfanuméricos; prevalece esta precisión del propietario para generación automática, sin tocar los 40 códigos históricos ni renombrar URLs/QR existentes. Verificar colisiones, concurrencia, reservas y unicidad antes de activar generación.
+- No declarar completado por CI verde ni por commit aislado. Registrar evidencia de pruebas físicas, despliegue y ausencia de regresiones.
+
+## 2026-10-15 · Descripción breve por tipo de plan (decisión del propietario)
+
+- **PENDIENTE DE IMPLEMENTACIÓN Y PRUEBA.** Mostrar y permitir el campo «Descripción breve» **únicamente** para solicitudes de **Lugar** y **Negocio Premium Pro**.
+- **Ocultar y no exigir** «Descripción breve» en **Negocio Gratis** y **Negocio Premium**. No mostrarlo tampoco en Residencial salvo decisión posterior expresa.
+- Aplicar la regla tanto en el formulario cliente (cambio dinámico de tipo/plan y al volver a editar) como en validación y persistencia del servidor; impedir que un valor oculto de otro plan se envíe accidentalmente. No alterar descripciones históricas.
+- Confirmar nombres/identificadores reales de planes antes de modificar código; mantener independiente el campo «Referencia» y cualquier descripción extensa que tenga finalidad diferente.
+- Probar cambios Gratis → Premium → Premium Pro → Lugar y viceversa en móvil/tablet, guardado, revisión ADMIN y ficha pública. CI verde no sustituye prueba productiva.

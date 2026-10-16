@@ -10,6 +10,20 @@ async function openRequestReview(id){
     rows.innerHTML='<article class="tile"><h3 style="margin:0 0 12px">Detalle de solicitud</h3><b>'+esc(r.name)+'</b><p>'+esc(reviewLabel(r.type))+' · '+esc(r.extras.plan)+' · '+esc(reviewLabel(r.status))+'</p><p>'+'<strong>Descripción:</strong> '+esc((r.type==='PLACE'||r.extras.plan==='BUSINESS_PREMIUM_PRO'?r.description:'')||'No indicada')+'</p><p>'+'<strong>Referencia:</strong> '+esc(r.reference||'No indicada')+'</p><p>'+esc(r.latitude)+', '+esc(r.longitude)+'</p><p>'+'<strong>Teléfonos:</strong> '+esc([r.phone,r.landlinePhone].filter(Boolean).join(' · ')||'No indicados')+'</p><p>'+'<strong>Correo:</strong> '+esc(r.extras.email||'No indicado')+'</p><p>'+esc(r.commercialDescription||'')+'</p><p>'+'<strong>Horario:</strong> '+esc(r.hours||'No indicado')+'</p><p>'+esc(r.extras.postalCode||'')+' '+esc(r.extras.postalZone||'')+'</p><p>Código solicitado: '+esc(r.extras.namedCode||'')+'</p>'+r.socials.map(s=>'<p>'+esc(s.platform)+': '+esc(s.url)+'</p>').join('')+r.media.map((m,i)=>'<div><span>'+esc(r.type==='PLACE'?(i===0?'Foto de portada':'Foto adicional '+i):m.type)+' · '+esc(reviewLabel(m.status))+'</span>'+(m.status==='READY'?'<img alt="Archivo de la solicitud" style="max-width:100%;max-height:240px" src="'+esc(m.url||('/v1/admin/requests/'+id+'/media/'+m.id))+'">':'')+'</div>').join('')+'<p>País: '+esc(r.countryCode||r.extras.countryCode||'PA')+'</p><p>'+esc(Object.values(r.extras.territory||{}).filter(Boolean).join(' · '))+'</p>'+'<p>Decisión: '+esc(reviewLabel(r.review)||'Pendiente')+'</p><div id="reviewActions"></div><p id="reviewMessage" role="status"></p></article>';
     const actions=document.getElementById('reviewActions');
     mountAddressEditor(actions,r,true,()=>openRequestReview(id));
+    if(r.type==='PLACE'&&r.status!=='ARCHIVED'&&!r.extras.migration){
+      const remove=document.createElement('button');remove.type='button';remove.className='btn';remove.textContent='Eliminar lugar';remove.style.cssText='background:#fff1f2;color:#9f1239;border:1px solid #fecdd3;';
+      remove.onclick=async()=>{
+        if(!confirm('¿Eliminar este lugar de la plataforma? La dirección pública dejará de estar disponible. Esta acción quedará registrada.'))return;
+        remove.disabled=true;remove.textContent='Eliminando…';
+        try{
+          const res=await fetch('/v1/admin/requests/'+r.id+'/archive-place',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'}});
+          if(!res.ok)throw Error('No se pudo eliminar el lugar.');
+          document.getElementById('reviewMessage').textContent='Lugar retirado correctamente.';
+          await openRequestReview(r.id);
+        }catch(e){remove.disabled=false;remove.textContent='Eliminar lugar';document.getElementById('reviewMessage').textContent='No se pudo eliminar el lugar. Intenta nuevamente.';}
+      };
+      actions.append(remove);
+    }
     if(r.publicUrl){const link=document.createElement('a');link.className='btn google';link.textContent='Abrir dirección digital';link.href=r.publicUrl;link.target='_blank';link.rel='noopener';actions.append(link);}
     if(r.extras.migration){const download=document.createElement('a');download.className='btn google';download.textContent='Descargar ficha de transición';download.href='/v1/admin/requests/'+id+'/bridge';actions.append(download);}
     if(r.extras.createdByAdmin&&r.ownerId){

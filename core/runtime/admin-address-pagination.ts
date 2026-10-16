@@ -22,7 +22,7 @@ export async function adminAddressPage(sql:Sql,params:URLSearchParams,kind:Kind,
  const where:string[]=[];
  if(ownerId){if(!uuid.test(ownerId))throw Error('INVALID_PAGE');args.push(ownerId);where.push('EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=$'+args.length+'::uuid)');}
  if(kind==='requests')where.push("a.status='PENDING_REVIEW'");
- if(kind==='places')where.push("a.address_type='PLACE'");
+ if(kind==='places')where.push("a.address_type='PLACE' AND a.status<>'ARCHIVED'");
  if(o.country){args.push(o.country);where.push("COALESCE(to_jsonb(a)->>'country_code','PA')=$"+args.length);}
  // Bind timestamp as text: postgres.js serializes timestamptz parameters via Date
  // (milliseconds), which would lose PostgreSQL microseconds at page boundaries.

@@ -576,7 +576,7 @@
           <li><a onclick="toggleSeccion('secNosotros')" id="lnkNosotros">Sobre Nosotros</a></li>
           <li><a onclick="toggleSeccion('secFuncionamiento')" id="lnkFuncionamiento">Cómo Funciona</a></li>
           <li><a onclick="toggleSeccion('secContacto')" id="lnkContacto">Contacto</a></li>
-          <li><a href="https://direcciones.lat/?country=PA&amp;access=1" class="btn-nav-action"><i class="fa-solid fa-user"></i> Mi cuenta</a></li>
+          <li><a href="https://direcciones.lat/?country=PA&amp;access=1&amp;origin=507" class="btn-nav-action"><i class="fa-solid fa-user"></i> Mi cuenta</a></li>
           <li><a href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;" class="btn-nav-action"><i class="fa-solid fa-location-dot"></i> Solicitar mi dirección digital</a></li>
         </ul>
       </nav>
@@ -766,7 +766,7 @@
  title.textContent=card.querySelector('h4').textContent;
  price.textContent=card.querySelector('.plan-numeric-val').textContent;
  list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent='✓ '+li.textContent.trim();item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
- next.href='https://direcciones.lat/?country=PA&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
+ next.href='https://direcciones.lat/?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
  dialog.showModal();
  }));
  document.getElementById('plan507Close').onclick=()=>dialog.close();

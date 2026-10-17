@@ -1,3 +1,5 @@
+import QRCode from 'qrcode';
+import {addressPaidBenefitsActive} from './plan-policy';
 import { createHash } from 'node:crypto';
 import { assertCountryCommerce, prepareCountryTemplate, proposedCountryUrl, COUNTRIES } from './country-configuration';
 import { createR2Storage, type R2Settings } from './r2-storage';
@@ -58,9 +60,11 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   if(!rows[0].request_data?.migration)assertCountryCommerce(rows[0].request_data?.countryCode??'PA');
   const media=await sql.unsafe("SELECT id::text,media_type,url FROM ad507.address_media WHERE address_id=$1::uuid AND upload_status='READY' ORDER BY position,id",[rows[0].id]);
   const mediaOrigin=new URL(proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)).origin;
-  const urls=media.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
+  const benefits=await addressPaidBenefitsActive(sql,rows[0].id);
+  const visibleMedia=benefits?media:media.filter((m:any,i:number)=>m.media_type==='LOGO'||i===media.findIndex((v:any)=>v.media_type==='IMAGE'));
+  const urls=visibleMedia.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
   const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
-  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
+  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:benefits?(rows[0].request_data?.postalCode??null):null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
@@ -325,6 +329,8 @@ function configuredPublicCode(code:string):boolean {
 export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
   if(context.enabled&&req.method==='GET'){
+    const qr=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/qr\.png$/);
+    if(qr){try{const record=await newPublicAddress(sql,qr[1],url.origin);if(!record)return new Response(null,{status:404});return new Response(await QRCode.toBuffer(record.url,{width:320,margin:4,errorCorrectionLevel:'M'}),{headers:{'content-type':'image/png','cache-control':'no-store','x-content-type-options':'nosniff'}});}catch{return new Response(null,{status:503});}}
     const publicMatch=url.pathname.match(/^\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/$/);
     const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)$/);
     if((publicMatch||apiMatch)&&configuredPublicCode((publicMatch??apiMatch)![1])){
@@ -338,6 +344,7 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
       try{const rows=await sql.unsafe("SELECT a.id::text,a.request_data,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
       if(!rows.length)return new Response(null,{status:404});
       const row=rows[0];
+      if(row.media_type==='IMAGE'&&!await addressPaidBenefitsActive(sql,row.id)){const [first]=await sql.unsafe("SELECT id::text FROM ad507.address_media WHERE address_id=$1::uuid AND media_type='IMAGE' AND upload_status='READY' ORDER BY position,id LIMIT 1",[row.id]);if(first?.id!==mediaMatch[2])return new Response(null,{status:404});}
       // Keep private media closed for countries whose commercial publication is disabled.
       if(!row.request_data?.migration)assertCountryCommerce(row.request_data?.countryCode??'PA');
         const storage=createR2Storage(context.r2,{fetch:context.fetch,registerIntent:async()=>{throw Error('PUBLIC_MEDIA_READ_ONLY');},authorize:async scope=>{

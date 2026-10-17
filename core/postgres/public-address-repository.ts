@@ -1,3 +1,4 @@
+import {paidBenefitsActive} from '../runtime/plan-policy';
 import { COUNTRIES } from '../runtime/country-configuration';
 export type SqlExecutor = <T = Record<string, unknown>>(
   strings: TemplateStringsArray,
@@ -41,6 +42,8 @@ type AddressRow = {
   hours: string | null;
   plan_code: string | null;
   plan_name: string | null;
+  request_data?:any;
+  lifecycle_payment_valid?:boolean;
 };
 
 type CapabilityRow = { capability: string; value_json: unknown };
@@ -99,7 +102,9 @@ export async function getPublicAddressByCode(
       a.landline_phone,
       a.hours,
       p.code AS plan_code,
-      p.name AS plan_name
+      p.name AS plan_name,
+      to_jsonb(a)->'request_data' AS request_data,
+      NOT EXISTS(SELECT 1 FROM ad507.orders o WHERE o.id::text=to_jsonb(a)->'request_data'->'planLifecycle'->>'orderId' AND o.status<>'PAID') AS lifecycle_payment_valid
     FROM ad507.addresses a
     LEFT JOIN ad507.plans p ON p.id = a.plan_id
     WHERE a.code = ${code}
@@ -111,12 +116,15 @@ export async function getPublicAddressByCode(
   const row = rows[0];
   if (!row) return null;
 
-  const capabilities = row.plan_code
+  const managed=row.request_data?.planLifecycle&&!row.request_data?.migration;
+  const restricted=!!managed&&(!paidBenefitsActive(row.request_data)||row.lifecycle_payment_valid===false);
+  const effectivePlan=restricted?'BUSINESS_FREE':row.plan_code;
+  const capabilities = effectivePlan
     ? await sql<CapabilityRow>`
         SELECT pc.capability, pc.value_json
         FROM ad507.plan_capabilities pc
         JOIN ad507.plans p ON p.id = pc.plan_id
-        WHERE p.code = ${row.plan_code}
+        WHERE p.code = ${effectivePlan}
       `
     : [];
 
@@ -150,8 +158,8 @@ export async function getPublicAddressByCode(
     type: row.address_type,
     name: row.name,
     reference: row.reference,
-    description: row.description,
-    commercialDescription: row.commercial_description,
+    description: restricted?null:row.description,
+    commercialDescription: restricted?null:row.commercial_description,
     coordinates: {
       latitude: numberOrNull(row.latitude),
       longitude: numberOrNull(row.longitude),
@@ -159,9 +167,9 @@ export async function getPublicAddressByCode(
     phone: row.phone,
     landlinePhone: row.landline_phone,
     hours: row.hours,
-    plan: row.plan_code && row.plan_name ? { code: row.plan_code, name: row.plan_name } : null,
+    plan: row.plan_code && row.plan_name ? { code:effectivePlan!, name:restricted?'Beneficios pagados vencidos':row.plan_name } : null,
     capabilities: capabilityMap,
-    media: media.map((item) => ({
+    media: (restricted?media.filter((m,i)=>m.media_type==='LOGO'||i===media.findIndex(x=>x.media_type==='IMAGE')):media).map((item) => ({
       type: item.media_type,
       storageKey: item.storage_key,
       url: item.url,

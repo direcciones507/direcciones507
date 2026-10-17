@@ -1,3 +1,4 @@
+import {isAutomaticPaidPlan,automaticPaidStateAllowed} from './paid-activation-policy';
 import { assertCountryCommerce, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
 import type { Sql } from 'postgres';
 import { createHash } from 'node:crypto';
@@ -9,6 +10,7 @@ import { validateHistoricalSnapshot, snapshotHash, verifyHistoricalPhotos, verif
 import { requireConfirmedPayment } from './payment-repository';
 
 const digest=(value:string|Uint8Array)=>createHash('sha256').update(value).digest('hex');
+const AUTOMATIC_PAID=Symbol('internal-verified-payment-activation');
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export type CanonicalPublication = {
   // Installed only after historical registry and the single previous allocator are verified.
@@ -16,7 +18,7 @@ export type CanonicalPublication = {
   reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string})=>Promise<string>;
   publish: (request:{id:string;code:string;type:string})=>Promise<{confirmed:true;receipt:string}>;
 };
-export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production'}) {
+export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';paidWorkflow?:boolean}) {
   const actor=async(tx:any,id:string,role:string)=>{
     const users=await tx.unsafe(`SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role=$2`,[id,role]);
     if(!users.length)throw Error('FORBIDDEN');
@@ -100,7 +102,14 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[keyHash]);
         await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[payloadHash]);
         const existing=await tx.unsafe('SELECT id::text FROM ad507.addresses WHERE request_key_hash=$1 OR request_payload_hash=$2 ORDER BY (request_key_hash=$1) DESC NULLS LAST LIMIT 1',[keyHash,payloadHash]);
-        if(existing.length){const row=await owned(tx,actorId,existing[0].id);if(row.request_payload_hash!==payloadHash)throw Error('IDEMPOTENCY_CONFLICT');return row;}
+        if(existing.length){const row=await owned(tx,actorId,existing[0].id);if(row.request_payload_hash!==payloadHash)throw Error('IDEMPOTENCY_CONFLICT');
+          const acceptance=!admin&&(raw as any).legalAcceptance;
+          if(acceptance&&(row.request_data?.legalAcceptance?.version!==acceptance.version||row.request_data?.legalAcceptance?.contentHash!==acceptance.contentHash)){
+            const evidence={...acceptance,userId:actorId,countryCode:data.countryCode};
+            await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{legalAcceptance}',$2::jsonb) WHERE id=$1::uuid",[row.id,tx.json(evidence)]);
+            row.request_data.legalAcceptance=evidence;
+            if(row.status!=='DRAFT')await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata) VALUES($1::uuid,'USER','LEGAL_ACCEPTED','ADDRESS',$2,$3::jsonb)",[actorId,row.id,tx.json(evidence)]);
+          }return row;}
         const plan=await tx.unsafe("SELECT id FROM ad507.plans WHERE code=$1 AND status='ACTIVE'",[data.plan]);
         if(data.type!=='PLACE'&&!plan.length)throw Error('PLAN_NOT_FOUND');
         const rows=await tx.unsafe(`INSERT INTO ad507.addresses(code,address_type,status,plan_id,name,reference,description,commercial_description,latitude,longitude,phone,landline_phone,hours,source,request_key_hash,request_payload_hash,request_data,country_code)
@@ -109,13 +118,15 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[row.id,platform,url]);
         await audit(tx,actorId,admin?'ADMIN_ADDRESS_CREATED':'REQUEST_CREATED',row.id,admin);return row;
       });
+      if(request.status==='DRAFT'&&request.request_data?.workflow==='PAYMENT_PENDING')return {id:request.id,status:'DRAFT',workflow:'PAYMENT_PENDING',code:request.code,review:request.review_decision};
       if(request.status!=='DRAFT')return {id:request.id,status:request.status,code:request.code,review:request.review_decision};
       try {
         if(files.length){const storage=createRequestMediaStorage(sql,actorId,options.r2!,options.fetch);for(const file of [...preparedFiles].sort((a,b)=>a.role==='logo'?-1:b.role==='logo'?1:0))await storage.storeOptimized({...file,ownerId:actorId,addressId:request.id,countryCode:data.countryCode});}
         return await sql.begin(async tx=>{
           if(admin){const roles=await tx.unsafe("SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role IN ('ADMIN','COMMERCIAL') LIMIT 1",[actorId]);if(!roles.length)throw Error('FORBIDDEN');}else await actor(tx,actorId,'CLIENT');const row=await owned(tx,actorId,request.id);
-          if(row.status==='DRAFT'){await complete(tx,row);await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',updated_at=now() WHERE id=$1::uuid",[row.id]);await audit(tx,actorId,'REQUEST_SUBMITTED',row.id,admin);if(!admin&&row.request_data.legalAcceptance)await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata) VALUES($1::uuid,'USER','LEGAL_ACCEPTED','ADDRESS',$2,$3::jsonb)",[actorId,row.id,tx.json(row.request_data.legalAcceptance)]);}
-          return {id:row.id,status:row.status==='DRAFT'?'PENDING_REVIEW':row.status,code:row.code,review:row.review_decision};
+          const paid=options.paidWorkflow&&isAutomaticPaidPlan(row);
+          if(row.status==='DRAFT'&&row.request_data?.workflow!=='PAYMENT_PENDING'){await complete(tx,row);if(paid){await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{workflow}','\"PAYMENT_PENDING\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);row.request_data.workflow='PAYMENT_PENDING';}else await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',updated_at=now() WHERE id=$1::uuid",[row.id]);await audit(tx,actorId,paid?'PAID_REQUEST_PREPARED':'REQUEST_SUBMITTED',row.id,admin);if(!admin&&row.request_data.legalAcceptance)await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata) VALUES($1::uuid,'USER','LEGAL_ACCEPTED','ADDRESS',$2,$3::jsonb)",[actorId,row.id,tx.json(row.request_data.legalAcceptance)]);}
+          return {id:row.id,status:row.status==='DRAFT'&&!paid?'PENDING_REVIEW':row.status,...(paid?{workflow:'PAYMENT_PENDING'}:{}),code:row.code,review:row.review_decision};
         });
       } catch(error){
         const latest=await sql.begin(async tx=>{if(admin){const roles=await tx.unsafe("SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role IN ('ADMIN','COMMERCIAL') LIMIT 1",[actorId]);if(!roles.length)throw Error('FORBIDDEN');}else await actor(tx,actorId,'CLIENT');return owned(tx,actorId,request.id);});
@@ -159,6 +170,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         await actor(tx,actorId,'ADMIN');
         const rows=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' FOR UPDATE",[addressId]);const row=rows[0];
         if(!row)throw Error('REQUEST_NOT_FOUND');
+        if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&row.request_data.workflow!=='SECURITY_REVIEW')throw Error('MANUAL_REVIEW_NOT_REQUIRED');
         if(row.review_decision===decision)return {id:row.id,status:row.status,decision};
         if(row.status!=='PENDING_REVIEW'||row.review_decision)throw Error('INVALID_STATE_TRANSITION');
         await complete(tx,row);if(row.request_data?.migration){await historicalIntegrity(tx,row);if(decision==='APPROVED'){const proof=await verifyHistoricalPhotos(row.legacy_payload,options.fetch);await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{migration,photoProof}',$2::jsonb) WHERE id=$1::uuid",[row.id,tx.json(proof)]);}}
@@ -167,18 +179,37 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         return {id:row.id,status:decision==='REJECTED'?'ARCHIVED':'PENDING_REVIEW',decision};
       });
     },
-    async publish(actorId:string,addressId:string) {
+    // Backend hook for a provider-confirmed payment, never exposed as a client route.
+    async activatePaid(addressId:string){
+      if(!options.paidWorkflow)throw Error('AUTOMATIC_PAID_ACTIVATION_NOT_ENABLED');
+      return repository.publish('',addressId,AUTOMATIC_PAID);
+    },
+    async publish(actorId:string,addressId:string,internalMode?:symbol) {
+      const automatic=internalMode===AUTOMATIC_PAID;
       if(!uuid.test(addressId))throw Error('REQUEST_NOT_FOUND');
       if(!options.canonical||options.canonical.historicalRegistryVerified!==true)throw Error('CANONICAL_PUBLICATION_NOT_READY');
       const session=await sql.reserve();
       try {
         await session.unsafe('SELECT pg_advisory_lock(hashtextextended($1,0))',['publish:'+addressId]);
-        await actor(session,actorId,'ADMIN');
+        if(!automatic)await actor(session,actorId,'ADMIN');
         const rows=await session.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST'",[addressId]);const row=rows[0];
         if(!row)throw Error('REQUEST_NOT_FOUND');
         if(!row.request_data?.migration)assertCountryCommerce(row.country_code??row.request_data?.countryCode??'PA');
         if(row.status==='ACTIVE'&&row.publication_receipt)return {id:row.id,code:row.code,status:'ACTIVE',receipt:row.publication_receipt};
-        if((row.status!=='PENDING_REVIEW'&&!(row.status==='SUSPENDED'&&row.request_data?.migration))||row.review_decision!=='APPROVED')throw Error('APPROVAL_REQUIRED');
+        if(automatic){
+          if(row.request_data?.workflow==='SECURITY_REVIEW'&&row.review_decision!=='APPROVED')return {id:row.id,status:row.status,workflow:'SECURITY_REVIEW',code:row.code};
+          if(!automaticPaidStateAllowed(row))throw Error('INVALID_PAID_ACTIVATION_STATE');
+          await requireConfirmedPayment(session,row,options.paymentEnvironment??'production');
+          const duplicate=await session.unsafe("SELECT id FROM ad507.addresses WHERE id<>$1::uuid AND status='ACTIVE' AND COALESCE(country_code,'PA')=$2 AND lower(trim(name))=lower(trim($3)) AND latitude=$4 AND longitude=$5 LIMIT 1",[row.id,row.country_code??'PA',row.name,row.latitude,row.longitude]);
+          if((duplicate.length||row.request_data?.securityHold===true)&&row.review_decision!=='APPROVED'){
+            await session.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',request_data=jsonb_set(request_data,'{workflow}','\"SECURITY_REVIEW\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);
+            await session.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,metadata) VALUES('SYSTEM','PAID_SECURITY_REVIEW_REQUIRED','ADDRESS',$1,$2::jsonb)",[row.id,session.json({reason:duplicate.length?'DUPLICATE_LOCATION':'SECURITY_HOLD'})]);
+            return {id:row.id,status:'PENDING_REVIEW',workflow:'SECURITY_REVIEW',code:row.code};
+          }
+        }else{
+          if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&row.request_data.workflow!=='SECURITY_REVIEW')throw Error('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
+          if((row.status!=='PENDING_REVIEW'&&!(row.status==='SUSPENDED'&&row.request_data?.migration))||row.review_decision!=='APPROVED')throw Error('APPROVAL_REQUIRED');
+        }
         await complete(session,row);
         if(options.paymentEnvironment)await requireConfirmedPayment(session,row,options.paymentEnvironment);
         if(row.request_data?.migration){await historicalIntegrity(session,row);await verifyHistoricalCodePresent(row.code,options.fetch);await verifyMigrationBridge(row,options.fetch);const proof=await verifyHistoricalPhotos(row.legacy_payload,options.fetch);if(snapshotHash(proof)!==snapshotHash(row.request_data.migration.photoProof))throw Error('HISTORICAL_MEDIA_UNVERIFIED');}
@@ -191,12 +222,12 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         await session.unsafe('BEGIN');
         try {
           const tx=session;
-          await actor(tx,actorId,'ADMIN');
+          if(!automatic)await actor(tx,actorId,'ADMIN');
           const current=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid FOR UPDATE",[row.id]);
-          if(!['PENDING_REVIEW',...(row.request_data?.migration?['SUSPENDED']:[])].includes(current[0]?.status)||current[0]?.review_decision!=='APPROVED')throw Error('PUBLICATION_STATE_CONFLICT');
+          if(automatic?!automaticPaidStateAllowed(current[0]):!['PENDING_REVIEW',...(row.request_data?.migration?['SUSPENDED']:[])].includes(current[0]?.status)||current[0]?.review_decision!=='APPROVED')throw Error('PUBLICATION_STATE_CONFLICT');
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
           if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
-          await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
+          await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}
         return {id:row.id,code,status:'ACTIVE',receipt:published.receipt};

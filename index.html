@@ -513,6 +513,17 @@
 .seo-trigger-link{display:flex;align-items:center;justify-content:center;min-width:0;overflow-wrap:anywhere;text-align:center;line-height:1.4;padding:12px 10px;border-radius:16px}
 @media(max-width:950px){.seo-links-flex{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){.seo-links-flex{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.seo-trigger-link{font-size:11px;padding:10px 8px}}
+
+/* Panama plans use compact LATAM-style cards while retaining the 507 palette. */
+.planes-grid-layout .plan-pricing-card{display:flex;flex-direction:column;align-items:stretch;gap:8px;text-align:left;padding:24px 19px;border:1px solid #27465f;background:linear-gradient(155deg,#10263e,#0b1a2b);border-radius:17px;min-width:0}
+.planes-grid-layout .plan-pricing-card h4{font-size:19px;margin:0;line-height:1.3}
+.planes-grid-layout .plan-numeric-val{font-size:25px;margin:4px 0 10px;color:#67e8f9}
+.planes-grid-layout .plan-perks-list{flex:1;margin:0 0 15px;padding:0}
+.planes-grid-layout .plan-perks-list li{font-size:13px;line-height:1.55;margin-bottom:10px}
+.planes-grid-layout .plan-pricing-card .btn-plan-action-trigger{margin-top:auto;min-height:46px}
+.planes-grid-layout .plan-pricing-card.popular{border-color:#22d3ee;background:linear-gradient(155deg,#143451,#0b1a2b)}
+.planes-grid-layout .latam-expansion-card{grid-column:1/-1;min-height:195px}
+@media(max-width:1100px) and (min-width:701px){.planes-grid-layout{grid-template-columns:repeat(2,minmax(0,1fr))}.planes-grid-layout .latam-expansion-card{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -669,17 +680,16 @@
         
         <div class="planes-grid-layout">
           <div class="plan-pricing-card">
-            <h4>Residencial Privado</h4><div class="plan-numeric-val">$12.99</div>
+            <h4>Agregar lugar</h4><div class="plan-numeric-val">Gratis</div>
             <ul class="plan-perks-list">
-              <li><i class="fa-solid fa-circle-check"></i> Código AD507 numérico</li>
-              <li><i class="fa-solid fa-circle-check"></i> Google Maps, Waze, Uber y WhatsApp</li>
-              <li><i class="fa-solid fa-circle-check"></i> Referencia de ubicación</li>
-              <li><i class="fa-solid fa-circle-check"></i> Código QR privado</li>
-              <li><i class="fa-solid fa-circle-check"></i> Compartir temporal por 1 o 4 horas</li>
-              <li><i class="fa-solid fa-lock"></i> Privado y no indexado</li>
+              <li><i class="fa-solid fa-circle-check"></i> Iglesias, parques, cascadas, ríos, playas y atractivos</li>
+              <li><i class="fa-solid fa-circle-check"></i> Solo lugares de interés no comerciales</li>
+              <li><i class="fa-solid fa-circle-check"></i> Disponible por ahora en Panamá y Costa Rica</li>
+              <li><i class="fa-solid fa-circle-check"></i> Sujeto a revisión y aprobación</li>
             </ul>
-            <button type="button" class="btn-plan-action-trigger" data-507-plan="RESIDENTIAL" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
+            <button type="button" class="btn-plan-action-trigger" data-507-plan="PLACE" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
           </div>
+
           <div class="plan-pricing-card">
             <h4>Negocio Gratis</h4><div class="plan-numeric-val">Gratis</div>
             <ul class="plan-perks-list">
@@ -716,16 +726,6 @@
               <li><i class="fa-solid fa-circle-check"></i> Indexado en Google</li>
             </ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM_PRO" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
-          </div>
-          <div class="plan-pricing-card">
-            <h4>Agregar lugar</h4><div class="plan-numeric-val">Gratis</div>
-            <ul class="plan-perks-list">
-              <li><i class="fa-solid fa-circle-check"></i> Iglesias, parques, cascadas, ríos, playas y atractivos</li>
-              <li><i class="fa-solid fa-circle-check"></i> Solo lugares de interés no comerciales</li>
-              <li><i class="fa-solid fa-circle-check"></i> Disponible por ahora en Panamá y Costa Rica</li>
-              <li><i class="fa-solid fa-circle-check"></i> Sujeto a revisión y aprobación</li>
-            </ul>
-            <button type="button" class="btn-plan-action-trigger" data-507-plan="PLACE" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
           </div>
           <aside class="latam-expansion-card" aria-label="Conoce Direcciones LATAM">
             <div class="latam-expansion-symbol" aria-hidden="true"><i class="fa-solid fa-earth-americas"></i></div>

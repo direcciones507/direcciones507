@@ -310,7 +310,7 @@ function prepareLatamRequest(e,type,plan){
  .replace('</script>',`
 const accessDialog=document.getElementById('latamAccess');
 document.getElementById('latamGoogleAccess').addEventListener('click',()=>{const p=new URLSearchParams(location.search);const plan=p.get('selectedPlan');if(plan&&['RESIDENTIAL','PLACE','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan))sessionStorage.setItem('ad507PendingPlan',plan);else sessionStorage.removeItem('ad507PendingPlan');if(p.get('origin')==='507')sessionStorage.setItem('ad507EntryOrigin','507');else sessionStorage.removeItem('ad507EntryOrigin');});
-function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+(document.getElementById('commercialCountry')?.selectedOptions[0]?.textContent||'Panamá');if(!accessDialog.open)accessDialog.showModal();document.getElementById('latamAccessEmail').focus();}
+function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+(document.getElementById('commercialCountry')?.selectedOptions[0]?.textContent||'Panamá');if(!accessDialog.open)accessDialog.showModal();accessDialog.scrollTop=0;document.getElementById('latamAccessEmail').focus({preventScroll:true});}
 document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
 let latamEmailMode='register';
 const latamEmailSubmit=document.getElementById('latamEmailSubmit');
@@ -385,7 +385,7 @@ function showLatamPlanDetails(e,type,plan){
  document.getElementById('latamPlanDetailsCountry').textContent='País seleccionado: '+country.options[country.selectedIndex].textContent;
  document.getElementById('latamPlanDetailsFeatures').replaceChildren(...item.features.map(feature=>{const li=document.createElement('li');li.textContent=feature;return li;}));
  document.getElementById('latamPlanDetailsTerms').textContent='La disponibilidad, promociones, vigencia, renovación y medios de pago se confirman antes de contratar. La preparación no realiza ningún cobro. Las solicitudes y publicaciones internacionales siguen sujetas a habilitación por país.';
- latamPlanDialog.showModal();
+ latamPlanDialog.showModal();latamPlanDialog.scrollTop=0;
 }
 document.getElementById('latamPlanDetailsBack').onclick=()=>latamPlanDialog.close();
 document.getElementById('latamPlanDetailsContinue').onclick=()=>{
@@ -399,7 +399,7 @@ document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>showLatam
 const selected507Plan=new URLSearchParams(window.location.search).get('selectedPlan');
 if(selected507Plan){
  const selectedCard=Array.from(document.querySelectorAll('[data-latam-type]')).find(a=>selected507Plan==='RESIDENTIAL'?a.dataset.latamType==='RESIDENTIAL':selected507Plan==='PLACE'?a.dataset.latamType==='PLACE':a.dataset.latamPlan===selected507Plan);
- if(selectedCard){showLatamPlanDetails({preventDefault(){}},selectedCard.dataset.latamType,selectedCard.dataset.latamPlan);}
+ if(selectedCard){prepareLatamRequest({preventDefault(){}},selectedCard.dataset.latamType,selectedCard.dataset.latamPlan);}
 }
 
 document.getElementById('latamRequestDialog').addEventListener('close',()=>document.getElementById('latamMessageAnchor').after(document.getElementById('message')));

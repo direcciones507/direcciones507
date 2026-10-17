@@ -61,7 +61,7 @@ export function createPlanLifecycle(sql:Sql,options:{periods:PlanPeriods;environ
   },
   async reconcile(){
    // Bounded batches. Locks on each address serialize publication and renewal.
-   const pending=await sql.unsafe("SELECT r.order_id,r.address_id FROM ad507.plan_renewals r JOIN ad507.orders o ON o.id=r.order_id WHERE o.payment_environment=$1 AND o.status='PAID' AND NOT EXISTS(SELECT 1 FROM ad507.plan_terms t WHERE t.order_id=o.id) ORDER BY r.accepted_at LIMIT 100",[options.environment]);
+   const pending=await sql.unsafe("SELECT r.order_id,r.address_id FROM ad507.plan_renewals r JOIN ad507.orders o ON o.id=r.order_id JOIN ad507.addresses a ON a.id=r.address_id WHERE o.payment_environment=$1 AND o.provider=ANY($2::text[]) AND o.status='PAID' AND a.status='ACTIVE' AND a.source='USER_REQUEST' AND a.address_type='BUSINESS' AND NOT a.request_data ? 'migration' AND EXISTS(SELECT 1 FROM ad507.address_ownership own JOIN ad507.users u ON u.id=own.user_id WHERE own.address_id=a.id AND own.user_id=r.user_id AND own.user_id=o.user_id AND own.ownership_role='OWNER' AND u.status='ACTIVE') AND NOT EXISTS(SELECT 1 FROM ad507.plan_terms t WHERE t.order_id=o.id) ORDER BY r.accepted_at LIMIT 100",[options.environment,[...options.providers]]);
    for(const item of pending)try{await sql.begin(async tx=>{
     const row=await eligible(tx,item.address_id);
     if((await tx.unsafe('SELECT 1 FROM ad507.plan_terms WHERE order_id=$1::uuid',[item.order_id])).length)return;

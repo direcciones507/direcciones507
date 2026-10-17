@@ -1,6 +1,6 @@
 import type {Sql} from 'postgres';
 import {createAccountMailer,type Mail} from './account-email';
-import {COUNTRY_TIMEZONES,DAY_MS} from './plan-policy';
+import {COUNTRY_TIMEZONES} from './plan-policy';
 import {proposedCountryUrl} from './country-configuration';
 
 export const PLAN_SENDER='soporte@direcciones507.com';
@@ -32,7 +32,7 @@ export function createPlanMailWorker(sql:Sql,env:Record<string,string|undefined>
     const owners=await tx.unsafe(`SELECT u.id AS owner_id,u.email,a.code,a.name,a.country_code,t.expires_at,a.request_data,t.revoked_at
       FROM ad507.plan_terms t JOIN ad507.addresses a ON a.id=t.address_id JOIN ad507.address_ownership o ON o.address_id=a.id AND o.ownership_role='OWNER' JOIN ad507.users u ON u.id=o.user_id AND u.status='ACTIVE'
       WHERE t.id=$1::uuid AND a.source='USER_REQUEST' AND a.address_type IN ('BUSINESS','PLACE') AND a.status='ACTIVE' AND a.review_decision='APPROVED' AND a.publication_receipt IS NOT NULL AND NOT a.request_data ? 'migration'`,[job.term_id]);
-    const owner=owners[0],reminder=!['DELIVERY','RENEWED'].includes(job.kind);
+    const owner=owners[0];
     const stale=owner&&(owner.request_data.planLifecycle?.termId!==job.term_id||owner.revoked_at);
     const tooLate=owner&&['D15','D7','D1'].includes(job.kind)&&new Date(owner.expires_at)<=at;
     if(owners.length!==1||!owner||stale||tooLate||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(owner.email)||job.payload&&(job.payload.ownerId!==owner.owner_id||job.payload.to!==owner.email)){

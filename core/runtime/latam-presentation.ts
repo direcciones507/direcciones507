@@ -273,6 +273,22 @@ function prepareLatamRequest(e,type,plan){
 #latamAccess .latam-auth-links button{font-size:13px}
 #latamAccess .latam-auth-divider{margin:12px 0}
 @media(max-width:480px){#latamAccess{padding:19px 17px 22px;border-radius:20px;width:calc(100vw - 22px)}#latamAccess h2{font-size:23px}#latamAccess .latam-auth-links{gap:4px 12px}#latamAccess .latam-auth-links button{font-size:12px}#latamAccess #latamTogglePassword{padding:0 11px}}
+/* Compact tablet/mobile access dialog without changing authentication controls. */
+#latamAccess{width:min(470px,calc(100vw - 28px));padding:17px 22px 19px}
+#latamAccess>form{float:right;position:relative;z-index:1;margin:0 0 0 12px}
+#latamAccess>form button{min-height:30px;padding:4px 11px}
+#latamAccess h2{margin:4px 0 6px;font-size:25px;line-height:1.3}
+#latamAccessCountry{margin:0 0 10px;padding:5px 10px}
+#latamAccess label{margin:7px 0 4px}
+#latamAccess input{height:43px}
+#latamAccess .latam-password-row{margin-bottom:8px}
+#latamAccess #latamTogglePassword{height:43px;min-height:43px}
+#latamAccess #latamEmailSubmit,#latamAccess #latamGoogleAccess{min-height:43px;padding:9px 12px}
+#latamAccess #latamPasswordNotice{margin:6px 0 4px}
+#latamAccess .latam-auth-links{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;column-gap:15px;row-gap:0;margin:3px 0}
+#latamAccess .latam-auth-links button{min-height:28px;padding:3px 0}
+#latamAccess .latam-auth-divider{margin:4px 0}
+@media(max-width:480px){#latamAccess{width:calc(100vw - 22px);padding:15px 16px 17px}#latamAccess h2{font-size:22px}#latamAccess .latam-auth-links{column-gap:10px}#latamAccess .latam-auth-links button{font-size:12px}}
 @media(prefers-reduced-motion:reduce){#latamAccess input{transition:none}}
 #latamAccess [hidden]{display:none!important}
 @media(max-width:480px),(max-height:600px){#latamAccess{padding:16px}#latamAccess h2{font-size:21px}}

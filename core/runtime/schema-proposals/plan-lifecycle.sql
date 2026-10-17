@@ -11,7 +11,7 @@ CREATE TABLE ad507.plan_terms (
  plan_code text NOT NULL, country_code text NOT NULL,
  starts_at timestamptz NOT NULL, expires_at timestamptz,
  period_days integer CHECK(period_days BETWEEN 1 AND 3660),
- accepted_at timestamptz NOT NULL, policy_version text NOT NULL,
+ accepted_at timestamptz, policy_version text NOT NULL,
  revoked_at timestamptz,
  created_at timestamptz NOT NULL DEFAULT now(),
  CHECK(expires_at IS NULL OR expires_at>starts_at),

@@ -29,9 +29,10 @@ beforeAll(async()=>{
  if(!external){await pg.initialise();await pg.start();}
  const url=external??`postgres://postgres:${password}@127.0.0.1:55440/postgres`;
  base=postgres(url);isolatedName='plans_'+crypto.randomUUID().replaceAll('-','');await base.unsafe('CREATE DATABASE '+isolatedName);
- const parsed=new URL(url);parsed.pathname='/'+isolatedName;sql=postgres(parsed.toString(),{max:5});
+ const parsed=new URL(url);parsed.pathname='/'+isolatedName;sql=postgres(parsed.toString(),{max:1});
  for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql'])await sql.unsafe(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
  for(const file of ['landline.sql','requests.sql','countries.sql','payments.sql','paypal.sql','plan-lifecycle.sql'])await sql.unsafe(readFileSync(new URL('../schema-proposals/'+file,import.meta.url),'utf8'));
+ await sql.end();sql=postgres(parsed.toString(),{max:5});
  for(const [id,role]of [[owner,'CLIENT'],[admin,'ADMIN'],[other,'CLIENT']]){await sql.unsafe('INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)',[id,id+'@example.test']);await sql.unsafe('INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,$2)',[id,role]);}
 },60000);
 afterAll(async()=>{await sql?.end();if(base){await base.unsafe('DROP DATABASE '+isolatedName);await base.end();}if(!process.env.AD507_TEST_DATABASE_URL)await pg.stop();rmSync(dir,{recursive:true,force:true});});

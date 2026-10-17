@@ -1,3 +1,23 @@
+## PR101 — automatización de vigencias y entrega, 17 octubre 2026
+
+- Estado: EN DESARROLLO / prueba aislada en curso; NO OPERATIVO.
+- Rama existente feat/plan-expiry-renewal-20261017; mismo PR101. Un Core.
+- Implementados períodos de planes, entrega por outbox, avisos15/7/1/vencimiento,
+  reserva indefinida de identidad, beneficios calculados en lectura y renovación
+  voluntaria contra orders/pago verificado. Sin cobros automáticos.
+- ADMIN: contadores y filtros; Mi cuenta: fechas/renovación; QR generado en Core.
+- Propuesta SQL plan-lifecycle.sql separada; sin ejecución productiva/backfill.
+- Correo preparado con soporte@direcciones507.com; sin envío real ni activación.
+- Documentación: docs/plan-automation-configuration-20261017.md con flags,
+  prerequisitos SQL/pagos, política configurable y lista de activación.
+- CI inicial detectó fixture con pool multiconexión ejecutando BEGIN de las
+  migraciones: ajuste a pool1 solo para preparación, pool5 para concurrencia.
+  Prueba visual anterior esperaba Lugar aunque main ya publica Lugar Gratis;
+  expectativa actualizada al texto existente, sin cambiar producto.
+- PENDIENTE: CI final, revisión comercial de períodos, esquema autorizado,
+  proveedor de correo/pago y prueba real de entrega/vencimiento/renovación.
+- Sin Excel, Apps Script, Pages, fichas históricas, SQL/variables/despliegue real.
+
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
 ## Encabezado Panamá — corrección puntual,16 octubre2026

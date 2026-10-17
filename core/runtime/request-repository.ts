@@ -86,6 +86,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
     async submit(actorId:string,key:string,raw:unknown,files:RequestFile[],admin=false) {
       if(!uuid.test(actorId)||!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       const data=validateRequestFiles(raw,files);
+      const acceptance=(raw as {termsAccepted?:unknown})?.termsAccepted===true?{version:'plan-lifecycle-v1',acceptedAt:new Date().toISOString()}:null;
       if(!admin)assertCountryCommerce(data.countryCode);
       // Reject duplicate gallery parts before persisting an impossible required count.
       const fingerprints=files.map(f=>f.role+':'+digest(f.bytes));
@@ -105,7 +106,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         const plan=await tx.unsafe("SELECT id FROM ad507.plans WHERE code=$1 AND status='ACTIVE'",[data.plan]);
         if(data.type!=='PLACE'&&!plan.length)throw Error('PLAN_NOT_FOUND');
         const rows=await tx.unsafe(`INSERT INTO ad507.addresses(code,address_type,status,plan_id,name,reference,description,commercial_description,latitude,longitude,phone,landline_phone,hours,source,request_key_hash,request_payload_hash,request_data,country_code)
-          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb,$15) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({countryCode:data.countryCode,territory:data.territory,media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,postalCode:data.postalCode,postalZone:data.postalZone,...(admin?{createdByAdmin:actorId}:{})}),data.countryCode]);
+          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb,$15) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({countryCode:data.countryCode,territory:data.territory,media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,postalCode:data.postalCode,postalZone:data.postalZone,...(acceptance?{acceptance}:{}),...(admin?{createdByAdmin:actorId}:{})}),data.countryCode]);
         const row=rows[0];await tx.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[row.id,actorId]);
         for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[row.id,platform,url]);
         await audit(tx,actorId,admin?'ADMIN_ADDRESS_CREATED':'REQUEST_CREATED',row.id,admin);return row;

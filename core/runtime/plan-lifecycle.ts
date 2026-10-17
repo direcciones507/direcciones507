@@ -22,7 +22,7 @@ export function createPlanLifecycle(sql:Sql,options:{periods:PlanPeriods;environ
   const owners=await tx.unsafe("SELECT 1 FROM ad507.address_ownership o JOIN ad507.users u ON u.id=o.user_id WHERE o.address_id=$1::uuid AND o.user_id=$2::uuid AND o.ownership_role='OWNER' AND u.status='ACTIVE'",[row.id,order.user_id]);
   if(!owners.length)throw Error('PAYMENT_CONFIRMATION_REQUIRED');return order;
  }
- async function install(tx:any,row:any,kind:'INITIAL'|'RENEWAL',order:any,days:number|null,acceptedAt:Date){
+ async function install(tx:any,row:any,kind:'INITIAL'|'RENEWAL',order:any,days:number|null,acceptedAt:Date|null){
   const at=now(),old=row.request_data.planLifecycle;
   const start=kind==='RENEWAL'&&old?.expiresAt&&!old.revoked&&Date.parse(old.expiresAt)>at.getTime()?new Date(old.expiresAt):at;
   const end=days?expiryFor(start,days):null;
@@ -41,7 +41,7 @@ export function createPlanLifecycle(sql:Sql,options:{periods:PlanPeriods;environ
    const prior=await tx.unsafe("SELECT * FROM ad507.plan_terms WHERE address_id=$1::uuid AND kind='INITIAL'",[id]);if(prior.length)return prior[0];
    const paid=paidPlans.includes(row.request_data.plan);
    const order=paid?await proof(tx,row):null;
-   return install(tx,row,'INITIAL',order,paid?daysFor(row):null,now());
+   return install(tx,row,'INITIAL',order,paid?daysFor(row):null,row.request_data.acceptance?.acceptedAt?new Date(row.request_data.acceptance.acceptedAt):null);
   },
   async prepareRenewal(userId:string,id:string,key:string,accepted:boolean){
    if(!uuid.test(id)||!uuid.test(userId)||!/^[A-Za-z0-9_-]{16,128}$/.test(key)||accepted!==true)throw Error('INVALID_RENEWAL');
@@ -62,7 +62,7 @@ export function createPlanLifecycle(sql:Sql,options:{periods:PlanPeriods;environ
   async reconcile(){
    // Bounded batches. Locks on each address serialize publication and renewal.
    const pending=await sql.unsafe("SELECT r.order_id,r.address_id FROM ad507.plan_renewals r JOIN ad507.orders o ON o.id=r.order_id WHERE o.payment_environment=$1 AND o.status='PAID' AND NOT EXISTS(SELECT 1 FROM ad507.plan_terms t WHERE t.order_id=o.id) ORDER BY r.accepted_at LIMIT 100",[options.environment]);
-   for(const item of pending)await sql.begin(async tx=>{
+   for(const item of pending)try{await sql.begin(async tx=>{
     const row=await eligible(tx,item.address_id);
     if((await tx.unsafe('SELECT 1 FROM ad507.plan_terms WHERE order_id=$1::uuid',[item.order_id])).length)return;
     const order=await proof(tx,row,item.order_id);
@@ -70,6 +70,7 @@ export function createPlanLifecycle(sql:Sql,options:{periods:PlanPeriods;environ
     if(intent.user_id!==order.user_id)throw Error('PAYMENT_CONFIRMATION_REQUIRED');
     await install(tx,row,'RENEWAL',order,intent.period_days,intent.accepted_at);
    });
+   }catch(error){if(!['PLAN_ADDRESS_NOT_FOUND','PAYMENT_CONFIRMATION_REQUIRED'].includes(error instanceof Error?error.message:''))throw error;}
    // A refund revokes the affected term only. The reader independently joins
    // payment state so a stopped worker cannot retain refunded paid benefits.
    await sql.begin(async tx=>{

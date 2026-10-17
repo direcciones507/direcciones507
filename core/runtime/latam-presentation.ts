@@ -295,6 +295,16 @@ function prepareLatamRequest(e,type,plan){
 #latamAccess .latam-auth-links button{min-height:28px;padding:3px 0}
 #latamAccess .latam-auth-divider{margin:4px 0}
 @media(max-width:480px){#latamAccess{width:calc(100vw - 22px);padding:15px 16px 17px}#latamAccess h2{font-size:22px}#latamAccess .latam-auth-links{column-gap:10px}#latamAccess .latam-auth-links button{font-size:12px}}
+/* LATAM plan cards: legibility only, no layout or business-logic changes. */
+#commercialWelcome .latam-plan-card h3{color:#ffffff!important;opacity:1!important}
+#commercialWelcome .latam-plan-card p{color:#e5eef9!important;opacity:1!important}
+#commercialWelcome .latam-plan-card .latam-plan-price{opacity:1!important}
+#commercialWelcome .latam-plan-card>span{color:#eaf5ff!important;opacity:1!important}
+#commercialWelcome .latam-plan-card .plan-legal,
+#commercialWelcome .latam-plan-card .plan-legal a,
+#commercialWelcome .latam-plan-card a[href^="/legal/"]{color:#dceeff!important;opacity:1!important;text-decoration:underline;text-underline-offset:2px}
+#commercialWelcome .latam-plan-card [class*="review"],
+#commercialWelcome .latam-plan-card [class*="notice"]{color:#dce8f6!important;opacity:1!important}
 /* Post-legal visual repair: scoped to existing dialogs, no flow changes. */
 #latamAccess{padding:18px 22px 20px!important}
 #latamAccess h2{font-size:23px!important;margin:4px 0 8px!important}

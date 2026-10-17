@@ -1,3 +1,4 @@
+import type {createPlanLifecycle} from './plan-lifecycle';
 import { assertCountryCommerce, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
 import type { Sql } from 'postgres';
 import { createHash } from 'node:crypto';
@@ -16,7 +17,7 @@ export type CanonicalPublication = {
   reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string})=>Promise<string>;
   publish: (request:{id:string;code:string;type:string})=>Promise<{confirmed:true;receipt:string}>;
 };
-export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production'}) {
+export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';lifecycle?:ReturnType<typeof createPlanLifecycle>|null}) {
   const actor=async(tx:any,id:string,role:string)=>{
     const users=await tx.unsafe(`SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role=$2`,[id,role]);
     if(!users.length)throw Error('FORBIDDEN');
@@ -85,6 +86,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
     async submit(actorId:string,key:string,raw:unknown,files:RequestFile[],admin=false) {
       if(!uuid.test(actorId)||!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       const data=validateRequestFiles(raw,files);
+      const acceptance=(raw as {termsAccepted?:unknown})?.termsAccepted===true?{version:'plan-lifecycle-v1',acceptedAt:new Date().toISOString()}:null;
       if(!admin)assertCountryCommerce(data.countryCode);
       // Reject duplicate gallery parts before persisting an impossible required count.
       const fingerprints=files.map(f=>f.role+':'+digest(f.bytes));
@@ -104,7 +106,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         const plan=await tx.unsafe("SELECT id FROM ad507.plans WHERE code=$1 AND status='ACTIVE'",[data.plan]);
         if(data.type!=='PLACE'&&!plan.length)throw Error('PLAN_NOT_FOUND');
         const rows=await tx.unsafe(`INSERT INTO ad507.addresses(code,address_type,status,plan_id,name,reference,description,commercial_description,latitude,longitude,phone,landline_phone,hours,source,request_key_hash,request_payload_hash,request_data,country_code)
-          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb,$15) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({countryCode:data.countryCode,territory:data.territory,media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,postalCode:data.postalCode,postalZone:data.postalZone,...(admin?{createdByAdmin:actorId}:{})}),data.countryCode]);
+          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb,$15) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({countryCode:data.countryCode,territory:data.territory,media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,postalCode:data.postalCode,postalZone:data.postalZone,...(acceptance?{acceptance}:{}),...(admin?{createdByAdmin:actorId}:{})}),data.countryCode]);
         const row=rows[0];await tx.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[row.id,actorId]);
         for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[row.id,platform,url]);
         await audit(tx,actorId,admin?'ADMIN_ADDRESS_CREATED':'REQUEST_CREATED',row.id,admin);return row;
@@ -131,7 +133,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
       const {publicationReceipt,...record}=rows[0];
       const publicUrl=record.countryCode==='PA'&&record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt?proposedCountryUrl(record.countryCode,record.code,record.extras?.migration?.originalUrl):null;
-      return {...record,canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
+      return {...record,planLifecycle:record.extras?.planLifecycle??null,canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
     },
     async transfer(actorId:string,addressId:string,expectedOwner:string,targetId:string) {
       if(![actorId,addressId,expectedOwner,targetId].every(id=>uuid.test(id)))throw Error('INVALID_REQUEST');
@@ -197,6 +199,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
           if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
           await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
+          if(options.lifecycle&&!row.request_data?.migration&&['BUSINESS','PLACE'].includes(row.address_type))await options.lifecycle.published(tx,row.id);
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}
         return {id:row.id,code,status:'ACTIVE',receipt:published.receipt};

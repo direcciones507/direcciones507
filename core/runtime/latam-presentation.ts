@@ -200,6 +200,15 @@ function prepareLatamRequest(e,type,plan){
  if(latamSessionState==='guest'){e.preventDefault();const u=new URL(location.href);u.searchParams.set('selectedPlan',type==='RESIDENTIAL'?'RESIDENTIAL':type==='PLACE'?'PLACE':plan);history.replaceState({},'',u);openLatamAccess();return;}
  if(document.getElementById('commercialCountry').value!=='PA'){e.preventDefault();status.textContent='País en preparación: solicitudes, publicación y cobros deshabilitados.';status.scrollIntoView({block:'center'});return;}
  e.preventDefault();
+ if(new URLSearchParams(location.search).get('origin')==='507'){
+  const selectedPlan=type==='RESIDENTIAL'?'RESIDENTIAL':type==='PLACE'?'PLACE':plan;
+  const destination=new URL('/panel',location.origin);
+  destination.searchParams.set('country','PA');
+  destination.searchParams.set('origin','507');
+  if(selectedPlan)destination.searchParams.set('selectedPlan',selectedPlan);
+  location.assign(destination.href);
+  return;
+ }
  if(latamSessionState!=='authenticated'||!latamCanPrepare){status.textContent=latamSessionState==='loading'?'Verificando tu sesión…':latamSessionState==='error'?'No se pudo verificar tu sesión. Intenta actualizar.':'La preparación de solicitudes no está habilitada para esta cuenta.';return;}
  const select=document.getElementById('plan');
  if(plan&&!Array.from(select.options).some(o=>o.value===plan)){status.textContent='Este plan no está disponible para preparar en tu cuenta.';return;}
@@ -440,7 +449,7 @@ if(selected507Plan){
 }
 
 document.getElementById('latamRequestDialog').addEventListener('close',()=>document.getElementById('latamMessageAnchor').after(document.getElementById('message')));
-document.getElementById('latamRequestClose').onclick=()=>{document.getElementById('latamRequestDialog').close();if(new URLSearchParams(location.search).get('origin')==='507')location.assign('https://direcciones507.com/');};
+document.getElementById('latamRequestClose').onclick=()=>document.getElementById('latamRequestDialog').close();
 document.getElementById('latamHelpLink').onclick=()=>document.getElementById('natalieLauncher').click();
 (${bindLatamOverlays.toString()})();
 markCountry();

@@ -1511,7 +1511,31 @@
       .public-lower-layout #codigoPostalContainer .accordion-icon-left i { color: #0f766e!important; }
       .public-lower-layout #btnRef .accordion-icon-left i { color: #be123c!important; }
     }
-  </style>
+  
+    /* Legibilidad institucional: encabezado y pie de ficha pública. */
+    .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
+    .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }
+    .brand-icon-main { font-size: 28px; }
+    .verified-badge-top { background: rgba(185, 135, 36, .13); border-color: rgba(238, 190, 85, .55); padding: 9px 13px; }
+    .verified-badge-top i { color: #f3c968; font-size: 19px; }
+    .verified-title-sub { color: #f3c968; font-size: 14px; }
+    .verified-desc-sub { color: #f3e3bd; font-size: 11px; }
+    .footer-title-main { font-size: 17px; }
+    .footer-subtitle-sub { font-size: 12px; color: #cbd5e1; }
+    .secure-title-text { font-size: 14px; }
+    .secure-desc-text { font-size: 12px; color: #cbd5e1; }
+    .footer-brand-side i, .footer-secure-side i { font-size: 24px; }
+    @media(max-width:420px) {
+      .brand-title-text { font-size: 16px; }
+      .brand-subtitle-text { font-size: 10px; }
+      .verified-title-sub { font-size: 12px; }
+      .verified-desc-sub { font-size: 9px; }
+      .verified-badge-top { padding: 7px 8px; }
+      .footer-title-main { font-size: 14px; }
+      .footer-subtitle-sub, .secure-desc-text { font-size: 10px; }
+      .secure-title-text { font-size: 12px; }
+    }
+</style>
 </head>
 
 <body>
@@ -2114,6 +2138,13 @@ if(data.web){
           if(data.foto3) listaFotos.push(data.foto3);
           if(data.foto4) listaFotos.push(data.foto4);
           if(data.foto5) listaFotos.push(data.foto5);
+        }
+
+        // El logo o imagen de portada ya aparece en la cabecera.
+        // Evitar su duplicación en la galería sin eliminar fotos distintas.
+        const logoVisible = data.logo ? normalizarImagenDrive(data.logo) : '';
+        if(logoVisible){
+          listaFotos = listaFotos.filter(url => normalizarImagenDrive(url) !== logoVisible);
         }
 
         if(listaFotos.length > 0){

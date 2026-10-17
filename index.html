@@ -1602,7 +1602,7 @@
       w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
       w.document.close();
     };
-    document.getElementById('lightboxOverlay').onclick = function(){ this.classList.remove('show'); };
+    const lightboxOverlay=document.getElementById('lightboxOverlay');if(lightboxOverlay)lightboxOverlay.onclick = function(){ this.classList.remove('show'); };
 
     document.getElementById("inputCodigo").addEventListener("keypress", (e) => {
       if (e.key === "Enter") ejecutarBusquedaSistema();

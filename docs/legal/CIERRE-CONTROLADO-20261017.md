@@ -70,7 +70,7 @@ En CI se ejecutan con PostgreSQL aislado las pruebas de auditoría de cuenta y d
 
 ## Preservación
 
-Sin cambios en `core/runtime/general-auth.ts`, `legacy.ts`, `new-address-publication.ts`, `r2-storage.ts`, migraciones, Excel, Apps Script, `codes.json`, plantilla o fichas históricas. No se modificaron precios ni las fechas/beneficios promocionales mostrados actualmente en la aplicación. No se ejecutó SQL productivo. Los escenarios y pedidos pagados de pruebas son exclusivamente sintéticos y locales al runner de CI.
+Sin cambios en `core/runtime/general-auth.ts`, `legacy.ts`, `new-address-publication.ts`, `r2-storage.ts`, migraciones, Excel, Apps Script, `codes.json`, plantilla o fichas históricas. No se modificaron precios ni las fechas/beneficios promocionales mostrados actualmente en la aplicación. El navegador detectó además un manejador preexistente en la portada 507 que asignaba onclick a un lightbox ausente (confirmado también en main); se añadió una comprobación de existencia para evitar la excepción, sin reconstruir fichas ni alterar sus datos. No se ejecutó SQL productivo. Los escenarios y pedidos pagados de pruebas son exclusivamente sintéticos y locales al runner de CI.
 
 ## Referencias comprobadas
 

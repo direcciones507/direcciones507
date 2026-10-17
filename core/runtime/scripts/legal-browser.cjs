@@ -27,7 +27,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
    const ext=path.extname(filename),contentType=({'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'})[ext]||'application/octet-stream';
    return route.fulfill({contentType,body:fs.readFileSync(filename)});
   });
-  const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.error('Browser JS error:',e.message)});
+  const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.error('Browser JS error:',e.stack||e.message)});
   for(const key of ['terms','privacy','commercial','cookies']){
    const response=await page.goto('https://direcciones.lat/legal/'+key+'/');assert.equal(response.status(),200);await page.waitForSelector('article');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'legal overflow '+device+' '+key);

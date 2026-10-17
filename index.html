@@ -539,6 +539,20 @@
 .planes-grid-layout .plan-507-summary{color:#e1efff;font-size:14px;line-height:1.65;margin:0 0 23px;flex:1}
 .planes-grid-layout .plan-pricing-card .btn-plan-action-trigger{align-self:flex-start;width:auto!important;min-height:42px;border-radius:999px!important;padding:11px 19px!important;background:linear-gradient(105deg,#02a9ce,#088bda)!important;color:#fff;font-size:13px;font-weight:850}
 @media(max-width:700px){.planes-grid-layout .plan-pricing-card{min-height:265px;padding:22px}}
+
+/* Visual correction: four independent compact cards, aligned with dark 507 sections. */
+.planes-grid-layout{align-items:stretch}
+.planes-grid-layout .plan-pricing-card,.planes-grid-layout .plan-pricing-card.popular{background:linear-gradient(155deg,#142c49 0%,#10243e 65%,#0b1c31 100%);border:1px solid rgba(74,150,190,.36);box-shadow:0 9px 25px rgba(0,12,31,.19);min-height:0;height:auto;border-radius:18px;padding:20px 19px;gap:0}
+.planes-grid-layout .plan-pricing-card.popular{border-color:rgba(76,204,223,.58)}
+.planes-grid-layout .plan-507-top{margin-bottom:15px}
+.planes-grid-layout .plan-507-icon{width:42px;height:42px;font-size:19px;border-radius:12px;background:rgba(31,143,183,.15);color:#72d6e7}
+.planes-grid-layout .plan-507-tag{background:rgba(27,118,158,.17);color:#c0e7ef;font-size:10px;padding:6px 9px}
+.planes-grid-layout .plan-pricing-card h4{font-size:19px;margin:0 0 5px}
+.planes-grid-layout .plan-numeric-val{font-size:25px;color:#eaf8ff;margin:0 0 12px}
+.planes-grid-layout .plan-507-summary{font-size:13px;line-height:1.55;color:#c5d9e8;margin:0 0 20px}
+.planes-grid-layout .plan-perks-list[hidden]{display:none!important}
+.planes-grid-layout .plan-pricing-card .btn-plan-action-trigger{min-height:39px;padding:9px 16px!important;background:linear-gradient(105deg,#087b9c,#126ba9)!important;box-shadow:none!important}
+@media(max-width:700px){.planes-grid-layout .plan-pricing-card{padding:19px;min-height:0}}
 </style>
 </head>
 <body>
@@ -696,28 +710,30 @@
         <div class="planes-grid-layout">
           <div class="plan-pricing-card">
             <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span><span class="plan-507-tag">Sitios de interés</span></div>
-            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-store" aria-hidden="true"></i></span><span class="plan-507-tag">Para comenzar</span></div>
-            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-star" aria-hidden="true"></i></span><span class="plan-507-tag">Más herramientas</span></div>
-            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-crown" aria-hidden="true"></i></span><span class="plan-507-tag">Mayor presencia</span></div>
             <h4>Agregar lugar</h4><div class="plan-numeric-val">Gratis</div>
             <p class="plan-507-summary">Iglesias, parques, cascadas, ríos, playas y atractivos de interés. Solo lugares no comerciales; sujetos a revisión y aprobación.</p>
+            <ul class="plan-perks-list" hidden><li>Iglesias, parques, cascadas, ríos, playas y atractivos</li><li>Solo lugares de interés no comerciales</li><li>Disponible por ahora en Panamá y Costa Rica</li><li>Sujeto a revisión y aprobación</li></ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="PLACE" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
           </div>
-
           <div class="plan-pricing-card">
+            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-store" aria-hidden="true"></i></span><span class="plan-507-tag">Para comenzar</span></div>
             <h4>Negocio Gratis</h4><div class="plan-numeric-val">Gratis</div>
             <p class="plan-507-summary">Logo, horario, contacto, navegación y código QR para tu negocio.</p>
+            <ul class="plan-perks-list" hidden><li>Código AD507 numérico</li><li>Logo del negocio</li><li>Google Maps, Waze, Uber y WhatsApp</li><li>Ver mapa, llamar y compartir</li><li>Código QR</li><li>Horario y referencia</li><li>Contador básico de visitas</li><li>Indexado en Google</li></ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_FREE" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
           </div>
           <div class="plan-pricing-card popular">
-            
+            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-star" aria-hidden="true"></i></span><span class="plan-507-tag">Más herramientas</span></div>
             <h4>Negocio Premium</h4><div class="plan-numeric-val">$19.99</div>
             <p class="plan-507-summary">Código con nombre, redes sociales, código postal, zona postal y estadísticas.</p>
+            <ul class="plan-perks-list" hidden><li>Todo lo incluido en Negocio Gratis</li><li>Código AD507 con nombre del negocio</li><li>Redes sociales</li><li>Código postal y zona postal</li><li>Estadísticas de tu Dirección507</li><li>Indexado en Google</li></ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
           </div>
           <div class="plan-pricing-card">
+            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-crown" aria-hidden="true"></i></span><span class="plan-507-tag">Mayor presencia</span></div>
             <h4>Premium Pro</h4><div class="plan-numeric-val">$39.99</div>
             <p class="plan-507-summary">Beneficios Premium y galería de hasta cinco fotografías.</p>
+            <ul class="plan-perks-list" hidden><li>Todo lo incluido en Negocio Premium</li><li>Galería de hasta 5 fotos</li><li>Estadísticas de tu Dirección507</li><li>Indexado en Google</li></ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM_PRO" style="cursor:pointer;width:100%;border:0">Ver detalles</button>
           </div>
           <aside class="latam-expansion-card" aria-label="Conoce Direcciones LATAM">

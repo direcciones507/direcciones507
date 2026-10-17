@@ -295,6 +295,22 @@ function prepareLatamRequest(e,type,plan){
 #latamAccess .latam-auth-links button{min-height:28px;padding:3px 0}
 #latamAccess .latam-auth-divider{margin:4px 0}
 @media(max-width:480px){#latamAccess{width:calc(100vw - 22px);padding:15px 16px 17px}#latamAccess h2{font-size:22px}#latamAccess .latam-auth-links{column-gap:10px}#latamAccess .latam-auth-links button{font-size:12px}}
+/* Post-legal visual repair: scoped to existing dialogs, no flow changes. */
+#latamAccess{padding:18px 22px 20px!important}
+#latamAccess h2{font-size:23px!important;margin:4px 0 8px!important}
+#latamAccess nav[aria-label="Condiciones de cuenta"]{display:flex!important;flex-wrap:wrap;gap:3px 14px;margin:0 0 8px!important;padding:0!important;align-items:center}
+#latamAccess nav[aria-label="Condiciones de cuenta"] a{display:inline!important;width:auto!important;margin:0!important;padding:2px 0!important;min-height:0!important;font-size:12px!important;line-height:1.45!important;color:#154b82!important;text-decoration:underline;text-underline-offset:2px}
+#latamAccess #latamRegistrationTerms{display:flex!important;align-items:flex-start!important;gap:8px!important;margin:5px 0 10px!important;padding:0!important;color:#243e59!important;font-size:12px!important;line-height:1.4!important;min-height:0!important}
+#latamAccess #latamRegistrationTermsAccepted{appearance:auto!important;-webkit-appearance:checkbox!important;display:block!important;flex:0 0 18px!important;width:18px!important;height:18px!important;margin:1px 0 0!important;padding:0!important;accent-color:#145cb4!important}
+#latamAccess #latamRegistrationTerms span{display:block!important;color:#243e59!important;font-size:12px!important;line-height:1.4!important}
+#latamAccessCountry{margin:2px 0 9px!important;padding:5px 10px!important}
+#latamAccess label:not(#latamRegistrationTerms){margin:7px 0 4px!important}
+#latamAccess input:not([type="checkbox"]){height:42px!important}
+#latamAccess #latamTogglePassword{height:42px!important;min-height:42px!important}
+#latamPlanDetails nav[aria-label],#latamPlanDetails .legal-links{font-size:13px}
+#latamPlanDetails a[href^="/legal/"]{color:#164f8d!important;text-decoration:underline;text-underline-offset:2px;font-weight:650}
+#latamPlanDetailsTerms{background:#f1f6fc!important;color:#28425c!important;padding:10px 12px!important;line-height:1.5!important}
+@media(max-width:480px){#latamAccess{padding:15px 17px 17px!important}#latamAccess h2{font-size:21px!important}}
 @media(prefers-reduced-motion:reduce){#latamAccess input{transition:none}}
 #latamAccess [hidden]{display:none!important}
 @media(max-width:480px),(max-height:600px){#latamAccess{padding:16px}#latamAccess h2{font-size:21px}}

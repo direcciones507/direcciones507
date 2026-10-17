@@ -191,7 +191,7 @@ function updateLatamSession(){
 }
 function prepareLatamRequest(e,type,plan){
  const status=document.getElementById('latamActionStatus');
- if(latamSessionState==='guest'){e.preventDefault();openLatamAccess();return;}
+ if(latamSessionState==='guest'){e.preventDefault();const u=new URL(location.href);u.searchParams.set('selectedPlan',type==='RESIDENTIAL'?'RESIDENTIAL':type==='PLACE'?'PLACE':plan);history.replaceState({},'',u);openLatamAccess();return;}
  if(document.getElementById('commercialCountry').value!=='PA'){e.preventDefault();status.textContent='País en preparación: solicitudes, publicación y cobros deshabilitados.';status.scrollIntoView({block:'center'});return;}
  e.preventDefault();
  if(latamSessionState!=='authenticated'||!latamCanPrepare){status.textContent=latamSessionState==='loading'?'Verificando tu sesión…':latamSessionState==='error'?'No se pudo verificar tu sesión. Intenta actualizar.':'La preparación de solicitudes no está habilitada para esta cuenta.';return;}
@@ -326,7 +326,7 @@ latamEmailSubmit.onclick=async()=>{
   const response=await fetch('/v1/auth/email/'+route,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({email,password,token})});
   const result=await response.json();
   if(!response.ok)throw Error(result.error||'No se pudo completar la solicitud.');
-  if(route==='login'){location.assign('/panel?country='+encodeURIComponent(document.getElementById('commercialCountry').value));return;}
+  if(route==='login'){const p=new URLSearchParams(location.search);const selected=p.get('selectedPlan');location.assign('/panel?country='+encodeURIComponent(document.getElementById('commercialCountry').value)+(selected?'&selectedPlan='+encodeURIComponent(selected):''));return;}
   latamEmailNotice.textContent=route==='register'||route==='forgot'?'Si el correo cumple las condiciones, recibirás un mensaje con las instrucciones.':'Solicitud completada. Ya puedes ingresar.';
   if(route==='verify'||route==='reset'){setLatamEmailMode('login');latamEmailPassword.value='';history.replaceState({},'',location.pathname+'?country='+encodeURIComponent(document.getElementById('commercialCountry')?.value||'PA'));latamEmailNotice.textContent='Solicitud completada. Ya puedes ingresar.';}
  }catch(err){latamEmailNotice.textContent=err instanceof Error?err.message:'No se pudo completar la solicitud.';}

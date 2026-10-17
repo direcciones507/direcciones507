@@ -42,13 +42,14 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   for(const card of await page.locator('.plan-pricing-card').all())assert.equal(await card.locator('.plan-legal a').count(),4);
   await page.locator('.planes-grid-layout').screenshot({path:path.join(out,device+'-507-plans.png')});
   await page.goto('https://direcciones.lat/?access=1');await page.waitForSelector('#latamAccess[open]');
-  if(await page.locator('#ad507CookieOptions').isVisible())await page.locator('[data-analytics-choice="false"]').click();
+  // Leave optional cookies undecided while registering: they are never a condition of service.
   assert.equal(await page.locator('#latamRegistrationTermsAccepted').isChecked(),false);
   await page.locator('#latamAccessEmail').fill('fixture@example.test');await page.locator('#latamAccessPassword').fill('isolated-password-long');
   await page.locator('#latamEmailSubmit').click();assert.equal(registers,0);
   await page.locator('#latamRegistrationTermsAccepted').check();await page.locator('#latamEmailSubmit').click();await page.waitForFunction(()=>document.getElementById('latamPasswordNotice').textContent.includes('recibirás'));
   assert.equal(registers,1);await page.locator('#latamAccess').screenshot({path:path.join(out,device+'-account-legal.png')});
   await page.locator('#latamAccess button[aria-label="Cerrar acceso"]').click();
+  if(await page.locator('#ad507CookieOptions').isVisible())await page.locator('[data-analytics-choice="false"]').click();
   assert.equal(await page.locator('.latam-plan-card').count(),5);
   for(const card of await page.locator('.latam-plan-card').all())assert.equal(await card.locator('.plan-legal a').count(),4);
   await page.locator('#planes').screenshot({path:path.join(out,device+'-latam-plans.png')});

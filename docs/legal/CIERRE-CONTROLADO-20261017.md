@@ -36,7 +36,7 @@ PR de trabajo: #102. Fuentes y aprobación: #100. Checklist: #99.
 - `core/runtime/legal.ts`, `legal-content.json`: conjunto completo, validación de aceptación, hashes, rutas, presentación e historial.
 - `core/runtime/legal-account.ts`: límite legal del registro y registro de aceptación de cuenta con el autenticador existente.
 - `core/runtime/user-panel.ts`, `latam-presentation.ts`, `request-client-ui.ts`, `index.html`: enlaces, casillas, avisos y estados legibles; conservación de precios y textos promocionales existentes.
-- `core/runtime/request-routes.ts`, `request-repository.ts`: aceptación antes de escritura y persistencia/auditoría, incluyendo reintentos y solicitudes previas.
+- `core/runtime/request-routes.ts`, `request-repository.ts`, `admin-address-pagination.ts`, `panel-address-card.ts`: aceptación antes de escritura y persistencia/auditoría, incluyendo reintentos y solicitudes previas.
 - `core/runtime/paid-activation-policy.ts`, `payment-repository.ts`: clasificación y callback interno tras pago confirmado, sin habilitar proveedores.
 - `core/runtime/server.ts`: integración de esas capas sin reemplazar autenticación, generador ni publicador.
 - `assets/legal-consent.js`, `core/runtime/Dockerfile`: componente único de preferencias y empaquetado del recurso.
@@ -55,6 +55,7 @@ Pruebas ejecutadas localmente:
 - Registro sin aceptación bloqueado antes de autenticación; login y callback OAuth conservan su autenticador.
 - Suite local sin PostgreSQL: 139 aprobadas y tres fallas por base local no disponible antes de añadir las dos pruebas de política pagada; las pruebas nuevas de política pagada también pasan. Resultado definitivo: consultar GitHub Actions del HEAD de #102.
 - Build del servidor, validación de migraciones, check legacy y diff sin errores.
+- GitHub Actions Core #276: **193 pruebas aprobadas, cero fallos, 3097 aserciones**, incluida persistencia de cuenta/solicitud, pago firmado e idempotente, revisión excepcional y protección residencial. La prueba visual inicial detectó que el modal nativo de acceso intercepta clics sobre controles fuera de él; se corrigió el recorrido para comprobar registro sin elegir cookies y rechazo separado al cerrar el modal. Verificar también el HEAD final.
 
 En CI se ejecutan con PostgreSQL aislado las pruebas de auditoría de cuenta y del flujo pagado: firma falsa no activa; pago verificado activa una vez; reintento no duplica; gratuitos requieren aprobación; duplicado va a revisión excepcional; la protección residencial impide publicación pública. La segunda comprobación usa navegador real en 390×844, 820×1180 y 1440×1000, con dominios y respuestas locales simuladas, no contra producción. Revisa cuatro políticas y cinco formularios por tamaño, registro, ausencia de envío sin aceptación, cookies separadas y desbordamiento horizontal. El artefacto **legal-responsive-evidence** contiene capturas y `results.json`.
 

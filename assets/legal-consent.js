@@ -6,7 +6,7 @@
  let choice=null,loaded=false,banner;
  try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved&&saved.version===version&&typeof saved.analytics==='boolean')choice=saved;}catch{}
  function enableAnalytics(){
-  if(loaded||!choice?.analytics||!['direcciones507.com','www.direcciones507.com'].includes(location.hostname))return;
+  if(loaded||!choice?.analytics||location.pathname!=='/'||!['direcciones507.com','www.direcciones507.com'].includes(location.hostname))return;
   loaded=true;window['ga-disable-G-88307ETH2H']=false;window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
   window.gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
   window.gtag('js',new Date());window.gtag('config','G-88307ETH2H',{cookie_expires:0,allow_google_signals:false,allow_ad_personalization_signals:false});
@@ -34,7 +34,7 @@
   const text=document.createElement('p');text.textContent='Usamos almacenamiento necesario para el servicio. La analítica es opcional: puedes rechazarla y continuar.';text.style.margin='0 0 12px';banner.append(text);
   const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;flex-wrap:wrap';
   for(const [label,value]of [['Rechazar analítica',false],['Aceptar analítica',true]]){const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.analyticsChoice=String(value);button.style.cssText='padding:10px 14px;border:2px solid #174979;border-radius:9px;background:#174979;color:#fff;font:700 15px system-ui;cursor:pointer;min-height:44px';button.onclick=()=>choose(value);row.append(button);}
-  const link=document.createElement('a');link.href='/legal/cookies/';link.textContent='Política de Cookies';link.style.cssText='color:#064c94;text-decoration:underline;font-weight:700;padding:10px';row.append(link);banner.append(row);banner.hidden=choice!==null;document.body.append(banner);
+  const link=document.createElement('a');link.href='/legal/cookies/';link.textContent='Política de Cookies';link.style.cssText='color:#064c94;text-decoration:underline;font-weight:700;padding:10px';row.append(link);banner.append(row);banner.hidden=choice!==null||location.pathname.startsWith('/legal/');document.body.append(banner);
   document.addEventListener('click',event=>{if(event.target.closest('[data-cookie-settings]')){event.preventDefault();open();}});
   enableAnalytics();
  }

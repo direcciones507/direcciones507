@@ -304,6 +304,9 @@ function prepareLatamRequest(e,type,plan){
 #latamAccess .latam-auth-links button{min-height:28px;padding:3px 0}
 #latamAccess .latam-auth-divider{margin:4px 0}
 @media(max-width:480px){#latamAccess{width:calc(100vw - 22px);padding:15px 16px 17px}#latamAccess h2{font-size:22px}#latamAccess .latam-auth-links{column-gap:10px}#latamAccess .latam-auth-links button{font-size:12px}}
+/* Persistent cookie preferences must be available but unobtrusive. */
+.latam-footer [data-cookie-settings]{display:inline!important;min-height:0!important;width:auto!important;padding:2px 0!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#bed1e8!important;font:500 12px/1.5 system-ui,sans-serif!important;text-decoration:underline!important;text-underline-offset:2px!important}
+#latamAccess #latamRegistrationTerms[hidden]{display:none!important}
 /* LATAM plan cards: legibility only, no layout or business-logic changes. */
 #commercialWelcome .latam-plan-card h3{color:#ffffff!important;opacity:1!important}
 #commercialWelcome .latam-plan-card p{color:#e5eef9!important;opacity:1!important}
@@ -319,7 +322,7 @@ function prepareLatamRequest(e,type,plan){
 #latamAccess h2{font-size:23px!important;margin:4px 0 8px!important}
 #latamAccess nav[aria-label="Condiciones de cuenta"]{display:flex!important;flex-wrap:wrap;gap:3px 14px;margin:0 0 8px!important;padding:0!important;align-items:center}
 #latamAccess nav[aria-label="Condiciones de cuenta"] a{display:inline!important;width:auto!important;margin:0!important;padding:2px 0!important;min-height:0!important;font-size:12px!important;line-height:1.45!important;color:#154b82!important;text-decoration:underline;text-underline-offset:2px}
-#latamAccess #latamRegistrationTerms{display:flex!important;align-items:flex-start!important;gap:8px!important;margin:5px 0 10px!important;padding:0!important;color:#243e59!important;font-size:12px!important;line-height:1.4!important;min-height:0!important}
+#latamAccess #latamRegistrationTerms:not([hidden]){display:flex!important;align-items:flex-start!important;gap:8px!important;margin:5px 0 10px!important;padding:0!important;color:#243e59!important;font-size:12px!important;line-height:1.4!important;min-height:0!important}
 #latamAccess #latamRegistrationTermsAccepted{appearance:auto!important;-webkit-appearance:checkbox!important;display:block!important;flex:0 0 18px!important;width:18px!important;height:18px!important;margin:1px 0 0!important;padding:0!important;accent-color:#145cb4!important}
 #latamAccess #latamRegistrationTerms span{display:block!important;color:#243e59!important;font-size:12px!important;line-height:1.4!important}
 #latamAccessCountry{margin:2px 0 9px!important;padding:5px 10px!important}
@@ -354,7 +357,7 @@ document.getElementById('latamGoogleAccess').addEventListener('click',event=>{if
 function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+(document.getElementById('commercialCountry')?.selectedOptions[0]?.textContent||'Panamá');if(!accessDialog.open)accessDialog.showModal();accessDialog.scrollTop=0;document.getElementById('latamAccessEmail').focus({preventScroll:true});}
 document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
 const legalVersion=${JSON.stringify(LEGAL_VERSION)};
-let latamEmailMode='register';
+let latamEmailMode='login';
 function prepareAccountLegalAcceptance(){const checkbox=document.getElementById('latamRegistrationTermsAccepted');if(!checkbox.checked){checkbox.setCustomValidity('Acepta las condiciones para crear una cuenta.');checkbox.reportValidity();checkbox.focus();return false;}checkbox.setCustomValidity('');try{sessionStorage.setItem('ad507PendingLegalAcceptance',JSON.stringify({accepted:true,version:legalVersion}));}catch{}return true;}
 document.getElementById('latamRegistrationTermsAccepted').onchange=event=>event.target.setCustomValidity('');
 const latamEmailSubmit=document.getElementById('latamEmailSubmit');
@@ -399,7 +402,7 @@ if(authParams.has('token')&&authParams.has('email')){
  latamEmailField.value=authParams.get('email')||'';
  setLatamEmailMode(authParams.get('action')==='reset'||location.pathname==='/recuperar-contrasena'?'reset':'verify');
  openLatamAccess();
-}else {setLatamEmailMode('register');if(authParams.get('access')==='1')openLatamAccess();}
+}else {setLatamEmailMode('login');if(authParams.get('access')==='1')openLatamAccess();}
 const countrySelect=document.getElementById('commercialCountry');
 const countryState=document.getElementById('latamCountryState'),countryField=document.getElementById('countryField');
 countryField.appendChild(countryState);countryState.hidden=false;document.getElementById('countryCode').hidden=true;countryField.querySelector('label[for="countryCode"]').hidden=true;

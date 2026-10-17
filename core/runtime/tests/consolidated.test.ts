@@ -473,11 +473,12 @@ test('native request concurrency and canonical-provider recovery never allocate 
 });
 
 test('request routes default closed and development context validates authentication, CSRF and multipart', async () => {
+  const {requireLegalAcceptance,LEGAL_REVIEW_VERSION}=await import('../legal');
   const {handleRequestRoutes}=await import('../request-routes');const {createRequestRepository}=await import('../request-repository');
   const owner=(await sql.unsafe("SELECT id::text FROM ad507.users WHERE email='request-owner@example.test'"))[0].id;
   const repository=createRequestRepository(sql,{r2:null});let user:any={id:owner,roles:['CLIENT']};
-  const context={enabled:true,sql,auth:{currentUser:async()=>user},repository,r2:null};
-  const req=(originHeader:string=origin)=>{const body=new FormData();body.append('payload',JSON.stringify({type:'RESIDENTIAL',name:'Multipart fixture',reference:'Park',latitude:8,longitude:-80}));return new Request(origin+'/v1/user/requests',{method:'POST',headers:{origin:originHeader,'idempotency-key':'multipart-0000000000000000'},body});};
+  const context={enabled:true,sql,auth:{currentUser:async()=>user},repository,r2:null,acceptLegal:(raw:unknown)=>requireLegalAcceptance(raw,true)};
+  const req=(originHeader:string=origin)=>{const body=new FormData();body.append('payload',JSON.stringify({legalAcceptance:{accepted:true,version:LEGAL_REVIEW_VERSION},type:'RESIDENTIAL',name:'Multipart fixture',reference:'Park',latitude:8,longitude:-80}));return new Request(origin+'/v1/user/requests',{method:'POST',headers:{origin:originHeader,'idempotency-key':'multipart-0000000000000000'},body});};
   expect((await handleRequestRoutes(req(),{...context,enabled:false}))!.status).toBe(503);
   expect((await handleRequestRoutes(req('https://evil.test'),context))!.status).toBe(403);
   user=null;expect((await handleRequestRoutes(req(),context))!.status).toBe(401);

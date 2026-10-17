@@ -31,7 +31,7 @@ CREATE TABLE ad507.plan_mail_outbox (
 CREATE INDEX plan_mail_pending_idx ON ad507.plan_mail_outbox(state,available_at);
 CREATE TABLE ad507.plan_renewals (
  order_id uuid PRIMARY KEY REFERENCES ad507.orders(id), address_id uuid NOT NULL REFERENCES ad507.addresses(id),
- user_id uuid NOT NULL REFERENCES ad507.users(id), period_days integer NOT NULL CHECK(period_days BETWEEN 1 AND 3660),
+ user_id uuid REFERENCES ad507.users(id) ON DELETE SET NULL, period_days integer NOT NULL CHECK(period_days BETWEEN 1 AND 3660),
  accepted_at timestamptz NOT NULL DEFAULT now(), policy_version text NOT NULL
 );
 -- Reuse the payment ledger; permit successive voluntarily purchased periods,

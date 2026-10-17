@@ -477,7 +477,7 @@ test('request routes default closed and development context validates authentica
   const {handleRequestRoutes}=await import('../request-routes');const {createRequestRepository}=await import('../request-repository');
   const owner=(await sql.unsafe("SELECT id::text FROM ad507.users WHERE email='request-owner@example.test'"))[0].id;
   const repository=createRequestRepository(sql,{r2:null});let user:any={id:owner,roles:['CLIENT']};
-  const context={enabled:true,sql,auth:{currentUser:async()=>user},repository,r2:null,acceptLegal:(raw:unknown)=>requireLegalAcceptance(raw,true)};
+  const context={enabled:true,sql,auth:{currentUser:async()=>user},repository,r2:null};
   const req=(originHeader:string=origin)=>{const body=new FormData();body.append('payload',JSON.stringify({legalAcceptance:{accepted:true,version:LEGAL_REVIEW_VERSION},type:'RESIDENTIAL',name:'Multipart fixture',reference:'Park',latitude:8,longitude:-80}));return new Request(origin+'/v1/user/requests',{method:'POST',headers:{origin:originHeader,'idempotency-key':'multipart-0000000000000000'},body});};
   expect((await handleRequestRoutes(req(),{...context,enabled:false}))!.status).toBe(503);
   expect((await handleRequestRoutes(req('https://evil.test'),context))!.status).toBe(403);
@@ -911,7 +911,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
  const server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:async incoming=>{
   // Test-only HTTPS edge simulation; actual transport is local HTTP, no production ingress.
   const path=new URL(incoming.url);const req=new Request(origin+path.pathname+path.search,incoming);
-  return await auth.handle(req)??await handleRequestRoutes(req,{enabled:true,sql:db,auth,repository:fixtureEvidenceVerified?repo:blocked,r2,fetch:providers,acceptLegal:raw=>requireLegalAcceptance(raw,true)})??await handleNewPublicRoutes(req,{enabled:true,sql:db,r2,fetch:providers})??await handleUserPanel(req,db,auth)??new Response(null,{status:404});
+  return await auth.handle(req)??await handleRequestRoutes(req,{enabled:true,sql:db,auth,repository:fixtureEvidenceVerified?repo:blocked,r2,fetch:providers})??await handleNewPublicRoutes(req,{enabled:true,sql:db,r2,fetch:providers})??await handleUserPanel(req,db,auth)??new Response(null,{status:404});
  }});
  const base='http://127.0.0.1:'+server.port;
  const call=(path:string,cookie='',init:any={})=>fetch(base+path,{...init,redirect:'manual',headers:{...init.headers,...(cookie?{cookie}:{}),origin}});
@@ -1216,3 +1216,48 @@ test('owner and ADMIN edit for free, preserve code/URL, audit, review locations 
   expect((await db.unsafe('SELECT count(*)::int AS n FROM ad507.orders WHERE address_id=$1::uuid',[id]))[0].n).toBe(0);
  }}finally{await db.end();}
 },30000);
+
+test('legal account acceptance is authenticated, durable and idempotent in the existing audit ledger',async()=>{
+ const {handleAccountLegal}=await import('../legal-account');const {LEGAL_VERSION,LEGAL_CONTENT_HASH}=await import('../legal');
+ const req=()=>new Request(origin+'/v1/legal/account-acceptance',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({legalAcceptance:{accepted:true,version:LEGAL_VERSION,userId:adminId,acceptedAt:'forged'}})});
+ const auth={handle:async()=>null,currentUser:async()=>({id:clientId,roles:['CLIENT']})} as any;
+ for(let i=0;i<2;i++)expect((await handleAccountLegal(req(),sql,auth))?.status).toBe(200);
+ const rows=await sql.unsafe("SELECT actor_user_id::text,entity_id,metadata FROM ad507.audit_log WHERE action='ACCOUNT_LEGAL_ACCEPTED' AND actor_user_id=$1::uuid",[clientId]);
+ expect(rows).toHaveLength(1);expect(rows[0].entity_id).toBe(clientId);expect(rows[0].metadata.userId).toBe(clientId);expect(rows[0].metadata.contentHash).toBe(LEGAL_CONTENT_HASH);expect(rows[0].metadata.acceptedAt).not.toBe('forged');
+});
+
+test('isolated paid activation: verified callback only, no routine ADMIN approval, private pending drafts and justified security review',async()=>{
+ const {createRequestRepository}=await import('../request-repository');const {createPaymentRepository}=await import('../payment-repository');const {paymentAmount}=await import('../payment-policy');
+ const {requireLegalAcceptance,LEGAL_VERSION}=await import('../legal');const {createHmac}=await import('node:crypto');
+ await sql.unsafe(readFileSync(new URL('../schema-proposals/payments.sql',import.meta.url),'utf8'));
+ const owner=crypto.randomUUID(),stamp=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[owner,'auto-'+stamp+'@example.test']);await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
+ const png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'purple'}}).png().toBuffer();
+ const file={role:'logo' as const,mime:'image/png',bytes:png};let reservations=0,publications=0;
+ const canonical={historicalRegistryVerified:true as const,reserve:async()=>{reservations++;return 'AD507-N'+String(80000000+Math.floor(Math.random()*10000000)).padStart(8,'0');},publish:async({type}:any)=>{if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');publications++;return {confirmed:true as const,receipt:'synthetic-'+stamp+'-'+publications};}};
+ const repository=createRequestRepository(sql,{r2,fetch:async()=>new Response(null,{status:200}),canonical,paymentEnvironment:'test',paidWorkflow:true});
+ const base={type:'BUSINESS',plan:'BUSINESS_PREMIUM',name:'Automatic '+stamp,reference:'Synthetic only',latitude:8.3,longitude:-80.3,legalAcceptance:requireLegalAcceptance({legalAcceptance:{accepted:true,version:LEGAL_VERSION}})};
+ const first=await repository.submit(owner,'auto-paid-'+stamp,base,[file]);expect(first.status).toBe('DRAFT');expect((first as any).workflow).toBe('PAYMENT_PENDING');
+ expect((await repository.submit(owner,'auto-paid-'+stamp,base,[file])).id).toBe(first.id);
+ await expect(repository.activatePaid(first.id)).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');expect(reservations).toBe(0);expect(publications).toBe(0);
+ await expect(repository.review(adminId,first.id,'APPROVED')).rejects.toThrow('MANUAL_REVIEW_NOT_REQUIRED');
+ const {adminAddressPage}=await import('../admin-address-pagination');expect((await adminAddressPage(sql,new URLSearchParams(),'requests')).items.some(r=>r.id===first.id)).toBe(false);
+ const config={environment:'test' as const,merchantId:'isolated',domain:origin,secret:Buffer.from('isolated-proof.secret').toString('base64'),ipnUrl:origin+'/isolated-ipn'};
+ const orderId='A'+stamp.replaceAll('-','').slice(0,12);
+ await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,provider_reference) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'isolated-reference')",[owner,first.id,paymentAmount(base.plan),base.plan,orderId]);
+ const payments=createPaymentRepository(sql,config,{onVerifiedPayment:id=>repository.activatePaid(id)});
+ const proof=new URLSearchParams({orderId,status:'E',domain:origin,hash:createHmac('sha256','isolated-proof').update(orderId+'E'+origin).digest('hex')});
+ const fake=new URLSearchParams(proof);fake.set('hash','0'.repeat(64));await expect(payments.confirm(fake)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');expect(publications).toBe(0);
+ expect((await payments.confirm(proof)).status).toBe('PAID');expect((await payments.confirm(proof)).status).toBe('PAID');expect(reservations).toBe(1);expect(publications).toBe(1);
+ expect((await repository.read(owner,first.id)).status).toBe('ACTIVE');
+ const audit=await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE action='PAID_REQUEST_ACTIVATED' AND entity_id=$1",[first.id]);expect(audit[0].n).toBe(1);
+ const free=await repository.submit(owner,'auto-free-'+stamp,{...base,plan:'BUSINESS_FREE',name:'Free '+stamp},[file]);expect(free.status).toBe('PENDING_REVIEW');await expect(repository.activatePaid(free.id)).rejects.toThrow('INVALID_PAID_ACTIVATION_STATE');
+ await expect(repository.publish(adminId,free.id)).rejects.toThrow('APPROVAL_REQUIRED');
+ const risky=await repository.submit(owner,'auto-risk-'+stamp,{...base,reference:'Different reference, same location'},[file]);
+ await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'PAID',now())",[owner,risky.id,paymentAmount(base.plan),base.plan,'R'+stamp.replaceAll('-','').slice(0,12)]);
+ expect((await repository.activatePaid(risky.id) as any).workflow).toBe('SECURITY_REVIEW');expect(publications).toBe(1);
+ await repository.review(adminId,risky.id,'APPROVED');expect((await repository.activatePaid(risky.id)).status).toBe('ACTIVE');expect(publications).toBe(2);
+ const residential=await repository.submit(owner,'auto-home-'+stamp,{...base,type:'RESIDENTIAL',plan:'RESIDENTIAL',name:'Private '+stamp},[]);
+ await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at) VALUES($1::uuid,$2::uuid,1299,'YAPPY','RESIDENTIAL','test',$3,'PAID',now())",[owner,residential.id,'H'+stamp.replaceAll('-','').slice(0,12)]);
+ await expect(repository.activatePaid(residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');const home=await repository.read(owner,residential.id);expect(home.status).toBe('DRAFT');expect(home.publicUrl).toBeNull();
+});

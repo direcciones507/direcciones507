@@ -179,7 +179,12 @@ body.latam .latam-footer-social svg{display:block;flex-shrink:0}
 `;
  const sessionScript = `
 let latamSessionState='loading',latamCanPrepare=false;
+let pendingSelectedPlanHandoff=null;
 function updateLatamSession(){
+ if(pendingSelectedPlanHandoff&&latamSessionState!=='loading'){
+  const pending=pendingSelectedPlanHandoff;pendingSelectedPlanHandoff=null;
+  queueMicrotask(()=>prepareLatamRequest({preventDefault(){}},pending.type,pending.plan));
+ }
  if(['guest','error'].includes(latamSessionState)&&document.getElementById('latamRequestDialog').open)document.getElementById('latamRequestDialog').close();
  document.querySelectorAll('[data-latam-session]').forEach(a=>a.classList.toggle('hidden',a.dataset.latamSession!==latamSessionState));
  const c=document.getElementById('commercialCountry').value,cta=document.getElementById('latamCreate');
@@ -399,7 +404,7 @@ document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>showLatam
 const selected507Plan=new URLSearchParams(window.location.search).get('selectedPlan');
 if(selected507Plan){
  const selectedCard=Array.from(document.querySelectorAll('[data-latam-type]')).find(a=>selected507Plan==='RESIDENTIAL'?a.dataset.latamType==='RESIDENTIAL':selected507Plan==='PLACE'?a.dataset.latamType==='PLACE':a.dataset.latamPlan===selected507Plan);
- if(selectedCard){prepareLatamRequest({preventDefault(){}},selectedCard.dataset.latamType,selectedCard.dataset.latamPlan);}
+ if(selectedCard){pendingSelectedPlanHandoff={type:selectedCard.dataset.latamType,plan:selectedCard.dataset.latamPlan};if(latamSessionState!=='loading')updateLatamSession();}
 }
 
 document.getElementById('latamRequestDialog').addEventListener('close',()=>document.getElementById('latamMessageAnchor').after(document.getElementById('message')));

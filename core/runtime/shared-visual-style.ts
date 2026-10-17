@@ -13,6 +13,12 @@ body :is(.card,.tile,.address-card,.section-card,.latam-plan-card){min-width:0;o
 body .address-top{align-items:flex-start;gap:12px}body .address-status{margin-left:auto;flex-shrink:0}
 body .address-name{line-height:1.25;margin:0;font-size:clamp(21px,2.5vw,27px)}
 body .address-actions{align-items:stretch;gap:10px}body .address-actions :is(button,a){margin:0;min-width:0}
+/* Read-only request details use a light surface on both shared account domains. */
+body #requestDetail{color:#172b4d;background:#fff}
+body #requestDetail>div{color:#172b4d}
+body #requestDetail p{color:#24364f;line-height:1.6}
+body #requestDetail p strong{color:#10243e;font-weight:750}
+body #requestDetail h2{color:#10243e}
 body #requestDetail{scroll-margin-top:20px}body #requestDetail>div{display:flow-root}body #requestDetail img{border-radius:14px;background:#f1f5f9;width:auto}body #requestDetail a{display:inline-flex;align-items:center;min-height:44px;margin:10px 0;color:#174ea6;font-weight:700}
 body.latam-account-panel #actions>.grid>button{min-height:112px;padding:18px 14px;font-size:18px}body.latam-account-panel #actions>.grid>button:before{font-size:29px}
 body.latam-account-panel #panel #requestForm.request-shell{border:0;box-shadow:none;padding:0;background:transparent}

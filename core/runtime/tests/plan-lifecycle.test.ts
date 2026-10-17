@@ -60,7 +60,7 @@ test('signed payment required; atomic term, queue and permanent identity',async(
  await expect(createPaymentRepository(sql,yappy).confirm(new URLSearchParams({orderId:paid.provider_order_id,status:'E',domain:yappy.domain,hash:'bad'}))).rejects.toThrow();
  await confirm(paid);await repository().publish(admin,published.id);await repository().publish(admin,published.id);
  const [term]=await sql.unsafe('SELECT * FROM ad507.plan_terms WHERE address_id=$1::uuid',[published.id]);expect(term.expires_at.toISOString()).toBe('2026-11-16T05:00:00.000Z');expect(await sql.unsafe('SELECT * FROM ad507.plan_mail_outbox WHERE term_id=$1::uuid',[term.id])).toHaveLength(1);
- await expect(sql.unsafe("UPDATE ad507.addresses SET code='AD507-CHANGED' WHERE id=$1::uuid",[published.id])).rejects.toThrow('PERMANENT_CODE_RESERVED');await expect(sql.unsafe('DELETE FROM ad507.addresses WHERE id=$1::uuid',[published.id])).rejects.toThrow('PERMANENT_CODE_RESERVED');
+ await expect(sql.unsafe("UPDATE ad507.addresses SET code='AD507-CHANGED' WHERE id=$1::uuid",[published.id]).execute()).rejects.toThrow('PERMANENT_CODE_RESERVED');await expect(sql.unsafe('DELETE FROM ad507.addresses WHERE id=$1::uuid',[published.id]).execute()).rejects.toThrow('PERMANENT_CODE_RESERVED');
 });
 test('expiry retains URL/QR while masking paid data and direct gallery access without cron',async()=>{
  for(let i=0;i<2;i++)await sql.unsafe("INSERT INTO ad507.address_media(address_id,media_type,url,position,upload_status) VALUES($1::uuid,'IMAGE',$2,$3,'READY')",[published.id,'https://example.test/'+i,i]);

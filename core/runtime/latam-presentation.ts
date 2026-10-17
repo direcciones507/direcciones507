@@ -440,7 +440,7 @@ if(selected507Plan){
 }
 
 document.getElementById('latamRequestDialog').addEventListener('close',()=>document.getElementById('latamMessageAnchor').after(document.getElementById('message')));
-document.getElementById('latamRequestClose').onclick=()=>document.getElementById('latamRequestDialog').close();
+document.getElementById('latamRequestClose').onclick=()=>{document.getElementById('latamRequestDialog').close();if(new URLSearchParams(location.search).get('origin')==='507')location.assign('https://direcciones507.com/');};
 document.getElementById('latamHelpLink').onclick=()=>document.getElementById('natalieLauncher').click();
 (${bindLatamOverlays.toString()})();
 markCountry();

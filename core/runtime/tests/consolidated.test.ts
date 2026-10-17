@@ -1245,7 +1245,7 @@ test('isolated paid activation: verified callback only, no routine ADMIN approva
  await expect(repository.read(adminId,first.id)).rejects.toThrow('REQUEST_NOT_FOUND');expect((await adminAddressPage(sql,new URLSearchParams(),'addresses')).items.some(r=>r.id===first.id)).toBe(false);expect((await adminAddressPage(sql,new URLSearchParams(),'addresses',owner)).items.some(r=>r.id===first.id)).toBe(true);
  const config={environment:'test' as const,merchantId:'isolated',domain:origin,secret:Buffer.from('isolated-proof.secret').toString('base64'),ipnUrl:origin+'/isolated-ipn'};
  const orderId='A'+stamp.replaceAll('-','').slice(0,12);
- await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,provider_reference) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'isolated-reference')",[owner,first.id,paymentAmount(base.plan),base.plan,orderId]);
+ await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,provider_reference,operation_key) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'isolated-reference',gen_random_uuid()::text)",[owner,first.id,paymentAmount(base.plan),base.plan,orderId]);
  const payments=createPaymentRepository(sql,config,{onVerifiedPayment:id=>repository.activatePaid(id)});
  const proof=new URLSearchParams({orderId,status:'E',domain:origin,hash:createHmac('sha256','isolated-proof').update(orderId+'E'+origin).digest('hex')});
  const fake=new URLSearchParams(proof);fake.set('hash','0'.repeat(64));await expect(payments.confirm(fake)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');expect(publications).toBe(0);
@@ -1255,10 +1255,10 @@ test('isolated paid activation: verified callback only, no routine ADMIN approva
  const free=await repository.submit(owner,'auto-free-'+stamp,{...base,plan:'BUSINESS_FREE',name:'Free '+stamp},[file]);expect(free.status).toBe('PENDING_REVIEW');await expect(repository.activatePaid(free.id)).rejects.toThrow('INVALID_PAID_ACTIVATION_STATE');
  await expect(repository.publish(adminId,free.id)).rejects.toThrow('APPROVAL_REQUIRED');
  const risky=await repository.submit(owner,'auto-risk-'+stamp,{...base,reference:'Different reference, same location'},[file]);
- await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'PAID',now())",[owner,risky.id,paymentAmount(base.plan),base.plan,'R'+stamp.replaceAll('-','').slice(0,12)]);
+ await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at,operation_key) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'PAID',now(),gen_random_uuid()::text)",[owner,risky.id,paymentAmount(base.plan),base.plan,'R'+stamp.replaceAll('-','').slice(0,12)]);
  expect((await repository.activatePaid(risky.id) as any).workflow).toBe('SECURITY_REVIEW');expect(publications).toBe(1);
  await repository.review(adminId,risky.id,'APPROVED');expect((await repository.activatePaid(risky.id)).status).toBe('ACTIVE');expect(publications).toBe(2);
  const residential=await repository.submit(owner,'auto-home-'+stamp,{...base,type:'RESIDENTIAL',plan:'RESIDENTIAL',name:'Private '+stamp},[]);
- await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at) VALUES($1::uuid,$2::uuid,1299,'YAPPY','RESIDENTIAL','test',$3,'PAID',now())",[owner,residential.id,'H'+stamp.replaceAll('-','').slice(0,12)]);
+ await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at,operation_key) VALUES($1::uuid,$2::uuid,1299,'YAPPY','RESIDENTIAL','test',$3,'PAID',now(),gen_random_uuid()::text)",[owner,residential.id,'H'+stamp.replaceAll('-','').slice(0,12)]);
  await expect(repository.activatePaid(residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');const home=await repository.read(owner,residential.id);expect(home.status).toBe('DRAFT');expect(home.publicUrl).toBeNull();
 });

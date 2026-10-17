@@ -109,7 +109,10 @@ clave estable por mensaje. Reintenta red, 429 y 5xx con backoff, hasta 10 intent
 4xx permanentes quedan FAILED. Tras 23h desde el primer intento un resultado
 ambiguo queda UNCERTAIN para conciliar con el proveedor antes de reintentar: la
 idempotencia de Resend dura 24h. Nunca reencolar automáticamente fuera de ventana.
-Cambios de titular/correo, cuenta desactivada o período revocado cancelan el envío.
+Cambios de titular/correo, cuenta desactivada/borrada o período revocado cancelan el envío.
+Las restricciones existentes de payments/paypal impiden borrar físicamente un
+usuario con pedidos vinculados (user_id obligatorio en el binding). No se debilitan:
+usar el proceso existente de desactivación y revisar borrado/retención por separado.
 No se registran tokens, direcciones de correo ni respuestas del proveedor en logs.
 
 Referencias: https://resend.com/changelog/idempotency-keys y

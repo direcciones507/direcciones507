@@ -129,11 +129,14 @@ test('mail concurrent workers claim once, permanent failures stop, and expired i
  await createPlanMailWorker(sql,env,http,now).run();expect(calls).toBe(before);expect((await sql.unsafe('SELECT state FROM ad507.plan_mail_outbox WHERE id=$1::uuid',[job.id]))[0].state).toBe('UNCERTAIN');
 });
 
-test('deleted account cancels queued delivery and keeps the permanent public identity',async()=>{
- const a=await fixture('BUSINESS_FREE');await repository().publish(admin,a.id);
- await sql.unsafe('DELETE FROM ad507.users WHERE id=$1::uuid',[owner]);
+test('deleted unpaid account cancels queued delivery and keeps the permanent public identity',async()=>{
+ const a=await fixture('BUSINESS_FREE');const deleted=crypto.randomUUID();
+ await sql.unsafe('INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)',[deleted,deleted+'@example.test']);
+ await sql.unsafe('UPDATE ad507.address_ownership SET user_id=$2::uuid WHERE address_id=$1::uuid',[a.id,deleted]);
+ await repository().publish(admin,a.id);
+ await sql.unsafe('DELETE FROM ad507.users WHERE id=$1::uuid',[deleted]);
  let calls=0;const http=(async()=>{calls++;return Response.json({id:'unexpected'});}) as typeof fetch;
  await createPlanMailWorker(sql,{EMAIL_FROM:PLAN_SENDER,RESEND_API_KEY:'fixture',AD507_PLAN_EMAIL_ENABLED:'true'},http,now).run();expect(calls).toBe(0);
  const [address]=await sql.unsafe('SELECT code,status FROM ad507.addresses WHERE id=$1::uuid',[a.id]);expect(address.code).toBe(a.code);expect(address.status).toBe('ACTIVE');
- expect((await sql.unsafe('SELECT count(*)::int AS count FROM ad507.plan_renewals WHERE user_id IS NULL'))[0].count).toBeGreaterThan(0);
+ expect(await sql.unsafe('SELECT 1 FROM ad507.address_ownership WHERE address_id=$1::uuid',[a.id])).toHaveLength(0);
 });

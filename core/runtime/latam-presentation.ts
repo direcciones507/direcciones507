@@ -184,7 +184,7 @@ function updateLatamSession(){
  document.querySelectorAll('[data-latam-session]').forEach(a=>a.classList.toggle('hidden',a.dataset.latamSession!==latamSessionState));
  const c=document.getElementById('commercialCountry').value,cta=document.getElementById('latamCreate');
  document.querySelectorAll('a[data-latam-session="authenticated"]').forEach(a=>a.href='/panel?country='+encodeURIComponent(c)+(new URLSearchParams(location.search).get('origin')==='507'?'&origin=507':''));
- document.getElementById('latamGoogleAccess').href='/auth/google/login?country='+encodeURIComponent(c)+(new URLSearchParams(location.search).get('origin')==='507'?'&origin=507':'')+(new URLSearchParams(location.search).get('selectedPlan')?'&selectedPlan='+encodeURIComponent(new URLSearchParams(location.search).get('selectedPlan')):'');
+ document.getElementById('latamGoogleAccess').href='/auth/google/login?country='+encodeURIComponent(c);
  cta.href=latamSessionState==='authenticated'?(c==='PA'?'#requestForm':'#commercialAvailability'):'#latamAccess';
  cta.setAttribute('aria-disabled',String(latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&(c!=='PA'||!latamCanPrepare))));
  document.querySelectorAll('[data-latam-type]').forEach(a=>{a.href=cta.href;a.setAttribute('aria-disabled',cta.getAttribute('aria-disabled'));});
@@ -293,6 +293,7 @@ function prepareLatamRequest(e,type,plan){
  .replace("}catch{$('panel').classList.add('hidden');$('message')", "}catch{latamSessionState='error';updateLatamSession();$('panel').classList.add('hidden');$('message')")
  .replace('</script>',`
 const accessDialog=document.getElementById('latamAccess');
+document.getElementById('latamGoogleAccess').addEventListener('click',()=>{const p=new URLSearchParams(location.search);const plan=p.get('selectedPlan');if(plan&&['RESIDENTIAL','PLACE','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan))sessionStorage.setItem('ad507PendingPlan',plan);else sessionStorage.removeItem('ad507PendingPlan');if(p.get('origin')==='507')sessionStorage.setItem('ad507EntryOrigin','507');else sessionStorage.removeItem('ad507EntryOrigin');});
 function openLatamAccess(){document.getElementById('latamAccessCountry').textContent='País seleccionado: '+(document.getElementById('commercialCountry')?.selectedOptions[0]?.textContent||'Panamá');if(!accessDialog.open)accessDialog.showModal();document.getElementById('latamAccessEmail').focus();}
 document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
 let latamEmailMode='register';

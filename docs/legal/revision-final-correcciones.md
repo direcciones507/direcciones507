@@ -5,13 +5,13 @@
 ## Términos y Condiciones
 - Reemplazar la denominación antigua en títulos y cuerpo, sin alterar el nombre del establecimiento inscrito.
 - Edad mínima para cuenta y contratación: 18 años, sin excepción contractual por autorización de representante. La consulta de fichas públicas no requiere cuenta.
-- Toda solicitud nueva se somete a verificación y aprobación administrativa previa a publicación.
+- Residencial/Premium/Premium Pro: activación automática tras pago verificado y controles de seguridad. Negocio Gratis/Lugar Gratis: revisión manual hasta 48 horas desde envío voluntario. Borradores privados e invisibles a ADMIN.
 - Dirección residencial privada por defecto, con acceso solo autorizado.
 - Primer acuse o respuesta a denuncias en 48 horas; no confundir con resolución definitiva.
 - Cambios materiales de términos: aviso 30 días, salvo exigencias urgentes legales o de seguridad.
 
 ## Política de Privacidad
-- Canal de derechos y denuncias: soporte@direcciones507.com, **pendiente de creación y prueba**.
+- Canal de derechos y denuncias: soporte@direcciones507.com, **alias creado según propietario; envío y recepción pendientes de prueba**.
 - Plazo interno de respuesta a derechos: 15 días hábiles, o el plazo legal más corto del país.
 - Derecho a solicitar eliminación de cuenta y datos, sujeto a identidad y retención legal.
 - No completar tabla de retención, proveedores ni transferencias con suposiciones.

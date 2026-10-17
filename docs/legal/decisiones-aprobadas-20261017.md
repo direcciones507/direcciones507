@@ -1,7 +1,7 @@
 # Direcciones 507/LATAM | Decisiones legales aprobadas
 
-**Estado:** trabajo interno, NO PUBLICAR como política legal.  
-**Fecha de consolidación:** 17 de octubre de 2026.  
+**Estado:** trabajo interno, NO PUBLICAR como política legal.
+**Fecha de consolidación:** 17 de octubre de 2026.
 **Seguimiento:** Issue #99.
 
 ## Identidad y contacto
@@ -12,13 +12,13 @@
 - Identificación fiscal: RUC basado en cédula conforme al Aviso de Operación; DV **36**. No guardar el identificador completo en este archivo.
 - Domicilio comercial público acordado: Santiago, Veraguas, República de Panamá; verificar suficiencia jurídica.
 - Ventas y facturación: ventas@direcciones507.com.
-- Soporte, privacidad, denuncias y reclamaciones: soporte@direcciones507.com (**pendiente de creación y prueba de recepción**).
+- Soporte, privacidad, denuncias y reclamaciones: soporte@direcciones507.com (**alias creado según propietario; envío y recepción pendientes de prueba**).
 
 ## Condiciones de uso y revisión
 
 - Edad mínima para abrir cuenta o contratar: **18 años**; la consulta de fichas públicas no requiere cuenta.
 - Las direcciones residenciales son **privadas por defecto**, con acceso para autorizados.
-- **Toda nueva solicitud de dirección** pasa por revisión manual del ADMIN y comprobación de autenticidad antes de publicarse. Aplica a todos los planes, en países habilitados.
+- Residencial, Premium y Premium Pro: activación automática después de pago verificado y controles de seguridad. Negocio Gratis y Lugar Gratis: envío voluntario y revisión ADMIN hasta 48 horas. Borradores no enviados privados e invisibles a ADMIN. No implementar cambios de publicación en este cierre legal.
 - No modificar el histórico de direcciones ni Excel/Apps Script.
 
 ## Plazos aprobados

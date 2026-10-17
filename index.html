@@ -496,7 +496,7 @@
           <li><a onclick="toggleSeccion('secFuncionamiento')" id="lnkFuncionamiento">Cómo Funciona</a></li>
           <li><a onclick="toggleSeccion('secContacto')" id="lnkContacto">Contacto</a></li>
           <li><a href="https://direcciones.lat/?country=PA&amp;access=1" class="btn-nav-action"><i class="fa-solid fa-user"></i> Mi cuenta</a></li>
-          <li><a href="https://wa.me/50765996532?text=Hola,%20deseo%20el%20Plan%20Residencial%20Privado" target="_blank" rel="noopener" class="btn-nav-action"><i class="fa-solid fa-location-dot"></i> Registrar mi Dirección</a></li>
+          <li><a href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;" class="btn-nav-action"><i class="fa-solid fa-location-dot"></i> Solicitar mi dirección digital</a></li>
         </ul>
       </nav>
     </div>
@@ -583,7 +583,7 @@
             <p>Haz que tu hogar o negocio sea más fácil de encontrar. Comparte tu ubicación, referencia y accesos de navegación mediante una dirección digital, enlace y código QR.</p>
             <div class="free-address-actions">
               <a href="#planesDirecciones507" class="free-address-btn"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Ver planes disponibles</a>
-              <a href="#secFuncionamiento" class="free-address-btn"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Cómo funciona</a>
+              <a href="#secFuncionamiento" onclick="toggleSeccion('secFuncionamiento');return false;" class="free-address-btn"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Cómo funciona</a>
             </div>
             <p style="margin:14px 0 0;font-size:12px;color:#b9d3e9;">Opciones para residencias y negocios. Consulta las condiciones y disponibilidad de cada plan.</p>
           </div>

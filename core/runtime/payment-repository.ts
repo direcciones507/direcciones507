@@ -6,8 +6,8 @@ import { paymentAmount, verifyYappyIPN, validateYappyConfiguration, type YappyCo
 
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 // Shared orders and audit ledger. PayPal hooks are backend-only sandbox preparation;
-// neither payment confirmation nor provider adapters activate or publish an address.
-export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provider:'PAYPAL';environment:'test'}) {
+// Optional verified-payment callback is wired separately; providers remain disabled.
+export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provider:'PAYPAL';environment:'test'},options:{onVerifiedPayment?:(addressId:string)=>Promise<unknown>}={}) {
   const paypal='provider' in config&&config.provider==='PAYPAL';
   if(!paypal)validateYappyConfiguration(config as YappyConfiguration);
   const requireYappy=()=>{if(paypal)throw Error('PAYMENT_PROVIDER_NOT_ENABLED');};
@@ -25,7 +25,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId);
-        if(row.request_data?.migration||row.status!=='PENDING_REVIEW')throw Error('INVALID_PAYMENT_REQUEST');
+        if(row.request_data?.migration||!(row.status==='PENDING_REVIEW'||row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING'))throw Error('INVALID_PAYMENT_REQUEST');
         const plan=row.request_data?.plan,amount=paymentAmount(plan);
         if(amount===0)return {required:false,amountCents:0};
         const operation=createHash('sha256').update('paypal:test:'+userId+':'+addressId+':'+key).digest('hex');
@@ -63,7 +63,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       if(!rows.length)throw Error('PAYMENT_NOT_FOUND');const p=rows[0];await own(sql,userId,p.address_id);
       if(p.amount_cents!==paymentAmount(p.payment_plan)||p.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
       const proof=await provider.confirmedCapture({id:p.id,amountCents:p.amount_cents,currency:'USD',provider_reference:p.provider_reference},capture);
-      return sql.begin(async tx=>{
+      const confirmation=await sql.begin(async tx=>{
         await own(tx,userId,p.address_id);
         const orders=await tx.unsafe("SELECT * FROM ad507.orders WHERE id=$1::uuid FOR UPDATE",[orderId]);const current=orders[0];
         if(current.provider_reference!==p.provider_reference||current.amount_cents!==p.amount_cents||current.payment_plan!==p.payment_plan)throw Error('PAYMENT_AMOUNT_CHANGED');
@@ -73,6 +73,8 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','PAYPAL_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[orderId,tx.json({status:current.status}),tx.json({status:proof.status,captureId:proof.captureId})]);
         return {id:orderId,status:proof.status,unchanged:false};
       });
+      if(confirmation.status==='PAID'&&options.onVerifiedPayment)await options.onVerifiedPayment(p.address_id);
+      return confirmation;
     },
     async claimProviderOrder(orderId:string) {
       requireYappy();
@@ -102,7 +104,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId);
-        if(row.request_data?.migration||row.status!=='PENDING_REVIEW')throw Error('INVALID_PAYMENT_REQUEST');
+        if(row.request_data?.migration||!(row.status==='PENDING_REVIEW'||row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING'))throw Error('INVALID_PAYMENT_REQUEST');
         const plan=row.request_data?.plan,amount=paymentAmount(plan);
         if(amount===0)return {required:false,amountCents:0};
         const operation=createHash('sha256').update(config.environment+':'+userId+':'+addressId+':'+key).digest('hex');
@@ -127,18 +129,20 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     async confirm(query:URLSearchParams) {
       requireYappy();
       const proof=verifyYappyIPN(query,config as YappyConfiguration);
-      return sql.begin(async tx=>{
+      const confirmation=await sql.begin(async tx=>{
         const rows=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='YAPPY' AND payment_environment=$1 AND provider_order_id=$2 FOR UPDATE",[config.environment,proof.orderId]);
         const row=rows[0];if(!row)throw Error('PAYMENT_NOT_FOUND');
         // Confirm only provider-registered intents. Timeouts remain pending for reconciliation.
         if(!row.provider_reference||row.provider_reference.startsWith('INITIALIZING:'))throw Error('PAYMENT_PROVIDER_REFERENCE_REQUIRED');
         if(row.amount_cents!==paymentAmount(row.payment_plan)||row.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
-        if(row.status==='REFUNDED'||row.status==='PAID'||row.status===proof.status)return {id:row.id,status:row.status,unchanged:true};
-        if(row.status!=='PENDING'&&proof.status!=='PAID')return {id:row.id,status:row.status,unchanged:true};
+        if(row.status==='REFUNDED'||row.status==='PAID'||row.status===proof.status)return {id:row.id,status:row.status,unchanged:true,addressId:row.address_id};
+        if(row.status!=='PENDING'&&proof.status!=='PAID')return {id:row.id,status:row.status,unchanged:true,addressId:row.address_id};
         await tx.unsafe("UPDATE ad507.orders SET status=$2,confirmed_at=CASE WHEN $2='PAID' THEN now() ELSE confirmed_at END,updated_at=now() WHERE id=$1::uuid",[row.id,proof.status]);
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','YAPPY_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[row.id,tx.json({status:row.status}),tx.json({status:proof.status,providerStatus:proof.providerStatus})]);
-        return {id:row.id,status:proof.status,unchanged:false};
+        return {id:row.id,status:proof.status,unchanged:false,addressId:row.address_id};
       });
+      if(confirmation.status==='PAID'&&options.onVerifiedPayment)await options.onVerifiedPayment(confirmation.addressId);
+      const {addressId,...result}=confirmation;return result;
     }
   };
 }

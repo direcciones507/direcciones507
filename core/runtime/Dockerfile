@@ -6,5 +6,6 @@ COPY core/runtime/ ./
 COPY core/postgres/ ../postgres/
 COPY ad507.template.html /app/ad507.template.html
 COPY index.html /app/index.html
+COPY assets/legal-consent.js /app/assets/legal-consent.js
 USER bun
 CMD ["bun", "server.ts"]

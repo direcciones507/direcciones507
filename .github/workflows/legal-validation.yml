@@ -2,6 +2,9 @@ name: Legal responsive verification
 on:
   pull_request:
     paths: ["core/runtime/**", "assets/legal-consent.js", "index.html", "legal/**", ".github/workflows/legal-validation.yml"]
+concurrency:
+  group: legal-responsive-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

@@ -6,7 +6,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
 (async()=>{
  const browser=await chromium.launch({headless:true});
  for(const [device,width,height]of [['mobile',390,844],['tablet',820,1180],['desktop',1440,1000]]){
-  const context=await browser.newContext({viewport:{width,height}});let authenticated=false,analytics=0,posts=[],registers=0;const errors=[];
+  console.log('Checking',device);const context=await browser.newContext({viewport:{width,height}});let authenticated=false,analytics=0,posts=[],registers=0;const errors=[];
   await context.route('**/*',async route=>{
    const request=route.request(),url=new URL(request.url());
    if(url.hostname==='www.googletagmanager.com'){analytics++;return route.fulfill({contentType:'application/javascript',body:''});}
@@ -37,7 +37,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   }
   await page.goto('https://direcciones507.com/');assert.equal(analytics,0,'no analytics before choice');
   await page.locator('[data-analytics-choice="false"]').click();assert.equal(analytics,0,'reject analytics');
-  await page.locator('[data-cookie-settings]').first().click();await page.locator('[data-analytics-choice="true"]').click();await page.waitForFunction(()=>document.querySelector('script[src*="gtag/js"]'));assert.equal(analytics,1,'only accepted GA loaded');
+  await page.locator('[data-cookie-settings]').first().click();const loaded=page.waitForResponse(r=>r.url().includes('/gtag/js'));await page.locator('[data-analytics-choice="true"]').click();await loaded;assert.equal(analytics,1,'only accepted GA loaded');
   assert.equal(await page.locator('iframe[src*="googletagmanager"]').count(),0);assert.equal(await page.locator('script[src*="gtm.js"]').count(),0);
   for(const card of await page.locator('.plan-pricing-card').all())assert.equal(await card.locator('.plan-legal a').count(),4);
   await page.locator('.planes-grid-layout').screenshot({path:path.join(out,device+'-507-plans.png')});
@@ -55,7 +55,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   authenticated=true;
   const png=fs.readFileSync(path.join(fixtures,'fixture.png'));
   for(const plan of ['RESIDENTIAL','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE']){
-   await page.goto('https://direcciones.lat/panel?selectedPlan='+plan);await page.waitForSelector('#requestForm:not(.hidden)');
+   console.log('Form',device,plan);await page.goto('https://direcciones.lat/panel?selectedPlan='+plan);await page.waitForSelector('#requestForm:not(.hidden)');
    assert.equal(await page.locator('#requestTermsAccepted').isChecked(),false);const before=posts.length;
    await page.locator('#name').fill('Fixture '+plan);await page.locator('#reference').fill('Ubicación sintética');await page.locator('#coordinates').fill('8.1, -80.9');
    if(plan.startsWith('BUSINESS'))await page.locator('#logo').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:png});
@@ -71,4 +71,4 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   assert.deepEqual(errors,[],'browser JS errors '+device);await context.close();
  }
  fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(results,null,2)+'\n');await browser.close();console.log('Legal browser checks passed: 3 viewports, 4 policies, 5 forms and optional cookies.');
-})().catch(error=>{console.error(error);process.exitCode=1;});
+})().catch(error=>{console.error(error);process.exit(1);});

@@ -1229,7 +1229,7 @@ test('legal account acceptance is authenticated, durable and idempotent in the e
 test('isolated paid activation: verified callback only, no routine ADMIN approval, private pending drafts and justified security review',async()=>{
  const {createRequestRepository}=await import('../request-repository');const {createPaymentRepository}=await import('../payment-repository');const {paymentAmount}=await import('../payment-policy');
  const {requireLegalAcceptance,LEGAL_VERSION}=await import('../legal');const {createHmac}=await import('node:crypto');
- await sql.unsafe(readFileSync(new URL('../schema-proposals/payments.sql',import.meta.url),'utf8'));
+ if(!(await sql.unsafe("SELECT 1 FROM information_schema.columns WHERE table_schema='ad507' AND table_name='orders' AND column_name='payment_plan'")).length)await sql.unsafe(readFileSync(new URL('../schema-proposals/payments.sql',import.meta.url),'utf8'));
  const owner=crypto.randomUUID(),stamp=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[owner,'auto-'+stamp+'@example.test']);await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
  const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
  const png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'purple'}}).png().toBuffer();
@@ -1242,6 +1242,7 @@ test('isolated paid activation: verified callback only, no routine ADMIN approva
  await expect(repository.activatePaid(first.id)).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');expect(reservations).toBe(0);expect(publications).toBe(0);
  await expect(repository.review(adminId,first.id,'APPROVED')).rejects.toThrow('MANUAL_REVIEW_NOT_REQUIRED');
  const {adminAddressPage}=await import('../admin-address-pagination');expect((await adminAddressPage(sql,new URLSearchParams(),'requests')).items.some(r=>r.id===first.id)).toBe(false);
+ await expect(repository.read(adminId,first.id)).rejects.toThrow('REQUEST_NOT_FOUND');expect((await adminAddressPage(sql,new URLSearchParams(),'addresses')).items.some(r=>r.id===first.id)).toBe(false);expect((await adminAddressPage(sql,new URLSearchParams(),'addresses',owner)).items.some(r=>r.id===first.id)).toBe(true);
  const config={environment:'test' as const,merchantId:'isolated',domain:origin,secret:Buffer.from('isolated-proof.secret').toString('base64'),ipnUrl:origin+'/isolated-ipn'};
  const orderId='A'+stamp.replaceAll('-','').slice(0,12);
  await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,provider_reference) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'isolated-reference')",[owner,first.id,paymentAmount(base.plan),base.plan,orderId]);

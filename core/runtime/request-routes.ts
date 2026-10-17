@@ -80,7 +80,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
       const result=await context.sql.begin(async tx=>{
         const rows=await tx.unsafe("SELECT a.id::text,a.code,a.status,a.address_type,a.request_data FROM ad507.addresses a WHERE a.id=$1::uuid AND a.source='USER_REQUEST' FOR UPDATE",[action![1]]);
         const place=rows[0];
-        if(!place||place.address_type!=='PLACE'||place.request_data?.migration)throw Error('REQUEST_NOT_FOUND');
+        if(!place||place.address_type!=='PLACE'||place.request_data?.migration||place.status==='DRAFT'&&!place.request_data?.createdByAdmin)throw Error('REQUEST_NOT_FOUND');
         if(place.status==='ARCHIVED')throw Error('INVALID_STATE_TRANSITION');
         await tx.unsafe("UPDATE ad507.addresses SET status='ARCHIVED',updated_at=now() WHERE id=$1::uuid",[place.id]);
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id) VALUES($1::uuid,'ADMIN','PLACE_ARCHIVED','ADDRESS',$2::uuid)",[user.id,place.id]);

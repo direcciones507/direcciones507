@@ -8,10 +8,10 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
  for(const [device,width,height]of [['mobile',390,844],['tablet',820,1180],['desktop',1440,1000]]){
   console.log('Checking',device);const context=await browser.newContext({viewport:{width,height}});let authenticated=false,analytics=0,posts=[],registers=0;const errors=[];
   await context.route('**/*',async route=>{
-   const request=route.request(),url=new URL(request.url());
+   const request=route.request(),url=new URL(request.url()),last=posts.at(-1);const lastFree=last&&(last.type==='PLACE'||last.plan==='BUSINESS_FREE');
    if(url.hostname==='www.googletagmanager.com'){analytics++;return route.fulfill({contentType:'application/javascript',body:''});}
    if(!['direcciones.lat','direcciones507.com'].includes(url.hostname)){if(['unpkg.com','cdnjs.cloudflare.com','fonts.googleapis.com','fonts.gstatic.com','raw.githubusercontent.com'].includes(url.hostname))return route.continue();return route.abort();}
-   if(url.pathname==='/v1/user/panel')return route.fulfill({status:authenticated?200:401,contentType:'application/json',body:JSON.stringify(authenticated?{user:{email:'fixture@example.test',displayName:'Prueba local'},addresses:[],orders:[],plans:[{code:'BUSINESS_FREE',name:'Negocio Gratis'},{code:'BUSINESS_PREMIUM',name:'Premium'},{code:'BUSINESS_PREMIUM_PRO',name:'Premium Pro'}],actions:{prepareRequest:true,submitRequest:true},nextAddressCursor:null}:{error:'UNAUTHENTICATED'})});
+   if(url.pathname==='/v1/user/panel')return route.fulfill({status:authenticated?200:401,contentType:'application/json',body:JSON.stringify(authenticated?{user:{email:'fixture@example.test',displayName:'Prueba local'},addresses:last?[{id:'11111111-1111-4111-8111-111111111111',source:'USER_REQUEST',countryCode:'PA',name:last.name,addressType:last.type,planCode:last.plan,status:lastFree?'PENDING_REVIEW':'DRAFT',workflow:lastFree?null:'PAYMENT_PENDING'}]:[],orders:[],plans:[{code:'BUSINESS_FREE',name:'Negocio Gratis'},{code:'BUSINESS_PREMIUM',name:'Premium'},{code:'BUSINESS_PREMIUM_PRO',name:'Premium Pro'}],actions:{prepareRequest:true,submitRequest:true},nextAddressCursor:null}:{error:'UNAUTHENTICATED'})});
    if(url.pathname==='/v1/user/requests'&&request.method()==='POST'){
     const body=request.postDataBuffer().toString();const match=body.match(/name="payload"\r\n\r\n([^\r]+)\r\n/);assert(match,'multipart payload');const payload=JSON.parse(match[1]);posts.push(payload);
     const free=payload.type==='PLACE'||payload.plan==='BUSINESS_FREE';return route.fulfill({contentType:'application/json',body:JSON.stringify({request:{id:'11111111-1111-4111-8111-111111111111',status:free?'PENDING_REVIEW':'DRAFT',...(free?{}:{workflow:'PAYMENT_PENDING'})}})});
@@ -27,7 +27,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
    const ext=path.extname(filename),contentType=({'.html':'text/html','.js':'application/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp'})[ext]||'application/octet-stream';
    return route.fulfill({contentType,body:fs.readFileSync(filename)});
   });
-  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  const page=await context.newPage();page.on('pageerror',e=>{errors.push(e.message);console.error('Browser JS error:',e.message)});
   for(const key of ['terms','privacy','commercial','cookies']){
    const response=await page.goto('https://direcciones.lat/legal/'+key+'/');assert.equal(response.status(),200);await page.waitForSelector('article');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'legal overflow '+device+' '+key);
@@ -56,7 +56,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   authenticated=true;
   const png=fs.readFileSync(path.join(fixtures,'fixture.png'));
   for(const plan of ['RESIDENTIAL','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE']){
-   console.log('Form',device,plan);await page.goto('https://direcciones.lat/panel?selectedPlan='+plan);await page.waitForSelector('#requestForm:not(.hidden)');
+   console.log('Form',device,plan);await page.goto('https://direcciones.lat/panel?selectedPlan='+plan);try{await page.waitForSelector('#requestForm:not(.hidden)');}catch(error){await page.screenshot({path:path.join(out,device+'-panel-failure.png')});fs.writeFileSync(path.join(out,device+'-panel-failure.json'),JSON.stringify({errors,url:page.url(),text:await page.locator('body').innerText()},null,2));throw error;}
    assert.equal(await page.locator('#requestTermsAccepted').isChecked(),false);const before=posts.length;
    await page.locator('#name').fill('Fixture '+plan);await page.locator('#reference').fill('Ubicación sintética');await page.locator('#coordinates').fill('8.1, -80.9');
    if(plan.startsWith('BUSINESS'))await page.locator('#logo').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:png});
@@ -65,7 +65,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
    await page.locator('#requestTermsAccepted').check();
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'form overflow '+device+' '+plan);
    if(plan==='RESIDENTIAL')await page.locator('#requestForm').screenshot({path:path.join(out,device+'-form-legal.png')});
-   await page.locator('#send').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('En revisión')||document.getElementById('message').textContent.includes('pendiente de pago'));
+   await page.locator('#send').click();await page.waitForFunction(name=>Array.from(document.querySelectorAll('.address-name')).some(el=>el.textContent===name),'Fixture '+plan);
    assert.equal(posts.length,before+1);assert.equal(posts.at(-1).legalAcceptance.accepted,true);assert.equal(posts.at(-1).legalAcceptance.version,version);
    results.push({device,plan,withoutAcceptance:'blocked',withAcceptance:'sent',analyticsRequired:false});
   }

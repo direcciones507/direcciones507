@@ -29,7 +29,7 @@ const namespaceExclusive = process.env.AD507_HISTORICAL_NAMESPACE_VERIFIED === '
 const paymentConfig = yappyConfiguration(process.env);
 const paymentRepository = YAPPY_PAYMENTS_ENABLED && paymentConfig ? createPaymentRepository(sql,paymentConfig) : null;
 const paymentProvider = YAPPY_PAYMENTS_ENABLED && paymentConfig ? createYappyProvider(paymentConfig) : null;
-const planAutomationEnabled=process.env.AD507_PLAN_AUTOMATION_ENABLED==='true';
+const planAutomationEnabled=commercialWorkflowEnabled&&process.env.AD507_PLAN_AUTOMATION_ENABLED==='true';
 const planPeriods=planAutomationEnabled?configuredPlanPeriods(process.env.AD507_PLAN_PERIODS_JSON):{};
 const planLifecycle=planAutomationEnabled?createPlanLifecycle(sql,{periods:planPeriods,environment:'production',providers:new Set(YAPPY_PAYMENTS_ENABLED&&paymentConfig?.environment==='production'?['YAPPY']:[])}):null;
 const requestRepository = createRequestRepository(sql, { r2: requestR2, lifecycle:planLifecycle, canonical: commercialWorkflowEnabled ? createNewAddressPublication(sql,{namespaceExclusive}) : null,

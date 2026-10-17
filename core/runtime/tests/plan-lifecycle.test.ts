@@ -113,6 +113,10 @@ test('early renewal extends from existing expiry and does not overwrite its purc
  const renewal=await service().prepareRenewal(owner,a.id,'early-renewal-000001',true);await createPaymentRepository(sql,yappy).claimProviderOrder(renewal.id);await createPaymentRepository(sql,yappy).completeProviderOrder(renewal.id,'early-provider-'+renewal.id);await confirm(renewal);
  await service().reconcile();await service().reconcile();
  const [after]=await sql.unsafe('SELECT code,request_data FROM ad507.addresses WHERE id=$1::uuid',[a.id]);expect(Date.parse(after.request_data.planLifecycle.expiresAt)-Date.parse(before.request_data.planLifecycle.expiresAt)).toBe(30*86400000);expect(after.request_data.plan).toBe('BUSINESS_PREMIUM');expect(after.code).toBe(a.code);
+ // Renewing a refunded term must start now even before refund reconciliation.
+ await sql.unsafe("UPDATE ad507.orders SET status='REFUNDED' WHERE id=$1::uuid",[renewal.id]);
+ const replacement=await service().prepareRenewal(owner,a.id,'after-refund-renewal-001',true);await createPaymentRepository(sql,yappy).claimProviderOrder(replacement.id);await createPaymentRepository(sql,yappy).completeProviderOrder(replacement.id,'replacement-'+replacement.id);await confirm(replacement);await service().reconcile();
+ const [current]=await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[a.id]);expect(current.request_data.planLifecycle.expiresAt).toBe(expiryFor(time,30).toISOString());
 });
 test('mail concurrent workers claim once, permanent failures stop, and expired idempotency windows require reconciliation',async()=>{
  const a=await fixture('BUSINESS_FREE');await repository().publish(admin,a.id);

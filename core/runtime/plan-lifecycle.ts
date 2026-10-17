@@ -24,7 +24,9 @@ export function createPlanLifecycle(sql:Sql,options:{periods:PlanPeriods;environ
  }
  async function install(tx:any,row:any,kind:'INITIAL'|'RENEWAL',order:any,days:number|null,acceptedAt:Date|null){
   const at=now(),old=row.request_data.planLifecycle;
-  const start=kind==='RENEWAL'&&old?.expiresAt&&!old.revoked&&Date.parse(old.expiresAt)>at.getTime()?new Date(old.expiresAt):at;
+  const previousOrder=kind==='RENEWAL'&&old?.orderId?(await tx.unsafe('SELECT status FROM ad507.orders WHERE id=$1::uuid',[old.orderId]))[0]:null;
+  const continuing=kind==='RENEWAL'&&old?.expiresAt&&!old.revoked&&previousOrder?.status==='PAID'&&Date.parse(old.expiresAt)>at.getTime();
+  const start=continuing?new Date(old.expiresAt):at;
   const end=days?expiryFor(start,days):null;
   const result=await tx.unsafe(`INSERT INTO ad507.plan_terms(address_id,order_id,kind,plan_code,country_code,starts_at,expires_at,period_days,accepted_at,policy_version) VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,[row.id,order?.id??null,kind,row.request_data.plan,row.country_code,start,end,days,acceptedAt,PLAN_POLICY_VERSION]);
   const term=result[0];

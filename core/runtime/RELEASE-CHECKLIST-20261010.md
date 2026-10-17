@@ -1,6 +1,8 @@
 ## PR101 — automatización de vigencias y entrega, 17 octubre 2026
 
-- Estado: EN DESARROLLO / prueba aislada en curso; NO OPERATIVO.
+- Estado: IMPLEMENTADO y PROBADO en PostgreSQL18 aislado; NO OPERATIVO.
+- CI266/39007921689 SUCCESS sobre f037ca3: compilación Bun/Docker, legado y
+  suite completa PASS. Refinamiento final de reembolso/flags con CI en el PR101.
 - Rama existente feat/plan-expiry-renewal-20261017; mismo PR101. Un Core.
 - Implementados períodos de planes, entrega por outbox, avisos15/7/1/vencimiento,
   reserva indefinida de identidad, beneficios calculados en lectura y renovación
@@ -14,7 +16,7 @@
   migraciones: ajuste a pool1 solo para preparación, pool5 para concurrencia.
   Prueba visual anterior esperaba Lugar aunque main ya publica Lugar Gratis;
   expectativa actualizada al texto existente, sin cambiar producto.
-- PENDIENTE: CI final, revisión comercial de períodos, esquema autorizado,
+- PENDIENTE productivo: revisión comercial de períodos, esquema autorizado,
   proveedor de correo/pago y prueba real de entrega/vencimiento/renovación.
 - Sin Excel, Apps Script, Pages, fichas históricas, SQL/variables/despliegue real.
 

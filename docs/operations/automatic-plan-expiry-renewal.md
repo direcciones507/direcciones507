@@ -1,6 +1,6 @@
 # Direcciones 507/LATAM | Entrega, vencimiento y renovación automáticos
 
-Estado: **especificación aprobada para implementación**, NO OPERATIVO hasta despliegue y pruebas reales.
+Estado: **implementado en la rama del PR101 y probado en base aislada**, NO OPERATIVO hasta despliegue y pruebas reales. Configuración y dependencias: `docs/plan-automation-configuration-20261017.md`.
 Repositorio: `direcciones507/direcciones507`. Un solo Core, panel y modelo multinacional; no modificar Apps Script, Excel, códigos ni URLs históricas.
 
 ## Objetivo
@@ -12,7 +12,7 @@ Que el propietario no tenga que controlar fechas de vencimiento manualmente. La 
 3. Plan pagado: no activar derechos pagados por pulsar un botón ni por una redirección del navegador. Esperar evento de pago **verificado por servidor** del proveedor habilitado en el país, con firma y comprobación de importe, moneda, estado, pedido y no duplicidad. Si todavía no hay proveedor operativo, mantener pendiente y no simular cobro.
 4. Entrega: correo con nombre de dirección, código, URL y QR (adjunto o enlace seguro), acceso a «Mi cuenta» y vigencia del plan. No incluir datos residenciales sensibles ni enlaces privados reutilizables en correos sin controles adecuados. Los fallos de correo no deben revertir publicación; reintentar con idempotencia y mostrar estado.
 5. Registrar `starts_at`, `expires_at`, país, zona horaria de visualización, plan, período comprado, moneda, ID transacción, factura/comprobante y registro de aceptación. Los instantes persistidos en UTC; mostrar fecha local del cliente.
-6. Notificaciones sugeridas **15, 7 y 1 días antes** del vencimiento y aviso de vencimiento. Esta cadencia es propuesta técnica, no condición comercial aprobada. Evitar duplicados por dirección/período/tipo de aviso; respetar exclusión de mensajes promocionales. Mensajes transaccionales sobre el servicio deben distinguirse de marketing.
+6. Notificaciones sugeridas **15, 7 y 1 días antes** del vencimiento y aviso de vencimiento. Cadencia confirmada en la solicitud de implementación del propietario. Evitar duplicados por dirección/período/tipo de aviso; respetar exclusión de mensajes promocionales. Mensajes transaccionales sobre el servicio deben distinguirse de marketing.
 7. Al vencer: desactivar automáticamente funciones Premium/Premium Pro. Mantener dirección digital básica, código, URL y QR. No eliminar, no generar nuevo código, no cobrar, no renovar por defecto. Las direcciones residenciales siguen privadas por defecto. Los gratuitos no expiran salvo regla de promoción concreta y publicada.
 8. Renovación voluntaria: el cliente confirma nuevo período y pago; tras verificación, reactivar funciones del plan. No crear otra dirección. La nueva fecha se calcula conforme a política publicada y pago confirmado; evitar doble extensión por webhooks repetidos.
 9. ADMIN: lista y contadores de activos, próximos a vencer, vencidos, pendientes de pago, notificación fallida y renovados; filtros por país/plan/fecha, búsqueda por código, y auditoría de eventos. No exigir vigilancia diaria manual.
@@ -34,5 +34,5 @@ Distinguir **estado de solicitud**, **estado de publicación**, **estado de pago
 ## Dependencias
 - Inspeccionar implementación real del Core, panel, tablas y pagos antes de programar; no asumir que la ventana de pago implica pasarela operativa.
 - Configurar y probar proveedor de correo saliente y dirección de soporte `soporte@direcciones507.com` cuando se cree.
-- Acordar en interfaz y textos la cadencia definitiva de avisos y período comercial de cada plan.
+- Acordar el período comercial de cada plan; avisos 15/7/1 confirmados.
 - Registrar cada paso en checklist maestro y verificar **producción**, no solo CI verde.

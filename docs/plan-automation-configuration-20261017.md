@@ -41,7 +41,7 @@ No usar rollback que borre períodos, intenciones, identidades o outbox con dato
 
 | Configuración | Función |
 |---|---|
-| `AD507_PLAN_AUTOMATION_ENABLED=true` | Conecta períodos a publicación y API ADMIN/renovación. Omitida por defecto. Habilitar solo después del SQL autorizado. |
+| `AD507_PLAN_AUTOMATION_ENABLED=true` | Conecta períodos a publicación y API ADMIN/renovación, junto con AD507_COMMERCIAL_WORKFLOW_ENABLED=true. Omitida por defecto. Habilitar solo después del SQL autorizado. |
 | `AD507_PLAN_PERIODS_JSON` | Días por país y plan, por ejemplo `{"PA:BUSINESS_PREMIUM":30,"PA:BUSINESS_PREMIUM_PRO":30}`. EJEMPLO de prueba, no duración comercial aprobada. Entre 1 y 3660 días. Sin entrada válida se rechaza publicación pagada/renovación. |
 | `AD507_PLAN_EMAIL_ENABLED=true` | Permite consumir outbox. Omitida por defecto. |
 | `EMAIL_FROM=soporte@direcciones507.com` | Remitente obligatorio para esta automatización. Crear/verificar antes de habilitar. |

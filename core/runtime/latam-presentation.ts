@@ -379,6 +379,12 @@ document.getElementById('latamPlanDetailsContinue').onclick=()=>{
 };
 
 document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>showLatamPlanDetails(e,a.dataset.latamType,a.dataset.latamPlan));
+const selected507Plan=new URLSearchParams(window.location.search).get('selectedPlan');
+if(selected507Plan){
+ const selectedCard=Array.from(document.querySelectorAll('[data-latam-type]')).find(a=>selected507Plan==='RESIDENTIAL'?a.dataset.latamType==='RESIDENTIAL':selected507Plan==='PLACE'?a.dataset.latamType==='PLACE':a.dataset.latamPlan===selected507Plan);
+ if(selectedCard){showLatamPlanDetails({preventDefault(){}},selectedCard.dataset.latamType,selectedCard.dataset.latamPlan);}
+}
+
 document.getElementById('latamRequestDialog').addEventListener('close',()=>document.getElementById('latamMessageAnchor').after(document.getElementById('message')));
 document.getElementById('latamRequestClose').onclick=()=>document.getElementById('latamRequestDialog').close();
 document.getElementById('latamHelpLink').onclick=()=>document.getElementById('natalieLauncher').click();

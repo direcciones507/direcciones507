@@ -880,6 +880,7 @@ test('existing Natalie backend allows only exact verified LATAM origin in isolat
 });
 
 test('isolated HTTP commercial journey connects OAuth, client request, ADMIN review, publication, canonical delivery and existing QR',async()=>{
+ const {requireLegalAcceptance,LEGAL_REVIEW_VERSION,LEGAL_ACCEPTANCE_TEXT}=await import('../legal');
  const {handleRequestRoutes}=await import('../request-routes');
  const {createRequestRepository}=await import('../request-repository');
  const {createNewAddressPublication,handleNewPublicRoutes}=await import('../new-address-publication');
@@ -909,7 +910,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
  const server=Bun.serve({hostname:'127.0.0.1',port:0,fetch:async incoming=>{
   // Test-only HTTPS edge simulation; actual transport is local HTTP, no production ingress.
   const path=new URL(incoming.url);const req=new Request(origin+path.pathname+path.search,incoming);
-  return await auth.handle(req)??await handleRequestRoutes(req,{enabled:true,sql:db,auth,repository:fixtureEvidenceVerified?repo:blocked,r2,fetch:providers})??await handleNewPublicRoutes(req,{enabled:true,sql:db,r2,fetch:providers})??await handleUserPanel(req,db,auth)??new Response(null,{status:404});
+  return await auth.handle(req)??await handleRequestRoutes(req,{enabled:true,sql:db,auth,repository:fixtureEvidenceVerified?repo:blocked,r2,fetch:providers,acceptLegal:raw=>requireLegalAcceptance(raw,true)})??await handleNewPublicRoutes(req,{enabled:true,sql:db,r2,fetch:providers})??await handleUserPanel(req,db,auth)??new Response(null,{status:404});
  }});
  const base='http://127.0.0.1:'+server.port;
  const call=(path:string,cookie='',init:any={})=>fetch(base+path,{...init,redirect:'manual',headers:{...init.headers,...(cookie?{cookie}:{}),origin}});
@@ -920,7 +921,7 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const c=session(done),me=await(await call('/v1/auth/me',c)).json();return {cookie:c,user:me.user};
  };
  const png=await sharp({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
- const raw={type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Iglesia Catedral — fixture aislado '+unique,reference:'Synthetic reference',description:'',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
+ const raw={legalAcceptance:{accepted:true,version:LEGAL_REVIEW_VERSION},type:'BUSINESS',plan:'BUSINESS_FREE',countryCode:'PA',name:'Iglesia Catedral — fixture aislado '+unique,reference:'Synthetic reference',description:'',latitude:8.1,longitude:-80.9,phone:'+50760000000',hours:'08:00–17:00'};
  const form=(data:any)=>{const body=new FormData();body.append('payload',JSON.stringify(data));body.append('logo',new Blob([png],{type:'image/png'}),'synthetic.png');return body;};
  try{
   const client=await loginHttp('client'),admin=await loginHttp('admin');
@@ -928,6 +929,9 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   const submit=()=>call('/v1/user/requests',client.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-'+unique},body:form(raw)});
   const sent=await submit();expect(sent.status).toBe(200);const initial=(await sent.json()).request;expect(initial.status).toBe('PENDING_REVIEW');expect(initial.code).toBeNull();
   const retry=await submit();expect((await retry.json()).request.id).toBe(initial.id);expect(objects.size).toBe(1);
+  const accepted=(await db.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[initial.id]))[0].request_data.legalAcceptance;expect(accepted.userId).toBe(client.user.id);expect(accepted.countryCode).toBe('PA');expect(accepted.version).toBe(LEGAL_REVIEW_VERSION);expect(accepted.text).toBe(LEGAL_ACCEPTANCE_TEXT);expect(Number.isFinite(Date.parse(accepted.acceptedAt))).toBe(true);
+  const evidence=await db.unsafe("SELECT actor_user_id::text,metadata FROM ad507.audit_log WHERE action='LEGAL_ACCEPTED' AND entity_id=$1",[initial.id]);expect(evidence.length).toBe(1);expect(evidence[0].actor_user_id).toBe(client.user.id);expect(evidence[0].metadata).toEqual(accepted);
+  const deniedAcceptance=await call('/v1/user/requests',client.cookie,{method:'POST',headers:{'idempotency-key':'http-no-consent-'+unique},body:form({...raw,legalAcceptance:{accepted:false,version:LEGAL_REVIEW_VERSION}})});expect(deniedAcceptance.status).toBe(400);expect((await deniedAcceptance.json()).error).toBe('INVALID_LEGAL_ACCEPTANCE');
   expect((await call('/v1/admin/requests/'+initial.id,client.cookie)).status).toBe(403);
   const actions:any={children:[],append(x:any){this.children.push(x)}},message:any={textContent:''},rows:any={};
   Object.defineProperty(rows,'innerHTML',{set(){actions.children=[];}});

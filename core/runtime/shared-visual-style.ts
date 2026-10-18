@@ -38,8 +38,6 @@ body .account-footer,body .latam-copyright{text-align:center;width:100%}
 @media(max-width:767px){body .address-actions{grid-template-columns:minmax(0,1fr)}body .address-actions>*{grid-column:auto}body .wrap .row{grid-template-columns:minmax(0,1fr)}body .wrap .listhead .btn{flex:0 0 auto}body .wrap .card{padding:18px}body .wrap{padding:0 12px}body.latam-account-panel #actions>.grid>button{min-height:76px}body .address-status{max-width:48%;white-space:normal}}
 @media(min-width:768px) and (max-width:1099px){body .wrap .row{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}body .wrap .row>:nth-child(n+3){grid-column:1/-1}body .wrap .grid{gap:14px}body .address-grid{gap:18px}}
 @media(prefers-reduced-motion:reduce){body :is(button,a.button,a.btn){transition:none;transform:none}}
-`;
-
 /* Request detail is a white reading surface even inside the dark LATAM account theme.
    Override inherited card/muted colors after all shared panel rules. */
 body.latam-account-panel #requestDetail,
@@ -56,3 +54,4 @@ body.latam-account-panel #requestDetail .muted,
 body #requestDetail .muted{color:#42566f!important}
 body.latam-account-panel #requestDetail button,
 body #requestDetail button{color:#142c4c;font-weight:750}
+`;

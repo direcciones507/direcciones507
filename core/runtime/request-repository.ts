@@ -1,4 +1,4 @@
-import {isAutomaticPaidPlan,automaticPaidStateAllowed} from './paid-activation-policy';
+import {isAutomaticPaidPlan,automaticPaidStateAllowed,isLegacyUnpaidPaidRequest} from './paid-activation-policy';
 import { assertCountryCommerce, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
 import type { Sql } from 'postgres';
 import { createHash } from 'node:crypto';
@@ -171,7 +171,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         await actor(tx,actorId,'ADMIN');
         const rows=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' FOR UPDATE",[addressId]);const row=rows[0];
         if(!row)throw Error('REQUEST_NOT_FOUND');
-        if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data.workflow))throw Error('MANUAL_REVIEW_NOT_REQUIRED');
+        if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&!row.request_data?.createdByAdmin&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data?.workflow))throw Error('MANUAL_REVIEW_NOT_REQUIRED');
         if(row.review_decision===decision)return {id:row.id,status:row.status,decision};
         if(row.status!=='PENDING_REVIEW'||row.review_decision)throw Error('INVALID_STATE_TRANSITION');
         await complete(tx,row);if(row.request_data?.migration){await historicalIntegrity(tx,row);if(decision==='APPROVED'){const proof=await verifyHistoricalPhotos(row.legacy_payload,options.fetch);await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{migration,photoProof}',$2::jsonb) WHERE id=$1::uuid",[row.id,tx.json(proof)]);}}
@@ -190,7 +190,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         // A delayed authenticated IPN must acknowledge an already-confirmed request without
         // reopening an ADMIN decision, republishing or restoring suspended benefits.
         if(row.request_data?.workflow==='PAYMENT_CONFIRMED'&&['PENDING_REVIEW','ACTIVE','ARCHIVED','SUSPENDED','DISABLED'].includes(row.status))return {id:row.id,status:row.status,workflow:'PAYMENT_CONFIRMED'};
-        if(row.status!=='DRAFT'||row.request_data?.workflow!=='PAYMENT_PENDING')throw Error('INVALID_PAID_ACTIVATION_STATE');
+        if(!(row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING')&&!isLegacyUnpaidPaidRequest(row))throw Error('INVALID_PAID_ACTIVATION_STATE');
         await requireConfirmedPayment(tx,row,options.paymentEnvironment??'production');
         await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',request_data=jsonb_set(request_data,'{workflow}','\"PAYMENT_CONFIRMED\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_READY_FOR_REVIEW','ADDRESS',$1::uuid)",[row.id]);
@@ -220,7 +220,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
             return {id:row.id,status:'PENDING_REVIEW',workflow:'SECURITY_REVIEW',code:row.code};
           }
         }else{
-          if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data.workflow))throw Error('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
+          if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&!row.request_data?.createdByAdmin&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data?.workflow))throw Error('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
           if((row.status!=='PENDING_REVIEW'&&!(row.status==='SUSPENDED'&&row.request_data?.migration))||row.review_decision!=='APPROVED')throw Error('APPROVAL_REQUIRED');
         }
         await complete(session,row);

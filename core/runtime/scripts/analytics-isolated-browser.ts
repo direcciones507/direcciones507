@@ -7,7 +7,7 @@ import {handleAnalyticsRoutes,createAnalyticsRepository} from '../analytics-repo
 import {renderNewPublicAddress} from '../new-address-publication';
 export async function runAnalyticsBrowser(sql:Sql){
  const origin='https://direcciones.lat';
- const auth=createGeneralAuth(sql,{AD507_GOOGLE_CLIENT_ID:'isolated-client',AD507_GOOGLE_CLIENT_SECRET:'isolated-secret',AD507_SESSION_SECRET:crypto.randomUUID()+crypto.randomUUID(),AD507_GOOGLE_REDIRECT_URI:origin+'/auth/google/callback',AD507_AUTH_SUCCESS_URL:'/panel',AD507_PUBLIC_BASE_URL:origin},(async(url:any)=>Response.json(String(url).includes('/token')?{access_token:'isolated-token'}:{sub:'statistics-browser-owner',email:'owner@example.test',email_verified:true})) as typeof fetch);
+ const auth=createGeneralAuth(sql,{AD507_GOOGLE_CLIENT_ID:'isolated-client',AD507_GOOGLE_CLIENT_SECRET:'isolated-secret',AD507_SESSION_SECRET:crypto.randomUUID()+crypto.randomUUID(),AD507_GOOGLE_REDIRECT_URI:origin+'/auth/google/callback',AD507_AUTH_SUCCESS_URL:'/panel',AD507_PUBLIC_BASE_URL:origin},(async(url:any)=>Response.json(String(url).includes('/token')?{access_token:'isolated-token'}:{sub:'statistics-browser-owner',email:'owner@example.test',email_verified:true,hd:'example.test'})) as typeof fetch);
  const start=(await auth.handle(new Request(origin+'/auth/google/login')))!;
  const state=new URL(start.headers.get('location')!).searchParams.get('state');
  const result=(await auth.handle(new Request(origin+'/auth/google/callback?state='+state+'&code=isolated',{headers:{cookie:start.headers.getSetCookie().find(c=>c.startsWith('ad507_oauth_state='))!.split(';')[0]}})))!;

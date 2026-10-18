@@ -34,7 +34,7 @@ test('responsive homepage separates hero, country selection and balanced footer 
  }
  expect(html).toContain('#commercialWelcome .latam-copy{display:contents}');
  expect(html).toContain('Todo lo incluido en Negocio Gratis, código con nombre, redes sociales, código postal, zona postal y estadísticas.');
- expect(html).toContain('Todo lo incluido en Premium, descripción comercial y galería de hasta 5 fotos.');
+ expect(html).toContain('Todo lo incluido en Premium, galería de 5 fotos y estadísticas avanzadas. Enlace exclusivo con nombre: próximamente.');
  const countries:string[]=[];
  await new HTMLRewriter().on('[data-commercial-country]',{element(e){countries.push(e.getAttribute('data-commercial-country')!);}}).transform(new Response(html)).text();
  expect(countries).toEqual(['PA','CR','CO','MX','GT','SV','HN','NI']);

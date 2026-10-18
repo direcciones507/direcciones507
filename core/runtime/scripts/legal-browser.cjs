@@ -42,6 +42,10 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   for(const card of await page.locator('.plan-pricing-card').all())assert.equal(await card.locator('.plan-legal a').count(),4);
   await page.locator('.planes-grid-layout').screenshot({path:path.join(out,device+'-507-plans.png')});
   await page.goto('https://direcciones.lat/?access=1');await page.waitForSelector('#latamAccess[open]');
+  // Returning users see login without repeat acceptance; new users must opt in.
+  assert.equal(await page.locator('#latamRegistrationTerms').isVisible(),false,'login must not require repeat legal acceptance');
+  await page.locator('#latamCreateAccount').click();
+  assert.equal(await page.locator('#latamRegistrationTerms').isVisible(),true,'registration must show legal acceptance');
   // Leave optional cookies undecided while registering: they are never a condition of service.
   assert.equal(await page.locator('#latamRegistrationTermsAccepted').isChecked(),false);
   await page.locator('#latamAccessEmail').fill('fixture@example.test');await page.locator('#latamAccessPassword').fill('isolated-password-long');

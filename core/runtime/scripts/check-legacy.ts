@@ -7,4 +7,4 @@ const expected = applyReviewedNatalieCorrections(snapshot)
   .replace('}); audit("controlled_private_listener_ready"', '}); } audit("controlled_private_listener_ready"');
 const actual = readFileSync(new URL('../legacy.ts', import.meta.url), 'utf8').trimEnd();
 if (actual !== expected || !actual.includes('export function startLegacyCore')) throw new Error('LEGACY_EXTRACTION_DRIFT');
-console.log('PASS: deployed source preserved except extension seam and reviewed Natalie fixes and removal of automatic startup DDL/data normalization');
+console.log('PASS: deployed source preserved except extension seam and reviewed Natalie fixes removal of automatic startup DDL/data normalization, and exclusion of visits from historical interaction summaries');

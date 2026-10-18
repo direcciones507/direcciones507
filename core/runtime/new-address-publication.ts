@@ -1,3 +1,5 @@
+import {publicAnalyticsScript} from './public-analytics';
+import {cookieConsentSource} from './legal';
 import { createHash } from 'node:crypto';
 import { assertCountryCommerce, prepareCountryTemplate, proposedCountryUrl, COUNTRIES } from './country-configuration';
 import { createR2Storage, type R2Settings } from './r2-storage';
@@ -313,6 +315,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   template=template.replace('const response = await fetch(`${WEBAPP_URL}?code=${encodeURIComponent(CODE)}`);\n      const data = await response.json();','const data = '+JSON.stringify(data).replaceAll('<','\\u003c')+';');
   template=template.replace("if(window.location.protocol === 'file:') return;","return; // New records do not write historical counters.");
   template=template.replace("document.getElementById('btnStats').addEventListener('click', async function(){","document.getElementById('btnStats').hidden=true; document.getElementById('btnStats').addEventListener('click', async function(){return;");
+  template=template.replace('</body>','<script>'+cookieConsentSource+'</script><script>'+publicAnalyticsScript(record.code)+'</script></body>');
   return template;
 }
 

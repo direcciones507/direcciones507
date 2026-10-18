@@ -38,4 +38,19 @@ body.latam-account-panel #requestDetail.card{background:#fff!important;color:#17
 body.latam-account-panel #requestDetail.card :is(p,div,span,small,li,dd,dt,label){color:#172b4d!important}
 body.latam-account-panel #requestDetail.card :is(h1,h2,h3,h4,strong,b){color:#10243e!important}
 body.latam-account-panel #requestDetail.card .muted{color:#42566f!important}
+
+/* Card statistics stay legible on both light and dark account presentations. */
+body .address-card .analytics-summary{background:#f1f6fc;color:#142c4b;border:1px solid #c3d3e6;border-radius:12px;padding:14px;margin:14px 0 0;min-width:0;text-align:left;font-size:14px;line-height:1.45}
+body .address-card .analytics-summary :is(h4,h5,p,strong,small,summary,li,time){color:#142c4b!important}
+body .address-card .analytics-summary h4{font-size:17px;margin:0 0 2px;font-weight:800}
+body .address-card .analytics-summary h5{font-size:14px;margin:12px 0 6px}
+body .address-card .analytics-summary .analytics-period{font-size:12px;margin:0 0 10px}
+body .address-card .analytics-metrics{display:flex;flex-wrap:wrap;gap:12px 24px}
+body .address-card .analytics-metrics p{flex:1 1 135px;margin:0;font-size:13px}
+body .address-card .analytics-metrics strong{display:block;font-size:22px;line-height:1.25;margin-top:4px;overflow-wrap:anywhere}
+body .address-card .analytics-summary small{display:block;font-size:11px;margin-top:10px}
+body .address-card .analytics-summary summary{font-weight:750;cursor:pointer;padding:10px 0;min-height:40px}
+body .address-card .analytics-summary ul{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+body .address-card .analytics-daily-chart li>div{height:9px;background:#dbe6f4;border-radius:4px;overflow:hidden;margin:3px 0 6px}
+body .address-card .analytics-daily-chart span{display:block;height:100%;background:#1769aa}
 `;

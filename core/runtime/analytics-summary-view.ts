@@ -31,5 +31,5 @@ export function renderAnalyticsSummary(summary:AnalyticsSummary):string{
  return html+'<small>Actividad registrada con consentimiento; no representa personas únicas.</small></section>';
 }
 export function canOfferAnalytics(a:Record<string,unknown>):boolean{
- return a.status==='ACTIVE'&&a.workflow!=='PAYMENT_PENDING'&&((a.addressType==='BUSINESS'&&['BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(String(a.planCode)))||(a.addressType==='PLACE'&&a.planCode==='PLACE'))&&typeof a.code==='string'&&/^AD\d{2,3}-[A-Z0-9_-]+$/i.test(a.code);
+ return a.status==='ACTIVE'&&a.workflow!=='PAYMENT_PENDING'&&((a.addressType==='BUSINESS'&&['BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(String(a.planCode)))||(a.addressType==='PLACE'&&(a.planCode==null||a.planCode==='PLACE')))&&typeof a.code==='string'&&/^AD\d{2,3}-[A-Z0-9_-]+$/i.test(a.code);
 }

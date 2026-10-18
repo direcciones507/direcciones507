@@ -38,3 +38,5 @@ test('historical interaction queries exclude visits and preserve the immutable s
  const corrected=preserveHistoricalAnalytics(snapshot);expect(corrected.split("WHERE ad507_code=$1 AND event_type<>'visit'")).toHaveLength(5);
  expect(corrected.replaceAll("WHERE ad507_code=$1 AND event_type<>'visit'",'WHERE ad507_code=$1')).toBe(snapshot);
 });
+
+test('existing published places without commercial plan keep basic statistics',()=>{const a={addressType:'PLACE',status:'ACTIVE',code:'AD507-N22023161',planCode:null};expect(canOfferAnalytics(a)).toBe(true);expect(renderPanelAddressCard(a)).toContain('data-analytics-code');});

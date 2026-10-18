@@ -22,6 +22,7 @@ test.skipIf(!database)('persisted events, exact ownership, plans, repeat-safe SQ
  for(const plan of ['BUSINESS_FREE','PLACE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
  const id=crypto.randomUUID(),code='AD507-STATS-'+plan;
  await sql.unsafe(`INSERT INTO ad507.addresses(id,code,address_type,status,name,source,publication_receipt,plan_id) SELECT $1,$2,$3,'ACTIVE','Statistics fixture','USER_REQUEST','isolated-receipt',id FROM ad507.plans WHERE code=$4`,[id,code,plan==='PLACE'?'PLACE':'BUSINESS',plan]);
+ if(plan==='PLACE')await sql.unsafe('UPDATE ad507.addresses SET plan_id=NULL WHERE id=$1',[id]);
  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id,ownership_role) VALUES($1,$2,'OWNER')",[id,owner]);
  expect((await repo.summary(owner,code)).visits.status).toBe('no_data');expect(()=>repo.summary(other,code)).toThrow('NOT_FOUND');
  const results=await Promise.all(Array.from({length:6},()=>repo.track(code,'visit',session)));expect(results.filter(r=>!r.duplicate)).toHaveLength(1);

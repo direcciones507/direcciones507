@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {analyticsViewModel,renderAnalyticsSummary} from '../analytics-summary-view';
+import {analyticsViewModel,renderAnalyticsSummary,canOfferAnalytics} from '../analytics-summary-view';
 test('never presents interaction counts as visitor totals',()=>{
  const m=analyticsViewModel({ok:true,plan:'premium_pro',visits:{status:'not_available'},interactions:{google:8,waze:3,total:11}});
  expect(m.visits).toEqual({available:false,total:null});
@@ -25,4 +25,14 @@ test('statistics HTML explicitly distinguishes visits and interactions',()=>{
 test('premium does not render premium pro action breakdown',()=>{
  const html=renderAnalyticsSummary({ok:true,plan:'premium',interactions:{google:3}});
  expect(html).not.toContain('Acciones por tipo');
+});
+
+test('analytics eligibility respects free business entitlement and payment gate',()=>{
+ const active={addressType:'BUSINESS',status:'ACTIVE',planCode:'BUSINESS_FREE',code:'AD507-0001'};
+ expect(canOfferAnalytics(active)).toBe(true);
+ expect(canOfferAnalytics({...active,planCode:'BUSINESS_PREMIUM_PRO'})).toBe(true);
+ expect(canOfferAnalytics({...active,workflow:'PAYMENT_PENDING'})).toBe(false);
+ expect(canOfferAnalytics({...active,addressType:'RESIDENTIAL'})).toBe(false);
+ expect(canOfferAnalytics({...active,status:'DRAFT'})).toBe(false);
+ expect(canOfferAnalytics({...active,planCode:'PLACE'})).toBe(false);
 });

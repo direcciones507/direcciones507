@@ -19,6 +19,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+      - run: bun install --frozen-lockfile
+        working-directory: core/runtime
       - run: bun test tests/account-bootstrap-forensic.test.ts tests/request-panel-ui.test.ts tests/panel-client-polish.test.ts tests/commercial-entry.test.ts tests/payment-policy.test.ts
         working-directory: core/runtime
       - run: bun core/runtime/scripts/generate-account-browser-fixtures.ts

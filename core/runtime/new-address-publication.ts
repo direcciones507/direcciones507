@@ -309,12 +309,17 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
     </script></body>`);
   }
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
-  // Server-rendered social preview for new Core publications. Keep historical templates untouched.
+  // Social crawlers read initial HTML, not client-side JavaScript.
+  // Use the published photo, then logo; preserve the original default when neither exists.
   const previewImage=record.media.find(m=>m.type==='IMAGE'&&m.url?.startsWith('https://'))?.url
-    ??record.media.find(m=>m.type==='LOGO'&&m.url?.startsWith('https://'))?.url;
-  if(previewImage){
-    template=template.replace(/<meta property="og:image" content="[^"]*">/, '<meta property="og:image" content="'+esc(previewImage)+'">');
-    template=template.replace(/<meta name="twitter:image" content="[^"]*">/, '<meta name="twitter:image" content="'+esc(previewImage)+'">');
+    ??record.media.find(m=>m.type==='LOGO'&&m.url?.startsWith('https://'))?.url
+    ??'https://direcciones507.com/assets/logo-direcciones507.png?v=2';
+  template=template.replace(/<meta property="og:image" content="[^"]*">/,
+    '<meta property="og:image" content="'+esc(previewImage)+'">');
+  template=template.replaceAll('{{OG_IMAGE}}',esc(previewImage));
+  // Photo dimensions are not guaranteed to be square; omit the legacy fixed dimensions.
+  if(record.media.some(m=>m.url===previewImage)){
+    template=template.replace(/\\s*<meta property="og:image:(?:width|height)" content="[^"]*">/g,'');
   }
   // QR/share/copy must use the stored canonical URL, even on a preview host.
   // Only adapts this renderer; the historical template/files stay untouched.

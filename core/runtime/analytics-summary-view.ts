@@ -14,14 +14,14 @@ const ACTIONS: Record<string,string> = {
 export function analyticsViewModel(summary: AnalyticsSummary) {
   if (!summary?.ok) throw new Error('INVALID_ANALYTICS_SUMMARY');
   const pro=summary.plan==='premium_pro';
-  const counts=summary.interactions??{};
+  const counts=summary.interactions && typeof summary.interactions==='object' && !Array.isArray(summary.interactions) ? summary.interactions : {};
   const actions=Object.entries(ACTIONS).map(([key,label])=>({
     key,label,count:Number.isSafeInteger(counts[key])&&counts[key]>=0?counts[key]:0
   }));
   const visits=summary.visits?.status==='available'&&Number.isSafeInteger(summary.visits.total)&&summary.visits.total!>=0
     ? {available:true,total:summary.visits.total!}
     : {available:false,total:null};
-  const days=pro?(summary.daily_series??[]).filter(row=>/^\d{4}-\d{2}-\d{2}$/.test(row.day)
+  const days=pro?(Array.isArray(summary.daily_series)?summary.daily_series:[]).filter(row=>row && typeof row.day==='string' && /^\d{4}-\d{2}-\d{2}$/.test(row.day)
     &&Object.hasOwn(ACTIONS,row.event_type)&&Number.isSafeInteger(row.total)&&row.total>=0):[];
   return {plan:summary.plan,pro,visits,actions:pro?actions:[],daily:days,
     interactionsTotal:actions.reduce((sum,row)=>sum+row.count,0)};

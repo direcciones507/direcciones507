@@ -8,12 +8,13 @@ test.skipIf(!database)('persisted events, exact ownership, plans, repeat-safe SQ
  if(!['127.0.0.1','localhost'].includes(new URL(database!).hostname))throw Error('LOCAL_DATABASE_REQUIRED');
  const admin=postgres(database!,{max:1}),name='analytics_'+crypto.randomUUID().replaceAll('-','');
  await admin.unsafe('CREATE DATABASE '+name);const url=new URL(database!);url.pathname='/'+name;
- const sql=postgres(url.href,{max:3});
+ let sql=postgres(url.href,{max:1});
  try{
  for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql'])await sql.unsafe(readFileSync(new URL('../../../db/migrations/'+file,import.meta.url),'utf8'));
  await sql.unsafe(`CREATE TABLE ad507.ad507_business_analytics_events(event_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),ad507_code text NOT NULL,event_type text NOT NULL CHECK(event_type IN ('google','waze','uber','share','copy','aviso')),occurred_at timestamptz NOT NULL DEFAULT now(),source text NOT NULL DEFAULT 'direcciones507_web' CHECK(source='direcciones507_web'),idempotency_key uuid); CREATE UNIQUE INDEX test_idempotency ON ad507.ad507_business_analytics_events(idempotency_key) WHERE idempotency_key IS NOT NULL`);
  await sql.unsafe('ALTER TABLE ad507.addresses ADD COLUMN publication_receipt text');
  const migration=readFileSync(new URL('../schema-proposals/analytics-visits.sql',import.meta.url),'utf8');await sql.unsafe(migration);await sql.unsafe(migration);
+ await sql.end();sql=postgres(url.href,{max:3});
  const owner=crypto.randomUUID(),other=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1,'owner@example.test'),($2,'other@example.test')",[owner,other]);
  await sql.unsafe("INSERT INTO ad507.plans(code,name,status) VALUES('PLACE','Lugar Gratis','ACTIVE')");
  const repo=createAnalyticsRepository(sql),session='a'.repeat(43);

@@ -8,7 +8,7 @@ for(const [device,width,height]of [['mobile',390,844],['tablet',820,1180],['desk
  for(const suffix of ['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
   const visit=page.waitForResponse(r=>r.url().includes('/analytics/track')&&r.request().postDataJSON()?.event==='visit'&&r.status()===202);
   await page.goto(base+'/AD507-STATS-'+suffix+'/');
-  if(await page.locator('[data-analytics-choice="true"]').count())await page.locator('[data-analytics-choice="true"]').click();
+  if(await page.locator('[data-analytics-choice="true"]').isVisible())await page.locator('[data-analytics-choice="true"]').click();
   await visit;
   for(const id of ['btnGoogle','btnWaze','btnUber','btnWhats','btnCall','btnQR']){const button=page.locator('#'+id);if(await button.count()){const response=page.waitForResponse(r=>r.url().includes('/analytics/track')&&r.status()===202);await button.click({noWaitAfter:true});await response;}}
  }

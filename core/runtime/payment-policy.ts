@@ -13,6 +13,8 @@ export function money(cents:number):string {
   return (cents/100).toFixed(2);
 }
 export type YappyConfiguration = { environment:'test'|'production'; merchantId:string; domain:string; secret:string; ipnUrl:string };
+// Backward-compatible default-off constant used by existing tests and consumers.
+export const YAPPY_PAYMENTS_ENABLED = false;
 // Explicit operator-controlled switch. Credentials alone never activate live charges.
 // Enable only after verified IPN routing, production schema, and end-to-end acceptance.
 export function yappyPaymentsEnabled(env:Record<string,string|undefined>):boolean {

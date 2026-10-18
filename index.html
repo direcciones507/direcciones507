@@ -762,7 +762,7 @@
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';
  document.getElementById('plan507ReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(button.dataset['507Plan']);
  dialog.scrollTop=0;
- next.href='https://direcciones.lat/?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
+ next.href='https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
  dialog.showModal();dialog.scrollTop=0;
  }));
  document.getElementById('plan507Close').onclick=()=>dialog.close();

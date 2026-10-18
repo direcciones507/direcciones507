@@ -1,5 +1,14 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Mi cuenta — reparación forense, 18 octubre 2026
+
+- Causa: 98e99a7 truncó assets/legal-consent.js, incorporado dentro del bootstrap del panel. Producción c3c1f61 reproduce Unexpected end of input en VM y Chrome.
+- Corrección: restaurar cierre/montaje de cookies; retirar recuperación parcial; enlace de planes507 a /panel; preservar plan/origen al salir a Google.
+- Probado: scripts finales válidos; API 200/401/503; nueve escenarios Chromium móvil/tablet/escritorio con solicitudes/detalle/planes y retorno OAuth simulado. Workflow permanente para asset y runtime.
+- Pendiente: CI, despliegue y comprobación pública; Google completo y solicitudes/fotos reales requieren sesión privada. No declarar operativo solo por SUCCESS.
+- Sin cobros, SQL ni cambios de datos/históricos/PayPal. Informe: docs/implementation/account-forensic-repair-20261018.md.
+
+
 ## Encabezado Panamá — corrección puntual,16 octubre2026
 
 El propietario confirma generación y apertura recuperadas tras026d31a.

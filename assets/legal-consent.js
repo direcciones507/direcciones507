@@ -38,3 +38,10 @@
   banner.append(row);
   const link=document.createElement('a');link.href='/legal/cookies/';link.textContent='Consultar política de cookies';link.style.cssText='display:block;text-align:center;color:#16658f;text-decoration:underline;font:600 13px system-ui;margin-top:16px';banner.append(link);
 
+  banner.hidden=choice!==null||location.pathname.startsWith('/legal/');document.body.append(banner);
+  document.addEventListener('click',event=>{if(event.target.closest('[data-cookie-settings]')){event.preventDefault();open();}});
+  enableAnalytics();
+ }
+ window.ad507CookieConsent={open:()=>banner?open():null,get:()=>choice};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
+})();

@@ -68,7 +68,7 @@ test('commercial renderer reuses the exact historical Natalie widget without cha
  const html=commercialEntryHtml(false,new URL('https://direcciones507.com/commercial/panama'));
  expect(html).toContain(widget);expect(html).toContain(script);
  expect((html.match(/id="natalieLauncher"/g)||[]).length).toBe(1);
- expect((html.match(/<script>/g)||[]).length).toBe(1);
+ expect((html.match(/<script>/g)||[]).length).toBe(2); // Account bootstrap and isolated request detail.
  expect(userPanelHtml).not.toContain('natalieLauncher');expect(adminCreationHtml()).not.toContain('natalieLauncher');
  const res=await handleUserPanel(new Request('https://direcciones507.com/commercial/panama'),{} as any,{} as any);
  expect(res!.headers.get('content-security-policy')).toContain("connect-src 'self' https://ad507-core-production.up.railway.app");

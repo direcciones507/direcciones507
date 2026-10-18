@@ -1226,7 +1226,7 @@ test('legal account acceptance is authenticated, durable and idempotent in the e
  expect(rows).toHaveLength(1);expect(rows[0].entity_id).toBe(clientId);expect(rows[0].metadata.userId).toBe(clientId);expect(rows[0].metadata.contentHash).toBe(LEGAL_CONTENT_HASH);expect(rows[0].metadata.acceptedAt).not.toBe('forged');
 });
 
-test('isolated paid activation: verified callback only, no routine ADMIN approval, private pending drafts and justified security review',async()=>{
+test('isolated paid confirmation: idempotent IPN, private unpaid drafts, mandatory ADMIN approval before publication',async()=>{
  const {createRequestRepository}=await import('../request-repository');const {createPaymentRepository}=await import('../payment-repository');const {paymentAmount}=await import('../payment-policy');
  const {requireLegalAcceptance,LEGAL_VERSION}=await import('../legal');const {createHmac}=await import('node:crypto');
  if(!(await sql.unsafe("SELECT 1 FROM information_schema.columns WHERE table_schema='ad507' AND table_name='orders' AND column_name='payment_plan'")).length)await sql.unsafe(readFileSync(new URL('../schema-proposals/payments.sql',import.meta.url),'utf8'));
@@ -1249,16 +1249,20 @@ test('isolated paid activation: verified callback only, no routine ADMIN approva
  const payments=createPaymentRepository(sql,config,{onVerifiedPayment:id=>repository.activatePaid(id)});
  const proof=new URLSearchParams({orderId,status:'E',domain:origin,hash:createHmac('sha256','isolated-proof').update(orderId+'E'+origin).digest('hex')});
  const fake=new URLSearchParams(proof);fake.set('hash','0'.repeat(64));await expect(payments.confirm(fake)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');expect(publications).toBe(0);
- expect((await payments.confirm(proof)).status).toBe('PAID');expect((await payments.confirm(proof)).status).toBe('PAID');expect(reservations).toBe(1);expect(publications).toBe(1);
- expect((await repository.read(owner,first.id)).status).toBe('ACTIVE');
- const audit=await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE action='PAID_REQUEST_ACTIVATED' AND entity_id=$1",[first.id]);expect(audit[0].n).toBe(1);
+ expect((await payments.confirm(proof)).status).toBe('PAID');expect((await payments.confirm(proof)).status).toBe('PAID');expect(reservations).toBe(0);expect(publications).toBe(0);
+ expect((await repository.read(owner,first.id)).status).toBe('PENDING_REVIEW');
+ const audit=await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE action='PAID_REQUEST_READY_FOR_REVIEW' AND entity_id=$1",[first.id]);expect(audit[0].n).toBe(1);
+ await expect(repository.publish(adminId,first.id)).rejects.toThrow('APPROVAL_REQUIRED');
+ await repository.review(adminId,first.id,'APPROVED');await repository.publish(adminId,first.id);
+ expect(reservations).toBe(1);expect(publications).toBe(1);expect((await repository.read(owner,first.id)).status).toBe('ACTIVE');
  const free=await repository.submit(owner,'auto-free-'+stamp,{...base,plan:'BUSINESS_FREE',name:'Free '+stamp},[file]);expect(free.status).toBe('PENDING_REVIEW');await expect(repository.activatePaid(free.id)).rejects.toThrow('INVALID_PAID_ACTIVATION_STATE');
  await expect(repository.publish(adminId,free.id)).rejects.toThrow('APPROVAL_REQUIRED');
  const risky=await repository.submit(owner,'auto-risk-'+stamp,{...base,reference:'Different reference, same location'},[file]);
  await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at,operation_key) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,'test',$5,'PAID',now(),gen_random_uuid()::text)",[owner,risky.id,paymentAmount(base.plan),base.plan,'R'+stamp.replaceAll('-','').slice(0,12)]);
- expect((await repository.activatePaid(risky.id) as any).workflow).toBe('SECURITY_REVIEW');expect(publications).toBe(1);
- await repository.review(adminId,risky.id,'APPROVED');expect((await repository.activatePaid(risky.id)).status).toBe('ACTIVE');expect(publications).toBe(2);
+ expect((await repository.activatePaid(risky.id) as any).workflow).toBe('PAYMENT_CONFIRMED');expect(publications).toBe(1);
+ await expect(repository.publish(adminId,risky.id)).rejects.toThrow('APPROVAL_REQUIRED');
+ await repository.review(adminId,risky.id,'APPROVED');expect((await repository.publish(adminId,risky.id)).status).toBe('ACTIVE');expect(publications).toBe(2);
  const residential=await repository.submit(owner,'auto-home-'+stamp,{...base,type:'RESIDENTIAL',plan:'RESIDENTIAL',name:'Private '+stamp},[]);
  await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at,operation_key) VALUES($1::uuid,$2::uuid,1299,'YAPPY','RESIDENTIAL','test',$3,'PAID',now(),gen_random_uuid()::text)",[owner,residential.id,'H'+stamp.replaceAll('-','').slice(0,12)]);
- await expect(repository.activatePaid(residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');const home=await repository.read(owner,residential.id);expect(home.status).toBe('DRAFT');expect(home.publicUrl).toBeNull();
+ expect((await repository.activatePaid(residential.id)).status).toBe('PENDING_REVIEW');const home=await repository.read(owner,residential.id);expect(home.status).toBe('PENDING_REVIEW');expect(home.publicUrl).toBeNull();expect(publications).toBe(2);
 });

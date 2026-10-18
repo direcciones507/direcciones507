@@ -21,10 +21,11 @@ test('existing LATAM panel route applies display brand and preserves CSP nonce f
  expect(count).toBeGreaterThan(0);
 });
 
-test('anonymous shared panel uses public HTTPS behind Railway TLS and retains only a configured country',async()=>{
+test('anonymous shared panel stays on the panel behind Railway TLS and retains only a configured country',async()=>{
  for(const [country,expected]of [['CR','CR'],['https://evil.test','PA']]){
   const response=await handleUserPanel(new Request('http://direcciones.lat/panel?country='+encodeURIComponent(country)),{} as any,{currentUser:async()=>null} as any);
-  expect(response!.status).toBe(302);
-  expect(response!.headers.get('location')).toBe('https://direcciones.lat/?country='+expected+'&access=1');
+  expect(response!.status).toBe(200);
+  expect(response!.headers.get('location')).toBeNull();
+  expect(await response!.text()).toContain('const commercialInitialCountry='+JSON.stringify(expected)+';');
  }
 });

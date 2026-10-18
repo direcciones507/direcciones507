@@ -21,11 +21,11 @@ export async function adminAddressPage(sql:Sql,params:URLSearchParams,kind:Kind,
  const o=addressPageOptions(params,kind),time=kind==='requests'?'created_at':'updated_at',asc=kind==='requests',args:any[]=[];
  const where:string[]=[];
  if(ownerId){if(!uuid.test(ownerId))throw Error('INVALID_PAGE');args.push(ownerId);where.push('EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=$'+args.length+'::uuid)');}
- // Client drafts (including pending payment) stay private, even in the general ADMIN list.
- if(!ownerId)where.push("NOT (a.status='DRAFT' AND to_jsonb(a)->>'source'='USER_REQUEST' AND COALESCE(to_jsonb(a)->'request_data'->>'createdByAdmin','')='')");
+ // Show only submitted paid drafts to ADMIN; keep incomplete private drafts hidden.
+ if(!ownerId)where.push("NOT (a.status='DRAFT' AND to_jsonb(a)->>'source'='USER_REQUEST' AND COALESCE(to_jsonb(a)->'request_data'->>'createdByAdmin','')='' AND COALESCE(to_jsonb(a)->'request_data'->>'workflow','')<>'PAYMENT_PENDING')");
  // Archived addresses are retired from normal ADMIN and client listings.
  where.push("a.status<>'ARCHIVED'");
- if(kind==='requests')where.push("a.status='PENDING_REVIEW'");
+ if(kind==='requests')where.push("(a.status='PENDING_REVIEW' OR (a.status='DRAFT' AND to_jsonb(a)->>'source'='USER_REQUEST' AND to_jsonb(a)->'request_data'->>'workflow'='PAYMENT_PENDING'))");
  if(kind==='places')where.push("a.address_type='PLACE' AND a.status<>'ARCHIVED'");
  if(o.country){args.push(o.country);where.push("COALESCE(to_jsonb(a)->>'country_code','PA')=$"+args.length);}
  // Bind timestamp as text: postgres.js serializes timestamptz parameters via Date

@@ -23,6 +23,8 @@ export async function adminAddressPage(sql:Sql,params:URLSearchParams,kind:Kind,
  if(ownerId){if(!uuid.test(ownerId))throw Error('INVALID_PAGE');args.push(ownerId);where.push('EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=$'+args.length+'::uuid)');}
  // Unpaid client drafts remain private to Mi cuenta, including PAYMENT_PENDING.
  if(!ownerId)where.push("NOT (a.status='DRAFT' AND to_jsonb(a)->>'source'='USER_REQUEST' AND COALESCE(to_jsonb(a)->'request_data'->>'createdByAdmin','')='')");
+ // Legacy unpaid paid requests (before PAYMENT_PENDING existed) also remain private until signed IPN.
+ if(!ownerId)where.push("NOT (a.source='USER_REQUEST' AND a.status='PENDING_REVIEW' AND a.review_decision IS NULL AND a.code IS NULL AND a.publication_receipt IS NULL AND COALESCE(a.request_data->>'workflow','')='' AND COALESCE(a.request_data->>'createdByAdmin','')='' AND ((a.address_type='RESIDENTIAL' AND a.request_data->>'plan'='RESIDENTIAL') OR (a.address_type='BUSINESS' AND a.request_data->>'plan' IN ('BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'))))");
  // Archived addresses are retired from normal ADMIN and client listings.
  where.push("a.status<>'ARCHIVED'");
  if(kind==='requests')where.push("a.status='PENDING_REVIEW'");

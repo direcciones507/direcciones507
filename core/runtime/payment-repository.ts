@@ -3,6 +3,7 @@ import type { createPayPalSandboxProvider } from './paypal-provider';
 import type { Sql } from 'postgres';
 import { createHash, randomBytes } from 'node:crypto';
 import { paymentAmount, verifyYappyIPN, validateYappyConfiguration, type YappyConfiguration } from './payment-policy';
+import {isPayableClientRequest} from './paid-activation-policy';
 
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 // Shared orders and audit ledger. PayPal hooks are backend-only sandbox preparation;
@@ -90,7 +91,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     },
     async quote(userId:string,addressId:string) {
       requireYappy();
-      return sql.begin(async tx=>{const row=await own(tx,userId,addressId);if(row.request_data?.migration)throw Error('INVALID_PAYMENT_REQUEST');const plan=row.request_data?.plan;const orders=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND user_id=$2::uuid AND provider='YAPPY' AND payment_environment=$3 ORDER BY created_at DESC LIMIT 1",[addressId,userId,config.environment]);return {addressId,code:row.code,plan,amountCents:paymentAmount(plan),currency:'USD',orderId:orders[0]?.id??null};});
+      return sql.begin(async tx=>{const row=await own(tx,userId,addressId);if(!isPayableClientRequest(row))throw Error('INVALID_PAYMENT_REQUEST');const plan=row.request_data.plan;const orders=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND user_id=$2::uuid AND provider='YAPPY' AND payment_environment=$3 ORDER BY created_at DESC LIMIT 1",[addressId,userId,config.environment]);return {addressId,code:row.code,plan,amountCents:paymentAmount(plan),currency:'USD',orderId:orders[0]?.id??null};});
     },
     // Backend adapter hook only; never expose this method directly to a client.
     async registerProviderOrder(orderId:string,reference:string) {
@@ -104,9 +105,8 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId);
-        if(row.request_data?.migration||!(row.status==='PENDING_REVIEW'||row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING'))throw Error('INVALID_PAYMENT_REQUEST');
-        const plan=row.request_data?.plan,amount=paymentAmount(plan);
-        if(amount===0)return {required:false,amountCents:0};
+        if(!isPayableClientRequest(row))throw Error('INVALID_PAYMENT_REQUEST');
+        const plan=row.request_data.plan,amount=paymentAmount(plan);
         const operation=createHash('sha256').update(config.environment+':'+userId+':'+addressId+':'+key).digest('hex');
         const existing=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='YAPPY' AND operation_key=$1",[operation]);
         if(existing.length){const p=existing[0];if(p.payment_plan!==plan||p.amount_cents!==amount)throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:p};}
@@ -123,8 +123,8 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     async read(userId:string,orderId:string) {
       requireYappy();
       if(!uuid.test(userId)||!uuid.test(orderId))throw Error('PAYMENT_NOT_FOUND');
-      const rows=await sql.unsafe("SELECT p.id,p.address_id,p.payment_plan,p.amount_cents,p.currency,p.status,p.confirmed_at,a.code FROM ad507.orders p JOIN ad507.users u ON u.id=p.user_id JOIN ad507.addresses a ON a.id=p.address_id WHERE p.id=$1::uuid AND p.user_id=$2::uuid AND u.status='ACTIVE' AND p.provider='YAPPY' AND p.payment_environment=$3",[orderId,userId,config.environment]);
-      if(!rows.length)throw Error('PAYMENT_NOT_FOUND');assertCountryCommerce(rows[0].request_data?.countryCode??'PA');return rows[0];
+      const rows=await sql.unsafe("SELECT p.id,p.address_id,p.payment_plan,p.amount_cents,p.currency,p.status,p.confirmed_at,a.code,a.country_code FROM ad507.orders p JOIN ad507.users u ON u.id=p.user_id JOIN ad507.addresses a ON a.id=p.address_id WHERE p.id=$1::uuid AND p.user_id=$2::uuid AND u.status='ACTIVE' AND p.provider='YAPPY' AND p.payment_environment=$3",[orderId,userId,config.environment]);
+      if(!rows.length)throw Error('PAYMENT_NOT_FOUND');assertCountryCommerce(rows[0].country_code??'PA');return rows[0];
     },
     async confirm(query:URLSearchParams) {
       requireYappy();

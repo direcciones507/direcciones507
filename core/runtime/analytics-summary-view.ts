@@ -41,10 +41,16 @@ export function renderAnalyticsSummary(summary: AnalyticsSummary): string {
   const rows=m.actions.map(a=>'<li><span>'+a.label+'</span>: <strong>'+number(a.count)+'</strong></li>').join('');
   const daily=new Map<string,number>();
   for(const row of m.daily)daily.set(row.day,(daily.get(row.day)??0)+row.total);
-  const trend=[...daily.entries()].sort(([a],[b])=>a.localeCompare(b))
-    .map(([day,total])=>'<li><time datetime="'+day+'">'+day+'</time>: '+number(total)+'</li>').join('');
+  const series=[...daily.entries()].sort(([a],[b])=>a.localeCompare(b));
+  const peak=Math.max(1,...series.map(([,total])=>total));
+  const trend=series.map(([day,total])=>{
+    const width=Math.round(total/peak*100);
+    return '<li><time datetime="'+day+'">'+day+'</time>: <strong>'+number(total)+'</strong>'+
+      '<div role="img" aria-label="Interacciones: '+number(total)+'" style="background:#e8eef6;border-radius:6px;overflow:hidden;height:12px">'+
+      '<span aria-hidden="true" style="display:block;background:#1769aa;height:100%;width:'+width+'%"></span></div></li>';
+  }).join('');
   return head+'<h4>Acciones por tipo</h4><ul>'+rows+'</ul>'+
-    '<h4>Interacciones por día</h4>'+(trend?'<ul>'+trend+'</ul>':'<p>Sin registros para este período.</p>')+
+    '<h4>Interacciones por día</h4>'+(trend?'<ul class="analytics-daily-chart">'+trend+'</ul>':'<p>Sin registros para este período.</p>')+
     '<p class="muted">Las interacciones no representan visitantes únicos.</p></section>';
 }
 

@@ -48,7 +48,8 @@ export async function handleAnalyticsRoutes(req:Request,context:{sql:Sql;auth:{c
   if(req.headers.get('content-length')&&Number(req.headers.get('content-length'))>1024)return json(413,{ok:false});
   let body:any;try{const bytes=await readRequestBody(req.clone(),1024);body=JSON.parse(bytes.toString());}catch(e){return (e as Error).message==='PAYLOAD_TOO_LARGE'?json(413,{ok:false}):null;}
   if(body?.source!=='core_public_card')return null;
-  if(req.headers.get('origin')!==url.origin||!['direcciones507.com','www.direcciones507.com','direcciones.lat','ad507-core-production.up.railway.app','localhost','127.0.0.1'].includes(url.hostname))return json(403,{ok:false});
+  const expectedOrigin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin;
+  if(req.headers.get('sec-fetch-site')==='cross-site'||req.headers.get('origin')!==expectedOrigin||!['direcciones507.com','www.direcciones507.com','direcciones.lat','ad507-core-production.up.railway.app','localhost','127.0.0.1'].includes(url.hostname))return json(403,{ok:false});
   if(!allow('global',2000)||!allow('code:'+String(body.code).slice(0,90),120))return json(429,{ok:false});
   if(body.consent!==true)return json(400,{ok:false,error:'CONSENT_REQUIRED'});
   try{return json(202,await createAnalyticsRepository(context.sql).track(body.code,body.event,body.session));}catch(e){return json((e as Error).message==='INVALID_EVENT'?400:(e as Error).message==='NOT_FOUND'?404:503,{ok:false,error:'ANALYTICS_UNAVAILABLE'});}

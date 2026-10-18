@@ -1,5 +1,13 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Corrección visual LATAM y checkout Yappy — 18 octubre 2026
+
+- CAUSA RAÍZ visual demostrada en Chromium: selector `body.latam-account-panel [data-request]` con `background:#1769b5!important` aplicaba estilo de botón al contenedor completo `article.address-card[data-request]`. Se restringió a botones/enlaces; las tarjetas recuperan el fondo previsto y sus etiquetas legibles.
+- ALCANCE: Mi cuenta LATAM, etiquetas Negocio/plan/código y contraste; vista previa blanca de Revisar datos con nombre/referencia/teléfono visibles; pantalla de pago Yappy con tipografía, precio, campo de celular, navegación y explicación de revisión ADMIN legibles en móvil/tablet/escritorio. No se modificó el componente oficial `btn-yappy` ni los handlers de pago.
+- PR #114 integrado a main, commit e08b2245fef00bc5743ddefd7643d38581fbe758. CI en rama b6142062: compatibilidad Core 39168553580 SUCCESS, navegador Chromium 39168553551 SUCCESS (9 escenarios de cuenta, 3 renderizados Yappy, 390px/820px/1440px, sin transacciones), legal responsive 39168553640 SUCCESS y estadísticas 39168553548 SUCCESS.
+- Railway ad507-core producción despliegue 36f42c84-1ba2-4001-a0b3-29d78cdc0747 SUCCESS. PENDIENTE: validación visual autenticada con el dispositivo del propietario y UAT financiera del pago real/IPN/ADMIN; CI verde y Railway SUCCESS no acreditan un cobro real. Datos históricos, solicitudes, fotos, QR, códigos y PayPal sin cambios.
+
+
 ## Mi cuenta — reparación forense, 18 octubre 2026
 
 - Causa: 98e99a7 truncó assets/legal-consent.js, incorporado dentro del bootstrap del panel. Producción c3c1f61 reproduce Unexpected end of input en VM y Chrome.

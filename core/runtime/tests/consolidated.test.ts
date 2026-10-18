@@ -692,6 +692,15 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
   const signed=(orderId:string,status:string)=>new URLSearchParams({orderId,status,domain:config.domain,hash:createHmac('sha256','isolated-key').update(orderId+status+config.domain).digest('hex')});
   try{
     const address=await make('BUSINESS_PREMIUM');
+    expect(await repo.quote(clientId,address)).toMatchObject({plan:'BUSINESS_PREMIUM',amountCents:1999,orderId:null,currency:'USD'});
+    await expect(repo.quote(adminId,address)).rejects.toThrow('PAYMENT_NOT_FOUND');
+    // All three paid plans must quote correctly for real saved, unpublished drafts.
+    for(const [plan,amount] of [['RESIDENTIAL',1299],['BUSINESS_PREMIUM',1999],['BUSINESS_PREMIUM_PRO',3999]] as const){
+      const type=plan==='RESIDENTIAL'?'RESIDENTIAL':'BUSINESS';
+      const draft=await db.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source,request_key_hash,request_data) VALUES(NULL,$1,'DRAFT','Unpaid Yappy quote fixture','USER_REQUEST',$2,$3::jsonb) RETURNING id",[type,crypto.randomUUID(),db.json({plan,workflow:'PAYMENT_PENDING'})]);
+      await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[draft[0].id,clientId]);
+      expect(await repo.quote(clientId,draft[0].id)).toMatchObject({plan,amountCents:amount,orderId:null});
+    }
     const [a,b]=await Promise.all([repo.prepare(clientId,address,'payment-test-key-0001'),repo.prepare(clientId,address,'payment-test-key-0001')]);
     expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(1999);
     await expect(repo.prepare(clientId,address,'payment-test-key-0002')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
@@ -702,12 +711,21 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
     const paid=await Promise.all([repo.confirm(signed(a.order.provider_order_id,'E')),repo.confirm(signed(a.order.provider_order_id,'E'))]);
     expect(paid.filter(p=>!p.unchanged)).toHaveLength(1);
     expect((await repo.read(clientId,a.order.id)).status).toBe('PAID');
+    expect((await repo.read(clientId,a.order.id)).country_code).toBe('PA');
     const requestRow=(await db.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[address]))[0];
     await requireConfirmedPayment(db,requestRow,'test');await expect(requireConfirmedPayment(db,requestRow,'production')).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');
     expect((await repo.confirm(signed(a.order.provider_order_id,'C'))).status).toBe('PAID');
     expect((await db.unsafe('SELECT status FROM ad507.addresses WHERE id=$1::uuid',[address]))[0].status).toBe('PENDING_REVIEW');
+    const {createRequestRepository}=await import('../request-repository');
+    const activation=createRequestRepository(db,{r2:null,paidWorkflow:true,paymentEnvironment:'test'});
+    expect(await activation.activatePaid(address)).toMatchObject({status:'PENDING_REVIEW',workflow:'PAYMENT_CONFIRMED'});
+    expect(await activation.activatePaid(address)).toMatchObject({status:'PENDING_REVIEW',workflow:'PAYMENT_CONFIRMED'});
+    expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1::uuid AND action='PAID_REQUEST_READY_FOR_REVIEW'",[address]))[0].n).toBe(1);
+    await expect(repo.quote(clientId,address)).rejects.toThrow('INVALID_PAYMENT_REQUEST');
     expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='YAPPY_PAYMENT_CONFIRMED'",[a.order.id]))[0].n).toBe(2);
-    const free=await make('BUSINESS_FREE');expect(await repo.prepare(clientId,free,'payment-free-key-0001')).toEqual({required:false,amountCents:0});
+    const free=await make('BUSINESS_FREE');
+    await expect(repo.prepare(clientId,free,'payment-free-key-0001')).rejects.toThrow('INVALID_PAYMENT_REQUEST');
+    await expect(repo.quote(clientId,free)).rejects.toThrow('INVALID_PAYMENT_REQUEST');
     expect((await db.unsafe('SELECT id FROM ad507.orders WHERE address_id=$1::uuid',[free])).length).toBe(0);
     await expect(createPaymentRepository(db,{...config,environment:'production'}).read(clientId,a.order.id)).rejects.toThrow('PAYMENT_NOT_FOUND');
   }finally{await db.end();}

@@ -36,3 +36,10 @@ test('analytics eligibility respects free business entitlement and payment gate'
  expect(canOfferAnalytics({...active,status:'DRAFT'})).toBe(false);
  expect(canOfferAnalytics({...active,planCode:'PLACE'})).toBe(false);
 });
+
+test('missing or malformed daily data cannot break the statistics presentation',()=>{
+ const malformed={ok:true,plan:'premium_pro',interactions:null,daily_series:[null,{day:'bad',event_type:'google',total:1}]};
+ expect(()=>renderAnalyticsSummary(malformed as any)).not.toThrow();
+ expect(renderAnalyticsSummary(malformed as any)).toContain('Sin registros para este período');
+ expect(()=>renderAnalyticsSummary({ok:true,plan:'premium_pro',daily_series:{} as any})).not.toThrow();
+});

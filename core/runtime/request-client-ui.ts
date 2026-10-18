@@ -24,6 +24,10 @@ async function openUserRequest(id,editing=false){
     for(const m of r.media||[]){if(m.status!=='READY')continue;const img=document.createElement('img');img.alt=m.type==='LOGO'?'Logo enviado':'Fotografía enviada';img.loading='lazy';img.style.cssText='display:block;max-width:100%;max-height:360px;object-fit:contain;margin:14px 0';img.src='/v1/user/requests/'+id+'/media/'+m.id;content.append(img)}
     if(r.latitude!=null&&r.longitude!=null){const link=document.createElement('a');link.textContent='Ver ubicación en Google Maps';link.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.latitude+','+r.longitude);link.target='_blank';link.rel='noopener';content.append(link)}
 
+    if(r.extras?.workflow==='PAYMENT_PENDING'&&r.countryCode==='PA'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RESIDENTIAL'].includes(r.extras?.plan)){
+      const pay=document.createElement('a');pay.className='btn';pay.href='/panel/payments/'+id;pay.textContent='Continuar al pago con Yappy';pay.style.cssText='display:inline-flex;align-items:center;justify-content:center;margin:16px 0;padding:12px 18px;font-weight:750';content.append(pay);
+      const note=document.createElement('p');note.className='muted';note.textContent='El pago se confirma únicamente cuando Yappy lo notifica al sistema. No se activará la dirección antes de esa confirmación.';content.append(note);
+    }
     const editButton=mountAddressEditor(content,r,false,async()=>{await load();await openUserRequest(id)});if(editing&&editButton)editButton.click();
     title.focus({preventScroll:true});
   }catch{if(version===requestDetailVersion)content.textContent='No se pudo cargar la solicitud. Cierra el detalle e intenta nuevamente.'}

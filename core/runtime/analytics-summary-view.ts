@@ -9,11 +9,12 @@ export type AnalyticsSummary = {
   daily_series?: Array<{day:string;event_type:string;total:number}>;
 };
 const ACTIONS: Record<string,string> = {
-  google:'Google Maps',waze:'Waze',uber:'Uber',share:'Compartir',copy:'Copiar',aviso:'Aviso'
+  google:'Google Maps',waze:'Waze',uber:'Uber',whatsapp:'WhatsApp',call:'Llamar',share:'Compartir',copy:'Copiar',qr:'QR',aviso:'Aviso'
 };
 export function analyticsViewModel(summary: AnalyticsSummary) {
   if (!summary?.ok) throw new Error('INVALID_ANALYTICS_SUMMARY');
   const pro=summary.plan==='premium_pro';
+  if(!['premium','premium_pro','free'].includes(summary.plan)) throw new Error('UNSUPPORTED_ANALYTICS_PLAN');
   const counts=summary.interactions && typeof summary.interactions==='object' && !Array.isArray(summary.interactions) ? summary.interactions : {};
   const actions=Object.entries(ACTIONS).map(([key,label])=>({
     key,label,count:Number.isSafeInteger(counts[key])&&counts[key]>=0?counts[key]:0
@@ -24,7 +25,8 @@ export function analyticsViewModel(summary: AnalyticsSummary) {
   const days=pro?(Array.isArray(summary.daily_series)?summary.daily_series:[]).filter(row=>row && typeof row.day==='string' && /^\d{4}-\d{2}-\d{2}$/.test(row.day)
     &&Object.hasOwn(ACTIONS,row.event_type)&&Number.isSafeInteger(row.total)&&row.total>=0):[];
   return {plan:summary.plan,pro,visits,actions:pro?actions:[],daily:days,
-    interactionsTotal:actions.reduce((sum,row)=>sum+row.count,0)};
+    interactionsTotal:actions.reduce((sum,row)=>sum+row.count,0),
+    interactionsAvailable:summary.interactions!=null && typeof summary.interactions==='object' && !Array.isArray(summary.interactions)};
 }
 
 /** Safe HTML for a private statistics section, only from validated view-model values. */
@@ -34,7 +36,7 @@ export function renderAnalyticsSummary(summary: AnalyticsSummary): string {
   const visits=m.visits.available?number(m.visits.total!):'Aún no disponible';
   const head='<section class="analytics-summary" aria-label="Estadísticas de mi dirección"><h3>Estadísticas</h3>'+
     '<p><strong>Visitas:</strong> '+visits+'</p>'+
-    '<p><strong>Interacciones registradas:</strong> '+number(m.interactionsTotal)+'</p>';
+    '<p><strong>Interacciones registradas:</strong> '+(m.interactionsAvailable?number(m.interactionsTotal):'Aún no disponible')+'</p>';
   if(!m.pro)return head+'</section>';
   const rows=m.actions.map(a=>'<li><span>'+a.label+'</span>: <strong>'+number(a.count)+'</strong></li>').join('');
   const daily=new Map<string,number>();

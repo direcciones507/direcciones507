@@ -47,7 +47,7 @@ try{
     background:getComputedStyle(link).backgroundColor,
     borderRadius:getComputedStyle(link).borderRadius
   }));
-  assert.equal(backStyle.label,'← Volver a Mi cuenta');
+  assert.equal(backStyle.label,'←Volver a Mi cuenta');
   assert.equal(backStyle.decoration,'none');
   assert.notEqual(backStyle.background,'rgba(0, 0, 0, 0)');
   assert.notEqual(backStyle.borderRadius,'0px');

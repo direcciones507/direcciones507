@@ -32,4 +32,10 @@ body .account-footer,body .latam-copyright{text-align:center;width:100%}
 @media(max-width:767px){body .address-actions{grid-template-columns:minmax(0,1fr)}body .address-actions>*{grid-column:auto}body .wrap .row{grid-template-columns:minmax(0,1fr)}body .wrap .listhead .btn{flex:0 0 auto}body .wrap .card{padding:18px}body .wrap{padding:0 12px}body.latam-account-panel #actions>.grid>button{min-height:76px}body .address-status{max-width:48%;white-space:normal}}
 @media(min-width:768px) and (max-width:1099px){body .wrap .row{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}body .wrap .row>:nth-child(n+3){grid-column:1/-1}body .wrap .grid{gap:14px}body .address-grid{gap:18px}}
 @media(prefers-reduced-motion:reduce){body :is(button,a.button,a.btn){transition:none;transform:none}}
+
+/* Readable request details on the white panel surface, regardless of LATAM dark card styles. */
+body.latam-account-panel #requestDetail.card{background:#fff!important;color:#172b4d!important}
+body.latam-account-panel #requestDetail.card :is(p,div,span,small,li,dd,dt,label){color:#172b4d!important}
+body.latam-account-panel #requestDetail.card :is(h1,h2,h3,h4,strong,b){color:#10243e!important}
+body.latam-account-panel #requestDetail.card .muted{color:#42566f!important}
 `;

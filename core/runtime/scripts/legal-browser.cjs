@@ -39,7 +39,11 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   await page.locator('[data-analytics-choice="false"]').click();assert.equal(analytics,0,'reject analytics');
   await page.locator('[data-cookie-settings]').first().click();const loaded=page.waitForResponse(r=>r.url().includes('/gtag/js'));await page.locator('[data-analytics-choice="true"]').click();await loaded;assert.equal(analytics,1,'only accepted GA loaded');
   assert.equal(await page.locator('iframe[src*="googletagmanager"]').count(),0);assert.equal(await page.locator('script[src*="gtm.js"]').count(),0);
-  for(const card of await page.locator('.plan-pricing-card').all())assert.equal(await card.locator('.plan-legal a').count(),4);
+  for(const card of await page.locator('.plan-pricing-card').all())assert.equal(await card.locator('.plan-legal a').count(),0,'legal links should not repeat inside plan cards');
+  assert.equal(await page.locator('.footer-legal-links a').count(),4,'all four legal documents remain in the footer');
+  assert.equal(await page.locator('#plan507Details nav a').count(),4,'legal documents remain accessible in plan details');
+  assert.equal(await page.locator('.footer-legal-links a').first().evaluate(a=>getComputedStyle(a).textDecorationLine),'none','footer links are not underlined');
+  assert.equal(await page.locator('.footer-cookie-settings').count(),1,'cookie settings control retained');
   await page.locator('.planes-grid-layout').screenshot({path:path.join(out,device+'-507-plans.png')});
   await page.goto('https://direcciones.lat/?access=1');await page.waitForSelector('#latamAccess[open]');
   // Returning users see login without repeat acceptance; new users must opt in.

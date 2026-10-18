@@ -544,6 +544,9 @@
 .planes-grid-layout .plan-perks-list[hidden]{display:none!important}
 .planes-grid-layout .plan-pricing-card .btn-plan-action-trigger{min-height:39px;padding:9px 16px!important;background:linear-gradient(105deg,#087b9c,#126ba9)!important;box-shadow:none!important}
 @media(max-width:700px){.planes-grid-layout .plan-pricing-card{padding:19px;min-height:0}}
+
+/* Mobile navigation: center the account action without altering the request CTA. */
+@media(max-width:767px){#mainAppHeader .nav-menu a.btn-nav-action[href*="access=1"]{display:flex!important;align-items:center;justify-content:center;width:min(100%,300px);margin-inline:auto!important;text-align:center;box-sizing:border-box}}
 </style>
 </head>
 <body>

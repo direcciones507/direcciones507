@@ -40,6 +40,18 @@ try{
   await payPage.locator('#checkout').waitFor({state:'visible'});
   assert.equal(await payPage.locator('#quote').textContent(),'Importe: $39.99');
   assert.equal(await payPage.locator('btn-yappy').count(),1);
+  assert.equal(await payPage.locator('.back-link').getAttribute('href'),'/panel');
+  const backStyle=await payPage.locator('.back-link').evaluate(link=>({
+    label:link.textContent.replace(/\\s+/g,' ').trim(),
+    decoration:getComputedStyle(link).textDecorationLine,
+    background:getComputedStyle(link).backgroundColor,
+    borderRadius:getComputedStyle(link).borderRadius
+  }));
+  assert.equal(backStyle.label,'←Volver a Mi cuenta');
+  assert.equal(backStyle.decoration,'none');
+  assert.notEqual(backStyle.background,'rgba(0, 0, 0, 0)');
+  assert.notEqual(backStyle.borderRadius,'0px');
+
   assert.equal(await payPage.locator('.notice').isVisible(),true);
   assert.equal(await payPage.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true);
   const background=await payPage.locator('main').evaluate(main=>getComputedStyle(main).backgroundColor);

@@ -81,7 +81,12 @@ try{
       bodyClass:await page.locator('body').getAttribute('class'),
       visibleStyleCount:await page.evaluate(()=>document.styleSheets.length),
       styleHasContract:await page.evaluate(()=>document.head.innerHTML.includes('Final contrast contract')),
-      cardClass:await page.locator('.address-card').first().getAttribute('class')
+      cardClass:await page.locator('.address-card').first().getAttribute('class'),
+      computed:await page.locator('.address-card').evaluate(card=>{
+        const c=getComputedStyle(card);
+        return {background:c.background,backgroundColor:c.backgroundColor,backgroundImage:c.backgroundImage,cssText:card.getAttribute('style')};
+      }),
+      matchingCss:await page.evaluate(()=>Array.from(document.styleSheets).flatMap(sheet=>Array.from(sheet.cssRules||[]).filter(rule=>rule.selectorText?.includes('.address-card')&&rule.style?.background).map(rule=>({selector:rule.selectorText,background:rule.style.background}))).slice(-10))
     }));
     assert.match(cardContrast.background,/linear-gradient/);
     assert.equal(cardContrast.kind,'rgb(255, 255, 255)');

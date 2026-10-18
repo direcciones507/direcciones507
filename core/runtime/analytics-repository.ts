@@ -14,16 +14,17 @@ export function createAnalyticsRepository(sql:Sql){
   return rows.length===1&&canOfferAnalytics(rows[0])?rows[0]:null;
  }
  return {
- async summary(owner:string,code:string){
-  if(!codeRe.test(code)||!await address(code,owner))throw Error('NOT_FOUND');
-  const rows=await sql.unsafe(`SELECT event_type,to_char(occurred_at AT TIME ZONE 'America/Panama','YYYY-MM-DD') AS day,count(*)::int AS total FROM ad507.ad507_business_analytics_events WHERE ad507_code=$1 AND occurred_at>=(date_trunc('day',now() AT TIME ZONE 'America/Panama') AT TIME ZONE 'America/Panama')-interval '29 days' AND occurred_at<=now() GROUP BY event_type,day ORDER BY day,event_type`,[code]);
+ async summary(owner:string,code:string,requestedDays=30){
+  const initial=codeRe.test(code)?await address(code,owner):null;if(!initial)throw Error('NOT_FOUND');
+  const days=initial.planCode==='BUSINESS_PREMIUM_PRO'&&[7,30,90].includes(requestedDays)?requestedDays:30;
+  const rows=await sql.unsafe(`SELECT event_type,to_char(occurred_at AT TIME ZONE 'America/Panama','YYYY-MM-DD') AS day,count(*)::int AS total FROM ad507.ad507_business_analytics_events WHERE ad507_code=$1 AND occurred_at>=(date_trunc('day',now() AT TIME ZONE 'America/Panama') AT TIME ZONE 'America/Panama')-($2::int-1)*interval '1 day' AND occurred_at<=now() GROUP BY event_type,day ORDER BY day,event_type`,[code,days]);
   // Recheck ownership and plan after reading, so transfers/downgrades cannot leak a cached entitlement.
-  const a=await address(code,owner);if(!a)throw Error('NOT_FOUND');
+  const a=await address(code,owner);if(!a||a.planCode!==initial.planCode)throw Error('NOT_FOUND');
   const plan=a.planCode==='BUSINESS_PREMIUM_PRO'?'premium_pro':a.planCode==='BUSINESS_PREMIUM'?'premium':a.planCode==='PLACE'?'place':'free';
   const support=await sql.unsafe("SELECT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='ad507.ad507_business_analytics_events'::regclass AND contype='c' AND pg_get_constraintdef(oid) LIKE '%visit%') AS ready");
   const visits=rows.filter(r=>r.event_type==='visit').reduce((n,r)=>n+Number(r.total),0);
   const interactions:Record<string,number>={};for(const r of rows)if(actions.includes(r.event_type))interactions[r.event_type]=(interactions[r.event_type]||0)+Number(r.total);
-  return {ok:true,plan,visits:visits?{status:'available',total:visits}:{status:support[0]?.ready?'no_data':'not_available'},...(['premium','premium_pro'].includes(plan)?{interactions}:{}),...(plan==='premium_pro'?{daily_series:rows.filter(r=>analyticsEvents.includes(r.event_type))}:{})};
+  return {ok:true,plan,visits:visits?{status:'available',total:visits}:{status:support[0]?.ready?'no_data':'not_available'},...(['premium','premium_pro'].includes(plan)?{interactions}:{}),...(plan==='premium_pro'?{period_days:days,daily_series:rows.filter(r=>analyticsEvents.includes(r.event_type))}:{})};
  },
  async track(code:string,event:string,session:string,now=Date.now()){
   if(!codeRe.test(code)||!analyticsEvents.includes(event)||! /^[A-Za-z0-9_-]{43}$/.test(session))throw Error('INVALID_EVENT');
@@ -55,5 +56,6 @@ export async function handleAnalyticsRoutes(req:Request,context:{sql:Sql;auth:{c
   try{return json(202,await createAnalyticsRepository(context.sql).track(body.code,body.event,body.session));}catch(e){return json((e as Error).message==='INVALID_EVENT'?400:(e as Error).message==='NOT_FOUND'?404:503,{ok:false,error:'ANALYTICS_UNAVAILABLE'});}
  }
  if(req.method!=='GET')return json(405,{ok:false});
- try{const user=await context.auth.currentUser(req);if(!user)return json(401,{ok:false});if(!allow('user:'+user.id,120))return json(429,{ok:false});return json(200,await createAnalyticsRepository(context.sql).summary(user.id,privateMatch![1]));}catch(e){return json((e as Error).message==='NOT_FOUND'?404:503,{ok:false,error:'ANALYTICS_UNAVAILABLE'});}
+ const days=url.searchParams.get('days');if(days!==null&&!['7','30','90'].includes(days))return json(400,{ok:false,error:'INVALID_PERIOD'});
+ try{const user=await context.auth.currentUser(req);if(!user)return json(401,{ok:false});if(!allow('user:'+user.id,120))return json(429,{ok:false});return json(200,await createAnalyticsRepository(context.sql).summary(user.id,privateMatch![1],days===null?30:Number(days)));}catch(e){return json((e as Error).message==='NOT_FOUND'?404:503,{ok:false,error:'ANALYTICS_UNAVAILABLE'});}
 }

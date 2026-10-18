@@ -43,3 +43,15 @@ test('missing or malformed daily data cannot break the statistics presentation',
  expect(renderAnalyticsSummary(malformed as any)).toContain('Sin registros para este período');
  expect(()=>renderAnalyticsSummary({ok:true,plan:'premium_pro',daily_series:{} as any})).not.toThrow();
 });
+
+test('premium pro includes supported contact and QR interactions',()=>{
+ const m=analyticsViewModel({ok:true,plan:'premium_pro',interactions:{whatsapp:4,call:2,qr:1}});
+ expect(m.actions.find(a=>a.key==='whatsapp')?.count).toBe(4);
+ expect(m.actions.find(a=>a.key==='call')?.count).toBe(2);
+ expect(m.actions.find(a=>a.key==='qr')?.count).toBe(1);
+ expect(m.interactionsTotal).toBe(7);
+});
+test('unavailable interaction data is not misrepresented as zero',()=>{
+ const html=renderAnalyticsSummary({ok:true,plan:'premium',visits:{status:'not_available'}});
+ expect(html).toContain('Interacciones registradas:</strong> Aún no disponible');
+});

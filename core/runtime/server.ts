@@ -67,7 +67,7 @@ startLegacyCore(async req => {
   if(paymentPageId&&req.method==='GET'){
     if(!yappyEnabled||!paymentConfig||!paymentRepository)return new Response('Pago no habilitado',{status:503,headers:{'cache-control':'no-store'}});
     const user=await auth.currentUser(req);if(!user)return new Response(null,{status:302,headers:{location:'/auth/google/login','cache-control':'no-store'}});
-    try{await paymentRepository.quote(user.id,paymentPageId[1]);}catch{return new Response('Solicitud no disponible',{status:404,headers:{'cache-control':'no-store'}});}
+    try{await paymentRepository.quote(user.id,paymentPageId[1]);}catch(error){const reason=error instanceof Error?error.message:'';const unavailable=['PAYMENT_NOT_FOUND','INVALID_PAYMENT_REQUEST','INVALID_PAYMENT_PLAN'].includes(reason);return new Response(unavailable?'Solicitud no disponible. Regresa a Mi cuenta para consultar tus solicitudes.':'No se pudo verificar la solicitud de pago. Intenta de nuevo desde Mi cuenta.',{status:unavailable?404:503,headers:{'content-type':'text/plain; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});}
     return new Response(paymentPage(paymentPageId[1],paymentConfig.environment),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','referrer-policy':'no-referrer','x-robots-tag':'noindex','x-content-type-options':'nosniff'}});
   }
   const paymentResponse=await handlePaymentRoutes(req,{enabled:yappyEnabled,auth,repository:paymentRepository,provider:paymentProvider});

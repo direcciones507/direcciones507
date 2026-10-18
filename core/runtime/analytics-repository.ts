@@ -29,12 +29,12 @@ export function createAnalyticsRepository(sql:Sql){
   if(!codeRe.test(code)||!analyticsEvents.includes(event)||! /^[A-Za-z0-9_-]{43}$/.test(session))throw Error('INVALID_EVENT');
   const target=await address(code);if(!target||target.source!=='USER_REQUEST'||!target.receipt)throw Error('NOT_FOUND');
   // A stable lock serializes this anonymous code/action/tab across bucket
-  // boundaries. Check both indexed keys inside a rolling 30-minute window;
+  // boundaries. Check adjacent indexed keys inside a rolling 30-minute window;
   // a fixed bucket alone would count a reload at 29:59 and 30:01 twice.
   const identity=createHash('sha256').update([code,event,session].join('|')).digest('hex');
   const bucket=Math.floor(now/1800000);
   const key=(bucket:number)=>{const h=createHash('sha256').update([code,event,session,bucket].join('|')).digest('hex');return h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-a'+h.slice(17,20)+'-'+h.slice(20,32);};
-  const keys=[key(bucket),key(bucket-1)];
+  const keys=[key(bucket),key(bucket-1),key(bucket+1)];
   const rows=await sql.begin(async tx=>{
    await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[identity]);
    return tx.unsafe(`INSERT INTO ad507.ad507_business_analytics_events(ad507_code,event_type,idempotency_key) SELECT $1,$2,$3::uuid WHERE NOT EXISTS (SELECT 1 FROM ad507.ad507_business_analytics_events WHERE idempotency_key=ANY($4::uuid[]) AND occurred_at>now()-interval '30 minutes') ON CONFLICT (idempotency_key) WHERE idempotency_key IS NOT NULL DO NOTHING RETURNING event_id`,[code,event,keys[0],keys]);

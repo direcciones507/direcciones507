@@ -20,3 +20,8 @@ Restaurar solo el final original de cookies, conservando diseño. Eliminar consu
 
 ## Protecciones
 Sin SQL, cambios de R2, datos, códigos, QR, históricos, PayPal, credenciales o activación de cobros. El enlace Yappy se prueba sin visitarlo ni iniciar cobros. IPN/seguridad/idempotencia se revisan después del cierre del incidente; no se certifican por estas pruebas.
+
+## Preparación Yappy conservada tras reparar Mi cuenta
+Revisión de código existente (sin transacciones externas): firma HMAC con timingSafeEqual, dominio exacto y parámetros únicos; orden registrada por backend, precio/moneda de servidor, bloqueo FOR UPDATE y estados repetidos sin nueva confirmación. activatePaid mueve DRAFT/PAYMENT_PENDING a PENDING_REVIEW/PAYMENT_CONFIRMED y el camino manual de publicación exige APPROVED. No se activa publicación automática ni se modifica PayPal.
+El test integrado de pago se actualiza para comprobar dos IPN válidos consecutivos, un solo evento de confirmación, cero publicaciones antes de ADMIN y publicación después de aprobación. Las credenciales aparecen configuradas por nombre en Railway; OAuth no permite leer sus valores. Esto no certifica credenciales, UAT del proveedor ni cobros reales.
+Pendiente antes de habilitar: UAT con proveedor, conciliación de fallos inciertos, entrega/reintentos de IPN tras estados posteriores y aceptación privada del panel. Cobros reales no autorizados en esta intervención.

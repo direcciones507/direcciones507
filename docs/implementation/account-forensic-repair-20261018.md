@@ -1,6 +1,6 @@
 # Mi cuenta — reparación forense, 18 octubre 2026
 
-Estado: probado en entorno aislado; despliegue y aceptación privada pendientes.
+Estado: Mi cuenta operativo, desplegado y verificado con Google y solicitudes reales. Yappy conserva validación financiera pendiente.
 
 ## Causa demostrada
 98e99a7a575a672e6a8c44dc4e443d8d0b9c53cc (18:14:31 UTC), inmediatamente posterior a 41c78bf, truncó assets/legal-consent.js al rediseñar cookies: eliminó el montaje final, registro global, llamada inicial y cierres de mount/IIFE. user-panel.ts incorpora ese texto antes de su bootstrap dentro del mismo script. El JavaScript final de producción c3c1f61 falla con SyntaxError: Unexpected end of input. Reproducido tanto con node:vm como en Chrome real. No es un fallo de cookie de sesión, consulta SQL ni del proveedor Yappy.
@@ -16,7 +16,7 @@ Restaurar solo el final original de cookies, conservando diseño. Eliminar consu
 - Chromium real, respuestas sintéticas y CSP del handler: 9 escenarios 390x844, 820x1180, 1440x1000; sesión/401/503, ausencia de spinner permanente o salto a raíz, selección Pro, solicitud existente, Ver detalle, enlace Yappy, cierre/reapertura, tres planes Negocio.
 - Ida a Google/retorno simulados para verificar persistencia de plan/origen. Esto no equivale a autenticación Google real.
 - Prueba permanente específica y workflow en pushes main/PR, incluyendo cambios del asset externo que antes no disparaban compatibilidad.
-- Producción autenticada: requiere sesión privada del propietario para Google completo y solicitudes/fotos reales. No se crean identidades ni datos productivos sintéticos.
+- Producción autenticada verificada: el propietario seleccionó su cuenta mediante autenticación segura. Google volvió a /panel?country=PA&origin=507. Se cargaron cinco fichas reales, incluidas dos activas con estadísticas y tres solicitudes; se abrió Ver detalle con datos/logo y Pagar ahora con Yappy. El enlace de Premium Pro507 abrió el formulario real con Panamá, plan Pro y controles activos. Sin enviar formularios, modificar registros ni iniciar pago. No se incluyen identificadores personales en este informe.
 
 ## Protecciones
 Sin SQL, cambios de R2, datos, códigos, QR, históricos, PayPal, credenciales o activación de cobros. El enlace Yappy se prueba sin visitarlo ni iniciar cobros. IPN/seguridad/idempotencia se revisan después del cierre del incidente; no se certifican por estas pruebas.
@@ -25,3 +25,12 @@ Sin SQL, cambios de R2, datos, códigos, QR, históricos, PayPal, credenciales o
 Revisión de código existente (sin transacciones externas): firma HMAC con timingSafeEqual, dominio exacto y parámetros únicos; orden registrada por backend, precio/moneda de servidor, bloqueo FOR UPDATE y estados repetidos sin nueva confirmación. activatePaid mueve DRAFT/PAYMENT_PENDING a PENDING_REVIEW/PAYMENT_CONFIRMED y el camino manual de publicación exige APPROVED. No se activa publicación automática ni se modifica PayPal.
 El test integrado de pago se actualiza para comprobar dos IPN válidos consecutivos, un solo evento de confirmación, cero publicaciones antes de ADMIN y publicación después de aprobación. Las credenciales aparecen configuradas por nombre en Railway; OAuth no permite leer sus valores. Esto no certifica credenciales, UAT del proveedor ni cobros reales.
 Pendiente antes de habilitar: UAT con proveedor, conciliación de fallos inciertos, entrega/reintentos de IPN tras estados posteriores y aceptación privada del panel. Cobros reales no autorizados en esta intervención.
+
+## Cierre de despliegue y pruebas
+- PR #111: https://github.com/direcciones507/direcciones507/pull/111
+- Commit principal: f5d30f2340c5f8e432eb13ee0d548e51d2801dc5.
+- Railway: 53badc3f-4156-4dc7-a90f-9406cf06be7a SUCCESS, commit principal confirmado.
+- CI completo 39158508802: 206 pass, 0 fail. Browser 39158508782, legal 39158509091, analytics 39158508772 SUCCESS.
+- Browser en main 39158637082 SUCCESS; Pages desplegado. El JavaScript servido pasó node:vm y Chrome no volvió a registrar el error sintáctico.
+- El IPN preexistente responde 400 a una consulta vacía; no se modifica su interruptor ni se afirma que esté deshabilitado. No se enviaron notificaciones firmadas ni cobros a producción.
+- Alcance confirmado: recuperación de Mi cuenta completa. Pendiente financiero separado: UAT proveedor e idempotencia/conciliación tras estados posteriores antes de nuevos cobros reales.

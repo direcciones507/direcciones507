@@ -4,9 +4,9 @@
 
 - Causa: 98e99a7 truncó assets/legal-consent.js, incorporado dentro del bootstrap del panel. Producción c3c1f61 reproduce Unexpected end of input en VM y Chrome.
 - Corrección: restaurar cierre/montaje de cookies; retirar recuperación parcial; enlace de planes507 a /panel; preservar plan/origen al salir a Google.
-- Probado: scripts finales válidos; API 200/401/503; nueve escenarios Chromium móvil/tablet/escritorio con solicitudes/detalle/planes y retorno OAuth simulado. Workflow permanente para asset y runtime.
-- Pendiente: CI, despliegue y comprobación pública; Google completo y solicitudes/fotos reales requieren sesión privada. No declarar operativo solo por SUCCESS.
-- Sin cobros, SQL ni cambios de datos/históricos/PayPal. Informe: docs/implementation/account-forensic-repair-20261018.md.
+- Probado: 206/206 pruebas, cero fallos (CI 39158508802); nueve escenarios Chromium móvil/tablet/escritorio, cuatro planes507, API 200/401/503, solicitudes/detalle y retorno de plan. CI navegador 39158508782, legal 39158509091 y estadísticas 39158508772 SUCCESS. Workflow permanente para asset y runtime.
+- OPERATIVO: PR #111 integrado en main f5d30f2340c5f8e432eb13ee0d548e51d2801dc5; Railway 53badc3f-4156-4dc7-a90f-9406cf06be7a SUCCESS. Chrome productivo: entrada desde Mi cuenta507 a /panel, Google real con cuenta seleccionada por el propietario, cinco fichas reales y estadísticas, detalle con datos/logo y enlace Yappy; Premium Pro abre formulario real con Panamá seleccionado. Scripts productivos válidos; eliminada recuperación parcial. No se enviaron formularios ni se inició pago.
+- Pendiente independiente: UAT Yappy, conciliación y reintentos IPN después de estados posteriores; no certificar lanzamiento financiero ni alterar habilitación preexistente. Sin cobros, SQL ni cambios de datos/históricos/PayPal. Informe: docs/implementation/account-forensic-repair-20261018.md.
 
 
 ## Encabezado Panamá — corrección puntual,16 octubre2026

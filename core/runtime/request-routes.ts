@@ -7,7 +7,7 @@ import { createRequestMediaStorage } from './request-media';
 import type { R2Settings } from './r2-storage';
 import { renderCommercialBridge } from './commercial-migration';
 import type { RequestFile } from './request-validation';
-import { YAPPY_PAYMENTS_ENABLED } from './payment-policy';
+import { yappyPaymentsEnabled } from './payment-policy';
 
 // Commercial workflow stays off unless production explicitly enables it.
 export const REQUEST_WORKFLOW_ENABLED=process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
@@ -65,7 +65,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
       const raw=JSON.parse((await readRequestBody(req,4096)).toString('utf8'));return respond(200,{ok:true,request:await editor.reviewLocation(user.id,edit[2],raw,edit[3]==='location-approve')});
     }
     if(adminCreate&&req.headers.get('content-type')?.startsWith('application/json')){const body=JSON.parse((await readRequestBody(req,64000)).toString('utf8'));if(!body||Object.keys(body).length!==1||!body.historicalSnapshot)throw Error('INVALID_REQUEST');return respond(200,{ok:true,request:await context.repository.stageHistorical(user.id,req.headers.get('idempotency-key')??'',body.historicalSnapshot)});}
-    if(submit){const {raw,files}=await parseRequestForm(req);if(!adminCreate)(raw as any).legalAcceptance=requireLegalAcceptance(raw);const result=await context.repository[adminCreate?'createAdmin':'submit'](user.id,req.headers.get('idempotency-key')??'',raw,files);return respond(200,{ok:true,request:result,...(YAPPY_PAYMENTS_ENABLED&&!adminCreate&&result.status==='PENDING_REVIEW'?{paymentUrl:'/panel/payments/'+result.id}:{})});}
+    if(submit){const {raw,files}=await parseRequestForm(req);if(!adminCreate)(raw as any).legalAcceptance=requireLegalAcceptance(raw);const result=await context.repository[adminCreate?'createAdmin':'submit'](user.id,req.headers.get('idempotency-key')??'',raw,files);return respond(200,{ok:true,request:result,...(yappyPaymentsEnabled(process.env)&&REQUEST_WORKFLOW_ENABLED&&!adminCreate&&result.workflow==='PAYMENT_PENDING'?{paymentUrl:'/panel/payments/'+result.id}:{})});}
     if(bridge){await context.repository.read(user.id,bridge[1]);const rows=await context.sql.unsafe("SELECT legacy_payload FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' AND request_data->>'origin'='HISTORICAL_IMPORT'",[bridge[1]]);if(!rows.length)throw Error('REQUEST_NOT_FOUND');return new Response(renderCommercialBridge(rows[0].legacy_payload,bridge[1],url.origin),{headers:{'content-type':'text/html; charset=utf-8','content-disposition':'attachment; filename="'+rows[0].legacy_payload.code+'.html"','cache-control':'no-store','x-content-type-options':'nosniff'}});}
     if(detail)return respond(200,{ok:true,request:await context.repository.read(user.id,detail[1])});
     if(media){

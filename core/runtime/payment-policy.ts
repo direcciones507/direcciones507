@@ -13,9 +13,13 @@ export function money(cents:number):string {
   return (cents/100).toFixed(2);
 }
 export type YappyConfiguration = { environment:'test'|'production'; merchantId:string; domain:string; secret:string; ipnUrl:string };
-// Deliberately no environment-variable activation in this release. Construction
-// is for isolated tests; the authorized provider wiring is a separate release.
+// Backward-compatible default-off constant used by existing tests and consumers.
 export const YAPPY_PAYMENTS_ENABLED = false;
+// Explicit operator-controlled switch. Credentials alone never activate live charges.
+// Enable only after verified IPN routing, production schema, and end-to-end acceptance.
+export function yappyPaymentsEnabled(env:Record<string,string|undefined>):boolean {
+  return env.AD507_YAPPY_PAYMENTS_ENABLED==='true' && env.AD507_YAPPY_ENVIRONMENT==='production';
+}
 export function yappyConfiguration(env:Record<string,string|undefined>):YappyConfiguration|null {
   try {return validateYappyConfiguration({environment:env.AD507_YAPPY_ENVIRONMENT as 'test'|'production',merchantId:env.AD507_YAPPY_MERCHANT_ID!,domain:env.AD507_YAPPY_DOMAIN!,secret:env.AD507_YAPPY_SECRET!,ipnUrl:env.AD507_YAPPY_IPN_URL!});}catch{return null;}
 }

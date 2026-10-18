@@ -309,6 +309,13 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
     </script></body>`);
   }
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
+  // Server-rendered social preview for new Core publications. Keep historical templates untouched.
+  const previewImage=record.media.find(m=>m.type==='IMAGE'&&m.url?.startsWith('https://'))?.url
+    ??record.media.find(m=>m.type==='LOGO'&&m.url?.startsWith('https://'))?.url;
+  if(previewImage){
+    template=template.replace(/<meta property="og:image" content="[^"]*">/, '<meta property="og:image" content="'+esc(previewImage)+'">');
+    template=template.replace(/<meta name="twitter:image" content="[^"]*">/, '<meta name="twitter:image" content="'+esc(previewImage)+'">');
+  }
   // QR/share/copy must use the stored canonical URL, even on a preview host.
   // Only adapts this renderer; the historical template/files stay untouched.
   template=template.replaceAll('window.location.href',JSON.stringify(record.url).replaceAll('<','\\u003c'));

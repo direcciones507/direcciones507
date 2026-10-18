@@ -223,6 +223,8 @@ jobs:
             if [ -f robots.txt ]; then cp robots.txt out/robots.txt; fi
             if [ -f 404.html ]; then cp 404.html out/404.html; fi
             if [ -f CNAME ]; then cp CNAME out/CNAME; fi
+            # Publish legal policy pages and version history on the actual GitHub Pages artifact.
+            if [ -d legal ]; then cp -R legal out/legal; fi
             if [ -d assets ]; then cp -R assets out/assets; fi
             if [ -d img ]; then cp -R img out/img; fi
             if [ -d jacinto ]; then cp -R jacinto out/jacinto; fi
@@ -232,6 +234,9 @@ jobs:
 
       - name: Verify generated site
         run: |
+          for page in terms privacy commercial cookies versions; do
+            test -s "out/legal/$page/index.html" || { echo "ERROR: missing legal/$page/index.html in Pages artifact"; exit 1; }
+          done
           echo "=== ARCHIVOS GENERADOS ==="
           find out -maxdepth 3 -type f | sort || true
 

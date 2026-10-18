@@ -171,7 +171,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         await actor(tx,actorId,'ADMIN');
         const rows=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' FOR UPDATE",[addressId]);const row=rows[0];
         if(!row)throw Error('REQUEST_NOT_FOUND');
-        if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&row.request_data.workflow!=='SECURITY_REVIEW')throw Error('MANUAL_REVIEW_NOT_REQUIRED');
+        if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data.workflow))throw Error('MANUAL_REVIEW_NOT_REQUIRED');
         if(row.review_decision===decision)return {id:row.id,status:row.status,decision};
         if(row.status!=='PENDING_REVIEW'||row.review_decision)throw Error('INVALID_STATE_TRANSITION');
         await complete(tx,row);if(row.request_data?.migration){await historicalIntegrity(tx,row);if(decision==='APPROVED'){const proof=await verifyHistoricalPhotos(row.legacy_payload,options.fetch);await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{migration,photoProof}',$2::jsonb) WHERE id=$1::uuid",[row.id,tx.json(proof)]);}}
@@ -183,7 +183,17 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
     // Backend hook for a provider-confirmed payment, never exposed as a client route.
     async activatePaid(addressId:string){
       if(!options.paidWorkflow)throw Error('AUTOMATIC_PAID_ACTIVATION_NOT_ENABLED');
-      return repository.publish('',addressId,AUTOMATIC_PAID);
+      if(!uuid.test(addressId))throw Error('REQUEST_NOT_FOUND');
+      return sql.begin(async tx=>{
+        const rows=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' FOR UPDATE",[addressId]);
+        const row=rows[0];if(!row)throw Error('REQUEST_NOT_FOUND');
+        if(row.status==='PENDING_REVIEW'&&row.request_data?.workflow==='PAYMENT_CONFIRMED')return {id:row.id,status:row.status,workflow:'PAYMENT_CONFIRMED'};
+        if(row.status!=='DRAFT'||row.request_data?.workflow!=='PAYMENT_PENDING')throw Error('INVALID_PAID_ACTIVATION_STATE');
+        await requireConfirmedPayment(tx,row,options.paymentEnvironment??'production');
+        await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',request_data=jsonb_set(request_data,'{workflow}','\"PAYMENT_CONFIRMED\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);
+        await audit(tx,'','PAID_REQUEST_READY_FOR_REVIEW',row.id,true);
+        return {id:row.id,status:'PENDING_REVIEW',workflow:'PAYMENT_CONFIRMED'};
+      });
     },
     async publish(actorId:string,addressId:string,internalMode?:symbol) {
       const automatic=internalMode===AUTOMATIC_PAID;
@@ -208,7 +218,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
             return {id:row.id,status:'PENDING_REVIEW',workflow:'SECURITY_REVIEW',code:row.code};
           }
         }else{
-          if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&row.request_data.workflow!=='SECURITY_REVIEW')throw Error('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
+          if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&row.request_data?.workflow&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data.workflow))throw Error('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
           if((row.status!=='PENDING_REVIEW'&&!(row.status==='SUSPENDED'&&row.request_data?.migration))||row.review_decision!=='APPROVED')throw Error('APPROVAL_REQUIRED');
         }
         await complete(session,row);

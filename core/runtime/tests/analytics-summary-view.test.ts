@@ -31,3 +31,10 @@ test('emitted panel scripts compile and public tracking requires consent',()=>{
  for(const html of [userPanelHtml,userPanelPresentation(new URL('https://direcciones.lat/panel'))])for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
  const tracking=publicAnalyticsScript('AD507-DEMO');expect(()=>new Function(tracking)).not.toThrow();expect(tracking).toContain('c.analytics===true');expect(tracking).toContain("track('visit')");expect(tracking).not.toContain('script.google.com');
 });
+
+
+test('historical interaction queries exclude visits and preserve the immutable snapshot',async()=>{
+ const {preserveHistoricalAnalytics}=await import('../legacy-corrections');const snapshot=await Bun.file(new URL('../legacy.snapshot.txt',import.meta.url)).text();
+ const corrected=preserveHistoricalAnalytics(snapshot);expect(corrected.split("WHERE ad507_code=$1 AND event_type<>'visit'")).toHaveLength(5);
+ expect(corrected.replaceAll("WHERE ad507_code=$1 AND event_type<>'visit'",'WHERE ad507_code=$1')).toBe(snapshot);
+});

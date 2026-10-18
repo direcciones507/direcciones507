@@ -18,9 +18,9 @@ test('visits and interactions are separate; total field never doubles counts',()
  const m=analyticsViewModel({ok:true,plan:'premium_pro',visits:{status:'available',total:10},interactions:{google:8,waze:3,total:11,visit:10}});
  expect(m.visits.total).toBe(10);expect(m.interactionsTotal).toBe(11);
 });
-test('premium gets totals, pro gets types and separate real charts',()=>{
+test('paid cards show individual buttons; pro adds real charts and periods',()=>{
  const data={ok:true,plan:'premium_pro',visits:{status:'available',total:7},interactions:{google:3,qr:1},daily_series:[{day:'2026-10-16',event_type:'visit',total:2},{day:'2026-10-17',event_type:'visit',total:5},{day:'2026-10-17',event_type:'google',total:3}]};
- const html=renderAnalyticsSummary(data);for(const text of ['<details','Acciones por tipo','QR','Visitas por día','Interacciones por día','width:40%','aria-label="Visitas: 5"'])expect(html).toContain(text);
+ const html=renderAnalyticsSummary(data);for(const text of ['<details','Clics por botón','QR','Visitas por día','Interacciones por día','width:40%','aria-label="Visitas: 5"'])expect(html).toContain(text);
  expect(renderAnalyticsSummary({...data,plan:'premium'})).not.toContain('<details');expect(renderAnalyticsSummary({...data,plan:'premium'})).toContain('>4<');
 });
 test('no data and unavailable do not become confirmed zeros',()=>{
@@ -40,3 +40,8 @@ test('historical interaction queries exclude visits and preserve the immutable s
 });
 
 test('existing published places without commercial plan keep basic statistics',()=>{const a={addressType:'PLACE',status:'ACTIVE',code:'AD507-N22023161',planCode:null};expect(canOfferAnalytics(a)).toBe(true);expect(renderPanelAddressCard(a)).toContain('data-analytics-code');});
+
+test('Premium exposes each click with its own label; Pro filters only',()=>{
+ for(const plan of ['premium','premium_pro']){const html=renderAnalyticsSummary({ok:true,plan,interactions:{whatsapp:2,google:3,waze:4,uber:5,call:6,qr:7},period_days:7});for(const label of ['WhatsApp','Google Maps','Waze','Uber','Llamar','QR'])expect(html).toContain(label);for(const n of [2,3,4,5,6,7])expect(html).toContain('>'+n+'<');expect(html).toContain('no confirman conversaciones');expect(html.includes('data-analytics-days')).toBe(plan==='premium_pro');}
+});
+test('missing button records never appear as confirmed zero',()=>{const html=renderAnalyticsSummary({ok:true,plan:'premium',interactions:{google:2}});expect(html).toContain('WhatsApp');expect(html).toContain('Sin datos registrados');expect(html).not.toContain('>0<');});

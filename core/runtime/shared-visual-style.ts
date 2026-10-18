@@ -51,6 +51,10 @@ body .address-card .analytics-metrics strong{display:block;font-size:22px;line-h
 body .address-card .analytics-summary small{display:block;font-size:11px;margin-top:10px}
 body .address-card .analytics-summary summary{font-weight:750;cursor:pointer;padding:10px 0;min-height:40px}
 body .address-card .analytics-summary ul{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+body .address-card .analytics-summary .analytics-actions{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px}
+body .address-card .analytics-actions li{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px}
+body .address-card .analytics-actions strong{font-size:13px;text-align:right}
+body .address-card .analytics-summary select{background:#fff;color:#142c4b;border:1px solid #819bb9;border-radius:6px;padding:8px;max-width:100%;margin:4px 0 8px}
 body .address-card .analytics-daily-chart li>div{height:9px;background:#dbe6f4;border-radius:4px;overflow:hidden;margin:3px 0 6px}
 body .address-card .analytics-daily-chart span{display:block;height:100%;background:#1769aa}
 `;

@@ -8,6 +8,16 @@ jobs:
   browser:
     runs-on: ubuntu-latest
     timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:18.1
+        env:
+          POSTGRES_PASSWORD: isolated-test-only
+          POSTGRES_DB: postgres
+        ports: ["55439:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -19,6 +29,11 @@ jobs:
       - run: npm install --prefix /tmp/ad507-browser playwright@1.56.1
       - run: /tmp/ad507-browser/node_modules/.bin/playwright install --with-deps chromium
       - run: NODE_PATH=/tmp/ad507-browser/node_modules node core/runtime/scripts/analytics-browser.cjs
+      - run: bun test core/runtime/tests/analytics-integration.test.ts
+        env:
+          AD507_TEST_DATABASE_URL: postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres
+          AD507_ANALYTICS_BROWSER: 'true'
+          NODE_PATH: /tmp/ad507-browser/node_modules
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -5,3 +5,5 @@ writeFileSync(new URL('latam.html',dir),commercialEntryHtml(true,new URL('https:
 writeFileSync(new URL('panel.html',dir),userPanelPresentation(new URL('https://direcciones.lat/panel')));
 
 await (await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toFile(new URL('fixture.png',dir).pathname);
+
+writeFileSync(new URL('panel507.html',dir),userPanelPresentation(new URL('https://direcciones507.com/panel')));

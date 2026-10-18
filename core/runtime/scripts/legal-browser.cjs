@@ -41,7 +41,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   assert.equal(await page.locator('iframe[src*="googletagmanager"]').count(),0);assert.equal(await page.locator('script[src*="gtm.js"]').count(),0);
   for(const card of await page.locator('.plan-pricing-card').all())assert.equal(await card.locator('.plan-legal a').count(),0,'legal links should not repeat inside plan cards');
   assert.equal(await page.locator('.footer-legal-links a').count(),4,'all four legal documents remain in the footer');
-  assert.equal(await page.locator('#plan507Details nav a').count(),4,'legal documents remain accessible in plan details');
+  assert.equal(await page.locator('#plan507Details nav a').count(),0,'plan details do not repeat legal documents');
   assert.equal(await page.locator('.footer-legal-links a').first().evaluate(a=>getComputedStyle(a).textDecorationLine),'none','footer links are not underlined');
   assert.equal(await page.locator('.footer-cookie-settings').count(),1,'cookie settings control retained');
   await page.locator('.planes-grid-layout').screenshot({path:path.join(out,device+'-507-plans.png')});

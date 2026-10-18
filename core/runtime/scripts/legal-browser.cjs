@@ -59,7 +59,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   await page.locator('#latamAccess button[aria-label="Cerrar acceso"]').click();
   if(await page.locator('#ad507CookieOptions').isVisible())await page.locator('[data-analytics-choice="false"]').click();
   assert.equal(await page.locator('.latam-plan-card').count(),5);
-  for(const card of await page.locator('.latam-plan-card').all())assert.equal(await card.locator('.plan-legal a').count(),4);
+  for(const card of await page.locator('.latam-plan-card').all())assert.equal(await card.locator('.plan-legal a').count(),0);
   await page.locator('#planes').screenshot({path:path.join(out,device+'-latam-plans.png')});
   authenticated=true;
   const png=fs.readFileSync(path.join(fixtures,'fixture.png'));

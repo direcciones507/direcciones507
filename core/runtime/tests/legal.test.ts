@@ -32,7 +32,7 @@ test('shared forms preserve required unselected checkbox and five plan cards eac
  }
  const html=commercialEntryHtml(true,new URL('https://direcciones.lat/'));
  const cards=[...html.matchAll(/<article class="latam-plan-card"[\s\S]*?<\/article>/g)].map(x=>x[0]);expect(cards).toHaveLength(5);
- for(const card of cards)for(const doc of documents)expect(card).toContain('/legal/'+doc.key);
+ for(const card of cards)for(const doc of documents)expect(card).not.toContain('/legal/'+doc.key);
  expect(html).toContain('latamRegistrationTermsAccepted');
 });
 test('final source, runtime hashes and generated static pages agree without placeholders',()=>{

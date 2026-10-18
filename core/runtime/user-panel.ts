@@ -203,6 +203,27 @@ $('requestForm').onsubmit=async e=>{e.preventDefault();$('preview').textContent=
   }
   window.addEventListener('error',function(e){if(e&&e.target===window)recover();});
   window.addEventListener('unhandledrejection',recover);
-  setTimeout(recover,14000);
+  /* Do not wait for a broken main script: independently check the session now. */
+  var controller=new AbortController();
+  var timeout=setTimeout(function(){controller.abort();},6500);
+  fetch('/v1/user/panel',{credentials:'same-origin',cache:'no-store',signal:controller.signal}).then(function(response){
+    clearTimeout(timeout);
+    if(typeof load==='function')return;
+    if(response.status===401){recover();return;}
+    if(!response.ok)throw Error('SESSION_CHECK_FAILED');
+    return response.json().then(function(data){
+      var loading=document.getElementById('loading'),panel=document.getElementById('panel'),login=document.getElementById('login');
+      if(loading)loading.classList.add('hidden');
+      if(login)login.classList.add('hidden');
+      if(panel)panel.classList.remove('hidden');
+      var identity=document.getElementById('identity');
+      if(identity&&data.user)identity.textContent=[data.user.displayName,data.user.email].filter(Boolean).join(' · ');
+      var actions=document.getElementById('actions');
+      if(actions&&data.actions&&data.actions.prepareRequest)actions.classList.remove('hidden');
+      var message=document.getElementById('message');
+      if(message)message.textContent='La sesión está activa, pero el panel necesita recuperar sus controles. Actualiza esta página.';
+    });
+  }).catch(function(){if(typeof load!=='function')recover();});
+  setTimeout(recover,7000);
 })();
 </script></body></html>`;

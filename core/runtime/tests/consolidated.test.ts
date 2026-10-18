@@ -1255,6 +1255,12 @@ test('isolated paid confirmation: idempotent IPN, private unpaid drafts, mandato
  await expect(repository.publish(adminId,first.id)).rejects.toThrow('APPROVAL_REQUIRED');
  await repository.review(adminId,first.id,'APPROVED');await repository.publish(adminId,first.id);
  expect(reservations).toBe(1);expect(publications).toBe(1);expect((await repository.read(owner,first.id)).status).toBe('ACTIVE');
+ // Signed delivery retries after ADMIN publication remain no-ops.
+ expect((await payments.confirm(proof)).status).toBe('PAID');expect(publications).toBe(1);expect(reservations).toBe(1);
+ await sql.unsafe("UPDATE ad507.addresses SET status='SUSPENDED' WHERE id=$1::uuid",[first.id]);
+ expect((await payments.confirm(proof)).status).toBe('PAID');expect((await repository.read(owner,first.id)).status).toBe('SUSPENDED');expect(publications).toBe(1);
+ await sql.unsafe("UPDATE ad507.addresses SET status='ACTIVE' WHERE id=$1::uuid",[first.id]);
+ const afterReplay=await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE action='PAID_REQUEST_READY_FOR_REVIEW' AND entity_id=$1",[first.id]);expect(afterReplay[0].n).toBe(1);
  const free=await repository.submit(owner,'auto-free-'+stamp,{...base,plan:'BUSINESS_FREE',name:'Free '+stamp},[file]);expect(free.status).toBe('PENDING_REVIEW');await expect(repository.activatePaid(free.id)).rejects.toThrow('INVALID_PAID_ACTIVATION_STATE');
  await expect(repository.publish(adminId,free.id)).rejects.toThrow('APPROVAL_REQUIRED');
  const risky=await repository.submit(owner,'auto-risk-'+stamp,{...base,reference:'Different reference, same location'},[file]);

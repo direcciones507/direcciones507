@@ -76,6 +76,13 @@ try{
       kind:getComputedStyle(card.querySelector('.address-kind')).color,
       plan:getComputedStyle(card.querySelector('.address-plan')).color
     }));
+    if(!/linear-gradient/.test(cardContrast.background))console.log('CARD_VISUAL_DIAGNOSTIC',JSON.stringify({
+      cardContrast,
+      bodyClass:await page.locator('body').getAttribute('class'),
+      visibleStyleCount:await page.evaluate(()=>document.styleSheets.length),
+      styleHasContract:await page.evaluate(()=>document.head.innerHTML.includes('Final contrast contract')),
+      cardClass:await page.locator('.address-card').first().getAttribute('class')
+    }));
     assert.match(cardContrast.background,/linear-gradient/);
     assert.equal(cardContrast.kind,'rgb(255, 255, 255)');
     assert.equal(cardContrast.plan,'rgb(234, 245, 255)');

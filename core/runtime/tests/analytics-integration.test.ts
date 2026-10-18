@@ -26,6 +26,16 @@ test.skipIf(!database)('persisted events, exact ownership, plans, repeat-safe SQ
  await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id,ownership_role) VALUES($1,$2,'OWNER')",[id,owner]);
  expect((await repo.summary(owner,code)).visits.status).toBe('no_data');expect(()=>repo.summary(other,code)).toThrow('NOT_FOUND');
  const results=await Promise.all(Array.from({length:6},()=>repo.track(code,'visit',session)));expect(results.filter(r=>!r.duplicate)).toHaveLength(1);
+ // Simulate two concurrent loads straddling a half-hour boundary.
+ const boundary=Math.floor(Date.now()/1800000)*1800000;
+ const boundarySession='b'.repeat(43);
+ const cross=await Promise.all([repo.track(code,'call',boundarySession,boundary-1000),repo.track(code,'call',boundarySession,boundary+1000)]);
+ expect(cross.filter(r=>!r.duplicate)).toHaveLength(1);
+ // A genuinely expired event must not suppress later legitimate activity.
+ await sql.unsafe("UPDATE ad507.ad507_business_analytics_events SET occurred_at=now()-interval '31 minutes' WHERE ad507_code=$1 AND event_type='call'",[code]);
+ expect((await repo.track(code,'call',boundarySession,boundary+1800000+1000)).duplicate).toBe(false);
+ // Cleanup here affects only the disposable isolated test database.
+ await sql.unsafe("DELETE FROM ad507.ad507_business_analytics_events WHERE ad507_code=$1 AND event_type='call'",[code]);
  await repo.track(code,'google',session);await repo.track(code,'qr',session);
  const summary=await repo.summary(owner,code);expect(summary.visits).toEqual({status:'available',total:1});
  if(['BUSINESS_FREE','PLACE'].includes(plan)){expect(summary.interactions).toBeUndefined();expect(summary.daily_series).toBeUndefined();}else{expect(summary.interactions).toEqual({google:1,qr:1});if(plan==='BUSINESS_PREMIUM_PRO')expect(summary.daily_series).toHaveLength(3);else expect(summary.daily_series).toBeUndefined();}

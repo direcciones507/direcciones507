@@ -45,3 +45,14 @@ export function renderAnalyticsSummary(summary: AnalyticsSummary): string {
     '<h4>Interacciones por día</h4>'+(trend?'<ul>'+trend+'</ul>':'<p>Sin registros para este período.</p>')+
     '<p class="muted">Las interacciones no representan visitantes únicos.</p></section>';
 }
+
+/** Analytics is opt-in for active commercial plans only.
+ * Never expose a statistics action for pending payments or residential/place cards.
+ * Server-side ownership checks remain mandatory before any data is returned.
+ */
+export function canOfferAnalytics(a: Record<string,unknown>): boolean {
+  return a.addressType==='BUSINESS' && a.status==='ACTIVE' &&
+    (a.planCode==='BUSINESS_PREMIUM'||a.planCode==='BUSINESS_PREMIUM_PRO') &&
+    a.workflow!=='PAYMENT_PENDING' &&
+    typeof a.code==='string' && /^AD507-[A-Za-z0-9]+(?:-[0-9]+)?$/.test(a.code);
+}

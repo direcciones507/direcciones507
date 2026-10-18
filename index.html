@@ -547,7 +547,15 @@
 
 /* Mobile navigation: center the account action without altering the request CTA. */
 @media(max-width:767px){#mainAppHeader .nav-menu a.btn-nav-action[href*="access=1"]{display:flex!important;align-items:center;justify-content:center;width:min(100%,300px);margin-inline:auto!important;text-align:center;box-sizing:border-box}}
-</style>
+    /* Legal navigation is centralized in the footer and the plan details dialog. */
+    .footer-legal-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 20px;margin:20px auto 10px;max-width:950px}
+    .footer-legal-links a,.footer-cookie-settings{font:700 14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#b9e4ff;text-decoration:none;letter-spacing:.005em}
+    .footer-legal-links a{display:inline-flex;align-items:center;padding:7px 3px;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+    .footer-legal-links a:hover,.footer-cookie-settings:hover{color:#fff;border-color:#6bd7f7}
+    .footer-legal-links a:focus-visible,.footer-cookie-settings:focus-visible{outline:3px solid #6bd7f7;outline-offset:3px;border-radius:4px}
+    .footer-cookie-settings{display:inline-flex;align-items:center;justify-content:center;min-height:38px;margin:0 auto 12px;padding:7px 14px;background:transparent;border:1px solid #587c9d;border-radius:10px;cursor:pointer}
+    @media(max-width:600px){.footer-legal-links{gap:4px 13px;padding:0 10px}.footer-legal-links a,.footer-cookie-settings{font-size:13px}}
+  </style>
 </head>
 <body>
 
@@ -706,28 +714,28 @@
             <h4>Agregar lugar</h4><div class="plan-numeric-val">Gratis</div>
             <p class="plan-507-summary">Iglesias, parques, cascadas, ríos, playas y atractivos de interés. Solo lugares no comerciales; sujetos a revisión y aprobación.</p>
             <ul class="plan-perks-list" hidden><li>Iglesias, parques, cascadas, ríos, playas y atractivos</li><li>Solo lugares de interés no comerciales</li><li>Disponible por ahora en Panamá y Costa Rica</li><li>Sujeto a revisión y aprobación</li></ul>
-            <button type="button" class="btn-plan-action-trigger" data-507-plan="PLACE" style="cursor:pointer;width:100%;border:0">Elegir plan</button><nav class="plan-legal" aria-label="Condiciones del plan" style="font-size:12px;line-height:1.8;margin-top:12px"><a href="/legal/terms" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Términos</a> · <a href="/legal/privacy" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Privacidad</a> · <a href="/legal/commercial" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Comercial</a> · <a href="/legal/cookies" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Cookies</a></nav><p style="font-size:13px;color:#edf5ff;line-height:1.6">Revisión administrativa de hasta 48 horas después del envío. Aprobación no garantizada.</p>
+            <button type="button" class="btn-plan-action-trigger" data-507-plan="PLACE" style="cursor:pointer;width:100%;border:0">Elegir plan</button><p style="font-size:13px;color:#edf5ff;line-height:1.6">Revisión administrativa de hasta 48 horas después del envío. Aprobación no garantizada.</p>
           </div>
           <div class="plan-pricing-card">
             <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-store" aria-hidden="true"></i></span><span class="plan-507-tag">Para comenzar</span></div>
             <h4>Negocio Gratis</h4><div class="plan-numeric-val">Gratis</div>
             <p class="plan-507-summary">Logo, horario, contacto, navegación y código QR para tu negocio.</p>
             <ul class="plan-perks-list" hidden><li>Código AD507 numérico</li><li>Logo del negocio</li><li>Google Maps, Waze, Uber y WhatsApp</li><li>Ver mapa, llamar y compartir</li><li>Código QR</li><li>Horario y referencia</li><li>Contador básico de visitas</li><li>Indexado en Google</li></ul>
-            <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_FREE" style="cursor:pointer;width:100%;border:0">Elegir plan</button><nav class="plan-legal" aria-label="Condiciones del plan" style="font-size:12px;line-height:1.8;margin-top:12px"><a href="/legal/terms" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Términos</a> · <a href="/legal/privacy" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Privacidad</a> · <a href="/legal/commercial" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Comercial</a> · <a href="/legal/cookies" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Cookies</a></nav><p style="font-size:13px;color:#edf5ff;line-height:1.6">Revisión administrativa de hasta 48 horas después del envío. Aprobación no garantizada.</p>
+            <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_FREE" style="cursor:pointer;width:100%;border:0">Elegir plan</button><p style="font-size:13px;color:#edf5ff;line-height:1.6">Revisión administrativa de hasta 48 horas después del envío. Aprobación no garantizada.</p>
           </div>
           <div class="plan-pricing-card popular">
             <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-star" aria-hidden="true"></i></span><span class="plan-507-tag">Más herramientas</span></div>
             <h4>Negocio Premium</h4><div class="plan-numeric-val">$19.99</div>
             <p class="plan-507-summary">Código con nombre, redes sociales, código postal, zona postal y estadísticas.</p>
             <ul class="plan-perks-list" hidden><li>Todo lo incluido en Negocio Gratis</li><li>Código AD507 con nombre del negocio</li><li>Redes sociales</li><li>Código postal y zona postal</li><li>Estadísticas de tu Dirección507</li><li>Indexado en Google</li></ul>
-            <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM" style="cursor:pointer;width:100%;border:0">Elegir plan</button><nav class="plan-legal" aria-label="Condiciones del plan" style="font-size:12px;line-height:1.8;margin-top:12px"><a href="/legal/terms" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Términos</a> · <a href="/legal/privacy" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Privacidad</a> · <a href="/legal/commercial" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Comercial</a> · <a href="/legal/cookies" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Cookies</a></nav>
+            <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM" style="cursor:pointer;width:100%;border:0">Elegir plan</button>
           </div>
           <div class="plan-pricing-card">
             <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-crown" aria-hidden="true"></i></span><span class="plan-507-tag">Mayor presencia</span></div>
             <h4>Premium Pro</h4><div class="plan-numeric-val">$39.99</div>
             <p class="plan-507-summary">Beneficios Premium y galería de hasta cinco fotografías.</p>
             <ul class="plan-perks-list" hidden><li>Todo lo incluido en Negocio Premium</li><li>Galería de hasta 5 fotos</li><li>Estadísticas de tu Dirección507</li><li>Indexado en Google</li></ul>
-            <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM_PRO" style="cursor:pointer;width:100%;border:0">Elegir plan</button><nav class="plan-legal" aria-label="Condiciones del plan" style="font-size:12px;line-height:1.8;margin-top:12px"><a href="/legal/terms" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Términos</a> · <a href="/legal/privacy" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Privacidad</a> · <a href="/legal/commercial" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Comercial</a> · <a href="/legal/cookies" target="_blank" rel="noopener" style="color:#a9d7ff;text-decoration:underline">Cookies</a></nav>
+            <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM_PRO" style="cursor:pointer;width:100%;border:0">Elegir plan</button>
           </div>
           <aside class="latam-expansion-card" aria-label="Conoce Direcciones LATAM">
             <div class="latam-expansion-symbol" aria-hidden="true"><i class="fa-solid fa-earth-americas"></i></div>
@@ -982,11 +990,13 @@
         </a>
       </div>
       
-      <div style="margin-top: 5px;">
-        <a href="/legal/terms" target="_blank" rel="noopener" style="color:#9dd4ff;text-decoration:underline;font-size:14px;font-weight:700">Términos y Condiciones</a> · <a href="/legal/privacy" target="_blank" rel="noopener" style="color:#9dd4ff;text-decoration:underline;font-size:14px;font-weight:700">Política de Privacidad</a> · <a href="/legal/commercial" target="_blank" rel="noopener" style="color:#9dd4ff;text-decoration:underline;font-size:14px;font-weight:700">Política Comercial</a> · <a href="/legal/cookies" target="_blank" rel="noopener" style="color:#9dd4ff;text-decoration:underline;font-size:14px;font-weight:700">Política de Cookies</a>
-      </div>
-
-      <button type="button" data-cookie-settings style="background:transparent;border:0;color:#9dd4ff;text-decoration:underline;font:600 14px system-ui;cursor:pointer">Configurar cookies</button><div class="footer-copy">© 2026 <strong>Direcciones507</strong>. Todos los derechos reservados. Hecho en Panamá 🇵🇦<br><span style="color:#94a3b8;">Powered by <strong>AD507 Technology</strong></span></div>
+      <nav class="footer-legal-links" aria-label="Documentos legales">
+        <a href="/legal/terms" target="_blank" rel="noopener">Términos y Condiciones</a>
+        <a href="/legal/privacy" target="_blank" rel="noopener">Política de Privacidad</a>
+        <a href="/legal/commercial" target="_blank" rel="noopener">Política Comercial</a>
+        <a href="/legal/cookies" target="_blank" rel="noopener">Política de Cookies</a>
+      </nav>
+      <button type="button" data-cookie-settings class="footer-cookie-settings">Configurar cookies</button><div class="footer-copy">© 2026 <strong>Direcciones507</strong>. Todos los derechos reservados. Hecho en Panamá 🇵🇦<br><span style="color:#94a3b8;">Powered by <strong>AD507 Technology</strong></span></div>
     </div>
   </footer>
 

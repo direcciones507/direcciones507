@@ -720,7 +720,7 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
     const activation=createRequestRepository(db,{r2:null,paidWorkflow:true,paymentEnvironment:'test'});
     expect(await activation.activatePaid(address)).toMatchObject({status:'PENDING_REVIEW',workflow:'PAYMENT_CONFIRMED'});
     expect(await activation.activatePaid(address)).toMatchObject({status:'PENDING_REVIEW',workflow:'PAYMENT_CONFIRMED'});
-    expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1::uuid AND action='PAID_REQUEST_READY_FOR_REVIEW'",[address]))[0].n).toBe(1);
+    expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='PAID_REQUEST_READY_FOR_REVIEW'",[address]))[0].n).toBe(1);
     await expect(repo.quote(clientId,address)).rejects.toThrow('INVALID_PAYMENT_REQUEST');
     expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='YAPPY_PAYMENT_CONFIRMED'",[a.order.id]))[0].n).toBe(2);
     const free=await make('BUSINESS_FREE');

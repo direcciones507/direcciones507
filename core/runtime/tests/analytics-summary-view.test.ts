@@ -55,3 +55,18 @@ test('unavailable interaction data is not misrepresented as zero',()=>{
  const html=renderAnalyticsSummary({ok:true,plan:'premium',visits:{status:'not_available'}});
  expect(html).toContain('Interacciones registradas:</strong> Aún no disponible');
 });
+
+test('premium pro renders proportional daily bars with accessible labels',()=>{
+ const html=renderAnalyticsSummary({ok:true,plan:'premium_pro',daily_series:[
+  {day:'2026-10-16',event_type:'google',total:2},
+  {day:'2026-10-17',event_type:'google',total:4}
+ ]});
+ expect(html).toContain('class="analytics-daily-chart"');
+ expect(html).toContain('width:50%');
+ expect(html).toContain('width:100%');
+ expect(html).toContain('aria-label="Interacciones: 4"');
+});
+test('premium does not expose advanced daily chart',()=>{
+ const html=renderAnalyticsSummary({ok:true,plan:'premium',daily_series:[{day:'2026-10-17',event_type:'google',total:4}]});
+ expect(html).not.toContain('analytics-daily-chart');
+});

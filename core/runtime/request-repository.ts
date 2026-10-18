@@ -191,7 +191,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         if(row.status!=='DRAFT'||row.request_data?.workflow!=='PAYMENT_PENDING')throw Error('INVALID_PAID_ACTIVATION_STATE');
         await requireConfirmedPayment(tx,row,options.paymentEnvironment??'production');
         await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',request_data=jsonb_set(request_data,'{workflow}','\"PAYMENT_CONFIRMED\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);
-        await audit(tx,'','PAID_REQUEST_READY_FOR_REVIEW',row.id,true);
+        await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_READY_FOR_REVIEW','ADDRESS',$1::uuid)",[row.id]);
         return {id:row.id,status:'PENDING_REVIEW',workflow:'PAYMENT_CONFIRMED'};
       });
     },

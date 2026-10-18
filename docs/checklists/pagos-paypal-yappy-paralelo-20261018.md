@@ -61,3 +61,10 @@ No activar cobros reales; no escribir secretos ni datos de tarjetas en GitHub; n
 
 ## Criterio de terminado
 Ambas integraciones están construidas, auditables y comprobadas en entornos de prueba, con interruptores independientes apagados. El lanzamiento de cada pasarela requiere autorización posterior y evidencia de transacción verificada. **Este checklist no afirma que ya estén conectadas.**
+
+## Alcance comercial Panamá confirmado 18-oct-2026
+
+- **Residencial / Persona ($12.99)**: plan pagado, actualmente oculto en la presentación; preparar checkout Yappy ahora y mostrarlo cuando se autorice reemplazar la tarjeta Negocio Gratis por Persona.
+- **Negocio Premium ($19.99)** y **Negocio Premium Pro ($39.99)**: checkout Yappy para ambos.
+- **Negocio Gratis** y **Lugar Gratis**: sin cobro, sin botón de pago ni redirección a checkout. No retirar Negocio Gratis antes de autorización expresa para el cambio de tarjetas.
+- Usar un solo Core y repositorio de órdenes, precios validados en servidor, país Panamá, confirmación IPN auténtica y activación posterior a pago confirmado. Mantener pagos reales apagados hasta verificación de ruta IPN, esquema y flujo completo.

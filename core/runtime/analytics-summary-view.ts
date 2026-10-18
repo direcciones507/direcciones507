@@ -26,3 +26,22 @@ export function analyticsViewModel(summary: AnalyticsSummary) {
   return {plan:summary.plan,pro,visits,actions:pro?actions:[],daily:days,
     interactionsTotal:actions.reduce((sum,row)=>sum+row.count,0)};
 }
+
+/** Safe HTML for a private statistics section, only from validated view-model values. */
+export function renderAnalyticsSummary(summary: AnalyticsSummary): string {
+  const m=analyticsViewModel(summary);
+  const number=(n:number)=>n.toLocaleString('es-PA');
+  const visits=m.visits.available?number(m.visits.total!):'Aún no disponible';
+  const head='<section class="analytics-summary" aria-label="Estadísticas de mi dirección"><h3>Estadísticas</h3>'+
+    '<p><strong>Visitas:</strong> '+visits+'</p>'+
+    '<p><strong>Interacciones registradas:</strong> '+number(m.interactionsTotal)+'</p>';
+  if(!m.pro)return head+'</section>';
+  const rows=m.actions.map(a=>'<li><span>'+a.label+'</span>: <strong>'+number(a.count)+'</strong></li>').join('');
+  const daily=new Map<string,number>();
+  for(const row of m.daily)daily.set(row.day,(daily.get(row.day)??0)+row.total);
+  const trend=[...daily.entries()].sort(([a],[b])=>a.localeCompare(b))
+    .map(([day,total])=>'<li><time datetime="'+day+'">'+day+'</time>: '+number(total)+'</li>').join('');
+  return head+'<h4>Acciones por tipo</h4><ul>'+rows+'</ul>'+
+    '<h4>Interacciones por día</h4>'+(trend?'<ul>'+trend+'</ul>':'<p>Sin registros para este período.</p>')+
+    '<p class="muted">Las interacciones no representan visitantes únicos.</p></section>';
+}

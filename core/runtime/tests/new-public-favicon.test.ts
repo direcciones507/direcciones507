@@ -23,16 +23,19 @@ function pageFixture(countryCode:'PA'|'MX',historical=false){
   } as any;
 }
 
-test('new Core digital addresses PA and LATAM load favicons from the existing absolute asset host',()=>{
-  for(const country of ['PA','MX'] as const){
-    const html=renderNewPublicAddress(pageFixture(country));
-    expect(html).toContain('id="dynamicFavicon" rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"');
-    expect(html).toContain('id="dynamicAppleIcon" rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"');
-    expect(html).not.toContain('href="/assets/icon-192.png"');
-    expect(html).not.toContain('href="/assets/icon-180.png"');
-    // The WhatsApp/Open Graph image must remain the uploaded logo, not the favicon.
+test('new Core address uses 507 favicon for Panama and LATAM emblem for other countries',()=>{
+  const panama=renderNewPublicAddress(pageFixture('PA'));
+  expect(panama).toContain('id="dynamicFavicon" rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"');
+  expect(panama).toContain('id="dynamicAppleIcon" rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"');
+  const latam=renderNewPublicAddress(pageFixture('MX'));
+  expect(latam).toContain('id="dynamicFavicon" rel="icon" type="image/png" sizes="32x32" href="https://direcciones507.com/assets/favicon-latam-32.png"');
+  expect(latam).toContain('id="dynamicAppleIcon" rel="apple-touch-icon" href="https://direcciones507.com/assets/favicon-latam-32.png"');
+  expect(latam).not.toContain('href="https://direcciones507.com/assets/icon-192.png"');
+  // Keep the WhatsApp preview business-specific for both countries.
+  for(const html of [panama,latam]){
     expect(html).toContain('<meta property="og:image" content="'+logo+'">');
     expect(html).toContain('<meta property="og:title" content="Mi Negocio">');
+    expect(html).toContain('Frente al colegio');
   }
 });
 

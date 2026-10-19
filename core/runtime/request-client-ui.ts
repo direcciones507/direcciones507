@@ -33,6 +33,29 @@ async function openUserRequest(id,editing=false){
   }catch{if(version===requestDetailVersion)content.textContent='No se pudo cargar la solicitud. Cierra el detalle e intenta nuevamente.'}
 }
 document.getElementById('addresses').addEventListener('click',async e=>{
+  const archive=e.target.closest('[data-archive-request]');
+  if(archive){
+    e.preventDefault();e.stopPropagation();
+    const id=archive.dataset.archiveRequest,card=archive.closest('[data-request]');
+    if(!/^[a-f0-9-]{36}$/.test(id))return;
+    const label=card?.querySelector('.address-name')?.textContent||'esta solicitud';
+    if(!confirm('¿Eliminar la solicitud «'+label+'» de Mi cuenta? Solo se retiran solicitudes sin procesar. No podrás deshacer esta acción desde tu cuenta.'))return;
+    const message=document.getElementById('message');
+    archive.disabled=true;archive.textContent='Eliminando…';
+    try{
+      const response=await fetch('/v1/user/requests/'+id+'/archive',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:'{}'});
+      if(!response.ok)throw Error('ARCHIVE_FAILED');
+      card?.remove();
+      const detail=document.getElementById('requestDetail');if(detail){requestDetailVersion++;detail.classList.add('hidden');}
+      const grid=document.getElementById('addresses');
+      if(!grid.querySelector('.address-card'))document.getElementById('addressSection')?.classList.add('hidden');
+      message.textContent='Solicitud eliminada de Mi cuenta.';
+    }catch{
+      archive.disabled=false;archive.textContent='Eliminar solicitud';
+      message.textContent='No se pudo eliminar la solicitud. Comprueba que siga pendiente y que no tenga pagos asociados.';
+    }
+    return;
+  }
   const edit=e.target.closest('[data-edit-address]');if(edit){openUserRequest(edit.dataset.editAddress,true);return;}
   const copy=e.target.closest('[data-copy-code]');
   if(copy){

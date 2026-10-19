@@ -305,7 +305,11 @@ function prepareLatamRequest(e,type,plan){
 #latamAccess .latam-auth-divider{margin:4px 0}
 @media(max-width:480px){#latamAccess{width:calc(100vw - 22px);padding:15px 16px 17px}#latamAccess h2{font-size:22px}#latamAccess .latam-auth-links{column-gap:10px}#latamAccess .latam-auth-links button{font-size:12px}}
 /* Persistent cookie preferences must be available but unobtrusive. */
-.latam-footer [data-cookie-settings]{display:inline!important;min-height:0!important;width:auto!important;padding:2px 0!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#bed1e8!important;font:500 12px/1.5 system-ui,sans-serif!important;text-decoration:underline!important;text-underline-offset:2px!important}
+.latam-footer [data-cookie-settings]{display:inline!important;min-height:0!important;width:auto!important;padding:2px 0!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#bed1e8!important;font:500 12px/1.5 system-ui,sans-serif!important;text-decoration:none!important}
+/* Footer-only visual polish: keep all legal links clickable, but remove underlines. */
+body.latam .latam-footer-inner nav[aria-label="Información y contacto"] a[href^="/legal/"],body.latam .latam-footer-inner nav[aria-label="Información y contacto"] [data-cookie-settings]{text-decoration:none!important;border-bottom:0!important}
+body.latam .latam-footer-inner nav[aria-label="Información y contacto"] a[href^="/legal/"]:hover,body.latam .latam-footer-inner nav[aria-label="Información y contacto"] [data-cookie-settings]:hover{color:#fff!important}
+
 #latamAccess #latamRegistrationTerms[hidden]{display:none!important}
 /* LATAM plan cards: legibility only, no layout or business-logic changes. */
 #commercialWelcome .latam-plan-card h3{color:#ffffff!important;opacity:1!important}

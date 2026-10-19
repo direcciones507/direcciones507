@@ -9,7 +9,7 @@ test('C01/C09 public menu keeps four destinations and private addresses stay in 
 test('C02/C03/C08 reuse OAuth and preserve session and error nodes',()=>{
  const page=html();expect(page).toContain('data-latam-session="guest" href="#latamAccess"');expect(page).toContain('data-latam-session="authenticated" href="/panel"');
  expect(page).toContain('id="login" class="hidden" hidden');expect(page).toContain('id="message" role="status"');
- expect(page).toContain('latamCanPrepare=!!d.actions.prepareRequest');expect(page).toContain("if(document.getElementById('commercialCountry').value!=='PA')");
+ expect(page).toContain('latamCanPrepare=!!d.actions.prepareRequest');expect(page).toContain("if(document.getElementById('commercialCountry').value!=='PA'&&!(type==='PLACE'||type==='BUSINESS'");
  expect(userPanelHtml).not.toContain('latamRequestDialog');expect(userPanelHtml).toContain('<h1>Mi panel</h1>');
  for(const script of page.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
 });

@@ -22,6 +22,8 @@ function fakeSql(row:any=draft,orders:any[]=[]){
 test('owner can hide only an unpublished, unreviewed and unpaid request and audit the action',async()=>{
  const {sql,calls}=fakeSql();
  expect(await archiveUnprocessedRequest(sql,owner,requestId)).toEqual({id:requestId,status:'ARCHIVED'});
+ const rejected=fakeSql({...draft,status:'PENDING_REVIEW',review_decision:'REJECTED'});
+ expect(await archiveUnprocessedRequest(rejected.sql,owner,requestId)).toEqual({id:requestId,status:'ARCHIVED'});
  expect(calls[0].query).toContain("o.ownership_role='OWNER'");
  expect(calls[0].query).toContain("u.status='ACTIVE'");
  expect(calls[0].query).toContain('FOR UPDATE OF a');
@@ -38,6 +40,7 @@ test('missing ownership and any settled or in-flight order fail without writes',
   [draft,[{status:'PAID'}],'INVALID_STATE_TRANSITION'],
   [{...draft,status:'ACTIVE',code:'AD507-N123',publication_receipt:'receipt'},[],'INVALID_STATE_TRANSITION'],
   [{...draft,status:'PENDING_REVIEW',review_decision:'APPROVED'},[],'INVALID_STATE_TRANSITION'],
+  [{...draft,status:'PENDING_REVIEW',review_decision:'REJECTED',code:'AD507-USED'},[],'INVALID_STATE_TRANSITION'],
   [{...draft,status:'ARCHIVED'},[],'INVALID_STATE_TRANSITION'],
   [{...draft,request_data:{migration:{id:'legacy'}}},[],'INVALID_STATE_TRANSITION'],
   [{...draft,request_data:{createdByAdmin:owner}},[],'INVALID_STATE_TRANSITION']
@@ -85,6 +88,6 @@ test('account exposes Eliminar only with server-granted eligibility',async()=>{
  expect(requests[0]).toContain('AS "canArchive"');
  expect(requests[0]).toContain("po.address_id=a.id");
  expect(requests[0]).toContain("ownership_role='OWNER'");
- expect(requests[0]).toContain("a.review_decision IS NULL");
- expect(requests[0]).toContain("a.publication_receipt IS NULL");
+ expect(requests[0]).toContain("to_jsonb(a)->>'review_decision' IS NULL");
+ expect(requests[0]).toContain("to_jsonb(a)->>'publication_receipt' IS NULL");
 });

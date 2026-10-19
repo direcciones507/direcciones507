@@ -37,7 +37,7 @@ async function openRequestReview(id){
     }
 
     for(const [action,label]of [['approve','Aprobar'],['reject','Rechazar'],['publish','Publicar'],['rollback','Restaurar publicación antigua']]){
-      if(action==='publish'&&(r.countryCode||r.extras.countryCode||'PA')!=='PA')continue;
+      if(action==='publish'&&(r.countryCode||r.extras.countryCode||'PA')!=='PA'&&!((r.type==='PLACE'&&r.extras.plan==='PLACE')||(r.type==='BUSINESS'&&r.extras.plan==='BUSINESS_FREE')))continue;
       if(action==='rollback'){if(!r.extras.migration||r.status!=='ACTIVE')continue;}else if(action==='publish'){if(!['PENDING_REVIEW',...(r.extras.migration?['SUSPENDED']:[])].includes(r.status)||r.review!=='APPROVED')continue;}else if(r.status!=='PENDING_REVIEW'||r.review)continue;
       const button=document.createElement('button');button.className='btn google';button.textContent=label;actions.append(button);
       button.onclick=async()=>{button.disabled=true;try{const reply=await fetch('/v1/admin/requests/'+id+'/'+action,{method:'POST',credentials:'same-origin'});const body=await reply.json();if(!reply.ok){document.getElementById('reviewMessage').textContent=body.error==='CANONICAL_PUBLICATION_NOT_READY'?'Publicación bloqueada hasta verificar el asignador y el publicador.':'No se pudo completar la operación. La solicitud se conserva.';button.disabled=false;return}await openRequestReview(id)}catch{document.getElementById('reviewMessage').textContent='No se pudo completar la operación. Intenta nuevamente.';button.disabled=false}};

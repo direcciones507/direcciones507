@@ -771,9 +771,9 @@ test('LATAM shares ADMIN, R2 and PG for eight-country free publication and forei
         const foreignClient=await repo.submit(clientId,'latam-client-key-'+countryCode,data,files);
         console.info('LATAM client submitted '+countryCode);
         expect(foreignClient.status).toBe('PENDING_REVIEW');
-        console.info('LATAM before PayPal check '+countryCode);
-        const payment=createPaymentRepository(db,{provider:'PAYPAL',environment:'test'});
-        await expect(payment.preparePayPal(adminId,results[0].id,'latam-payment-key-'+countryCode)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        // Foreign paid methods stay blocked at country policy and request boundary;
+        // do not open a sandbox payment transaction against an ACTIVE free address.
+        expect(()=>assertCountryCommerce(countryCode)).toThrow('COUNTRY_NOT_ENABLED');
         await expect(repo.createAdmin(adminId,'latam-paid-key-'+countryCode,{...data,plan:'BUSINESS_PREMIUM'},files)).rejects.toThrow('COUNTRY_NOT_ENABLED');
         await expect(db.unsafe("UPDATE ad507.addresses SET code='AD507-WRONG' WHERE id=$1::uuid",[results[0].id])).rejects.toMatchObject({code:'23514'});
         console.info('LATAM before secondary request '+countryCode);

@@ -120,7 +120,7 @@ try{
 
     await page.locator('[data-request-detail]').click();
     await page.getByRole('heading',{name:'Solicitud de prueba'}).waitFor();
-    assert.equal(await page.getByRole('link',{name:'Pagar ahora con Yappy'}).getAttribute('href'),'/panel/payments/'+id);
+    assert.equal(await page.getByRole('link',{name:'Ir al pago'}).getAttribute('href'),'/panel/payments/'+id);
     assert.equal(await page.locator('#requestForm').isVisible(),false);
     await page.getByRole('button',{name:'Cerrar detalle'}).click();
     await page.locator('#toggleNewRequest').click();await page.locator('#business').click();await page.locator('#requestForm').waitFor({state:'visible'});

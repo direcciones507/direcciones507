@@ -39,7 +39,7 @@ test('Panama delegates prices unchanged; all foreign pricing blocks without call
  for(const c of Object.keys(COUNTRIES).filter(c=>c!=='PA'))expect(()=>preparedCountryAmount(c,'EXISTING',authority)).toThrow('COUNTRY_PRICING_NOT_CONFIGURED');
  expect(calls).toBe(2);
 });
-import {requestCountry,assertCountryCommerce,proposedCountryUrl,paymentMethods,informativeLocalAmount} from '../country-configuration';
+import {requestCountry,assertCountryCommerce,assertCountryPublication,freeCountryPublicationAllowed,FREE_LAUNCH_COUNTRIES,proposedCountryUrl,paymentMethods,informativeLocalAmount} from '../country-configuration';
 import {validateRequestDraft} from '../request-validation';
 import {userPanelHtml,adminCreationHtml,commercialEntryHtml} from '../user-panel';
 import {prepareContacts} from '../panel-preparation';
@@ -61,7 +61,7 @@ test('server country/territory validation and international phones preserve Pana
 test('domains enforce country/prefix, methods and informative rates do not enable charges',()=>{
  for(const c of Object.keys(COUNTRIES))expect(new URL(proposedCountryUrl(c,proposedInternationalCode(c,id))).origin).toBe('https://direcciones.lat');
  expect(()=>proposedCountryUrl('CO','AD507-123')).toThrow('CANONICAL_CODE_INVALID');
- expect(paymentMethods('PA')).toEqual(['PAYPAL','YAPPY']);expect(paymentMethods('CO')).toEqual(['PAYPAL']);
+ expect(paymentMethods('PA')).toEqual(['PAYPAL','YAPPY']);expect(paymentMethods('CO')).toEqual([]);
  expect(informativeLocalAmount(1999,4000)).toBe(79960);expect(()=>informativeLocalAmount(1999,NaN)).toThrow('INVALID_EXCHANGE_RATE');
 });
 test('ADMIN, citizen and both commercial entries reuse one form with valid scripts',()=>{
@@ -72,4 +72,27 @@ test('ADMIN, citizen and both commercial entries reuse one form with valid scrip
   expect(html).toContain("countryCode:$('countryCode').value");
  }
  expect(adminCreationHtml()).toContain("fetch('/v1/admin/requests'");expect(userPanelHtml).toContain("fetch('/v1/user/requests'");
+});
+
+test('eight-country free launch enables Business Free and Place only, preserving Panama paid',()=>{
+ expect(FREE_LAUNCH_COUNTRIES).toEqual(['PA','CR','CO','GT','SV','HN','NI','MX']);
+ for(const code of FREE_LAUNCH_COUNTRIES){
+  expect(freeCountryPublicationAllowed(code,'BUSINESS','BUSINESS_FREE')).toBe(true);
+  expect(freeCountryPublicationAllowed(code,'PLACE','PLACE')).toBe(true);
+  expect(()=>assertCountryPublication(code,'BUSINESS','BUSINESS_FREE')).not.toThrow();
+  expect(()=>assertCountryPublication(code,'PLACE','PLACE')).not.toThrow();
+ }
+ for(const code of FREE_LAUNCH_COUNTRIES.filter(c=>c!=='PA')){
+  for(const [type,plan] of [['BUSINESS','BUSINESS_PREMIUM'],['BUSINESS','BUSINESS_PREMIUM_PRO'],['RESIDENTIAL','RESIDENTIAL']]){
+   expect(freeCountryPublicationAllowed(code,type,plan)).toBe(false);
+   expect(()=>assertCountryPublication(code,type,plan)).toThrow('COUNTRY_NOT_ENABLED');
+  }
+  expect(()=>assertCountryCommerce(code)).toThrow('COUNTRY_NOT_ENABLED');
+  expect(paymentMethods(code)).toEqual([]);
+ }
+ for(const code of ['PE','EC','ZZ'])expect(()=>assertCountryPublication(code,'PLACE','PLACE')).toThrow();
+ expect(()=>assertCountryPublication('PA','BUSINESS','BUSINESS_PREMIUM')).not.toThrow();
+ const panel=userPanelHtml;
+ expect(panel).toContain('Negocio Gratis y Lugar Gratis disponibles');
+ expect(panel).toContain("!submissionAllowed||!allowed");
 });

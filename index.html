@@ -599,6 +599,19 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 .brand-meta h1{display:flex!important;align-items:baseline!important;gap:.24em!important;flex-wrap:nowrap!important;white-space:nowrap!important;font-size:clamp(17px,4.3vw,25px)!important}
 .brand-meta h1 .brand-number{display:inline!important;flex:none!important;white-space:nowrap!important}
 @media(max-width:380px){.brand-meta h1{font-size:17px!important;gap:.2em!important}}
+
+/* 507 header: use the exact LATAM header pin and type scale without widening the brand. */
+#mainAppHeader .brand-logo-icon{display:flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px}
+#mainAppHeader .brand-logo-icon svg{display:block;width:32px;height:38px;flex:none}
+#mainAppHeader .brand-group{gap:12px}
+#mainAppHeader .brand-meta h1{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;font-size:23px!important;font-weight:750!important;letter-spacing:-.045em!important;line-height:1.1!important}
+#mainAppHeader .brand-meta>span{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;line-height:1.2;margin-top:4px}
+/* Keep the hero inside the compact text width; do not change outer grids or cards. */
+#mainGlobalHeroView .hero-grid-layout>div:first-child{max-width:520px;min-width:0;width:100%}
+#mainGlobalHeroView .main-hero-title{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;font-size:clamp(36px,4.3vw,60px)!important;letter-spacing:-.035em!important;line-height:1.06!important}
+#mainGlobalHeroView .main-hero-title span{background:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+@media(max-width:992px){#mainGlobalHeroView .hero-grid-layout>div:first-child{margin-inline:auto}}
+@media(max-width:620px){#mainAppHeader .brand-meta h1{font-size:20px!important}#mainAppHeader .brand-group{gap:8px}#mainGlobalHeroView .main-hero-title{font-size:clamp(34px,9vw,44px)!important}}
 </style>
 </head>
 <body>
@@ -607,10 +620,10 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
   <header id="mainAppHeader">
     <div class="container nav-wrap">
       <a href="/" class="brand-group">
-        <div class="brand-logo-icon" aria-hidden="true"><svg viewBox="0 0 64 82" width="32" height="41" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M32 3C16 3 4 15 4 31c0 22 28 47 28 47s28-25 28-47C60 15 48 3 32 3Z" fill="#1f6fff" stroke="#99c6ff" stroke-width="3"/><circle cx="32" cy="31" r="20" fill="#fff"/><circle cx="32" cy="31" r="15" stroke="#1f6fff" stroke-width="2"/><path d="M17 31h30M32 16c-9 7-9 23 0 30M32 16c9 7 9 23 0 30M19 23h26M19 39h26" stroke="#1f6fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="brand-logo-icon" aria-hidden="true"><svg width="32" height="38" viewBox="0 0 24 28" fill="none" stroke="#438bff" stroke-width="2" aria-hidden="true"><path d="M12 26S3 18 3 11a9 9 0 1 1 18 0c0 7-9 15-9 15Z"/><circle cx="12" cy="11" r="3"/></svg></div>
         <div class="brand-meta">
           <h1>Direcciones <span class="brand-number">507</span></h1>
-          <span>Crea tu Dirección Digital</span>
+          <span>Encuentra. Llega. Conecta.</span>
         </div>
       </a>
       

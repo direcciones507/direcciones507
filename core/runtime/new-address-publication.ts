@@ -69,7 +69,14 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   const data={ok:true,nombre:record.name,referencia:record.reference,descripcionComercial:record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?[record.description,record.commercialDescription].filter(Boolean).join('\n\n'):null,plan:record.plan?.name,lat:record.coordinates.latitude,lng:record.coordinates.longitude,telefono:record.phone,telefonoFijo:record.landlinePhone,horario:record.hours,codigoPostal:record.extras.postalCode,logo:record.media.find(m=>m.type==='LOGO')?.url??(record.type==='PLACE'?record.media.find(m=>m.type==='IMAGE')?.url:undefined),fotos:record.media.filter(m=>m.type==='IMAGE').map(m=>m.url),...social};
   // Reuse the maintained template; adapt only its data transport for new records.
   let template=readFileSync(new URL('../../ad507.template.html',import.meta.url),'utf8');
-  if(!record.extras.historical)template=prepareCountryTemplate(template,record.extras.countryCode);
+  if(!record.extras.historical){
+    template=prepareCountryTemplate(template,record.extras.countryCode);
+    // New Core pages are hosted at direcciones.lat (also for Panama). Their
+    // relative /assets icons do not live on this host. Use the same verified
+    // absolute favicon assets as the shared account; leave legacy HTML alone.
+    template=template.replace('href="/assets/icon-192.png"','href="https://direcciones507.com/assets/icon-192.png"')
+      .replace('href="/assets/icon-180.png"','href="https://direcciones507.com/assets/icon-180.png"');
+  }
   const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
   if(record.type==='PLACE')template=template.replace("if(planComercial === 'premium pro' && descripcionComercial","if(descripcionComercial");
   if(record.type==='PLACE') {

@@ -592,6 +592,13 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 .seo-trigger-link{display:inline-block!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:4px 0!important;color:#b9cce8!important;font-size:12px!important;font-weight:600!important;line-height:1.4!important;overflow-wrap:anywhere}
 .seo-trigger-link:hover,.seo-trigger-link:focus-visible{color:#fff!important;text-decoration:underline!important;background:transparent!important;box-shadow:none!important;transform:none!important;outline-offset:3px}
 @media(max-width:700px){.brand-meta h1{font-size:19px!important}.seo-links-flex{gap:5px 12px!important}.seo-directory-wrapper{padding:16px 14px!important}}
+
+/* Keep the 507 wordmark on one line even on narrow phones. */
+.brand-group{min-width:0}
+.brand-meta{min-width:0}
+.brand-meta h1{display:flex!important;align-items:baseline!important;gap:.24em!important;flex-wrap:nowrap!important;white-space:nowrap!important;font-size:clamp(17px,4.3vw,25px)!important}
+.brand-meta h1 .brand-number{display:inline!important;flex:none!important;white-space:nowrap!important}
+@media(max-width:380px){.brand-meta h1{font-size:17px!important;gap:.2em!important}}
 </style>
 </head>
 <body>
@@ -693,7 +700,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       <div class="hero-grid-layout">
         
         <div>
-          <div class="tagline-badge">Todo Panamá en un solo lugar</div>
+          
           <h2 class="main-hero-title">Encuentra el lugar que buscas <span>fácil, rápido y preciso.</span></h2>
           <p class="main-hero-desc">
             Creamos direcciones digitales para personas, residencias y negocios en Panamá, conectando cada ubicación con herramientas de navegación para llegar de forma sencilla desde cualquier dispositivo.

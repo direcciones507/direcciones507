@@ -1,5 +1,5 @@
 import {isAutomaticPaidPlan,automaticPaidStateAllowed,isLegacyUnpaidPaidRequest} from './paid-activation-policy';
-import { assertCountryPublication, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
+import { assertCountryPublication, freeCountryPublicationAllowed, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
 import type { Sql } from 'postgres';
 import { createHash } from 'node:crypto';
 import { validateRequestFiles, type RequestFile } from './request-validation';
@@ -142,7 +142,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const media=await sql.unsafe('SELECT id::text,media_type AS type,url,position,upload_status AS status FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position,id',[addressId]);
       const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
       const {publicationReceipt,...record}=rows[0];
-      const publicUrl=record.countryCode==='PA'&&record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt?proposedCountryUrl(record.countryCode,record.code,record.extras?.migration?.originalUrl):null;
+      const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?proposedCountryUrl(record.countryCode,record.code,record.extras?.migration?.originalUrl):null;
       return {...record,canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
     },
     async transfer(actorId:string,addressId:string,expectedOwner:string,targetId:string) {

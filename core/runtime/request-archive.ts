@@ -2,9 +2,10 @@ import type { Sql } from 'postgres';
 
 const uuid=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/;
 
-/** Remove an owner's unprocessed request from their account without deleting historical data.
- * A transaction/row lock prevents review or payment initiation from racing the archive.
- * This never deletes generated codes, published pages, payments, media or legacy records.
+/** Retire an owner's Core request or published address, preserving financial/audit history.
+ * All public reads require ACTIVE; retirement is a durable tombstone.
+ * The code remains reserved and cannot be reassigned.
+ * Legacy migrations have external historical pages and require a separate process.
  */
 export async function archiveUnprocessedRequest(sql:Sql,actorId:string,addressId:string) {
   if(!uuid.test(actorId)||!uuid.test(addressId))throw Error('REQUEST_NOT_FOUND');
@@ -17,18 +18,16 @@ export async function archiveUnprocessedRequest(sql:Sql,actorId:string,addressId
       FOR UPDATE OF a`,[addressId,actorId]);
     if(!rows.length)throw Error('REQUEST_NOT_FOUND');
     const a=rows[0];
-    if(!['DRAFT','PENDING_REVIEW'].includes(a.status)||a.code!==null||a.publication_receipt!==null||
-      (a.review_decision!==null&&a.review_decision!=='REJECTED')||a.request_data?.createdByAdmin||a.request_data?.migration)
-      throw Error('INVALID_STATE_TRANSITION');
-    // Never withdraw a request after an order has been created, even if payment
-    // currently says pending/failed. Keep provider reconciliation and audit intact.
-    const orders=await tx.unsafe('SELECT 1 FROM ad507.orders WHERE address_id=$1::uuid LIMIT 1',[addressId]);
-    if(orders.length)throw Error('INVALID_STATE_TRANSITION');
+    if(a.status==='ARCHIVED'||a.request_data?.migration)throw Error('INVALID_STATE_TRANSITION');
+    // Financial/legal records, all orders and an issued code are deliberately retained.
+    // Active Core pages disappear because their public SQL readers require ACTIVE.
+    // Null retry hashes so a customer may create a fresh request, never reuse the old code.
     await tx.unsafe(`UPDATE ad507.addresses SET status='ARCHIVED',
       request_key_hash=NULL,request_payload_hash=NULL,updated_at=now()
       WHERE id=$1::uuid`,[addressId]);
-    await tx.unsafe(`INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id)
-      VALUES($1::uuid,'USER','UNPROCESSED_REQUEST_ARCHIVED','ADDRESS',$2)`,[actorId,addressId]);
-    return {id:addressId,status:'ARCHIVED'};
+    await tx.unsafe(`INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata)
+      VALUES($1::uuid,'USER','OWNER_ADDRESS_RETIRED','ADDRESS',$2,$3::jsonb)`,
+      [actorId,addressId,tx.json({previousStatus:a.status,hadCode:!!a.code,hadPublication:!!a.publication_receipt})]);
+    return {id:addressId,status:'ARCHIVED',wasPublished:a.status==='ACTIVE'};
   });
 }

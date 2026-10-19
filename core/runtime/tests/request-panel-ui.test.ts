@@ -1,6 +1,7 @@
 import {test,expect} from 'bun:test';
 import {userPanelHtml,userPanelPresentation} from '../user-panel';
 import {requestClientScript} from '../request-client-ui';
+import {renderPanelAddressCard} from '../panel-address-card';
 import {readFileSync} from 'node:fs';
 
 test('request details remain in the shared account with syntactically valid scripts on both domains',()=>{
@@ -33,4 +34,19 @@ test('client detail renders supplied text safely, exposes only read controls and
   expect(content.children.some((n:any)=>n.href?.startsWith('https://www.google.com/maps/search/'))).toBe(true);
   expect(JSON.stringify(content)).not.toContain('innerHTML');
   view.children[0].onclick();await open('not-a-uuid');expect(calls).toBe(1);
+});
+
+test('account cards keep details and removal side by side; payment action is generic and starts below Maps',()=>{
+  const card=renderPanelAddressCard({id:'11111111-1111-4111-8111-111111111111',source:'USER_REQUEST',status:'DRAFT',addressType:'BUSINESS',name:'Prueba',canArchive:true});
+  expect(card).toContain('class="address-request-pair"');
+  expect(card).toContain('>Ver detalles</button>');
+  expect(card).toContain('>Eliminar solicitud</button>');
+  expect(card.indexOf('data-request-detail')).toBeLessThan(card.indexOf('data-archive-request'));
+  expect(userPanelHtml).toContain('.address-request-pair{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)');
+  expect(userPanelPresentation(new URL('https://direcciones.lat/panel?country=PA'))).toContain('.address-request-pair{grid-column:1/-1;display:grid');
+  expect(requestClientScript).toContain("pay.textContent='Ir al pago'");
+  expect(requestClientScript).toContain("pay.href='/panel/payments/'+id");
+  expect(requestClientScript).toContain("pay.style.cssText='display:flex;");
+  expect(requestClientScript).toContain("link.textContent='Ver ubicación en Google Maps'");
+  expect(requestClientScript).not.toContain("pay.textContent='Pagar ahora con Yappy'");
 });

@@ -191,14 +191,14 @@ function updateLatamSession(){
  const c=document.getElementById('commercialCountry').value,cta=document.getElementById('latamCreate');
  document.querySelectorAll('a[data-latam-session="authenticated"]').forEach(a=>a.href='/panel?country='+encodeURIComponent(c)+(new URLSearchParams(location.search).get('origin')==='507'?'&origin=507':''));
  document.getElementById('latamGoogleAccess').href='/auth/google/login?country='+encodeURIComponent(c);
- cta.href=latamSessionState==='authenticated'?(c==='PA'?'#requestForm':'#commercialAvailability'):'#latamAccess';
- cta.setAttribute('aria-disabled',String(latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&(c!=='PA'||!latamCanPrepare))));
- document.querySelectorAll('[data-latam-type]').forEach(a=>{a.href=cta.href;a.setAttribute('aria-disabled',cta.getAttribute('aria-disabled'));});
+ cta.href=latamSessionState==='authenticated'?'#requestForm':'#latamAccess';
+ cta.setAttribute('aria-disabled',String(latamSessionState==='loading'||latamSessionState==='error'||(latamSessionState==='authenticated'&&!latamCanPrepare)));
+ document.querySelectorAll('[data-latam-type]').forEach(a=>{const free=a.dataset.latamType==='PLACE'||a.dataset.latamType==='BUSINESS'&&a.dataset.latamPlan==='BUSINESS_FREE';const allowed=c==='PA'||free;a.href=allowed?cta.href:'#commercialAvailability';a.setAttribute('aria-disabled',String(!allowed||cta.getAttribute('aria-disabled')==='true'));});
 }
 function prepareLatamRequest(e,type,plan){
  const status=document.getElementById('latamActionStatus');
  if(latamSessionState==='guest'){e.preventDefault();const u=new URL(location.href);u.searchParams.set('selectedPlan',type==='RESIDENTIAL'?'RESIDENTIAL':type==='PLACE'?'PLACE':plan);history.replaceState({},'',u);openLatamAccess();return;}
- if(document.getElementById('commercialCountry').value!=='PA'){e.preventDefault();status.textContent='País en preparación: solicitudes, publicación y cobros deshabilitados.';status.scrollIntoView({block:'center'});return;}
+ if(document.getElementById('commercialCountry').value!=='PA'&&!(type==='PLACE'||type==='BUSINESS'&&(plan==='BUSINESS_FREE'||plan===''))){e.preventDefault();status.textContent='Por ahora solo se aceptan solicitudes de Negocio Gratis y Lugar Gratis en este país. Los planes pagados siguen cerrados.';status.scrollIntoView({block:'center'});return;}
  e.preventDefault();
  if(new URLSearchParams(location.search).get('origin')==='507'){
   const selectedPlan=type==='RESIDENTIAL'?'RESIDENTIAL':type==='PLACE'?'PLACE':plan;
@@ -419,7 +419,7 @@ if(authParams.has('token')&&authParams.has('email')){
 const countrySelect=document.getElementById('commercialCountry');
 const countryState=document.getElementById('latamCountryState'),countryField=document.getElementById('countryField');
 countryField.appendChild(countryState);countryState.hidden=false;document.getElementById('countryCode').hidden=true;countryField.querySelector('label[for="countryCode"]').hidden=true;
-const markCountry=()=>{document.querySelectorAll('[data-commercial-country]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.commercialCountry===countrySelect.value)));document.querySelectorAll('[data-latam-type="PLACE"]').forEach(a=>{a.hidden=!['PA','CR'].includes(countrySelect.value);});updateLatamSession();};
+const markCountry=()=>{document.querySelectorAll('[data-commercial-country]').forEach(a=>a.setAttribute('aria-current',String(a.dataset.commercialCountry===countrySelect.value)));document.querySelectorAll('[data-latam-type="PLACE"]').forEach(a=>{a.hidden=false;});updateLatamSession();};
 countrySelect.addEventListener('change',markCountry);window.addEventListener('popstate',markCountry);
 const menu=document.querySelector('.latam-menu'),desktop=matchMedia('(min-width:1100px)');
 const syncMenu=()=>menu.open=desktop.matches;syncMenu();desktop.addEventListener('change',syncMenu);
@@ -427,7 +427,7 @@ const hero=document.getElementById('latamArt');
 hero.src='https://raw.githubusercontent.com/direcciones507/direcciones507/feat/admin-ui-20261006/direcciones-latam-mapa-sin-cuadro-azul.png';
 document.getElementById('latamCreate').onclick=e=>prepareLatamRequest(e,'BUSINESS','');
 const latamPlanCatalog={
- PLACE:{title:'Lugar Gratis',price:'Gratis',features:['Comparte ubicaciones de interés con una dirección digital fácil de encontrar','Ideal para iglesias, parques, cascadas, ríos, playas y atractivos turísticos','No se admiten comercios ni establecimientos comerciales; deben solicitar un plan de negocio','Agrega nombre, ubicación, referencia y fotografía del lugar','Comparte el lugar mediante enlace y herramientas de navegación','Disponible por ahora únicamente en Panamá y Costa Rica; todas las solicitudes están sujetas a revisión y aprobación']},
+ PLACE:{title:'Lugar Gratis',price:'Gratis',features:['Comparte ubicaciones de interés con una dirección digital fácil de encontrar','Ideal para iglesias, parques, cascadas, ríos, playas y atractivos turísticos','No se admiten comercios ni establecimientos comerciales; deben solicitar un plan de negocio','Agrega nombre, ubicación, referencia y fotografía del lugar','Comparte el lugar mediante enlace y herramientas de navegación','Disponible en los ocho países iniciales; todas las solicitudes están sujetas a revisión y aprobación']},
  RESIDENTIAL:{title:'Residencial',price:'US$12.99',features:['Dirección digital para tu hogar','Código digital y acceso mediante enlace o QR','Ubicación y referencia para compartir','Acceso residencial privado según sus controles de seguridad']},
  BUSINESS_FREE:{title:'Negocio Gratis',price:'US$0',features:['Dirección digital de negocio y código QR','Logo, horario, contacto y referencia','Navegación para llegar al negocio','Solicitudes gratuitas hasta el 9 de noviembre de 2026; sujetas a aprobación ADMIN. Servicio gratuito hasta el 30 de diciembre de 2026, con desactivación el 31 de diciembre si no se renueva','Sin descripción breve ni código personalizado incluido']},
  BUSINESS_PREMIUM:{title:'Premium',price:'US$19.99',features:['Todo lo incluido en Negocio Gratis','Código personalizado con nombre sujeto a disponibilidad','Redes sociales y código postal o zona postal','Sin reporte mensual de estadísticas']},

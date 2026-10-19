@@ -732,11 +732,11 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
   }finally{await db.end();}
 });
 
-test('LATAM uses existing ADMIN requests, private R2 and PG with country/territory round trip and closed foreign publication',async()=>{
+test('LATAM shares ADMIN, R2 and PG for eight-country free publication and foreign paid blocks',async()=>{
   const {createRequestRepository}=await import('../request-repository');
   const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
   const {createPaymentRepository}=await import('../payment-repository');
-  const {proposedInternationalCode,INITIAL_COUNTRIES}=await import('../country-configuration');
+  const {proposedInternationalCode,INITIAL_COUNTRIES,assertCountryCommerce}=await import('../country-configuration');
   const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:8,connection:{statement_timeout:5000,lock_timeout:3000}});
   const files=[{role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:6,height:6,channels:3,background:'blue'}}).png().toBuffer()}];
   const calls:string[]=[];
@@ -758,21 +758,26 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
       console.info('LATAM validated '+countryCode);
       await repo.review(adminId,results[0].id,'APPROVED');
       console.info('LATAM reviewed '+countryCode);
+      console.info('LATAM begin publish '+countryCode);
+      const published=await repo.publish(adminId,results[0].id);
+      console.info('LATAM published '+countryCode+' '+published.code);
+      const pub=await newPublicAddress(db,published.code,origin);
+      console.info('LATAM public reader '+countryCode);
+      expect(published.code).toMatch(new RegExp('^AD'+({PA:'507',CR:'506',CO:'57',GT:'502',SV:'503',HN:'504',NI:'505',MX:'52'} as any)[countryCode]+'-N[0-9]{8}$'));
+      expect(pub?.url).toBe('https://direcciones.lat/'+published.code+'/');
+      expect(renderNewPublicAddress(pub!)).toContain(countryCode==='PA'?'DIRECCIONES<span>507</span>':'Direcciones LATAM');
       if(countryCode!=='PA'){
-        await expect(repo.publish(adminId,results[0].id)).rejects.toThrow('COUNTRY_NOT_ENABLED');
-        await expect(repo.submit(clientId,'latam-client-key-'+countryCode,data,files)).rejects.toThrow('COUNTRY_NOT_ENABLED');
-        const payment=createPaymentRepository(db,{provider:'PAYPAL',environment:'test'});
-        await expect(payment.preparePayPal(adminId,results[0].id,'latam-payment-key-'+countryCode)).rejects.toThrow('COUNTRY_NOT_ENABLED');
-        console.info('LATAM foreign gates '+countryCode);
-        const code=proposedInternationalCode(countryCode,results[0].id);
-        await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[results[0].id,code]);
-        await expect((async()=>await db.unsafe("UPDATE ad507.addresses SET code='AD507-WRONG' WHERE id=$1::uuid",[results[0].id]))()).rejects.toMatchObject({code:'23514'});
-        const second=await repo.createAdmin(adminId,'latam-second-key-'+countryCode,{...data,name:'Other '+countryCode},files);
-        await expect((async()=>await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[second.id,code]))()).rejects.toMatchObject({code:'23505'});
-      }else{
-        const published=await repo.publish(adminId,results[0].id),pub=await newPublicAddress(db,published.code,origin);
-        expect(pub?.url).toBe('https://direcciones.lat/'+published.code+'/');
-        expect(renderNewPublicAddress(pub!)).toContain('DIRECCIONES<span>507</span>');
+        console.info('LATAM begin client submit '+countryCode);
+        const foreignClient=await repo.submit(clientId,'latam-client-key-'+countryCode,data,files);
+        console.info('LATAM client submitted '+countryCode);
+        expect(foreignClient.status).toBe('PENDING_REVIEW');
+        // Foreign paid methods stay blocked at country policy and request boundary;
+        // do not open a sandbox payment transaction against an ACTIVE free address.
+        expect(()=>assertCountryCommerce(countryCode)).toThrow('COUNTRY_NOT_ENABLED');
+        await expect(repo.createAdmin(adminId,'latam-paid-key-'+countryCode,{...data,plan:'BUSINESS_PREMIUM'},files)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        // Database collision constraints are exercised in their isolated
+        // schema suite; never mutate a just-published fixture within this
+        // eight-country end-to-end route test.
       }
     }
     console.info('LATAM requests complete');
@@ -975,10 +980,15 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   expect((await db.unsafe('SELECT count(*)::int AS n FROM ad507.addresses WHERE id=$1::uuid',[initial.id]))[0].n).toBe(1);
   const co=await call('/v1/admin/requests',admin.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-co-'+unique},body:form({...raw,countryCode:'CO',name:'Synthetic Colombia '+unique,phone:'+573001234567'})});expect(co.status).toBe(200);const foreign=(await co.json()).request;
   expect((await call('/v1/admin/requests/'+foreign.id+'/approve',admin.cookie,{method:'POST'})).status).toBe(200);
-  const stop=await call('/v1/admin/requests/'+foreign.id+'/publish',admin.cookie,{method:'POST'});expect(stop.status).toBe(503);expect((await stop.json()).error).toBe('COUNTRY_NOT_ENABLED');
-  const foreignRead=(await(await call('/v1/admin/requests/'+foreign.id,admin.cookie)).json()).request;expect(foreignRead.countryCode).toBe('CO');expect(foreignRead.publicUrl).toBeNull();expect(foreignRead.code).toBeNull();
-  expect(await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
-  console.info('HTTP journey PASS: OAuth → multipart/logo → durable request/retry → ADMIN approve → closed gate 503 → synthetic verified publication → owner canonical link → existing QR/copy → WebP; Colombia stops exactly at publish503');
+  const foreignPublish=await call('/v1/admin/requests/'+foreign.id+'/publish',admin.cookie,{method:'POST'});expect(foreignPublish.status).toBe(200);
+   const foreignRead=(await(await call('/v1/admin/requests/'+foreign.id,admin.cookie)).json()).request;
+   expect(foreignRead.countryCode).toBe('CO');expect(foreignRead.publicUrl).toMatch(/^https:\/\/direcciones\.lat\/AD57-N[0-9]{8}\/$/);
+   const foreignPage=await call(new URL(foreignRead.publicUrl).pathname);expect(foreignPage.status).toBe(200);
+   expect(await foreignPage.text()).toContain('Direcciones LATAM');
+   const paidCo=await call('/v1/admin/requests',admin.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-co-paid-'+unique},body:form({...raw,countryCode:'CO',plan:'BUSINESS_PREMIUM',name:'Paid CO '+unique})});
+   expect(paidCo.status).toBe(503);expect((await paidCo.json()).error).toBe('COUNTRY_NOT_ENABLED');
+   expect(await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
+  console.info('HTTP journey PASS: OAuth → ADMIN approval → PA/CO free publication → canonical URLs + QR + WebP; Colombia paid plans remain closed');
  }finally{server.stop(true);await db.end({timeout:2});}
 },20000);
 

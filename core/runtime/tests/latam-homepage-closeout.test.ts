@@ -7,7 +7,10 @@ test('LATAM footer, five described plans and legal notice reuse existing content
  expect(html).not.toContain('Direcciones507 · Panamá');
  expect(html).toContain('AD507 Technologies');expect(html).toContain('id="modalPoliticas"');expect(html).toContain('data-latam-legal');
  expect(html.match(/data-latam-legal/g)!.length).toBeGreaterThanOrEqual(2);
- expect(html).toContain('https://wa.me/50765996532');expect(html).toContain('galería de hasta 5 fotos');
+ expect(html).toContain('href="https://wa.me/50765996532" target="_blank" rel="noopener noreferrer">WhatsApp</a>');
+ expect(html).toContain('href="mailto:soporte@direcciones507.com">soporte@direcciones507.com</a>');
+ expect(html).not.toContain('href="#ayuda">Ayuda y soporte</a>');
+ expect(html).toContain('galería de hasta 5 fotos');
  expect(userPanelHtml).not.toContain('latam-footer');
  for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
 });

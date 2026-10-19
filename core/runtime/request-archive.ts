@@ -21,9 +21,14 @@ export async function archiveUnprocessedRequest(sql:Sql,actorId:string,addressId
     if(a.status==='ARCHIVED'||a.request_data?.migration)throw Error('INVALID_STATE_TRANSITION');
     // Financial/legal records, all orders and an issued code are deliberately retained.
     // Active Core pages disappear because their public SQL readers require ACTIVE.
-    // Null retry hashes so a customer may create a fresh request, never reuse the old code.
+    // The schema constraint core_requests_uncoded_check requires a non-null key
+    // for every code-less request, including ARCHIVED ones. Never clear that key:
+    // it is an internal tombstone identifier, not an active public address.
+    // Clear only the payload hash so an identical new request can be submitted.
+    // Published records keep their code reserved and may release their key.
     await tx.unsafe(`UPDATE ad507.addresses SET status='ARCHIVED',
-      request_key_hash=NULL,request_payload_hash=NULL,updated_at=now()
+      request_key_hash=CASE WHEN code IS NULL THEN request_key_hash ELSE NULL END,
+      request_payload_hash=NULL,updated_at=now()
       WHERE id=$1::uuid`,[addressId]);
     await tx.unsafe(`INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata)
       VALUES($1::uuid,'USER','OWNER_ADDRESS_RETIRED','ADDRESS',$2,$3::jsonb)`,

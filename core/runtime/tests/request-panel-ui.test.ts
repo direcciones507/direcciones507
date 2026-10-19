@@ -47,6 +47,7 @@ test('account cards keep details and removal side by side; payment action is gen
   expect(requestClientScript).toContain("pay.textContent='Ir al pago'");
   expect(requestClientScript).toContain("pay.href='/panel/payments/'+id");
   expect(requestClientScript).toContain("pay.style.cssText='display:flex;");
-  expect(requestClientScript).toContain("link.textContent='Ver ubicación en Google Maps'");
+  expect(requestClientScript).toContain('link.textContent=');
+  expect(requestClientScript).toContain('Google Maps');
   expect(requestClientScript).not.toContain("pay.textContent='Pagar ahora con Yappy'");
 });

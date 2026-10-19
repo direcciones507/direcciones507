@@ -1,4 +1,4 @@
-/** Shared country policy for the existing commercial workflow. Foreign commerce stays closed. */
+/** Shared country policy for the existing commercial workflow. Only free commerce is enabled in the initial eight countries; foreign paid commerce stays closed. */
 export type CountryCode='PA'|'CO'|'CR'|'GT'|'SV'|'HN'|'NI'|'MX'|'PE'|'EC';
 type Rollout='PANAMA_FIRST'|'NEXT'|'PREPARED'|'FUTURE';
 const country=(name:string,prefix:string,rollout:Rollout,labels:string[],currency:string,pricing:'EXISTING_PANAMA_AUTHORITY'|'UNCONFIGURED'='UNCONFIGURED')=>Object.freeze({name,prefix,title:prefix==='507'?'Direcciones507':'Direcciones LATAM',rollout,locationLabels:Object.freeze(labels),localCurrency:currency,officialCurrency:'USD' as const,pricing,internationalCardPaymentsEnabled:false as const});
@@ -47,6 +47,18 @@ export function requestCountry(code:unknown='PA'):CountryCode {
  if(!INITIAL_COUNTRIES.includes(code as CountryCode))throw Error('INVALID_COUNTRY');
  return code as CountryCode;
 }
+export const FREE_LAUNCH_COUNTRIES=Object.freeze(['PA','CR','CO','GT','SV','HN','NI','MX'] as const);
+export function freeCountryPublicationAllowed(country:unknown,type:unknown,plan:unknown):boolean {
+ return typeof country==='string'&&FREE_LAUNCH_COUNTRIES.some(c=>c===country)&&
+   (type==='PLACE'&&plan==='PLACE'||type==='BUSINESS'&&plan==='BUSINESS_FREE');
+}
+/** Shared policy for new requests, allocations, publication and public reads. */
+export function assertCountryPublication(country:unknown,type:unknown,plan:unknown) {
+ const c=requestCountry(country);
+ if(c==='PA')return; // Preserve existing Panama pricing and paid orders.
+ if(!freeCountryPublicationAllowed(c,type,plan))throw Error('COUNTRY_NOT_ENABLED');
+}
+/** Payments and pricing outside Panama remain disabled. */
 export function assertCountryCommerce(code:unknown='PA') {
  if(requestCountry(code)!=='PA')throw Error('COUNTRY_NOT_ENABLED');
 }
@@ -63,7 +75,7 @@ export function proposedCountryUrl(country:unknown,code:string,originalUrl?:stri
  return FUTURE_PUBLIC_ORIGIN+'/'+code+'/';
 }
 export function paymentMethods(country:unknown='PA') {
- requestCountry(country);return country==='PA'?['PAYPAL','YAPPY']:['PAYPAL'];
+ requestCountry(country);return country==='PA'?['PAYPAL','YAPPY']:[];
 }
 /** Display-only conversion. Caller must supply a dated verified rate; never used for orders. */
 export function informativeLocalAmount(usdCents:number,rate:number) {

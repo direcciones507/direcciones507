@@ -736,7 +736,7 @@ test('LATAM shares ADMIN, R2 and PG for eight-country free publication and forei
   const {createRequestRepository}=await import('../request-repository');
   const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
   const {createPaymentRepository}=await import('../payment-repository');
-  const {proposedInternationalCode,INITIAL_COUNTRIES}=await import('../country-configuration');
+  const {proposedInternationalCode,INITIAL_COUNTRIES,assertCountryCommerce}=await import('../country-configuration');
   const sharp=(await import('sharp')).default,db=postgres(isolatedDatabase,{max:8,connection:{statement_timeout:5000,lock_timeout:3000}});
   const files=[{role:'logo' as const,mime:'image/png',bytes:await sharp({create:{width:6,height:6,channels:3,background:'blue'}}).png().toBuffer()}];
   const calls:string[]=[];

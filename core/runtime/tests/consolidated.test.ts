@@ -7,6 +7,7 @@ import { createServer } from 'node:net';
 import EmbeddedPostgres from 'embedded-postgres';
 import postgres from 'postgres';
 import { createGeneralAuth } from '../general-auth';
+import {archiveUnprocessedRequest} from '../request-archive';
 import {applyReviewedNatalieCorrections} from '../legacy-corrections';
 import { userPanelHtml } from '../user-panel';
 import { prepareMigration0005 } from '../scripts/prepare-0005';
@@ -1289,4 +1290,23 @@ test('isolated paid confirmation: idempotent IPN, private unpaid drafts, mandato
  const residential=await repository.submit(owner,'auto-home-'+stamp,{...base,type:'RESIDENTIAL',plan:'RESIDENTIAL',name:'Private '+stamp},[]);
  await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at,operation_key) VALUES($1::uuid,$2::uuid,1299,'YAPPY','RESIDENTIAL','test',$3,'PAID',now(),gen_random_uuid()::text)",[owner,residential.id,'H'+stamp.replaceAll('-','').slice(0,12)]);
  expect((await repository.activatePaid(residential.id)).status).toBe('PENDING_REVIEW');const home=await repository.read(owner,residential.id);expect(home.status).toBe('PENDING_REVIEW');expect(home.publicUrl).toBeNull();expect(publications).toBe(2);
+});
+
+test('real PostgreSQL: OWNER can retire an uncoded payment-pending request without violating core_requests_uncoded_check',async()=>{
+  const owner=clientId,id=crypto.randomUUID(),key=createHash('sha256').update('test-delete:'+id).digest('hex'),payload=createHash('sha256').update('test-payload:'+id).digest('hex');
+  const data=sql.json({plan:'BUSINESS_PREMIUM',workflow:'PAYMENT_PENDING',media:{logos:0,placePhotos:0,galleryPhotos:0}});
+  try {
+    await sql.unsafe(`INSERT INTO ad507.addresses(id,code,address_type,status,name,source,request_key_hash,request_payload_hash,request_data,country_code)
+      VALUES($1::uuid,NULL,'BUSINESS','DRAFT','Payment pending cleanup test','USER_REQUEST',$2,$3,$4::jsonb,'PA')`,[id,key,payload,data]);
+    await sql.unsafe("INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)",[id,owner]);
+    expect(await archiveUnprocessedRequest(sql,owner,id)).toEqual({id,status:'ARCHIVED',wasPublished:false});
+    const [record]=await sql.unsafe("SELECT status,code,request_key_hash,request_payload_hash FROM ad507.addresses WHERE id=$1::uuid",[id]);
+    expect(record.status).toBe('ARCHIVED');
+    expect(record.code).toBeNull();
+    expect(record.request_key_hash).toBe(key);
+    expect(record.request_payload_hash).toBeNull();
+    expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='OWNER_ADDRESS_RETIRED'",[id]))[0].n).toBe(1);
+  } finally {
+    await sql.unsafe("DELETE FROM ad507.addresses WHERE id=$1::uuid",[id]);
+  }
 });

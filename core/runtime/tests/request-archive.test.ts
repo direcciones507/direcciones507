@@ -30,6 +30,8 @@ test('owner can withdraw pending-payment requests without orders and retain a to
  expect(calls[0].args).toEqual([requestId,owner]);
  expect(calls.some(x=>x.query.includes("status='ARCHIVED'"))).toBe(true);
  expect(calls.some(x=>x.query.includes('request_payload_hash=NULL'))).toBe(true);
+ expect(calls.some(x=>x.query.includes('request_key_hash=CASE WHEN code IS NULL THEN request_key_hash ELSE NULL END'))).toBe(true);
+ expect(calls.every(x=>!x.query.includes("request_key_hash=NULL"))).toBe(true);
  expect(calls.some(x=>x.query.includes('OWNER_ADDRESS_RETIRED'))).toBe(true);
 });
 

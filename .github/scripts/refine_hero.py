@@ -31,12 +31,12 @@ css = r'''
     #mainGlobalHeroView .category-pills-row .cat-icon-circle { transform: scale(1.08); transform-origin: center; }
 
     #mainGlobalHeroView .hero-intro-layout {
-      width: 100%; max-width: 940px; margin: 0 auto 34px; display: grid;
-      grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 54px; align-items: center; text-align: left;
+      width: 100%; max-width: 1180px; margin: 0 auto 34px; display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(250px, .85fr); gap: 54px; align-items: center; text-align: left;
     }
-    #mainGlobalHeroView .hero-intro-copy { min-width: 0; }
+    #mainGlobalHeroView .hero-intro-copy { min-width: 0; max-width: 680px; text-align: left; }
     #mainGlobalHeroView .hero-intro-copy .main-hero-title,
-    #mainGlobalHeroView .hero-intro-copy .main-hero-desc { margin-left: 0; margin-right: 0; }
+    #mainGlobalHeroView .hero-intro-copy .main-hero-desc { margin-left: 0 !important; margin-right: 0 !important; }
     #mainGlobalHeroView .hero-phone-preview {
       width: 230px; max-width: 100%; margin: 0 auto; padding: 9px; background: linear-gradient(145deg, #101827, #020617);
       border: 2px solid rgba(148,163,184,.38); border-radius: 34px;
@@ -49,10 +49,10 @@ css = r'''
     #mainGlobalHeroView .hero-phone-preview img { display: block; width: 100%; height: auto; border-radius: 26px; object-fit: cover; }
     @media (max-width: 760px) {
       #mainGlobalHeroView .hero-intro-layout { grid-template-columns: 1fr; gap: 24px; text-align: center; margin-bottom: 28px; }
-      #mainGlobalHeroView .hero-intro-copy { order: 1; }
+      #mainGlobalHeroView .hero-intro-copy { order: 1; max-width:100%; text-align:center; }
       #mainGlobalHeroView .hero-phone-preview { order: 2; width: 190px; transform: rotate(-4deg); }
       #mainGlobalHeroView .hero-intro-copy .main-hero-title,
-      #mainGlobalHeroView .hero-intro-copy .main-hero-desc { margin-left: auto; margin-right: auto; }
+      #mainGlobalHeroView .hero-intro-copy .main-hero-desc { margin-left: auto !important; margin-right: auto !important; }
     }
     @media (max-width: 640px) { #mainGlobalHeroView .free-address-info-btn { width: 100%; } }
 '''
@@ -85,8 +85,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const copy = document.createElement('div');
   copy.className = 'hero-intro-copy';
   parent.insertBefore(intro, badge || title);
-  intro.appendChild(phone);
   intro.appendChild(copy);
+  intro.appendChild(phone);
   if (badge && badge !== desc) copy.appendChild(badge);
   copy.appendChild(title);
   copy.appendChild(desc);

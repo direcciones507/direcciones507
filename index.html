@@ -608,10 +608,10 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 #mainAppHeader .brand-meta>span{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;line-height:1.2;margin-top:4px}
 /* Homepage hero: match LATAM's two-line headline without restricting the content to 520px. */
 #mainGlobalHeroView .hero-grid-layout{grid-template-columns:minmax(0,1fr);gap:0}
-#mainGlobalHeroView .hero-grid-layout>div:first-child{width:100%;max-width:820px;min-width:0;margin-inline:auto}
+#mainGlobalHeroView .hero-grid-layout>div:first-child{width:100%;max-width:100%;min-width:0;margin-inline:auto}
 #mainGlobalHeroView .main-hero-title{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;font-size:clamp(40px,4.6vw,64px)!important;font-weight:750!important;letter-spacing:-.035em!important;line-height:1.06!important;margin-bottom:24px!important}
 #mainGlobalHeroView .main-hero-title span{background:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;white-space:nowrap}
-#mainGlobalHeroView .main-hero-desc{width:100%;max-width:760px;font-size:18px!important;line-height:1.65!important;margin:0 auto 34px!important}
+#mainGlobalHeroView .main-hero-desc{width:100%;max-width:760px;font-size:18px!important;line-height:1.65!important;margin:0 0 34px!important}
 /* Place the existing free-address card at its own centered, wide width. */
 #mainGlobalHeroView .free-address-card{box-sizing:border-box;width:100%;max-width:860px;margin:0 auto 36px;padding:26px 28px}
 #mainGlobalHeroView .free-address-card>p{max-width:none}
@@ -627,6 +627,9 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
   #mainGlobalHeroView .main-hero-desc{font-size:15.5px!important;max-width:100%}
   #mainGlobalHeroView .free-address-card{padding:22px 18px}
 }
+
+/* Keep the navigation-apps phrase together when there is enough desktop space. */
+@media(min-width:1100px){#mainGlobalHeroView .hero-apps-line{white-space:nowrap}}
 
 /* Subtle section divider matching LATAM, scoped to the 507 hero. */
 #mainGlobalHeroView .hero-section-divider{height:1px;width:100%;background:#203047;margin:28px 0 28px}
@@ -734,7 +737,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
           
           <h2 class="main-hero-title">Crea tu<br><span>Dirección Digital</span></h2>
           <p class="main-hero-desc">
-            Comparte un solo enlace o código QR y facilita que te encuentren. Funciona con Google Maps, Waze, Uber y WhatsApp.
+            Comparte un solo enlace o código QR y facilita que te encuentren. <span class="hero-apps-line">Funciona con Google Maps, Waze, Uber y WhatsApp.</span>
           </p>
 
           <div class="search-bar-premium-container" style="display:none;">

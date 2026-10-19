@@ -973,10 +973,15 @@ test('isolated HTTP commercial journey connects OAuth, client request, ADMIN rev
   expect((await db.unsafe('SELECT count(*)::int AS n FROM ad507.addresses WHERE id=$1::uuid',[initial.id]))[0].n).toBe(1);
   const co=await call('/v1/admin/requests',admin.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-co-'+unique},body:form({...raw,countryCode:'CO',name:'Synthetic Colombia '+unique,phone:'+573001234567'})});expect(co.status).toBe(200);const foreign=(await co.json()).request;
   expect((await call('/v1/admin/requests/'+foreign.id+'/approve',admin.cookie,{method:'POST'})).status).toBe(200);
-  const stop=await call('/v1/admin/requests/'+foreign.id+'/publish',admin.cookie,{method:'POST'});expect(stop.status).toBe(503);expect((await stop.json()).error).toBe('COUNTRY_NOT_ENABLED');
-  const foreignRead=(await(await call('/v1/admin/requests/'+foreign.id,admin.cookie)).json()).request;expect(foreignRead.countryCode).toBe('CO');expect(foreignRead.publicUrl).toBeNull();expect(foreignRead.code).toBeNull();
-  expect(await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
-  console.info('HTTP journey PASS: OAuth → multipart/logo → durable request/retry → ADMIN approve → closed gate 503 → synthetic verified publication → owner canonical link → existing QR/copy → WebP; Colombia stops exactly at publish503');
+  const foreignPublish=await call('/v1/admin/requests/'+foreign.id+'/publish',admin.cookie,{method:'POST'});expect(foreignPublish.status).toBe(200);
+   const foreignRead=(await(await call('/v1/admin/requests/'+foreign.id,admin.cookie)).json()).request;
+   expect(foreignRead.countryCode).toBe('CO');expect(foreignRead.publicUrl).toMatch(/^https:\/\/direcciones\.lat\/AD57-N[0-9]{8}\/$/);
+   const foreignPage=await call(new URL(foreignRead.publicUrl).pathname);expect(foreignPage.status).toBe(200);
+   expect(await foreignPage.text()).toContain('Direcciones LATAM');
+   const paidCo=await call('/v1/admin/requests',admin.cookie,{method:'POST',headers:{'idempotency-key':'http-journey-co-paid-'+unique},body:form({...raw,countryCode:'CO',plan:'BUSINESS_PREMIUM',name:'Paid CO '+unique})});
+   expect(paidCo.status).toBe(503);expect((await paidCo.json()).error).toBe('COUNTRY_NOT_ENABLED');
+   expect(await db.unsafe("SELECT to_jsonb(a) AS row FROM ad507.addresses a WHERE source<>'USER_REQUEST' ORDER BY id")).toEqual(before);
+  console.info('HTTP journey PASS: OAuth → ADMIN approval → PA/CO free publication → canonical URLs + QR + WebP; Colombia paid plans remain closed');
  }finally{server.stop(true);await db.end({timeout:2});}
 },20000);
 

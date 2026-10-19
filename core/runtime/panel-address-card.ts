@@ -24,7 +24,7 @@ export function renderPanelAddressCard(a: Record<string, any>): string {
     (url?'<a class="button address-open" href="'+esc(url)+'" target="_blank" rel="noopener">Abrir dirección digital <span aria-hidden="true">↗</span></a>':'')+
     (detail&&a.status==='ACTIVE'&&a.addressType!=='RESIDENTIAL'?'<button type="button" class="secondary" data-edit-address="'+esc(a.id)+'">Editar</button>':'')+
     (detail?'<button type="button" class="secondary address-detail" data-request-detail="'+esc(a.id)+'">Ver detalles de solicitud</button>':'')+
-    (detail&&a.canArchive===true?'<button type="button" class="secondary address-remove" data-archive-request="'+esc(a.id)+'" aria-label="Eliminar solicitud de '+esc(a.name)+'">Eliminar solicitud</button>':'')+'</div>'+
+    (detail&&a.canArchive===true?'<button type="button" class="secondary address-remove" data-archive-request="'+esc(a.id)+'" aria-label="Eliminar '+(a.status==='ACTIVE'?'dirección':'solicitud')+' de '+esc(a.name)+'">Eliminar '+(a.status==='ACTIVE'?'dirección':'solicitud')+'</button>':'')+'</div>'+
     (canOfferAnalytics(a)?'<div class="address-analytics" data-analytics-code="'+esc(a.code)+'" aria-live="polite"><section class="analytics-summary"><h4>Estadísticas</h4><p>Cargando datos…</p></section></div>':'')+
     (image?'<img class="address-image" src="'+esc(image)+'" alt="Imagen de la dirección" loading="lazy" referrerpolicy="no-referrer">':'')+
     (a.addressType==='RESIDENTIAL'?'<p class="muted">Tu acceso residencial conserva su proceso de activación independiente.</p>':'')+'</article>';

@@ -1,6 +1,6 @@
 import type { Sql } from 'postgres';
 
-const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 
 /** Remove an owner's unprocessed request from their account without deleting historical data.
  * A transaction/row lock prevents review or payment initiation from racing the archive.
@@ -18,7 +18,7 @@ export async function archiveUnprocessedRequest(sql:Sql,actorId:string,addressId
     if(!rows.length)throw Error('REQUEST_NOT_FOUND');
     const a=rows[0];
     if(!['DRAFT','PENDING_REVIEW'].includes(a.status)||a.code!==null||a.publication_receipt!==null||
-      a.review_decision!==null||a.request_data?.createdByAdmin||a.request_data?.migration)
+      (a.review_decision!==null&&a.review_decision!=='REJECTED')||a.request_data?.createdByAdmin||a.request_data?.migration)
       throw Error('INVALID_STATE_TRANSITION');
     // Never withdraw a request after an order has been created, even if payment
     // currently says pending/failed. Keep provider reconciliation and audit intact.

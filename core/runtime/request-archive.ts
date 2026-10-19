@@ -1,6 +1,6 @@
 import type { Sql } from 'postgres';
 
-const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+const uuid=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/;
 
 /** Remove an owner's unprocessed request from their account without deleting historical data.
  * A transaction/row lock prevents review or payment initiation from racing the archive.

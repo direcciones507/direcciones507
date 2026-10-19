@@ -732,7 +732,7 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
   }finally{await db.end();}
 });
 
-test('LATAM uses existing ADMIN requests, private R2 and PG with country/territory round trip and closed foreign publication',async()=>{
+test('LATAM shares ADMIN, R2 and PG for eight-country free publication and foreign paid blocks',async()=>{
   const {createRequestRepository}=await import('../request-repository');
   const {createNewAddressPublication,newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication');
   const {createPaymentRepository}=await import('../payment-repository');
@@ -758,21 +758,19 @@ test('LATAM uses existing ADMIN requests, private R2 and PG with country/territo
       console.info('LATAM validated '+countryCode);
       await repo.review(adminId,results[0].id,'APPROVED');
       console.info('LATAM reviewed '+countryCode);
+      const published=await repo.publish(adminId,results[0].id),pub=await newPublicAddress(db,published.code,origin);
+      expect(published.code).toMatch(new RegExp('^AD'+({PA:'507',CR:'506',CO:'57',GT:'502',SV:'503',HN:'504',NI:'505',MX:'52'} as any)[countryCode]+'-N[0-9]{8}$'));
+      expect(pub?.url).toBe('https://direcciones.lat/'+published.code+'/');
+      expect(renderNewPublicAddress(pub!)).toContain(countryCode==='PA'?'DIRECCIONES<span>507</span>':'Direcciones LATAM');
       if(countryCode!=='PA'){
-        await expect(repo.publish(adminId,results[0].id)).rejects.toThrow('COUNTRY_NOT_ENABLED');
-        await expect(repo.submit(clientId,'latam-client-key-'+countryCode,data,files)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        const foreignClient=await repo.submit(clientId,'latam-client-key-'+countryCode,data,files);
+        expect(foreignClient.status).toBe('PENDING_REVIEW');
         const payment=createPaymentRepository(db,{provider:'PAYPAL',environment:'test'});
         await expect(payment.preparePayPal(adminId,results[0].id,'latam-payment-key-'+countryCode)).rejects.toThrow('COUNTRY_NOT_ENABLED');
-        console.info('LATAM foreign gates '+countryCode);
-        const code=proposedInternationalCode(countryCode,results[0].id);
-        await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[results[0].id,code]);
-        await expect((async()=>await db.unsafe("UPDATE ad507.addresses SET code='AD507-WRONG' WHERE id=$1::uuid",[results[0].id]))()).rejects.toMatchObject({code:'23514'});
+        await expect(repo.createAdmin(adminId,'latam-paid-key-'+countryCode,{...data,plan:'BUSINESS_PREMIUM'},files)).rejects.toThrow('COUNTRY_NOT_ENABLED');
+        await expect(db.unsafe("UPDATE ad507.addresses SET code='AD507-WRONG' WHERE id=$1::uuid",[results[0].id])).rejects.toMatchObject({code:'23514'});
         const second=await repo.createAdmin(adminId,'latam-second-key-'+countryCode,{...data,name:'Other '+countryCode},files);
-        await expect((async()=>await db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[second.id,code]))()).rejects.toMatchObject({code:'23505'});
-      }else{
-        const published=await repo.publish(adminId,results[0].id),pub=await newPublicAddress(db,published.code,origin);
-        expect(pub?.url).toBe('https://direcciones.lat/'+published.code+'/');
-        expect(renderNewPublicAddress(pub!)).toContain('DIRECCIONES<span>507</span>');
+        await expect(db.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[second.id,published.code])).rejects.toMatchObject({code:'23505'});
       }
     }
     console.info('LATAM requests complete');

@@ -8,6 +8,7 @@ import type { R2Settings } from './r2-storage';
 import { renderCommercialBridge } from './commercial-migration';
 import type { RequestFile } from './request-validation';
 import { yappyPaymentsEnabled } from './payment-policy';
+import { archiveUnprocessedRequest } from './request-archive';
 
 // Commercial workflow stays off unless production explicitly enables it.
 export const REQUEST_WORKFLOW_ENABLED=process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
@@ -38,15 +39,16 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
   const url=new URL(req.url),adminCreate=url.pathname==='/v1/admin/requests'&&req.method==='POST',submit=url.pathname==='/v1/user/requests'||adminCreate;
   const edit=url.pathname.match(/^\/v1\/(user|admin)\/requests\/([a-f0-9-]{36})\/(edit|history|location-approve|location-reject)$/);
   const userDetail=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})$/);
+  const userArchive=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/archive$/);
   const userMedia=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
   const action=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/(approve|reject|publish|transfer|rollback|archive-place)$/);
   const bridge=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/bridge$/);
   const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/)||userDetail;
   const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/)||userMedia;
-  if(!submit&&!action&&!detail&&!media&&!bridge&&!edit)return null;
+  if(!submit&&!action&&!detail&&!media&&!bridge&&!edit&&!userArchive)return null;
   const respond=(status:number,value:unknown)=>Response.json(value,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
   if(!context.enabled)return respond(503,{ok:false,error:'USER_PANEL_SUBMISSION_NOT_ENABLED'});
-  if(req.method!==(submit||action||(edit&&edit[3]!=='history')?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
+  if(req.method!==(submit||action||userArchive||(edit&&edit[3]!=='history')?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
   try {
     // Railway terminates TLS before Bun. Keep the URL host authoritative (never
     // x-forwarded-host), using the same HTTPS proxy condition as general-auth.
@@ -54,9 +56,10 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==requestOrigin)||(req.headers.has('origin')&&req.headers.get('origin')!==requestOrigin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
     const canCreateCommercial=adminCreate&&user.roles.includes('COMMERCIAL');
-    if(!((submit&&!adminCreate||userDetail||userMedia||edit?.[1]==='user')?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
+    if(!((submit&&!adminCreate||userDetail||userMedia||userArchive||edit?.[1]==='user')?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [id,item]of limits)if(now-item.at>60000)limits.delete(id);
     const item=limits.get(user.id);if(item&&++item.count>20||!item&&limits.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)limits.set(user.id,{at:now,count:1});
+    if(userArchive)return respond(200,{ok:true,request:await archiveUnprocessedRequest(context.sql,user.id,userArchive[1])});
     if(edit){
       const editor=createAddressEditing(context.sql,{r2:context.r2,fetch:context.fetch}),isAdmin=edit[1]==='admin';
       if(edit[3]==='history')return respond(200,{ok:true,history:await editor.history(user.id,edit[2],isAdmin)});

@@ -1,5 +1,5 @@
 import {isAutomaticPaidPlan,automaticPaidStateAllowed,isLegacyUnpaidPaidRequest} from './paid-activation-policy';
-import { assertCountryCommerce, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
+import { assertCountryPublication, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
 import type { Sql } from 'postgres';
 import { createHash } from 'node:crypto';
 import { validateRequestFiles, type RequestFile } from './request-validation';
@@ -87,7 +87,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
     async submit(actorId:string,key:string,raw:unknown,files:RequestFile[],admin=false) {
       if(!uuid.test(actorId)||!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       const data=validateRequestFiles(raw,files);
-      if(!admin)assertCountryCommerce(data.countryCode);
+      assertCountryPublication(data.countryCode,data.type,data.plan);
       // Reject duplicate gallery parts before persisting an impossible required count.
       const fingerprints=files.map(f=>f.role+':'+digest(f.bytes));
       if(new Set(fingerprints).size!==files.length)throw Error('DUPLICATE_MEDIA');
@@ -208,7 +208,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         if(!automatic)await actor(session,actorId,'ADMIN');
         const rows=await session.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST'",[addressId]);const row=rows[0];
         if(!row)throw Error('REQUEST_NOT_FOUND');
-        if(!row.request_data?.migration)assertCountryCommerce(row.country_code??row.request_data?.countryCode??'PA');
+        if(!row.request_data?.migration)assertCountryPublication(row.country_code??row.request_data?.countryCode??'PA',row.address_type,row.request_data?.plan);
         if(row.status==='ACTIVE'&&row.publication_receipt)return {id:row.id,code:row.code,status:'ACTIVE',receipt:row.publication_receipt};
         if(automatic){
           if(row.request_data?.workflow==='SECURITY_REVIEW'&&row.review_decision!=='APPROVED')return {id:row.id,status:row.status,workflow:'SECURITY_REVIEW',code:row.code};

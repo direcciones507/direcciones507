@@ -76,6 +76,13 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
     // absolute favicon assets as the shared account; leave legacy HTML alone.
     template=template.replace('href="/assets/icon-192.png"','href="https://direcciones507.com/assets/icon-192.png"')
       .replace('href="/assets/icon-180.png"','href="https://direcciones507.com/assets/icon-180.png"');
+    // New non-Panama records have their own LATAM emblem. Panama, the
+    // historical template and dynamic business OG previews remain unchanged.
+    if(record.extras.countryCode!=='PA'){
+      const latamIcon='https://direcciones507.com/assets/favicon-latam-32.png';
+      template=template.replace('sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"','sizes="32x32" href="'+latamIcon+'"')
+        .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
+    }
   }
   const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
   if(record.type==='PLACE')template=template.replace("if(planComercial === 'premium pro' && descripcionComercial","if(descripcionComercial");

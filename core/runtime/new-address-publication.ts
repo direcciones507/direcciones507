@@ -1,7 +1,7 @@
 import {publicAnalyticsScript} from './public-analytics';
 import {cookieConsentSource} from './legal';
 import { createHash } from 'node:crypto';
-import { assertCountryCommerce, prepareCountryTemplate, proposedCountryUrl, COUNTRIES } from './country-configuration';
+import { assertCountryPublication, prepareCountryTemplate, proposedCountryUrl, COUNTRIES, countryConfiguration } from './country-configuration';
 import { createR2Storage, type R2Settings } from './r2-storage';
 import type { Sql } from 'postgres';
 import { getPublicAddressByCode } from '../postgres/public-address-repository';
@@ -16,12 +16,14 @@ import { readFileSync } from 'node:fs';
 export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
     historicalRegistryVerified:options.namespaceExclusive,
-    async reserve({id,countryCode='PA'}) {
-      assertCountryCommerce(countryCode);
+    async reserve({id,countryCode='PA',type,plan}) {
+      assertCountryPublication(countryCode,type,plan);
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       // Canonical UUID layout makes removing separators injective: malformed
       // IDs must not collapse onto another request's code or shorten the suffix.
       if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id))throw Error('INVALID_REQUEST');
+      let historicalCodes:string[]=[];
+      if(countryCode==='PA'){
       const response=await (options.fetch??fetch)(`https://script.google.com/macros/s/${PLANES_AUTHORITY.deploymentId}/exec?action=list`,{signal:AbortSignal.timeout(15000)});
       if(!response.ok||!response.headers.get('content-type')?.includes('application/json'))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
       const reader=response.body?.getReader();if(!reader)throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
@@ -30,12 +32,14 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       const body=Buffer.concat(chunks).toString('utf8');
       const data=JSON.parse(body);
       if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/i.test(v.codigo.trim())))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
+      historicalCodes=data.codes.map((v:any)=>v.codigo.trim().toUpperCase());
+      }
       // Keep the new namespace separate from historical sequential AD507 codes.
       // A deterministic digest makes repeat reservations idempotent. Fail closed on
       // the rare eight-digit collision rather than assigning a duplicate code.
       const numericCode=(BigInt('0x'+createHash('sha256').update(id).digest('hex'))%100000000n).toString().padStart(8,'0');
-      const code='AD507-N'+numericCode;
-      if(data.codes.some((v:any)=>v.codigo.trim().toUpperCase()===code))throw Error('CANONICAL_CODE_COLLISION');
+      const code='AD'+countryConfiguration(countryCode).prefix+'-N'+numericCode;
+      if(historicalCodes.includes(code))throw Error('CANONICAL_CODE_COLLISION');
       const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
       if(existing.length)throw Error('CANONICAL_CODE_COLLISION');
       return code;
@@ -44,9 +48,9 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       // The existing PostgreSQL reader is the new system's publication destination.
       // No call to PLANES writes, GitHub Pages, Drive, DNS or historical generators.
       if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
-      const rows=await sql.unsafe("SELECT id,request_data FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
+      const rows=await sql.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
-      if(!rows[0].request_data?.migration)assertCountryCommerce(rows[0].request_data?.countryCode??'PA');
+      if(!rows[0].request_data?.migration)assertCountryPublication(rows[0].country_code??rows[0].request_data?.countryCode??'PA',rows[0].address_type,rows[0].request_data?.plan);
       if(!rows[0].request_data?.migration&&!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       return {confirmed:true,receipt:'postgres:'+id+':'+code};
     },
@@ -55,9 +59,9 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
 
 export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   const record=await getPublicAddressByCode(sql as any,code);if(!record)return null;
-  const rows=await sql.unsafe("SELECT a.id::text,a.request_data FROM ad507.addresses a WHERE a.code=$1 AND a.source='USER_REQUEST' AND a.publication_receipt IS NOT NULL",[record.code]);
+  const rows=await sql.unsafe("SELECT a.id::text,a.request_data,a.country_code,a.address_type FROM ad507.addresses a WHERE a.code=$1 AND a.source='USER_REQUEST' AND a.publication_receipt IS NOT NULL",[record.code]);
   if(!rows.length)return null;
-  if(!rows[0].request_data?.migration)assertCountryCommerce(rows[0].request_data?.countryCode??'PA');
+  if(!rows[0].request_data?.migration)assertCountryPublication(rows[0].country_code??rows[0].request_data?.countryCode??'PA',rows[0].address_type,rows[0].request_data?.plan);
   const media=await sql.unsafe("SELECT id::text,media_type,url FROM ad507.address_media WHERE address_id=$1::uuid AND upload_status='READY' ORDER BY position,id",[rows[0].id]);
   const mediaOrigin=new URL(proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)).origin;
   const urls=media.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
@@ -371,11 +375,11 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
     const mediaMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/media\/([a-f0-9-]{36})$/);
     if(mediaMatch&&configuredPublicCode(mediaMatch[1])){
       if(!context.r2)return new Response(null,{status:503});
-      try{const rows=await sql.unsafe("SELECT a.id::text,a.request_data,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
+      try{const rows=await sql.unsafe("SELECT a.id::text,a.request_data,a.country_code,a.address_type,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
       if(!rows.length)return new Response(null,{status:404});
       const row=rows[0];
       // Keep private media closed for countries whose commercial publication is disabled.
-      if(!row.request_data?.migration)assertCountryCommerce(row.request_data?.countryCode??'PA');
+      if(!row.request_data?.migration)assertCountryPublication(row.country_code??row.request_data?.countryCode??'PA',row.address_type,row.request_data?.plan);
         const storage=createR2Storage(context.r2,{fetch:context.fetch,registerIntent:async()=>{throw Error('PUBLIC_MEDIA_READ_ONLY');},authorize:async scope=>{
           if(scope.action!=='read'||scope.addressId!==row.id||scope.storageKey!==row.storage_key)return false;
           const active=await sql.unsafe("SELECT id FROM ad507.addresses WHERE id=$1::uuid AND status='ACTIVE' AND source='USER_REQUEST' AND address_type IN ('BUSINESS','PLACE')",[row.id]);return !!active.length;

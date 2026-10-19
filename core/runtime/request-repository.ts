@@ -189,7 +189,8 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         const row=rows[0];if(!row)throw Error('REQUEST_NOT_FOUND');
         // A delayed authenticated IPN must acknowledge an already-confirmed request without
         // reopening an ADMIN decision, republishing or restoring suspended benefits.
-        if(row.request_data?.workflow==='PAYMENT_CONFIRMED'&&['PENDING_REVIEW','ACTIVE','ARCHIVED','SUSPENDED','DISABLED'].includes(row.status))return {id:row.id,status:row.status,workflow:'PAYMENT_CONFIRMED'};
+        if(row.status==='ARCHIVED')return {id:row.id,status:'ARCHIVED',workflow:'RETIRED'};
+        if(row.request_data?.workflow==='PAYMENT_CONFIRMED'&&['PENDING_REVIEW','ACTIVE','SUSPENDED','DISABLED'].includes(row.status))return {id:row.id,status:row.status,workflow:'PAYMENT_CONFIRMED'};
         if(!(row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING')&&!isLegacyUnpaidPaidRequest(row))throw Error('INVALID_PAID_ACTIVATION_STATE');
         await requireConfirmedPayment(tx,row,options.paymentEnvironment??'production');
         await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',request_data=jsonb_set(request_data,'{workflow}','\"PAYMENT_CONFIRMED\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);

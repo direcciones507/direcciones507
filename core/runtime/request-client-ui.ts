@@ -39,7 +39,7 @@ document.getElementById('addresses').addEventListener('click',async e=>{
     const id=archive.dataset.archiveRequest,card=archive.closest('[data-request]');
     if(!/^[a-f0-9-]{36}$/.test(id))return;
     const label=card?.querySelector('.address-name')?.textContent||'esta solicitud';
-    if(!confirm('¿Eliminar la solicitud «'+label+'» de Mi cuenta? Solo se retiran solicitudes sin procesar. No podrás deshacer esta acción desde tu cuenta.'))return;
+    if(!confirm('¿Retirar «'+label+'» de forma permanente? Desaparecerá de Mi cuenta y, si estaba publicada, su enlace y QR dejarán de abrir la ficha. Los pagos realizados no se reembolsan automáticamente. Esta acción no se puede deshacer desde tu cuenta.'))return;
     const message=document.getElementById('message');
     archive.disabled=true;archive.textContent='Eliminando…';
     try{
@@ -49,10 +49,10 @@ document.getElementById('addresses').addEventListener('click',async e=>{
       const detail=document.getElementById('requestDetail');if(detail){requestDetailVersion++;detail.classList.add('hidden');}
       const grid=document.getElementById('addresses');
       if(!grid.querySelector('.address-card'))document.getElementById('addressSection')?.classList.add('hidden');
-      message.textContent='Solicitud eliminada de Mi cuenta.';
+      message.textContent='Dirección o solicitud retirada de Mi cuenta. Su enlace público, si existía, ha quedado desactivado.';
     }catch{
-      archive.disabled=false;archive.textContent='Eliminar solicitud';
-      message.textContent='No se pudo eliminar la solicitud. Comprueba que siga pendiente y que no tenga pagos asociados.';
+      archive.disabled=false;archive.textContent=card?.querySelector('.address-status')?.textContent==='Activa'?'Eliminar dirección':'Eliminar solicitud';
+      message.textContent='No se pudo retirar. Actualiza Mi cuenta y vuelve a intentarlo; las fichas históricas requieren revisión del administrador.';
     }
     return;
   }

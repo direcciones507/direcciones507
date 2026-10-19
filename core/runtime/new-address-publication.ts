@@ -343,8 +343,15 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
     const publicMatch=url.pathname.match(/^\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/$/);
     const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)$/);
     if((publicMatch||apiMatch)&&configuredPublicCode((publicMatch??apiMatch)![1])){
-      try{const record=await newPublicAddress(sql,(publicMatch??apiMatch)![1],url.origin);
+      try{const code=(publicMatch??apiMatch)![1];
+        const record=await newPublicAddress(sql,code,url.origin);
         if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
+        // Owner-retired pages are permanently gone: do not fall back to historical
+        // rendering, and let Google discover the 410 instead of a soft-404.
+        const retired=await sql.unsafe("SELECT 1 FROM ad507.addresses WHERE code=$1 AND source='USER_REQUEST' AND status='ARCHIVED' LIMIT 1",[code]);
+        if(retired.length)return publicMatch
+          ?new Response('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow"><title>Dirección retirada</title></head><body><main><h1>Esta dirección digital ya no está disponible</h1><p>El propietario retiró esta dirección.</p></main></body></html>',{status:410,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow'}})
+          :Response.json({ok:false,error:'ADDRESS_RETIRED'},{status:410,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
       }catch{return Response.json({ok:false,error:'PUBLICATION_UNAVAILABLE'},{status:503});}
     }
     const mediaMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/media\/([a-f0-9-]{36})$/);

@@ -126,6 +126,17 @@
     .nav-menu .btn-nav-register { background: #1f6fff; border: 1px solid #1f6fff; box-shadow: 0 4px 12px rgba(31,111,255,.2); }
     .hero-create-address-btn { display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; padding: 16px 22px; border-radius: 12px; background: #1f6fff; color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 5px 16px rgba(31,111,255,.22); }
     .hero-create-address-btn:hover { background: #1760e8; }
+    /* Refine desktop hero CTA placement without moving the phone or affecting mobile layouts. */
+    @media (min-width: 993px) {
+      #mainAppHeader .nav-menu { gap: 18px; margin-right: 16px; }
+      #mainAppHeader .nav-menu .btn-nav-login { background: transparent !important; border: 1px solid #243246 !important; color: #b7c4d7 !important; box-shadow: none !important; text-transform: none !important; font-weight: 500 !important; }
+      #mainAppHeader .nav-menu .btn-nav-register { text-transform: none !important; }
+      #mainGlobalHeroView .hero-grid-layout > div:first-child { text-align: left; }
+      #mainGlobalHeroView .hero-create-address-btn { display: inline-flex; margin: 4px 0 0; }
+      #mainGlobalHeroView .main-hero-desc { margin-bottom: 18px !important; }
+      #mainGlobalHeroView .hero-view-wrapper { padding-top: 38px; padding-bottom: 22px; }
+    }
+
     @media (min-width: 993px) { .hero-grid-layout > :last-child { transform: translateY(-18px); } }
 
 
@@ -669,7 +680,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
           <li><a onclick="toggleSeccion('secFuncionamiento')" id="lnkFuncionamiento">Cómo funciona</a></li>
           <li><a onclick="toggleSeccion('secContacto')" id="lnkContacto">Contacto</a></li>
           <li><a href="https://direcciones.lat/panel?country=PA&amp;access=1&amp;origin=507" class="btn-nav-action btn-nav-login"><i class="fa-solid fa-user"></i> Ingresar</a></li>
-          <li><a href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;" class="btn-nav-action btn-nav-register"><i class="fa-solid fa-user-plus"></i> Crear cuenta</a></li>
+          <li><a href="https://direcciones.lat/?origin=507&amp;country=PA#latamAccess" class="btn-nav-action btn-nav-register"><i class="fa-solid fa-user-plus"></i> Crear cuenta</a></li>
         </ul>
       </nav>
     </div>

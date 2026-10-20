@@ -119,6 +119,15 @@
     .nav-menu a:hover, .nav-menu a.active { color: var(--cyan-brand); }
     .btn-nav-action { background: linear-gradient(135deg, #1f6fff, #1f6fff); color: #fff !important; padding: 10px 20px; border-radius: 8px; font-size: 12px !important; font-weight: 700 !important; box-shadow: 0 4px 15px rgba(31, 111, 255, 0.2); }
     .mobile-account-link { display: none; }
+    /* 507: navegación y CTA armonizados con LATAM */
+    .nav-menu { gap: 22px; }
+    .nav-menu a:not(.btn-nav-action) { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 500; }
+    .nav-menu .btn-nav-login { background: transparent; border: 1px solid rgba(148,163,184,.2); box-shadow: none; color: #cbd5e1 !important; font-weight: 500 !important; }
+    .nav-menu .btn-nav-register { background: #1f6fff; border: 1px solid #1f6fff; box-shadow: 0 4px 12px rgba(31,111,255,.2); }
+    .hero-create-address-btn { display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; padding: 16px 22px; border-radius: 12px; background: #1f6fff; color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 5px 16px rgba(31,111,255,.22); }
+    .hero-create-address-btn:hover { background: #1760e8; }
+    @media (min-width: 993px) { .hero-grid-layout > :last-child { transform: translateY(-18px); } }
+
 
     /* ===== SECCIONES DESPLEGABLES ===== */
     .dropdown-section { display: none; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid var(--border-glow); padding: 48px 0; animation: slideDown 0.4s ease-out; width: 100%; }
@@ -656,11 +665,11 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       <nav id="headerNavigation" aria-label="Navegación principal" onclick="if(event.target.closest('a')){const wrap=this.closest('.nav-wrap');wrap.classList.remove('menu-open');document.getElementById('headerMenuToggle').setAttribute('aria-expanded','false')}">
         <ul class="nav-menu">
           <li><a onclick="irInicio()" id="lnkInicio" class="active">Inicio</a></li>
-          <li><a onclick="toggleSeccion('secNosotros')" id="lnkNosotros">Sobre Nosotros</a></li>
-          <li><a onclick="toggleSeccion('secFuncionamiento')" id="lnkFuncionamiento">Cómo Funciona</a></li>
+          <li><a onclick="toggleSeccion('secNosotros')" id="lnkNosotros">Sobre nosotros</a></li>
+          <li><a onclick="toggleSeccion('secFuncionamiento')" id="lnkFuncionamiento">Cómo funciona</a></li>
           <li><a onclick="toggleSeccion('secContacto')" id="lnkContacto">Contacto</a></li>
-          <li><a href="https://direcciones.lat/panel?country=PA&amp;access=1&amp;origin=507" class="btn-nav-action"><i class="fa-solid fa-user"></i> Mi cuenta</a></li>
-          <li><a href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;" class="btn-nav-action"><i class="fa-solid fa-location-dot"></i> Solicitar mi dirección digital</a></li>
+          <li><a href="https://direcciones.lat/panel?country=PA&amp;access=1&amp;origin=507" class="btn-nav-action btn-nav-login"><i class="fa-solid fa-user"></i> Ingresar</a></li>
+          <li><a href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;" class="btn-nav-action btn-nav-register"><i class="fa-solid fa-user-plus"></i> Crear cuenta</a></li>
         </ul>
       </nav>
     </div>
@@ -744,6 +753,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
             Comparte un solo enlace o código QR y facilita que te encuentren. <span class="hero-apps-line">Funciona con Google Maps, Waze, Uber y WhatsApp.</span>
           </p>
 
+          <a class="hero-create-address-btn" href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;">Crear mi Dirección <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
           <div class="search-bar-premium-container" style="display:none;">
             <div class="search-input-wrapper">
               <i class="fa-solid fa-magnifying-glass"></i>

@@ -415,7 +415,7 @@ if(authParams.has('token')&&authParams.has('email')){
  latamEmailField.value=authParams.get('email')||'';
  setLatamEmailMode(authParams.get('action')==='reset'||location.pathname==='/recuperar-contrasena'?'reset':'verify');
  openLatamAccess();
-}else {setLatamEmailMode('login');if(authParams.get('access')==='1')openLatamAccess();}
+}else {setLatamEmailMode(authParams.get('mode')==='register'?'register':'login');if(authParams.get('access')==='1')openLatamAccess();}
 const countrySelect=document.getElementById('commercialCountry');
 const countryState=document.getElementById('latamCountryState'),countryField=document.getElementById('countryField');
 countryField.appendChild(countryState);countryState.hidden=false;document.getElementById('countryCode').hidden=true;countryField.querySelector('label[for="countryCode"]').hidden=true;

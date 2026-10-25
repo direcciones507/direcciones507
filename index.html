@@ -1512,8 +1512,13 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     }
 
     function ejecutarEnlaceInterno(codigoAsignado) {
-      const codigoLimpio = String(codigoAsignado).trim().toUpperCase();
-      window.location.href = `https://direcciones507.com/?code=${encodeURIComponent(codigoLimpio)}`;
+      const codigoLimpio = String(codigoAsignado || '').trim().toUpperCase();
+      if (!/^AD507-[A-Z0-9-]+$/.test(codigoLimpio)) return;
+      // Open the existing full digital-address card, not just a bare URL.
+      const input = document.getElementById('inputCodigo');
+      if (!input) return;
+      input.value = codigoLimpio;
+      ejecutarBusquedaSistema('directorio');
     }
 
     async function registrarClicBase(plataforma) {

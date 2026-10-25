@@ -685,13 +685,6 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  #mainAppHeader .header-account-actions .btn-nav-action{width:100%;min-width:0;padding:12px 8px}
  #mainAppHeader #headerNavigation{order:3}
 }
-/* Source homepage must work even when the optional generated-site workflow is unavailable. */
-#mainGlobalHeroView .hero-grid-layout{grid-template-columns:minmax(0,1.25fr) minmax(230px,.75fr);gap:32px}
-#mainGlobalHeroView .hero-phone-preview-image{width:min(330px,92%);margin:auto}
-#mainGlobalHeroView .hero-phone-preview-image img{height:auto}
-#mainGlobalHeroView .search-bar-premium-container{margin-top:24px}
-@media(max-width:992px){#mainGlobalHeroView .hero-grid-layout{grid-template-columns:minmax(0,1fr);gap:28px}}
-@media(max-width:640px){#mainGlobalHeroView .search-bar-premium-container{display:flex;flex-wrap:wrap;padding:12px;gap:10px}#mainGlobalHeroView .search-input-wrapper{flex:1 1 100%;min-width:0}#mainGlobalHeroView .search-location-select{display:none}#mainGlobalHeroView .search-bar-premium-container .btn-search-trigger{width:100%}}
 </style>
 </head>
 <body>
@@ -814,8 +807,9 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
             </div>
             <button type="button" class="btn-search-trigger" onclick="ejecutarBusquedaSistema()">Buscar</button>
           </div>
-          <div id="msgLogBusqueda" role="status" style="display: none; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
+          <div id="msgLogBusqueda" style="display: none; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
         </div>
+
       </div>
 
       <div class="hero-section-divider" role="separator" aria-hidden="true"></div>
@@ -1318,14 +1312,12 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
     window.onload = function() {
       const mapContainer = document.getElementById('mapaPanamaReal');
-      if (mapContainer && typeof L !== "undefined") {
-        try {
-          map = L.map(mapContainer, { zoomControl: true }).fitBounds([[7.05, -83.05], [9.65, -77.15]]);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-          }).addTo(map);
-          setTimeout(() => { map.invalidateSize(); }, 400);
-        } catch (error) { console.warn("Map initialization unavailable; address lookup remains enabled.", error); }
+      if (mapContainer) {
+        map = L.map(mapContainer, { zoomControl: true }).fitBounds([[7.05, -83.05], [9.65, -77.15]]);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap'
+        }).addTo(map);
+        setTimeout(() => { map.invalidateSize(); }, 400);
       }
 
       // Detecta cuando el código llega mediante un enlace compartido.
@@ -1349,12 +1341,8 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       }
 
       if (urlCode) {
-        const input = document.getElementById("inputCodigo");
-        if (input) {
-          input.value = urlCode;
-          // Keep the original historical viewer, even if the map library fails.
-          ejecutarBusquedaSistema("enlace");
-        }
+        document.getElementById("inputCodigo").value = urlCode;
+        ejecutarBusquedaSistema("enlace");
       }
 
       document.getElementById('uiBtnHorarioHome').addEventListener('click', function() { this.classList.toggle('active'); });
@@ -1377,7 +1365,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       if (inicio) inicio.classList.add('active');
       document.getElementById("mainAppHeader").style.display = "block";
       document.getElementById("mainGlobalHeroView").style.display = "block";
-      document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "block");
+      document.getElementById("seoHomeButtonsContainer").style.display = "block";
       document.getElementById("globalMetricsFooterRow").style.display = "block";
       document.getElementById("mainClientPanelCardContainer").style.display = "none";
       document.getElementById("movilQuienesSomos").style.display = "block";
@@ -1399,7 +1387,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         if(idSeccion === 'secContacto') document.getElementById('lnkContacto').classList.add('active');
         document.getElementById("mainAppHeader").style.display = "block"; // Se mantiene para las sub-páginas informativas
         document.getElementById("mainGlobalHeroView").style.display = "none";
-        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
+        document.getElementById("seoHomeButtonsContainer").style.display = "none";
         document.getElementById("globalMetricsFooterRow").style.display = "none";
         document.getElementById("mainClientPanelCardContainer").style.display = "none";
         document.getElementById("movilQuienesSomos").style.display = "none";
@@ -1407,7 +1395,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         document.getElementById('lnkInicio').classList.add('active');
         document.getElementById("mainAppHeader").style.display = "block";
         document.getElementById("mainGlobalHeroView").style.display = "block";
-        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "block");
+        document.getElementById("seoHomeButtonsContainer").style.display = "block";
         document.getElementById("globalMetricsFooterRow").style.display = "flex";
         document.getElementById("movilQuienesSomos").style.display = "block";
       }
@@ -1512,7 +1500,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
         document.getElementById("mainAppHeader").style.display = "none";
         document.getElementById("mainGlobalHeroView").style.display = "none";
-        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
+        document.getElementById("seoHomeButtonsContainer").style.display = "none";
         document.getElementById("globalMetricsFooterRow").style.display = "none";
         document.getElementById("movilQuienesSomos").style.display = "none";
         document.getElementById("mainClientPanelCardContainer").style.display = "block";
@@ -1524,12 +1512,8 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     }
 
     function ejecutarEnlaceInterno(codigoAsignado) {
-      const codigoLimpio = String(codigoAsignado || '').trim().toUpperCase();
-      if (!/^AD507-[A-Z0-9-]+$/.test(codigoLimpio)) return;
-      const input = document.getElementById('inputCodigo');
-      if (!input) return;
-      input.value = codigoLimpio;
-      ejecutarBusquedaSistema('directorio');
+      const codigoLimpio = String(codigoAsignado).trim().toUpperCase();
+      window.location.href = `https://direcciones507.com/?code=${encodeURIComponent(codigoLimpio)}`;
     }
 
     async function registrarClicBase(plataforma) {
@@ -1557,7 +1541,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     async function ejecutarBusquedaSistema(origen = "buscador") {
       const input = document.getElementById("inputCodigo");
       const log = document.getElementById("msgLogBusqueda");
-      const codigo = (input.value || "").trim().toUpperCase();
+      const codigo = (input.value || "").trim();
 
       if (!codigo) { log.textContent = "Por favor, ingresa un código AD507 válido."; return; }
       log.textContent = "";
@@ -1591,11 +1575,8 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         }
 
         const data = respuesta;
-        if (String(data.codigo || data.code || '').trim().toUpperCase() !== codigo) throw new Error('CODE_MISMATCH');
         CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
-        const rawPlan = String(data.plan || data.plan_comercial || "").toLowerCase().trim();
-        const planLower = rawPlan.includes('pro') ? 'pro' : rawPlan.includes('premium') ? 'premium' : rawPlan;
-        const publicBusiness = data.publico !== false && String(data.tipo_direccion || '').toUpperCase() !== 'RESIDENCIAL';
+        const planLower = String(data.plan || "").toLowerCase().trim();
 
         const esResidencial =
           planLower === "persona" ||
@@ -1604,7 +1585,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
         // Un código residencial nunca autoriza acceso. Solo un token temporal
         // validado por el servidor puede mostrar la dirección.
-        if (esResidencial || !publicBusiness || rawPlan.includes('residencial')) {
+        if (esResidencial) {
           alert("🔒 Dirección residencial privada. El código por sí solo no concede acceso; utiliza el enlace temporal compartido por el titular.");
           return;
         }
@@ -1614,7 +1595,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         document.getElementById("uiRef").textContent = data.referencia || "Referencia no indicada";
         document.getElementById("uiHorarioHome").textContent = data.horario || "No especificado";
 
-        if (data.mostrar_logo !== false && data.logo) {
+        if (planLower === "premium" && data.logo) {
           document.getElementById("uiLogoImgHome").src = normalizarImagenDrive(data.logo);
           document.getElementById("uiLogoBoxHome").style.display = "block";
         } else {
@@ -1652,13 +1633,10 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
           document.getElementById("btnUberHome").href = data.uber || "#";
         }
 
-        const contactPhone = String(data.telefono || '').replace(/\D/g, '');
-        document.getElementById('btnAvisoHome').href = data.whatsapp || (contactPhone ? 'https://wa.me/' + (contactPhone.length === 8 ? '507' : '') + contactPhone : '#');
-
         const containerGaleria = document.getElementById('fieldGaleriaHome');
         const gridFotos = document.getElementById('galeriaFotosHome');
 
-        if((data.mostrar_fotos === true || (data.legacy && data.mostrar_fotos !== false && ['premium','pro'].includes(planLower))) && gridFotos && containerGaleria){
+        if(planLower === "premium" && gridFotos && containerGaleria){
           let fotosValidas = data.fotos && Array.isArray(data.fotos) ? data.fotos.filter(u=>u) : [data.foto1, data.foto2, data.foto3, data.foto4, data.foto5].filter(u=>u);
           if(fotosValidas.length > 0){
             gridFotos.innerHTML = '';
@@ -1676,7 +1654,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         } else { containerGaleria.style.display = "none"; }
 
         const redesBox = document.getElementById("seccionRedesSocialesCliente");
-        if((data.mostrar_redes === true || (data.legacy && data.mostrar_redes !== false && ['negocio','premium','pro'].includes(planLower))) && redesBox) {
+        if((planLower === "negocio" || planLower === "premium") && redesBox) {
           let tieneRedes = false;
           if(data.instagram) { document.getElementById("clInstagram").href = data.instagram; document.getElementById("clInstagram").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clInstagram").style.display="none"; }
           if(data.tiktok) { document.getElementById("clTikTok").href = data.tiktok; document.getElementById("clTikTok").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clTikTok").style.display="none"; }
@@ -1758,7 +1736,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         document.getElementById("mainAppHeader").style.display = "none";
         
         document.getElementById("mainGlobalHeroView").style.display = "none";
-        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
+        document.getElementById("seoHomeButtonsContainer").style.display = "none";
         document.getElementById("globalMetricsFooterRow").style.display = "none";
         document.getElementById("movilQuienesSomos").style.display = "none";
         document.getElementById("mainClientPanelCardContainer").style.display = "block";
@@ -2015,7 +1993,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       overlay.classList.remove("show");
       document.getElementById("mainAppHeader").style.display = "none";
       document.getElementById("mainGlobalHeroView").style.display = "none";
-      document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
+      document.getElementById("seoHomeButtonsContainer").style.display = "none";
       document.getElementById("globalMetricsFooterRow").style.display = "none";
       document.getElementById("movilQuienesSomos").style.display = "none";
       document.getElementById("mainClientPanelCardContainer").style.display = "block";

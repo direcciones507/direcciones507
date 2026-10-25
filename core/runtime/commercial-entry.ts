@@ -6,7 +6,7 @@ export function commercialEntryContext(url:URL){
  const international=url.hostname==='direcciones.lat'||url.pathname.endsWith('/international');
  return {country,international,canonical:international?'https://direcciones.lat/':'https://direcciones507.com/commercial/panama',
    title:international?'Direcciones LATAM | Latinoamérica':'Direcciones 507 | Panamá',
-   description:international?'Conecta negocios y lugares con una dirección digital, un enlace y un código QR.':'Crea tu dirección digital y comparte tu ubicación fácilmente. Encuentra. Llega. Conecta.'};
+   description:international?'Crea tu dirección digital y comparte tu ubicación fácilmente. Encuentra. Llega. Conecta.':'Crea tu dirección digital y comparte tu ubicación fácilmente. Encuentra. Llega. Conecta.'};
 }
 /** Explicit opt-in routing proposal. Never intercept historical codes, assets or APIs. */
 export function sharedCommercialRoot(req:Request,env:Record<string,string|undefined>){

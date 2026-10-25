@@ -3,6 +3,10 @@ from pathlib import Path
 p = Path("index.html")
 text = p.read_text(encoding="utf-8")
 
+# The source now carries the approved phone; never duplicate or reparent its CTA.
+if 'class="hero-phone-preview-image"' in text:
+    raise SystemExit(0)
+
 css = r'''
     /* ===== AJUSTES FINALES HERO 2026 ===== */
     #mainGlobalHeroView .free-address-info-btn {

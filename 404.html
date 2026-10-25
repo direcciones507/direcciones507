@@ -79,7 +79,9 @@
       } catch (_) {
         // Fallo cerrado: si el código no se confirma, se conserva el 404.
       }
-    })();
+    })().finally(function () {
+      document.documentElement.classList.remove("ad507-routing");
+    });
   </script>
   <style>
     html.ad507-routing body{visibility:hidden;}

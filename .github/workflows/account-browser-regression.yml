@@ -29,3 +29,6 @@ jobs:
       - run: node core/runtime/tests/account-browser-regression.mjs
         env:
           PLAYWRIGHT_MODULE: /tmp/ad507-browser/node_modules/playwright
+      - run: node scripts/check-historical-viewer.mjs
+        env:
+          PLAYWRIGHT_MODULE: /tmp/ad507-browser/node_modules/playwright

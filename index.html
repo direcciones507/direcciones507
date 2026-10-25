@@ -690,6 +690,8 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 #mainGlobalHeroView .hero-phone-preview-image{width:min(330px,92%);margin:auto}
 #mainGlobalHeroView .hero-phone-preview-image img{height:auto}
 #mainGlobalHeroView .search-bar-premium-container{margin-top:24px}
+/* Keep legacy lookup functional for deep links and directory, but hidden on the home hero. */
+#mainGlobalHeroView .search-bar-premium-container{display:none!important}
 @media(max-width:992px){#mainGlobalHeroView .hero-grid-layout{grid-template-columns:minmax(0,1fr);gap:28px}}
 @media(max-width:640px){#mainGlobalHeroView .search-bar-premium-container{display:flex;flex-wrap:wrap;padding:12px;gap:10px}#mainGlobalHeroView .search-input-wrapper{flex:1 1 100%;min-width:0}#mainGlobalHeroView .search-location-select{display:none}#mainGlobalHeroView .search-bar-premium-container .btn-search-trigger{width:100%}}
 </style>

@@ -1318,12 +1318,14 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
     window.onload = function() {
       const mapContainer = document.getElementById('mapaPanamaReal');
-      if (mapContainer) {
-        map = L.map(mapContainer, { zoomControl: true }).fitBounds([[7.05, -83.05], [9.65, -77.15]]);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap'
-        }).addTo(map);
-        setTimeout(() => { map.invalidateSize(); }, 400);
+      if (mapContainer && typeof L !== "undefined") {
+        try {
+          map = L.map(mapContainer, { zoomControl: true }).fitBounds([[7.05, -83.05], [9.65, -77.15]]);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+          }).addTo(map);
+          setTimeout(() => { map.invalidateSize(); }, 400);
+        } catch (error) { console.warn("Map initialization unavailable; address lookup remains enabled.", error); }
       }
 
       // Detecta cuando el código llega mediante un enlace compartido.
@@ -1347,8 +1349,12 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       }
 
       if (urlCode) {
-        document.getElementById("inputCodigo").value = urlCode;
-        ejecutarBusquedaSistema("enlace");
+        const input = document.getElementById("inputCodigo");
+        if (input) {
+          input.value = urlCode;
+          // Keep the original historical viewer, even if the map library fails.
+          ejecutarBusquedaSistema("enlace");
+        }
       }
 
       document.getElementById('uiBtnHorarioHome').addEventListener('click', function() { this.classList.toggle('active'); });

@@ -804,7 +804,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
           <a class="hero-create-address-btn" href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;">Crear mi Dirección <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
           </p>
           </div>
-          <div class="search-bar-premium-container">
+          <div class="search-bar-premium-container" style="display:none;">
             <div class="search-input-wrapper">
               <i class="fa-solid fa-magnifying-glass"></i>
               <input type="text" id="inputCodigo" placeholder="Busca direcciones, códigos o comercios (ej: AD507-THE1920)">
@@ -814,10 +814,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
             </div>
             <button type="button" class="btn-search-trigger" onclick="ejecutarBusquedaSistema()">Buscar</button>
           </div>
-          <div id="msgLogBusqueda" role="status" style="display: block; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
-        </div>
-        <div class="hero-phone-preview-image">
-          <img src="/ad507-the1920-phone-preview.jpg" alt="Vista previa de una Dirección Digital en un celular" width="674" height="1280" fetchpriority="high">
+          <div id="msgLogBusqueda" role="status" style="display: none; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
         </div>
       </div>
 

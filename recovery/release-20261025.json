@@ -18,6 +18,21 @@
   },
   "rollback_branch": "backup/pages-main-e3b3095-20261025",
   "additional_original_backup": "backup/before-rollback-20261025",
-  "activation": "PENDING_GITHUB_AUTHENTICATION",
-  "overwrite_protection": "Disable Generate AD507 Pages workflow before switching Pages source; auto-sync has no schedule on main"
+  "activation": "ACTIVE_PUBLICLY_VERIFIED",
+  "overwrite_protection": "Generate AD507 Pages workflow disabled manually; scheduled auto-sync absent from main",
+  "pages_source": {
+    "branch": "gh-pages",
+    "path": "/"
+  },
+  "pages_workflow_run": 40263392961,
+  "pages_deployment": "SUCCESS",
+  "production_files_verified": 126,
+  "production_card_routes_verified": 50,
+  "live_browser_cards_verified": [
+    "AD507-THE1920",
+    "AD507-LABDIESELMONTERO",
+    "AD507-TRANSPORTEJEDIDIAS"
+  ],
+  "live_original_qr_verified": true,
+  "main_unchanged": true
 }

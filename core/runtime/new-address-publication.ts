@@ -331,6 +331,48 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       })();
     </script></body>`);
   }
+  // Paid new business cards: relocate available social links to the center of the
+  // tablet/desktop footer. Historical publications and mobile layout stay intact.
+  if(!record.extras.historical && ['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(record.plan?.code??'')){
+    const footerSocialCss = `<style id="paid-business-footer-socials">
+      @media(min-width:768px){
+        .premium-footer{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px}
+        .premium-footer .footer-brand-side{justify-self:start}
+        .premium-footer .footer-secure-side{justify-self:end}
+        .premium-footer .footer-social-center{display:flex;align-items:center;justify-content:center;gap:12px}
+        .premium-footer .footer-social-center:empty{display:none}
+        .premium-footer .footer-social-center a{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:#182a43;color:#fff;text-decoration:none;border:1px solid #46617d}
+        .premium-footer .footer-social-center a:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+        .premium-footer .footer-social-center svg{width:20px;height:20px;fill:currentColor}
+        .public-lower-layout .public-social-section{display:none!important}
+      }
+    </style>`;
+    template=template.replace('</head>',footerSocialCss+'</head>');
+    template=template.replace('</body>',`<script>
+      (function(){
+        function placeFooterSocials(){
+          const footer=document.querySelector('.premium-footer');
+          if(!footer||footer.querySelector('.footer-social-center'))return;
+          const center=document.createElement('nav');
+          center.className='footer-social-center';
+          center.setAttribute('aria-label','Redes sociales del negocio');
+          for(const [id,label] of [['btnFacebook','Facebook'],['btnInstagram','Instagram'],['btnTikTok','TikTok']]){
+            const original=document.getElementById(id);
+            const href=original?.getAttribute('href');
+            if(!href||original.hidden||getComputedStyle(original).display==='none')continue;
+            let url;try{url=new URL(href);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)continue}catch{continue}
+            const link=document.createElement('a');
+            link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;
+            const icon=original.querySelector('svg');
+            if(icon)link.append(icon.cloneNode(true));else link.textContent=label;
+            center.append(link);
+          }
+          footer.insertBefore(center,footer.querySelector('.footer-secure-side'));
+        }
+        window.addEventListener('load',placeFooterSocials,{once:true});
+      })();
+    </script></body>`);
+  }
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
   // Social crawlers read initial HTML, not client-side JavaScript.
   // Use the published photo, then logo; preserve the original default when neither exists.

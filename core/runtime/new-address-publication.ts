@@ -202,13 +202,18 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       }
       /* Reset legacy fixed grid slots that keep empty rows on tablets. */
       @media (min-width:768px) {
-        html[data-public-place] .white-sheet,
-        html[data-public-place] .white-sheet .public-lower-layout,
+        html[data-public-place] .white-sheet .public-lower-layout {
+          display:grid !important;
+          grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) !important;
+          gap:24px !important;
+          align-items:start;
+          width:100%;
+          min-width:0;
+        }
         html[data-public-place] .white-sheet .public-lower-left {
           display:flex !important;
           flex-direction:column !important;
           gap:16px !important;
-          width:100%;
           min-width:0;
         }
         html[data-public-place] .white-sheet .public-lower-layout > *,
@@ -226,7 +231,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         html[data-public-place] .white-sheet .actions-triple-row,
         html[data-public-place] .white-sheet .main-nav-grid {
           display:grid !important;
-          grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr)) !important;
+          grid-template-columns:repeat(2,minmax(0,1fr)) !important;
         }
         html[data-public-place] .white-sheet .actions-triple-row > *,
         html[data-public-place] .white-sheet .main-nav-grid > * {

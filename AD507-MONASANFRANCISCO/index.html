@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Dirección AD507-MONASANFRANCISCO | Direcciones507</title>
+  <title>Dirección AD507-MONASANFRANCISCO - Direcciones507 Panamá</title>
   <meta name="description" content="Dirección digital AD507-MONASANFRANCISCO en Panamá">
-  <link rel="canonical" href="https://direcciones507.com/AD507-MONASANFRANCISCO/">
+  <link rel="canonical" href="https://direcciones507.com/ad507-monasanfrancisco/">
   <meta name="robots" content="index, follow">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,17 +19,19 @@
   <link rel="manifest" href="https://direcciones507.com/manifest.webmanifest">
 
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Dirección AD507-MONASANFRANCISCO | Direcciones507">
+  <meta property="og:title" content="Dirección AD507-MONASANFRANCISCO - Direcciones507 Panamá">
   <meta property="og:description" content="Dirección digital AD507-MONASANFRANCISCO en Panamá">
-  <meta property="og:url" content="https://direcciones507.com/AD507-MONASANFRANCISCO/">
-  <meta property="og:image" content="https://direcciones507.com/assets/logo-direcciones507.png?v=2">
-  <meta property="og:image:width" content="300">
-  <meta property="og:image:height" content="300">
+  <meta property="og:url" content="https://direcciones507.com/ad507-monasanfrancisco/">
+  <meta property="og:image" content="https://direcciones507.com/og-image-new.jpg">
+  <meta property="og:image:secure_url" content="https://direcciones507.com/og-image-new.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Dirección AD507-MONASANFRANCISCO | Direcciones507">
+  <meta name="twitter:title" content="Dirección AD507-MONASANFRANCISCO - Direcciones507 Panamá">
   <meta name="twitter:description" content="Dirección digital AD507-MONASANFRANCISCO en Panamá">
-  <meta name="twitter:image" content="https://direcciones507.com/assets/logo-direcciones507.png?v=2">
+  <meta name="twitter:image" content="https://direcciones507.com/og-image-new.jpg">
 
   <style>
     /* ===== RESET & VARIABLES ===== */
@@ -1924,7 +1926,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
       ocultarCarga();
 
-      if(!data.ok) return;
+      if(!data.ok || String(data.codigo || data.code || '').toUpperCase() !== CODE || data.publico === false || data.indexable === false || /resid|persona|privad/i.test(String(data.plan || '') + ' ' + String(data.tipo_direccion || ''))){ document.getElementById('nombre').textContent = 'Dirección no disponible'; return; }
 
       document.getElementById('nombre').textContent = data.nombre || "Cliente Verificado";
       document.getElementById('ref').textContent = data.referencia || "Referencia no indicada";

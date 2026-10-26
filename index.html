@@ -182,6 +182,86 @@
     .hero-register-note { color: var(--text-muted); font-size: 12px; line-height: 1.4; }
 
 
+    /* ===== AJUSTE VISUAL PORTADA 2026 ===== */
+    #mainGlobalHeroView .hero-view-wrapper { padding-top: 48px; }
+    #mainGlobalHeroView .hero-grid-layout {
+      grid-template-columns: 1fr;
+      max-width: 960px;
+      margin: 0 auto;
+      gap: 0;
+      text-align: center;
+    }
+    #mainGlobalHeroView .hero-grid-layout > div:first-child { width: 100%; }
+    #mainGlobalHeroView .main-hero-title {
+      font-size: 44px;
+      line-height: 1.12;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #mainGlobalHeroView .main-hero-desc {
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #mainGlobalHeroView .free-address-card {
+      max-width: 820px;
+      margin: 0 auto 28px;
+      text-align: left;
+    }
+    #mainGlobalHeroView .category-pills-row {
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #mainGlobalHeroView .map-art-container { display: none !important; }
+    .hero-integrations {
+      width: 100%;
+      max-width: 820px;
+      margin: 0 auto 28px;
+      padding: 20px 12px 22px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      text-align: center;
+    }
+    .hero-integrations-title {
+      color: var(--cyan-brand);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      margin-bottom: 16px;
+    }
+    .hero-integrations-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 10px;
+      align-items: center;
+    }
+    .hero-integration-item {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: #e2e8f0;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .hero-integration-item i { color: var(--cyan-brand); font-size: 24px; }
+    .hero-integration-item .fa-whatsapp { color: #25d366; }
+    .brand-logo-icon { font-size: 31px; }
+    .brand-meta h1 { font-size: 22px; }
+    .brand-meta span { font-size: 10.5px; }
+    @media (max-width: 640px) {
+      #mainGlobalHeroView .hero-view-wrapper { padding-top: 34px; }
+      #mainGlobalHeroView .main-hero-title { font-size: 30px; letter-spacing: -1px; }
+      #mainGlobalHeroView .free-address-card { text-align: left; }
+      .hero-integrations-row { grid-template-columns: repeat(3, minmax(0,1fr)); row-gap: 18px; }
+      .hero-integration-item i { font-size: 22px; }
+    }
+
     /* ===== CTA DIRECCION GRATIS ===== */
     .free-address-card { background: radial-gradient(circle at top right, rgba(31, 111, 255, 0.15), transparent), var(--bg-card); border: 1px solid rgba(31, 111, 255, 0.26); border-radius: 24px; padding: 26px; margin: -10px 0 30px; box-shadow: 0 16px 38px rgba(0,0,0,0.28); }
     .free-address-card .free-kicker { font-size: 11px; color: var(--cyan-brand); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 7px; }
@@ -214,6 +294,13 @@
     .search-input-wrapper input { background: transparent; border: none; outline: none; color: #fff; font-size: 15px; width: 100%; }
     .search-location-select { display: flex; align-items: center; gap: 8px; border-left: 1px solid rgba(255, 255, 255, 0.1); padding: 0 16px; color: #fff; font-size: 14px; white-space: nowrap; }
     .btn-search-trigger { background: linear-gradient(135deg, var(--cyan-brand), var(--blue-brand)); color: #fff; border: none; padding: 14px 32px; font-weight: 700; border-radius: 100px; cursor: pointer; font-size: 14px; text-transform: uppercase; }
+
+    @media (min-width: 901px) {
+      .map-art-container {
+        align-self: start;
+        margin-top: 64px;
+      }
+    }
 
     /* ===== CONTENEDOR MAPA DE PANAMÁ REAL ===== */
     .map-art-container { position: relative; width: 100%; height: 380px; min-height: 350px; border-radius: 20px; overflow: hidden; border: 2px solid rgba(31, 111, 255, 0.2); box-shadow: 0 15px 35px rgba(0,0,0,0.4); z-index: 10; }
@@ -685,8 +772,61 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  #mainAppHeader .header-account-actions .btn-nav-action{width:100%;min-width:0;padding:12px 8px}
  #mainAppHeader #headerNavigation{order:3}
 }
-</style>
-</head>
+
+    /* ===== AJUSTES FINALES HERO 2026 ===== */
+    #mainGlobalHeroView .free-address-info-btn {
+      width: calc((100% - 10px) / 2);
+      margin: 10px auto 0;
+      display: block;
+    }
+    #mainGlobalHeroView .hero-integrations-row .hero-integration-item:nth-child(1) i {
+      background: conic-gradient(from 25deg, #4285f4 0 25%, #34a853 25% 50%, #fbbc05 50% 75%, #ea4335 75% 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    #mainGlobalHeroView .hero-integrations-row .hero-integration-item:nth-child(2) i {
+      color: #ffffff; background: #6ad7f5; width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    }
+    #mainGlobalHeroView .hero-integrations-row .hero-integration-item:nth-child(3) i {
+      color: #ffffff; background: #000000; width: 38px; height: 38px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+    }
+    #mainGlobalHeroView .hero-integrations-row .hero-integration-item:nth-child(4) i {
+      color: #ffffff; background: #25d366; width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    }
+    #mainGlobalHeroView .hero-integrations-row .hero-integration-item:nth-child(5) i {
+      color: #ffffff; background: linear-gradient(135deg, #06b6d4, #2563eb); width: 38px; height: 38px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center;
+    }
+    #mainGlobalHeroView .category-pills-row { justify-content: center; align-items: center; text-align: center; }
+    #mainGlobalHeroView .category-pills-row .cat-item-node { font-size: 13.5px; text-align: center; }
+    #mainGlobalHeroView .category-pills-row .cat-icon-circle { transform: scale(1.08); transform-origin: center; }
+
+    #mainGlobalHeroView .hero-intro-layout {
+      width: 100%; max-width: 1180px; margin: 0 auto 34px; display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(250px, .85fr); gap: 54px; align-items: center; text-align: left;
+    }
+    #mainGlobalHeroView .hero-intro-copy { min-width: 0; max-width: 680px; text-align: left; }
+    #mainGlobalHeroView .hero-intro-copy .main-hero-title,
+    #mainGlobalHeroView .hero-intro-copy .main-hero-desc { margin-left: 0 !important; margin-right: 0 !important; }
+    #mainGlobalHeroView .hero-phone-preview {
+      width: 230px; max-width: 100%; margin: 0 auto; padding: 9px; background: linear-gradient(145deg, #101827, #020617);
+      border: 2px solid rgba(148,163,184,.38); border-radius: 34px;
+      box-shadow: 0 24px 55px rgba(0,0,0,.45), 0 0 28px rgba(6,182,212,.10); transform: rotate(-5deg); position: relative;
+    }
+    #mainGlobalHeroView .hero-phone-preview::before {
+      content: ''; position: absolute; top: 7px; left: 50%; transform: translateX(-50%); width: 72px; height: 15px;
+      border-radius: 0 0 12px 12px; background: #020617; z-index: 2;
+    }
+    #mainGlobalHeroView .hero-phone-preview img { display: block; width: 100%; height: auto; border-radius: 26px; object-fit: cover; }
+    @media (max-width: 760px) {
+      #mainGlobalHeroView .hero-intro-layout { grid-template-columns: 1fr; gap: 24px; text-align: center; margin-bottom: 28px; }
+      #mainGlobalHeroView .hero-intro-copy { order: 1; max-width:100%; text-align:center; }
+      #mainGlobalHeroView .hero-phone-preview { order: 2; width: 190px; transform: rotate(-4deg); }
+      #mainGlobalHeroView .hero-intro-copy .main-hero-title,
+      #mainGlobalHeroView .hero-intro-copy .main-hero-desc { margin-left: auto !important; margin-right: auto !important; }
+    }
+    @media (max-width: 640px) { #mainGlobalHeroView .free-address-info-btn { width: 100%; } }
+
+  </style>
+<script src="/historical-entry.js" defer></script></head>
 <body>
 
 
@@ -797,7 +937,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
           <a class="hero-create-address-btn" href="#planesDirecciones507" onclick="irInicio();requestAnimationFrame(()=>document.getElementById('planesDirecciones507')?.scrollIntoView({behavior:'smooth',block:'start'}));return false;">Crear mi Dirección <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
           </p>
           </div>
-          <div class="search-bar-premium-container" style="display:none;">
+          <div class="search-bar-premium-container">
             <div class="search-input-wrapper">
               <i class="fa-solid fa-magnifying-glass"></i>
               <input type="text" id="inputCodigo" placeholder="Busca direcciones, códigos o comercios (ej: AD507-THE1920)">
@@ -807,7 +947,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
             </div>
             <button type="button" class="btn-search-trigger" onclick="ejecutarBusquedaSistema()">Buscar</button>
           </div>
-          <div id="msgLogBusqueda" style="display: none; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
+          <div id="msgLogBusqueda" role="status" style="display: block; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
         </div>
 
       </div>
@@ -1102,14 +1242,14 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
   <div class="container seo-directory-wrapper">
     <h4>Algunas direcciones en <span class="title-accent">Direcciones507</span></h4>
     <div class="seo-links-flex">
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-THE1920')">AD507-THE1920</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-LABDIESELMONTERO')">AD507-LABDIESELMONTERO</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-TRANSPORTEJEDIDIAS')">AD507-TRANSPORTEJEDIDIAS</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-ARTEMARY')">AD507-ARTEMARY</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-BRISASBOUTIQUE')">AD507-BRISASBOUTIQUE</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-SOMBRERODONPEDRO')">AD507-SOMBRERODONPEDRO</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-JIMENEZBARBER')">AD507-JIMENEZBARBER</span>
-      <span class="seo-trigger-link" onclick="ejecutarEnlaceInterno('AD507-LAURAMARIASTUDIO')">AD507-LAURAMARIASTUDIO</span>
+      <a class="seo-trigger-link" href="/AD507-THE1920/">AD507-THE1920</a>
+      <a class="seo-trigger-link" href="/AD507-LABDIESELMONTERO/">AD507-LABDIESELMONTERO</a>
+      <a class="seo-trigger-link" href="/AD507-TRANSPORTEJEDIDIAS/">AD507-TRANSPORTEJEDIDIAS</a>
+      <a class="seo-trigger-link" href="/AD507-ARTEMARY/">AD507-ARTEMARY</a>
+      <a class="seo-trigger-link" href="/AD507-BRISASBOUTIQUE/">AD507-BRISASBOUTIQUE</a>
+      <a class="seo-trigger-link" href="/AD507-SOMBRERODONPEDRO/">AD507-SOMBRERODONPEDRO</a>
+      <a class="seo-trigger-link" href="/AD507-JIMENEZBARBER/">AD507-JIMENEZBARBER</a>
+      <a class="seo-trigger-link" href="/AD507-LAURAMARIASTUDIO/">AD507-LAURAMARIASTUDIO</a>
     </div>
   </div>
 
@@ -1365,7 +1505,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       if (inicio) inicio.classList.add('active');
       document.getElementById("mainAppHeader").style.display = "block";
       document.getElementById("mainGlobalHeroView").style.display = "block";
-      document.getElementById("seoHomeButtonsContainer").style.display = "block";
+      document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "block");
       document.getElementById("globalMetricsFooterRow").style.display = "block";
       document.getElementById("mainClientPanelCardContainer").style.display = "none";
       document.getElementById("movilQuienesSomos").style.display = "block";
@@ -1387,7 +1527,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         if(idSeccion === 'secContacto') document.getElementById('lnkContacto').classList.add('active');
         document.getElementById("mainAppHeader").style.display = "block"; // Se mantiene para las sub-páginas informativas
         document.getElementById("mainGlobalHeroView").style.display = "none";
-        document.getElementById("seoHomeButtonsContainer").style.display = "none";
+        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
         document.getElementById("globalMetricsFooterRow").style.display = "none";
         document.getElementById("mainClientPanelCardContainer").style.display = "none";
         document.getElementById("movilQuienesSomos").style.display = "none";
@@ -1395,7 +1535,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         document.getElementById('lnkInicio').classList.add('active');
         document.getElementById("mainAppHeader").style.display = "block";
         document.getElementById("mainGlobalHeroView").style.display = "block";
-        document.getElementById("seoHomeButtonsContainer").style.display = "block";
+        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "block");
         document.getElementById("globalMetricsFooterRow").style.display = "flex";
         document.getElementById("movilQuienesSomos").style.display = "block";
       }
@@ -1500,7 +1640,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
         document.getElementById("mainAppHeader").style.display = "none";
         document.getElementById("mainGlobalHeroView").style.display = "none";
-        document.getElementById("seoHomeButtonsContainer").style.display = "none";
+        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
         document.getElementById("globalMetricsFooterRow").style.display = "none";
         document.getElementById("movilQuienesSomos").style.display = "none";
         document.getElementById("mainClientPanelCardContainer").style.display = "block";
@@ -1513,12 +1653,12 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
     function ejecutarEnlaceInterno(codigoAsignado) {
       const codigoLimpio = String(codigoAsignado).trim().toUpperCase();
-      window.location.href = `https://direcciones507.com/?code=${encodeURIComponent(codigoLimpio)}`;
+      window.location.href = `https://direcciones507.com/${encodeURIComponent(codigoLimpio)}`;
     }
 
     async function registrarClicBase(plataforma) {
       if(!CODIGO_ACTUAL || window.location.protocol === 'file:') return;
-      const legacyCounter = fetch(`${WEBAPP_URL}?action=click&code=${encodeURIComponent(CODIGO_ACTUAL)}&platform=${plataforma}`, {
+      const legacyCounter = fetch(`${WEBAPP_URL}?action=track&code=${encodeURIComponent(CODIGO_ACTUAL)}&event=${plataforma}`, {
         method: "GET",
         mode: "no-cors"
       }).catch(() => null);
@@ -1576,7 +1716,22 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
         const data = respuesta;
         CODIGO_ACTUAL = String(data.codigo || data.code || codigo).trim().toUpperCase();
-        const planLower = String(data.plan || "").toLowerCase().trim();
+
+        // AD507 2026: separar el nombre comercial del plan de sus permisos reales.
+        const rawPlan = String(data.plan || data.plan_comercial || "").toLowerCase().trim();
+        let planUi = rawPlan;
+        if (!data.legacy) {
+          if (data.tipo_direccion === "RESIDENCIAL" || data.publico === false) {
+            planUi = "residencial";
+          } else if (rawPlan.includes("pro")) {
+            planUi = "pro";
+          } else if (rawPlan.includes("premium")) {
+            planUi = "premium";
+          } else {
+            planUi = "negocio";
+          }
+        }
+        const planLower = planUi;
 
         const esResidencial =
           planLower === "persona" ||
@@ -1636,7 +1791,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         const containerGaleria = document.getElementById('fieldGaleriaHome');
         const gridFotos = document.getElementById('galeriaFotosHome');
 
-        if(planLower === "premium" && gridFotos && containerGaleria){
+        if(((data.legacy && (planLower === "premium" || planLower === "pro")) || (!data.legacy && data.mostrar_fotos === true)) && gridFotos && containerGaleria){
           let fotosValidas = data.fotos && Array.isArray(data.fotos) ? data.fotos.filter(u=>u) : [data.foto1, data.foto2, data.foto3, data.foto4, data.foto5].filter(u=>u);
           if(fotosValidas.length > 0){
             gridFotos.innerHTML = '';
@@ -1654,7 +1809,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         } else { containerGaleria.style.display = "none"; }
 
         const redesBox = document.getElementById("seccionRedesSocialesCliente");
-        if((planLower === "negocio" || planLower === "premium") && redesBox) {
+        if(((data.legacy && (planLower === "negocio" || planLower === "premium" || planLower === "pro")) || (!data.legacy && data.mostrar_redes === true)) && redesBox) {
           let tieneRedes = false;
           if(data.instagram) { document.getElementById("clInstagram").href = data.instagram; document.getElementById("clInstagram").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clInstagram").style.display="none"; }
           if(data.tiktok) { document.getElementById("clTikTok").href = data.tiktok; document.getElementById("clTikTok").style.display="inline-flex"; tieneRedes = true; } else { document.getElementById("clTikTok").style.display="none"; }
@@ -1667,7 +1822,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
           redesBox.style.display = "none";
         }
 
-        const shareUrl = `https://direcciones507.com/?code=${encodeURIComponent(CODIGO_ACTUAL)}`;
+        const shareUrl = `https://direcciones507.com/${encodeURIComponent(CODIGO_ACTUAL)}`;
         
         // ✅ CONEXIÓN DE CONTADORES: Mapeo exacto de eventos hacia la hoja de Excel
         document.getElementById("btnGoogleHome").onclick = () => registrarClicBase("google");
@@ -1736,7 +1891,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         document.getElementById("mainAppHeader").style.display = "none";
         
         document.getElementById("mainGlobalHeroView").style.display = "none";
-        document.getElementById("seoHomeButtonsContainer").style.display = "none";
+        document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
         document.getElementById("globalMetricsFooterRow").style.display = "none";
         document.getElementById("movilQuienesSomos").style.display = "none";
         document.getElementById("mainClientPanelCardContainer").style.display = "block";
@@ -1993,7 +2148,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
       overlay.classList.remove("show");
       document.getElementById("mainAppHeader").style.display = "none";
       document.getElementById("mainGlobalHeroView").style.display = "none";
-      document.getElementById("seoHomeButtonsContainer").style.display = "none";
+      document.getElementById("seoHomeButtonsContainer")?.style.setProperty("display", "none");
       document.getElementById("globalMetricsFooterRow").style.display = "none";
       document.getElementById("movilQuienesSomos").style.display = "none";
       document.getElementById("mainClientPanelCardContainer").style.display = "block";
@@ -2131,6 +2286,32 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     startResidentialAccess();
   })();
   </script>
+
+
+<script id="ad507-hero-phone-layout">
+document.addEventListener('DOMContentLoaded', function () {
+  const hero = document.getElementById('mainGlobalHeroView');
+  if (!hero || hero.querySelector('.hero-intro-layout')) return;
+  const title = hero.querySelector('.main-hero-title');
+  const desc = hero.querySelector('.main-hero-desc');
+  if (!title || !desc) return;
+  const badge = title.previousElementSibling;
+  const parent = title.parentElement;
+  const intro = document.createElement('div');
+  intro.className = 'hero-intro-layout';
+  const phone = document.createElement('div');
+  phone.className = 'hero-phone-preview';
+  phone.innerHTML = '<img src="/ad507-the1920-phone-preview.jpg" alt="Vista previa de una Dirección Digital AD507" loading="eager">';
+  const copy = document.createElement('div');
+  copy.className = 'hero-intro-copy';
+  parent.insertBefore(intro, badge || title);
+  intro.appendChild(copy);
+  intro.appendChild(phone);
+  if (badge && badge !== desc) copy.appendChild(badge);
+  copy.appendChild(title);
+  copy.appendChild(desc);
+});
+</script>
 
 </body>
 </html>

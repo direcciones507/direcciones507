@@ -1,0 +1,23 @@
+{
+  "artifact_branch": "gh-pages",
+  "artifact_commit": "2508d5456782be788511118e6c249517dd4f4307",
+  "source_commit": "e3b3095aed3163b0bdb56ec22a417a81455ad8c0",
+  "public_cards": 25,
+  "routes": 50,
+  "excluded_entries": 15,
+  "validated_renders": 150,
+  "files": 128,
+  "bytes": 16423869,
+  "pages_before": {
+    "branch": "main",
+    "path": "/"
+  },
+  "pages_required": {
+    "branch": "gh-pages",
+    "path": "/"
+  },
+  "rollback_branch": "backup/pages-main-e3b3095-20261025",
+  "additional_original_backup": "backup/before-rollback-20261025",
+  "activation": "PENDING_GITHUB_AUTHENTICATION",
+  "overwrite_protection": "Disable Generate AD507 Pages workflow before switching Pages source; auto-sync has no schedule on main"
+}

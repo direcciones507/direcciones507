@@ -1,0 +1,105 @@
+{
+  "codes": [
+    {
+      "codigo": "AD507-0004",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-TRANSPORTEJEDIDIAS",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-THE1920",
+      "plan": "Premium Pro"
+    },
+    {
+      "codigo": "AD507-LABDIESELMONTERO",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-0017",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-0019",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-FJSPORTGYM",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-JIMENEZBARBER",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-MORATRUCK",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-0023",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-NELLYSNAILS",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-LAURAMARIASTUDIO",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-SUAVECITOSCLEAN",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-ARTESANIASVIELKA",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-BRISASBOUTIQUE",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-ARTEMARY",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-SOMBRERODONPEDRO",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-SOMBREROSALEX",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-VENTASARTESANALES",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-ARTESANIASOMAIRA",
+      "plan": "Premium"
+    },
+    {
+      "codigo": "AD507-0035",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-MONASANFRANCISCO",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-MONACOSTADELESTE",
+      "plan": "Negocio"
+    },
+    {
+      "codigo": "AD507-SOMBREROSARQUIMEDES",
+      "plan": "Premium Pro"
+    },
+    {
+      "codigo": "AD507-FONDATATIANA",
+      "plan": "Premium"
+    }
+  ],
+  "count": 25
+}

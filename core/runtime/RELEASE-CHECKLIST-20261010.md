@@ -1,5 +1,24 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## Pendientes actualizados — 26 octubre 2026
+
+### Idea comercial futura: publicidad en fichas de Lugar (NO IMPLEMENTAR TODAVÍA)
+- [ ] Diseñar producto publicitario para direcciones nuevas de tipo LUGAR: banner en espacio disponible del encabezado, con adaptación independiente para tablet, escritorio y teléfono.
+- [ ] Precio de lanzamiento PROPUESTO: US$7.99 mensuales por espacio publicitario y por ubicación; posible precio regular futuro US$8.99, sin aprobación definitiva.
+- [ ] Definir si se muestra en Lugar Gratis, planes pagados o ambos; reglas de inventario, contenido permitido, aprobación y fechas de vigencia.
+- [ ] Diseñar gestión ADMIN de anunciante, imagen, URL, fecha de inicio/vencimiento y métricas de impresiones/clics; ocultar espacio si no existe anuncio activo.
+- [ ] Validar tráfico, política comercial, cobro sin renovación automática y pruebas responsive antes de cualquier implementación.
+- ESTADO: solo propuesta/checklist; sin código, pagos, variables ni anuncios activados.
+
+### Seguimiento inmediato (confirmar en producción, no confundir PR con función validada)
+- [ ] PR #167 fusionado en main (9c9de00): confirmar Railway SUCCESS y verificar visualmente Facebook azul, Instagram multicolor y TikTok negro centrados en footer de BUSINESS_PREMIUM/BUSINESS_PREMIUM_PRO solo >=768px; móvil, gratis e históricos sin cambios.
+- [ ] PR #166: tres acciones superiores en una fila para Lugar en tablet/escritorio; revisar, probar sin consumir minutos de Actions y decidir integración. Unificar disposición visual de Residencial/Negocio/Lugar según campos disponibles.
+- [ ] PR #164: control de error al leer fotografías y validación junto al formulario; revisar sintaxis, pruebas locales, aprobación y despliegue. Causa exacta del fallo original en dispositivo sin confirmar.
+- [ ] Probar creación real autorizada desde «Revisar datos» a «Enviar solicitud», PostgreSQL, ADMIN, aprobación, código, URL y QR; preservar emisores históricos.
+- [ ] Verificar flujos de pago Yappy/IPN/ADMIN con autorización del titular, sin transacciones de prueba no autorizadas; PayPal continúa suspendido.
+- [ ] Verificar edición/eliminación de solicitudes, contador y estadísticas por plan, correo de publicación, avisos de vencimiento y funcionamiento móvil/tablet/escritorio.
+
+
 ## Corrección visual LATAM y checkout Yappy — 18 octubre 2026
 
 - CAUSA RAÍZ visual demostrada en Chromium: selector `body.latam-account-panel [data-request]` con `background:#1769b5!important` aplicaba estilo de botón al contenedor completo `article.address-card[data-request]`. Se restringió a botones/enlaces; las tarjetas recuperan el fondo previsto y sus etiquetas legibles.

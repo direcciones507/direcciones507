@@ -342,6 +342,9 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .premium-footer .footer-social-center{display:flex;align-items:center;justify-content:center;gap:12px}
         .premium-footer .footer-social-center:empty{display:none}
         .premium-footer .footer-social-center a{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:#182a43;color:#fff;text-decoration:none;border:1px solid #46617d}
+        .premium-footer .footer-social-center a[data-social="Facebook"]{background:#1877f2;border-color:#1877f2;color:#fff}
+        .premium-footer .footer-social-center a[data-social="Instagram"]{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);border-color:#d62976;color:#fff}
+        .premium-footer .footer-social-center a[data-social="TikTok"]{background:#000;border-color:#333;color:#fff}
         .premium-footer .footer-social-center a:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
         .premium-footer .footer-social-center svg{width:20px;height:20px;fill:currentColor}
         .public-lower-layout .public-social-section{display:none!important}
@@ -362,7 +365,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
             if(!href||original.hidden||getComputedStyle(original).display==='none')continue;
             let url;try{url=new URL(href);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)continue}catch{continue}
             const link=document.createElement('a');
-            link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;
+            link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;link.dataset.social=label;
             const icon=original.querySelector('svg');
             if(icon)link.append(icon.cloneNode(true));else link.textContent=label;
             center.append(link);

@@ -1,0 +1,34 @@
+{
+  "method": "Cloud browser; same-origin offline iframes with synthetic fetch, synthetic UUID shim for non-secure local HTTP only",
+  "base": "2e9ee6a4b03a03e3d54a8a78af6b7863427d3374",
+  "widths": [
+    390,
+    820,
+    1440
+  ],
+  "pages": [
+    "Premium public card",
+    "Premium Pro public card",
+    "Client panel with two cards",
+    "Premium Pro request form"
+  ],
+  "versions": [
+    "baseline",
+    "current"
+  ],
+  "comparisons": 24,
+  "horizontalOverflow": false,
+  "styleLengths": {
+    "public": 45258,
+    "panel": 23497
+  },
+  "panelCards": 2,
+  "formVisible": true,
+  "expectedFunctionalDifference": "requested public identity and URL replace numeric display only for named fixtures",
+  "limits": [
+    "Not physical devices",
+    "Not real Google login",
+    "No screenshot pixel-diff or complete browser E2E payment flow",
+    "No production requests from form; fetch mocked"
+  ]
+}

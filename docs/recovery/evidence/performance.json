@@ -1,0 +1,49 @@
+{
+  "environment": "Synthetic local pool, no network; 250ms imposed by harness, NOT a production timeout",
+  "baseline": [
+    {
+      "concurrency": 1,
+      "poolMax": 2,
+      "ms": 2.841479999999997,
+      "waits": 0,
+      "timeouts": 0,
+      "ok": 1
+    },
+    {
+      "concurrency": 2,
+      "poolMax": 2,
+      "ms": 252.25849899999997,
+      "waits": 2,
+      "timeouts": 1,
+      "ok": 1
+    }
+  ],
+  "corrected": [
+    {
+      "concurrency": 1,
+      "poolMax": 2,
+      "ms": 3.779233999999974,
+      "waits": 0,
+      "timeouts": 0,
+      "ok": 1
+    },
+    {
+      "concurrency": 2,
+      "poolMax": 2,
+      "ms": 1.3448969999999463,
+      "waits": 0,
+      "timeouts": 0,
+      "ok": 2
+    }
+  ],
+  "baselineTiming": {
+    "n": 100,
+    "p50": 1.1596920000000068,
+    "p95": 1.2655090000000087
+  },
+  "correctedTiming": {
+    "n": 100,
+    "p50": 1.136197999999922,
+    "p95": 1.256887000000006
+  }
+}

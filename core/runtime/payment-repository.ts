@@ -153,4 +153,5 @@ export async function requireConfirmedPayment(tx:any,row:any,environment:'test'|
   const plan=row.request_data?.plan,amount=paymentAmount(plan);if(amount===0)return;
   const paid=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment=$2 AND payment_plan=$3 AND amount_cents=$4 AND currency='USD' AND status='PAID' AND confirmed_at IS NOT NULL LIMIT 1",[row.id,environment,plan,amount]);
   if(!paid.length)throw Error('PAYMENT_CONFIRMATION_REQUIRED');
+  return paid[0];
 }

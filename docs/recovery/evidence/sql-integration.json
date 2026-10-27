@@ -1,0 +1,43 @@
+{
+  "engine": "PostgreSQL WASM, single backend; NOT native multi-connection",
+  "results": [
+    {
+      "plan": "BUSINESS_PREMIUM",
+      "status": "ACTIVE",
+      "publicName": "AD507-CAFEDELPRADO",
+      "internalCode": "AD507-CAFEDELPRADO",
+      "url": "https://direcciones.lat/AD507-CAFEDELPRADO/",
+      "annualTerm": {
+        "period": "P1Y",
+        "policy": "annual-calendar-v1",
+        "orderId": "59b0ac94-57bf-4089-a163-e27fe9190bc3",
+        "startsAt": "2026-10-27T02:47:09.736Z",
+        "expiresAt": "2027-10-27T02:47:09.736Z",
+        "automaticCharge": false
+      }
+    },
+    {
+      "plan": "BUSINESS_PREMIUM_PRO",
+      "status": "ACTIVE",
+      "publicName": "CAFEMALAGA",
+      "internalCode": "AD507-N78210321",
+      "url": "https://direcciones.lat/CAFEMALAGA",
+      "annualTerm": {
+        "period": "P1Y",
+        "policy": "annual-calendar-v1",
+        "orderId": "781b47dc-5b2f-47ef-ba7b-f481d098e7ae",
+        "startsAt": "2026-10-27T02:47:09.875Z",
+        "expiresAt": "2027-10-27T02:47:09.875Z",
+        "automaticCharge": false
+      }
+    }
+  ],
+  "concurrent": {
+    "fulfilled": 1,
+    "rejected": 1
+  },
+  "externalRequests": 0,
+  "storage": "simulated",
+  "payment": "signed synthetic IPN",
+  "nativeConcurrencyRequired": true
+}

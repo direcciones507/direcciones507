@@ -1,0 +1,11 @@
+import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const root=new URL('../../../',import.meta.url).pathname,base='2e9ee6a4b03a03e3d54a8a78af6b7863427d3374';
+const git=(...args:string[])=>execFileSync('git',args,{cwd:root,encoding:'utf8',maxBuffer:4*1024*1024});
+const unchanged=['index.html','ad507.template.html','core/runtime/shared-visual-style.ts','core/runtime/latam-presentation.ts','core/runtime/analytics-summary-view.ts','core/runtime/request-admin-ui.ts','jacinto/index.html','liliana/index.html'];
+for(const path of unchanged)assert.equal(readFileSync(root+path,'utf8'),git('show',base+':'+path),path+' MUST remain byte-identical');
+const styles=(s:string)=>s.match(/<style\b[^>]*>[\s\S]*?<\/style>/g)??[];
+for(const path of ['core/runtime/user-panel.ts','core/runtime/server.ts','core/runtime/new-address-publication.ts'])assert.deepEqual(styles(readFileSync(root+path,'utf8')),styles(git('show',base+':'+path)),path+' inline styles changed');
+const changed=git('diff','--name-only',base).trim().split('\n');assert.ok(!changed.some(p=>/\.(css|png|jpg|jpeg|webp|svg|woff2?)$/.test(p)));
+console.log(JSON.stringify({base,byteIdentical:unchanged,inlineStylesUnchanged:true,cssImagesFontsChanged:false}));

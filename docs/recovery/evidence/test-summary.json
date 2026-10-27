@@ -1,0 +1,20 @@
+{
+  "base": "2e9ee6a4b03a03e3d54a8a78af6b7863427d3374",
+  "selectedSuite": {
+    "pass": 289,
+    "skip": 3,
+    "fail": 0,
+    "assertions": 2065,
+    "files": 69
+  },
+  "fullSuite": {
+    "pass": 289,
+    "skip": 3,
+    "blockedFailures": 3,
+    "reason": "LOCAL_TEST_DATABASE_REQUIRED / embedded-postgres cannot create OS user / DISPOSABLE_LOCAL_DATABASE_REQUIRED"
+  },
+  "nativePostgres": "NOT_RUN_NO_SAFE_NATIVE_DATABASE",
+  "externalStorage": "SIMULATED",
+  "payment": "SIGNED_SYNTHETIC_IPN_NO_REAL_PAYMENT",
+  "productionMutations": 0
+}

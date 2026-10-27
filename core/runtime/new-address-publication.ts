@@ -1,3 +1,4 @@
+import {requestedIdentity,reservedIdentity,publicIdentityUrl} from './custom-names';
 import {publicAnalyticsScript} from './public-analytics';
 import {cookieConsentSource} from './legal';
 import { createHash } from 'node:crypto';
@@ -13,10 +14,10 @@ import { readFileSync } from 'node:fs';
 /** No counter: new reservations derive a stable eight-digit numeric identifier from their UUID, outside the historical numeric sequence.
  * Release still requires confirmation that this namespace is exclusive across all historical channels.
  */
-export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
+export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;customNames?:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
     historicalRegistryVerified:options.namespaceExclusive,
-    async reserve({id,countryCode='PA',type,plan}) {
+    async reserve({id,countryCode='PA',type,plan,name,requestedName},connection=sql) {
       assertCountryPublication(countryCode,type,plan);
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       // Canonical UUID layout makes removing separators injective: malformed
@@ -34,21 +35,30 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       if(data.ok!==true||!Array.isArray(data.codes)||!data.codes.length||data.codes.some((v:any)=>typeof v?.codigo!=='string'||!/^AD507-[A-Z0-9_-]+$/i.test(v.codigo.trim())))throw Error('HISTORICAL_REGISTRY_UNAVAILABLE');
       historicalCodes=data.codes.map((v:any)=>v.codigo.trim().toUpperCase());
       }
+      let namedCode:string|undefined;
+      const wantsName=type==='BUSINESS'&&(plan==='BUSINESS_PREMIUM_PRO'||plan==='BUSINESS_PREMIUM'&&!!requestedName);
+      if(options.customNames===false&&wantsName)throw Error('CUSTOM_NAMES_NOT_READY');
+      if(options.customNames&&wantsName){
+        const wanted=requestedIdentity({type,plan,countryCode,name,namedCode:requestedName});
+        const reserved=await reservedIdentity(connection,id);
+        if(!wanted||!reserved||reserved.name!==wanted.name||reserved.kind!==wanted.kind||reserved.countryCode!==countryCode)throw Error('NAME_NOT_RESERVED');
+        if(reserved.kind==='PREMIUM')namedCode=reserved.name;
+      }
       // Keep the new namespace separate from historical sequential AD507 codes.
       // A deterministic digest makes repeat reservations idempotent. Fail closed on
       // the rare eight-digit collision rather than assigning a duplicate code.
       const numericCode=(BigInt('0x'+createHash('sha256').update(id).digest('hex'))%100000000n).toString().padStart(8,'0');
-      const code='AD'+countryConfiguration(countryCode).prefix+'-N'+numericCode;
+      const code=namedCode??'AD'+countryConfiguration(countryCode).prefix+'-N'+numericCode;
       if(historicalCodes.includes(code))throw Error('CANONICAL_CODE_COLLISION');
-      const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
+      const existing=await connection.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
       if(existing.length)throw Error('CANONICAL_CODE_COLLISION');
       return code;
     },
-    async publish({id,code,type}) {
+    async publish({id,code,type},connection=sql) {
       // The existing PostgreSQL reader is the new system's publication destination.
       // No call to PLANES writes, GitHub Pages, Drive, DNS or historical generators.
       if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
-      const rows=await sql.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
+      const rows=await connection.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
       if(!rows[0].request_data?.migration)assertCountryPublication(rows[0].country_code??rows[0].request_data?.countryCode??'PA',rows[0].address_type,rows[0].request_data?.plan);
       if(!rows[0].request_data?.migration&&!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
@@ -66,7 +76,7 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   const mediaOrigin=new URL(proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)).origin;
   const urls=media.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
   const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
-  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
+  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),publicCode:rows[0].request_data?.publicIdentity?.kind==='PRO'?rows[0].request_data.publicIdentity.name:record.code,url:historical?.originalUrl??publicIdentityUrl(rows[0].request_data?.publicIdentity,record.plan?.code,proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
@@ -389,6 +399,8 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   if(record.media.some(m=>m.url===previewImage)){
     template=template.replace(/\\s*<meta property="og:image:(?:width|height)" content="[^"]*">/g,'');
   }
+  // Public Pro identity changes data only: retained internal code still owns analytics/media.
+  if(record.publicCode&&record.publicCode!==record.code)template=template.replace('const CODE = (pathCode || "AD507-CODE").toUpperCase();','const CODE = '+JSON.stringify(record.publicCode).replaceAll('<','\\u003c')+';');
   // QR/share/copy must use the stored canonical URL, even on a preview host.
   // Only adapts this renderer; the historical template/files stay untouched.
   template=template.replaceAll('window.location.href',JSON.stringify(record.url).replaceAll('<','\\u003c'));
@@ -408,6 +420,18 @@ function configuredPublicCode(code:string):boolean {
 export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
   if(context.enabled&&req.method==='GET'){
+    const alias=url.pathname.match(/^\/([A-Za-z0-9]{1,60})\/?$/);
+    if(alias){
+      let candidate:string|null=null;
+      try{candidate=requestedIdentity({type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',countryCode:'PA',name:alias[1],namedCode:alias[1]})!.name;}catch{}
+      if(candidate)try{
+        const [target]=await sql.unsafe("SELECT a.code,a.status,a.publication_receipt FROM ad507.public_name_reservations n JOIN ad507.addresses a ON a.id=n.address_id WHERE n.public_name=$1 AND n.kind='PRO' AND a.source='USER_REQUEST'",[candidate]);
+        if(target?.status==='ARCHIVED')return new Response(null,{status:410,headers:{'cache-control':'no-store','x-robots-tag':'noindex'}});
+        if(target?.status==='ACTIVE'&&target.publication_receipt){const record=await newPublicAddress(sql,target.code,url.origin);if(record)return new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}});}
+        if(target)return new Response(null,{status:404,headers:{'cache-control':'no-store'}});
+      }catch(error){if((error as any).code!=='42P01')return Response.json({ok:false,error:'PUBLICATION_UNAVAILABLE'},{status:503});}
+    }
+
     const publicMatch=url.pathname.match(/^\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/$/);
     const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)$/);
     if((publicMatch||apiMatch)&&configuredPublicCode((publicMatch??apiMatch)![1])){

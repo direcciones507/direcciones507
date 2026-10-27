@@ -1,3 +1,5 @@
+import {requestedIdentity,reservePublicName,publicIdentityUrl} from './custom-names';
+import {annualContract,startAnnualTerm} from './annual-term';
 import {isAutomaticPaidPlan,automaticPaidStateAllowed,isLegacyUnpaidPaidRequest} from './paid-activation-policy';
 import { assertCountryPublication, freeCountryPublicationAllowed, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
 import type { Sql } from 'postgres';
@@ -15,10 +17,10 @@ const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export type CanonicalPublication = {
   // Installed only after historical registry and the single previous allocator are verified.
   historicalRegistryVerified: true;
-  reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string})=>Promise<string>;
-  publish: (request:{id:string;code:string;type:string})=>Promise<{confirmed:true;receipt:string}>;
+  reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string},connection?:any)=>Promise<string>;
+  publish: (request:{id:string;code:string;type:string},connection?:any)=>Promise<{confirmed:true;receipt:string}>;
 };
-export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';paidWorkflow?:boolean}) {
+export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';paidWorkflow?:boolean;customNames?:boolean}) {
   const actor=async(tx:any,id:string,role:string)=>{
     const users=await tx.unsafe(`SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role=$2`,[id,role]);
     if(!users.length)throw Error('FORBIDDEN');
@@ -88,6 +90,10 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       if(!uuid.test(actorId)||!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       const data=validateRequestFiles(raw,files);
       assertCountryPublication(data.countryCode,data.type,data.plan);
+      const wantsName=data.type==='BUSINESS'&&(data.plan==='BUSINESS_PREMIUM_PRO'||data.plan==='BUSINESS_PREMIUM'&&!!data.namedCode);
+      if(options.customNames===false&&wantsName)throw Error('CUSTOM_NAMES_NOT_READY');
+      const identity=options.customNames?requestedIdentity(data):null;
+      const contract=options.customNames&&['RESIDENTIAL','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(data.plan)?annualContract(data.plan,(raw as any).legalAcceptance?.acceptedAt??new Date().toISOString()):null;
       // Reject duplicate gallery parts before persisting an impossible required count.
       const fingerprints=files.map(f=>f.role+':'+digest(f.bytes));
       if(new Set(fingerprints).size!==files.length)throw Error('DUPLICATE_MEDIA');
@@ -113,8 +119,8 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         const plan=await tx.unsafe("SELECT id FROM ad507.plans WHERE code=$1 AND status='ACTIVE'",[data.plan]);
         if(data.type!=='PLACE'&&!plan.length)throw Error('PLAN_NOT_FOUND');
         const rows=await tx.unsafe(`INSERT INTO ad507.addresses(code,address_type,status,plan_id,name,reference,description,commercial_description,latitude,longitude,phone,landline_phone,hours,source,request_key_hash,request_payload_hash,request_data,country_code)
-          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb,$15) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({countryCode:data.countryCode,territory:data.territory,media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,postalCode:data.postalCode,postalZone:data.postalZone,...(!admin&&(raw as any).legalAcceptance?{legalAcceptance:{...(raw as any).legalAcceptance,userId:actorId,countryCode:data.countryCode}}:{}),...(admin?{createdByAdmin:actorId}:{})}),data.countryCode]);
-        const row=rows[0];await tx.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[row.id,actorId]);
+          VALUES(NULL,$1,'DRAFT',$2::uuid,$3,$4,$5,$6,$7,$8,$9,$10,$11,'USER_REQUEST',$12,$13,$14::jsonb,$15) RETURNING *`,[data.type,plan[0]?.id??null,data.name,data.reference,data.description,data.commercialDescription,data.latitude,data.longitude,data.phone,data.landlinePhone,data.hours,keyHash,payloadHash,tx.json({countryCode:data.countryCode,territory:data.territory,media:data.media,plan:data.plan,email:data.email,namedCode:data.namedCode,...(identity?{publicIdentity:identity}:{}),...(contract?{annualContract:contract}:{}),postalCode:data.postalCode,postalZone:data.postalZone,...(!admin&&(raw as any).legalAcceptance?{legalAcceptance:{...(raw as any).legalAcceptance,userId:actorId,countryCode:data.countryCode}}:{}),...(admin?{createdByAdmin:actorId}:{})}),data.countryCode]);
+        const row=rows[0];await tx.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[row.id,actorId]);if(identity)await reservePublicName(tx,row.id,identity);
         for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[row.id,platform,url]);
         await audit(tx,actorId,admin?'ADMIN_ADDRESS_CREATED':'REQUEST_CREATED',row.id,admin);return row;
       });
@@ -142,8 +148,8 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const media=await sql.unsafe('SELECT id::text,media_type AS type,url,position,upload_status AS status FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position,id',[addressId]);
       const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
       const {publicationReceipt,...record}=rows[0];
-      const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?proposedCountryUrl(record.countryCode,record.code,record.extras?.migration?.originalUrl):null;
-      return {...record,canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
+      const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?publicIdentityUrl(record.extras?.publicIdentity,record.extras?.plan,proposedCountryUrl(record.countryCode,record.code,record.extras?.migration?.originalUrl)):null;
+      return {...record,publicCode:record.extras?.publicIdentity?.kind==='PRO'?record.extras.publicIdentity.name:record.code,canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
     },
     async transfer(actorId:string,addressId:string,expectedOwner:string,targetId:string) {
       if(![actorId,addressId,expectedOwner,targetId].every(id=>uuid.test(id)))throw Error('INVALID_REQUEST');
@@ -227,11 +233,18 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         await complete(session,row);
         if(options.paymentEnvironment)await requireConfirmedPayment(session,row,options.paymentEnvironment);
         if(row.request_data?.migration){await historicalIntegrity(session,row);await verifyHistoricalCodePresent(row.code,options.fetch);await verifyMigrationBridge(row,options.fetch);const proof=await verifyHistoricalPhotos(row.legacy_payload,options.fetch);if(snapshotHash(proof)!==snapshotHash(row.request_data.migration.photoProof))throw Error('HISTORICAL_MEDIA_UNVERIFIED');}
-        const code=row.code??await options.canonical.reserve({id:row.id,type:row.address_type,plan:row.request_data.plan,name:row.name,requestedName:row.request_data.namedCode,countryCode:row.country_code??'PA'});
+        // Backfill only an approved, paid, still-uncoded request; never rename an issued address.
+        if(options.customNames&&!row.code&&!row.request_data?.migration){
+          const identity=requestedIdentity({type:row.address_type,plan:row.request_data.plan,countryCode:row.country_code??'PA',name:row.name,namedCode:row.request_data.namedCode});
+          if(identity){
+            await session.unsafe('BEGIN');try{await reservePublicName(session,row.id,identity);await session.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{publicIdentity}',$2::jsonb) WHERE id=$1::uuid",[row.id,session.json(identity)]);await session.unsafe('COMMIT');row.request_data.publicIdentity=identity;}catch(error){await session.unsafe('ROLLBACK');throw error;}
+          }
+        }
+        const code=row.code??await options.canonical.reserve({id:row.id,type:row.address_type,plan:row.request_data.plan,name:row.name,requestedName:row.request_data.namedCode,countryCode:row.country_code??'PA'},session);
         if(!codeMatchesCountry(code,row.country_code??'PA'))throw Error('CANONICAL_CODE_INVALID');
         if(!row.code)try{await session.unsafe("UPDATE ad507.addresses SET code=$2,updated_at=now() WHERE id=$1::uuid",[row.id,code]);}catch(error){if((error as {code?:string}).code==='23505')throw Error('CANONICAL_CODE_COLLISION');throw error;}
         // External allocator/publisher MUST deduplicate by this durable request id.
-        const published=await options.canonical.publish({id:row.id,code,type:row.address_type});
+        const published=await options.canonical.publish({id:row.id,code,type:row.address_type},session);
         if(published.confirmed!==true||typeof published.receipt!=='string'||!published.receipt||published.receipt.length>300)throw Error('PUBLICATION_UNCONFIRMED');
         await session.unsafe('BEGIN');
         try {
@@ -240,7 +253,12 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           const current=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid FOR UPDATE",[row.id]);
           if(automatic?!automaticPaidStateAllowed(current[0]):!['PENDING_REVIEW',...(row.request_data?.migration?['SUSPENDED']:[])].includes(current[0]?.status)||current[0]?.review_decision!=='APPROVED')throw Error('PUBLICATION_STATE_CONFLICT');
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
-          if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
+          const paidProof=options.paymentEnvironment?await requireConfirmedPayment(tx,current[0],options.paymentEnvironment):null;
+          if(current[0].request_data?.annualContract&&!current[0].request_data?.annualTerm){
+            if(!paidProof?.id)throw Error('PAYMENT_CONFIRMATION_REQUIRED');
+            const term=startAnnualTerm(current[0].request_data.annualContract,paidProof.id);
+            await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualTerm}',$2::jsonb) WHERE id=$1::uuid",[row.id,tx.json(term)]);
+          }
           await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}

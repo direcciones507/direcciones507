@@ -1,0 +1,32 @@
+# Archivos de la propuesta
+
+- `core/runtime/admin-address-pagination.ts`
+- `core/runtime/annual-term.ts`
+- `core/runtime/custom-name-routes.ts`
+- `core/runtime/custom-names.ts`
+- `core/runtime/historical-public-names.json`
+- `core/runtime/new-address-publication.ts`
+- `core/runtime/panel-address-card.ts`
+- `core/runtime/payment-repository.ts`
+- `core/runtime/request-repository.ts`
+- `core/runtime/request-routes.ts`
+- `core/runtime/schema-proposals/public-names.sql`
+- `core/runtime/scripts/benchmark-custom-names.ts`
+- `core/runtime/scripts/check-custom-name-appearance.ts`
+- `core/runtime/scripts/custom-names-integration.ts`
+- `core/runtime/scripts/prepare-custom-name-visual.ts`
+- `core/runtime/scripts/prepare-historical-recovery.ts`
+- `core/runtime/scripts/run-custom-names-pglite.ts`
+- `core/runtime/server.ts`
+- `core/runtime/tests/custom-names-native.test.ts`
+- `core/runtime/tests/custom-names.test.ts`
+- `core/runtime/user-panel.ts`
+- `docs/recovery/DRAFT-PR.md`
+- `docs/recovery/FILES.md`
+- `docs/recovery/SAFE-CUSTOM-CODES.md`
+- `docs/recovery/evidence/appearance.json`
+- `docs/recovery/evidence/performance.json`
+- `docs/recovery/evidence/responsive.json`
+- `docs/recovery/evidence/sql-integration.json`
+- `docs/recovery/evidence/test-summary.json`
+- `docs/recovery/historical-route-audit.json`

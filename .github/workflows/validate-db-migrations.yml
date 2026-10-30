@@ -1,23 +1,182 @@
+# Audit runner only: all checkouts are pinned to the unchanged main source SHA.
+# This branch has no publication, external credentials, autosync or deployment jobs.
 name: Validate DB migrations
-
-on:
-  pull_request:
-    paths:
-      - 'db/migrations/**'
-      - 'scripts/validate-migrations.py'
-      - '.github/workflows/validate-db-migrations.yml'
-  workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: 2e9ee6a4b03a03e3d54a8a78af6b7863427d3374
+        persist-credentials: false
+    - name: Verify exact audited main SHA
+      run: 'test "$(git rev-parse HEAD)" = "2e9ee6a4b03a03e3d54a8a78af6b7863427d3374"
 
-      - name: Validate migration safety rules
-        run: python3 scripts/validate-migrations.py
+        git rev-parse HEAD
+
+        git status --porcelain'
+    - name: Validate migration safety rules
+      run: python3 scripts/validate-migrations.py
+  account:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: 2e9ee6a4b03a03e3d54a8a78af6b7863427d3374
+        persist-credentials: false
+    - name: Verify exact audited main SHA
+      run: 'test "$(git rev-parse HEAD)" = "2e9ee6a4b03a03e3d54a8a78af6b7863427d3374"
+
+        git rev-parse HEAD
+
+        git status --porcelain'
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: 1.4.0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '24'
+    - run: bun install --frozen-lockfile
+      working-directory: core/runtime
+    - run: bun test tests/account-bootstrap-forensic.test.ts tests/request-panel-ui.test.ts tests/panel-client-polish.test.ts tests/commercial-entry.test.ts
+        tests/payment-policy.test.ts
+      working-directory: core/runtime
+    - run: bun core/runtime/scripts/generate-account-browser-fixtures.ts
+    - run: npm install --prefix /tmp/ad507-browser playwright@1.62.1
+    - run: /tmp/ad507-browser/node_modules/.bin/playwright install --with-deps chromium
+    - run: node core/runtime/tests/account-browser-regression.mjs
+      env:
+        PLAYWRIGHT_MODULE: /tmp/ad507-browser/node_modules/playwright
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+  compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:18.1
+        env:
+          POSTGRES_PASSWORD: isolated-test-only
+          POSTGRES_DB: postgres
+        ports:
+        - 55439:5432
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: 2e9ee6a4b03a03e3d54a8a78af6b7863427d3374
+        persist-credentials: false
+    - name: Verify exact audited main SHA
+      run: 'test "$(git rev-parse HEAD)" = "2e9ee6a4b03a03e3d54a8a78af6b7863427d3374"
+
+        git rev-parse HEAD
+
+        git status --porcelain'
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: 1.4.0
+    - run: python scripts/validate-migrations.py
+    - run: bun install --frozen-lockfile
+      working-directory: core/runtime
+    - run: bun run check:legacy
+      working-directory: core/runtime
+    - run: bun build server.ts --target bun --external postgres --outfile /tmp/ad507-core-review.js
+      working-directory: core/runtime
+    - run: docker build --tag ad507-core-review --file core/runtime/Dockerfile .
+    - run: timeout 90s bun test tests
+      working-directory: core/runtime
+      env:
+        AD507_TEST_DATABASE_URL: postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres
+    if: github.event_name == 'workflow_dispatch'
+  legal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: 2e9ee6a4b03a03e3d54a8a78af6b7863427d3374
+        persist-credentials: false
+    - name: Verify exact audited main SHA
+      run: 'test "$(git rev-parse HEAD)" = "2e9ee6a4b03a03e3d54a8a78af6b7863427d3374"
+
+        git rev-parse HEAD
+
+        git status --porcelain'
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: 1.4.0
+    - run: bun install --frozen-lockfile
+      working-directory: core/runtime
+    - run: bun core/runtime/scripts/prepare-legal-browser.ts
+    - run: npm install --prefix /tmp/ad507-browser playwright@1.56.1
+    - run: /tmp/ad507-browser/node_modules/.bin/playwright install --with-deps chromium
+    - run: NODE_PATH=/tmp/ad507-browser/node_modules node core/runtime/scripts/legal-browser.cjs
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: legal-responsive-evidence
+        path: legal-browser-evidence/
+        if-no-files-found: warn
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+  analytics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:18.1
+        env:
+          POSTGRES_PASSWORD: isolated-test-only
+          POSTGRES_DB: postgres
+        ports:
+        - 55439:5432
+        options: --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: 2e9ee6a4b03a03e3d54a8a78af6b7863427d3374
+        persist-credentials: false
+    - name: Verify exact audited main SHA
+      run: 'test "$(git rev-parse HEAD)" = "2e9ee6a4b03a03e3d54a8a78af6b7863427d3374"
+
+        git rev-parse HEAD
+
+        git status --porcelain'
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: 1.4.0
+    - run: bun install --frozen-lockfile
+      working-directory: core/runtime
+    - run: bun core/runtime/scripts/prepare-legal-browser.ts
+    - run: npm install --prefix /tmp/ad507-browser playwright@1.56.1
+    - run: /tmp/ad507-browser/node_modules/.bin/playwright install --with-deps chromium
+    - run: NODE_PATH=/tmp/ad507-browser/node_modules node core/runtime/scripts/analytics-browser.cjs
+    - run: bun test core/runtime/tests/analytics-integration.test.ts
+      env:
+        AD507_TEST_DATABASE_URL: postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres
+        AD507_ANALYTICS_BROWSER: 'true'
+        NODE_PATH: /tmp/ad507-browser/node_modules
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: analytics-card-evidence
+        path: analytics-browser-evidence/
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+'on':
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+    - db/migrations/**
+    - scripts/validate-migrations.py
+    - .github/workflows/validate-db-migrations.yml

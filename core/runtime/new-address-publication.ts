@@ -228,7 +228,10 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           min-width:0;
           margin:0 !important;
         }
-        html[data-public-place] .white-sheet .actions-triple-row,
+        html[data-public-place] .white-sheet .actions-triple-row {
+          display:grid !important;
+          grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+        }
         html[data-public-place] .white-sheet .main-nav-grid {
           display:grid !important;
           grid-template-columns:repeat(2,minmax(0,1fr)) !important;
@@ -250,6 +253,15 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         grid-template-columns:repeat(2,minmax(0,1fr)) !important;
         gap:12px !important;
         align-items:stretch;
+      }
+      /* On tablet/desktop keep the three primary actions on one row. */
+      @media(min-width:768px) {
+        html[data-public-place] .white-sheet .actions-triple-row {
+          grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+        }
+        html[data-public-place] .white-sheet .actions-triple-row > :not([hidden]):not([style*="display: none"]):last-child:nth-child(odd) {
+          grid-column:auto !important;
+        }
       }
       html[data-public-place] .main-nav-grid > *,
       html[data-public-place] .actions-triple-row > * {

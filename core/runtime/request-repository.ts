@@ -195,7 +195,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       if(row.status==='SUSPENDED'||row.status==='DISABLED')return {id:row.id,status:row.status};
       if(!automaticPaidStateAllowed(row)&&!isLegacyUnpaidPaidRequest(row))throw Error('INVALID_PAID_ACTIVATION_STATE');
       if(isLegacyUnpaidPaidRequest(row)){
-        await sql.unsafe("UPDATE ad507.addresses SET status='DRAFT',request_data=jsonb_set(request_data,'{workflow}','\\\"PAYMENT_PENDING\\\"'::jsonb),updated_at=now() WHERE id=$1::uuid AND status='PENDING_REVIEW'",[row.id]);
+        await sql.unsafe("UPDATE ad507.addresses SET status='DRAFT',request_data=jsonb_set(request_data,'{workflow}',to_jsonb($2::text)),updated_at=now() WHERE id=$1::uuid AND status='PENDING_REVIEW'",[row.id,'PAYMENT_PENDING']);
       }
       return repository.publish('',addressId,AUTOMATIC_PAID);
     },

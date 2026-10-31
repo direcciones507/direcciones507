@@ -51,3 +51,17 @@ test('account cards keep details and removal side by side; payment action is gen
   expect(requestClientScript).toContain('Google Maps');
   expect(requestClientScript).not.toContain("pay.textContent='Pagar ahora con Yappy'");
 });
+
+
+test('request submission is routed to the authenticated repository before the account panel',()=>{
+  const server=readFileSync(new URL('../server.ts',import.meta.url),'utf8');
+  const panel=readFileSync(new URL('../user-panel.ts',import.meta.url),'utf8');
+  const routes=readFileSync(new URL('../request-routes.ts',import.meta.url),'utf8');
+  expect(server.indexOf('await handleRequestRoutes(req')).toBeGreaterThan(-1);
+  expect(server.indexOf('await handleUserPanel(req')).toBeGreaterThan(server.indexOf('await handleRequestRoutes(req'));
+  expect(panel).not.toContain("if (url.pathname === '/v1/user/requests')");
+  expect(panel).toContain("fetch('/v1/user/requests'");
+  expect(routes).toContain("submit=url.pathname==='/v1/user/requests'||adminCreate");
+  expect(routes).toContain("context.repository[adminCreate?'createAdmin':'submit']");
+  expect(routes).toContain("if(!context.enabled)return respond(503");
+});

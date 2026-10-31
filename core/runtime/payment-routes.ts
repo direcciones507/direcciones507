@@ -16,7 +16,14 @@ export async function handlePaymentRoutes(req:Request,context:Context):Promise<R
   let publicOrderId:string|undefined;
   try {
     if(ipn){await context.repository.confirm(url.searchParams);return respond(200,{success:true});}
-    if(req.headers.get('sec-fetch-site')==='cross-site'||req.method==='POST'&&req.headers.get('origin')!==url.origin)return respond(403,{ok:false,error:'ORIGIN_DENIED'});
+    const origin=req.headers.get('origin');
+    // Railway may forward the request using an internal origin. The browser's
+    // Origin must still be one of our public first-party domains, never arbitrary.
+    const allowedOrigins=new Set(['https://direcciones.lat','https://www.direcciones.lat','https://direcciones507.com','https://www.direcciones507.com']);
+    const forwardedHost=req.headers.get('x-forwarded-host')?.split(',')[0]?.trim().toLowerCase();
+    const publicHost=forwardedHost||url.host.toLowerCase();
+    const publicOrigin='https://'+publicHost;
+    if(req.headers.get('sec-fetch-site')==='cross-site'||req.method==='POST'&&(!origin||!allowedOrigins.has(origin)||origin!==publicOrigin&&origin!==url.origin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
     if(!user.roles.some(role=>['CLIENT','ADMIN'].includes(role)))return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [key,item]of rates)if(now-item.at>60000)rates.delete(key);

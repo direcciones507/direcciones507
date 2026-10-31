@@ -1525,7 +1525,7 @@
     @media (max-width:767px) {
       .premium-qr-postal-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:12px 0; align-items:stretch; }
       .premium-qr-postal-row > #codigoPostalContainer,
-      .premium-qr-postal-row > .double-row-buttons { width:100% !important; min-width:0; margin:0; display:block; }
+      .premium-qr-postal-row > #btnQR { width:100% !important; min-width:0; margin:0; display:flex; }
       .premium-qr-postal-row #btnQR,.premium-qr-postal-row #codigoPostalContainer { width:100%; height:100%; min-height:82px; padding:10px; }
       .premium-qr-postal-row .accordion-content-text { min-width:0; }
       .premium-qr-postal-row .accordion-label { font-size:10px; }
@@ -1801,28 +1801,28 @@
 })();
 </script>
 <script>
-/* On phones keep QR and postal code in one compact row; preserve the existing nodes. */
-(() => {
+/* On phones keep only QR and postal side-by-side, without moving statistics. */
+document.addEventListener('DOMContentLoaded',()=>{
   const mobile=matchMedia('(max-width:767px)');
   const postal=document.getElementById('codigoPostalContainer');
-  const qr=document.querySelector('.double-row-buttons');
+  const qr=document.getElementById('btnQR');
   if(!postal||!qr)return;
-  const postalAnchor=document.createComment('postal original slot');
-  const qrAnchor=document.createComment('qr original slot');
-  postal.before(postalAnchor);qr.before(qrAnchor);
+  const postalSlot=document.createComment('postal slot');
+  const qrSlot=document.createComment('QR slot');
+  postal.before(postalSlot);qr.before(qrSlot);
   const row=document.createElement('div');row.className='premium-qr-postal-row';
   const arrange=()=>{
     if(mobile.matches){
-      qrAnchor.before(row);
+      qr.closest('.double-row-buttons').before(row);
       row.append(qr,postal);
     }else{
-      qrAnchor.after(qr);
-      postalAnchor.after(postal);
+      qrSlot.after(qr);
+      postalSlot.after(postal);
       row.remove();
     }
   };
   arrange();mobile.addEventListener('change',arrange);
-})();
+});
 </script>
 <script>
 

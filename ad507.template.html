@@ -1488,23 +1488,6 @@
     }
 
 
-    /* New premium layout: compact navigation, horizontal rounded gallery and real social glyphs. */
-    @media (min-width: 768px) {
-      .public-navigation-section { margin-top: 0 !important; }
-      .public-lower-left { justify-content: flex-start; }
-      .negocio-galeria { display:flex; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap:14px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:10px; }
-      .negocio-galeria img { flex:0 0 clamp(170px,23%,260px); width:clamp(170px,23%,260px); height:210px; border-radius:20px; scroll-snap-align:start; }
-      .public-lower-layout .btn-social-quad .wide-card-icon { display:block !important; width:20px; height:20px; fill:currentColor; }
-      .public-lower-layout .btn-social-quad i { font-size:0 !important; }
-      .public-business-info #codigoPostalContainer { width:calc(50% - 6px) !important; display:inline-flex !important; vertical-align:top; }
-      .public-business-info .double-row-buttons { width:calc(50% - 6px); display:inline-flex !important; vertical-align:top; }
-    }
-    @media (max-width:767px) {
-      .negocio-galeria { border-radius:18px; }
-      #codigoPostalContainer, .double-row-buttons { box-sizing:border-box; }
-      .public-lower-layout ~ #codigoPostalContainer { width:50%; }
-    }
-
     /* Original glyphs render locally on wide cards; approved phone view is unchanged. */
     .wide-card-icon { display: none; }
     @media (min-width: 768px) {
@@ -1530,6 +1513,26 @@
       .public-lower-layout #btnRef .accordion-icon-left i { color: #be123c!important; }
     }
   
+
+    /* Requested Premium/Pro presentation adjustments only. */
+    @media (min-width:768px) {
+      .public-lower-left .public-navigation-section { margin-top:0 !important; }
+      .negocio-galeria { display:flex !important; flex-wrap:nowrap !important; overflow-x:auto; overflow-y:hidden; gap:12px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:8px; }
+      .negocio-galeria img, .negocio-galeria img:first-child { grid-column:auto !important; flex:0 0 210px; width:210px; height:210px !important; border-radius:20px; scroll-snap-align:start; }
+      .public-lower-layout .btn-social-quad .wide-card-icon { display:block; width:20px; height:20px; fill:currentColor; }
+      .public-lower-layout .btn-social-quad i { font-size:0; }
+    }
+    @media (max-width:767px) {
+      .premium-qr-postal-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:12px 0; align-items:stretch; }
+      .premium-qr-postal-row > #codigoPostalContainer,
+      .premium-qr-postal-row > .double-row-buttons { width:100% !important; min-width:0; margin:0; display:block; }
+      .premium-qr-postal-row #btnQR,.premium-qr-postal-row #codigoPostalContainer { width:100%; height:100%; min-height:82px; padding:10px; }
+      .premium-qr-postal-row .accordion-content-text { min-width:0; }
+      .premium-qr-postal-row .accordion-label { font-size:10px; }
+      .premium-qr-postal-row .accordion-value { overflow-wrap:anywhere; }
+      .premium-qr-postal-row #qrSection { grid-column:1/-1; }
+    }
+
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }
@@ -1795,6 +1798,30 @@
   };
   arrange();
   mobile.addEventListener('change', arrange);
+})();
+</script>
+<script>
+/* On phones keep QR and postal code in one compact row; preserve the existing nodes. */
+(() => {
+  const mobile=matchMedia('(max-width:767px)');
+  const postal=document.getElementById('codigoPostalContainer');
+  const qr=document.querySelector('.double-row-buttons');
+  if(!postal||!qr)return;
+  const postalAnchor=document.createComment('postal original slot');
+  const qrAnchor=document.createComment('qr original slot');
+  postal.before(postalAnchor);qr.before(qrAnchor);
+  const row=document.createElement('div');row.className='premium-qr-postal-row';
+  const arrange=()=>{
+    if(mobile.matches){
+      qrAnchor.before(row);
+      row.append(qr,postal);
+    }else{
+      qrAnchor.after(qr);
+      postalAnchor.after(postal);
+      row.remove();
+    }
+  };
+  arrange();mobile.addEventListener('change',arrange);
 })();
 </script>
 <script>

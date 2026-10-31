@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
     historicalRegistryVerified:options.namespaceExclusive,
-    async reserve({id,countryCode='PA',type,plan}) {
+    async reserve({id,countryCode='PA',type,plan,requestedName}) {
       assertCountryPublication(countryCode,type,plan);
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       // Canonical UUID layout makes removing separators injective: malformed
@@ -38,7 +38,13 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       // A deterministic digest makes repeat reservations idempotent. Fail closed on
       // the rare eight-digit collision rather than assigning a duplicate code.
       const numericCode=(BigInt('0x'+createHash('sha256').update(id).digest('hex'))%100000000n).toString().padStart(8,'0');
-      const code='AD'+countryConfiguration(countryCode).prefix+'-N'+numericCode;
+      const personalized=String(requestedName??'').trim().toUpperCase();
+      if(personalized&&!(type==='BUSINESS'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan)))throw Error('CAPABILITY_VIOLATION');
+      if(personalized&&!/^[A-Z0-9]+(?:[-_][A-Z0-9]+)*$/.test(personalized))throw Error('INVALID_NAMED_CODE');
+      // Prefix is mandatory for the country namespace. Accept an already-prefixed
+      // name too, without doubling the country prefix.
+      const prefix='AD'+countryConfiguration(countryCode).prefix+'-';
+      const code=personalized?(personalized.startsWith(prefix)?personalized:prefix+personalized):prefix+'N'+numericCode;
       if(historicalCodes.includes(code))throw Error('CANONICAL_CODE_COLLISION');
       const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
       if(existing.length)throw Error('CANONICAL_CODE_COLLISION');

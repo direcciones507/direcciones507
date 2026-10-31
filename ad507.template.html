@@ -1487,6 +1487,7 @@
       .public-lower-layout { display: none; }
     }
 
+
     /* Original glyphs render locally on wide cards; approved phone view is unchanged. */
     .wide-card-icon { display: none; }
     @media (min-width: 768px) {
@@ -1512,6 +1513,26 @@
       .public-lower-layout #btnRef .accordion-icon-left i { color: #be123c!important; }
     }
   
+
+    /* Requested Premium/Pro presentation adjustments only. */
+    @media (min-width:768px) {
+      .public-lower-left .public-navigation-section { margin-top:0 !important; }
+      .negocio-galeria { display:flex !important; flex-wrap:nowrap !important; overflow-x:auto; overflow-y:hidden; gap:12px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:8px; }
+      .negocio-galeria img, .negocio-galeria img:first-child { grid-column:auto !important; flex:0 0 210px; width:210px; height:210px !important; border-radius:20px; scroll-snap-align:start; }
+      .public-lower-layout .btn-social-quad .wide-card-icon { display:block; width:20px; height:20px; fill:currentColor; }
+      .public-lower-layout .btn-social-quad i { font-size:0; }
+    }
+    @media (max-width:767px) {
+      .premium-qr-postal-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:12px 0; align-items:stretch; }
+      .premium-qr-postal-row > #codigoPostalContainer,
+      .premium-qr-postal-row > #btnQR { width:100% !important; min-width:0; margin:0; display:flex; }
+      .premium-qr-postal-row #btnQR,.premium-qr-postal-row #codigoPostalContainer { width:100%; height:100%; min-height:82px; padding:10px; }
+      .premium-qr-postal-row .accordion-content-text { min-width:0; }
+      .premium-qr-postal-row .accordion-label { font-size:10px; }
+      .premium-qr-postal-row .accordion-value { overflow-wrap:anywhere; }
+      .premium-qr-postal-row #qrSection { grid-column:1/-1; }
+    }
+
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }
@@ -1778,6 +1799,30 @@
   arrange();
   mobile.addEventListener('change', arrange);
 })();
+</script>
+<script>
+/* On phones keep only QR and postal side-by-side, without moving statistics. */
+document.addEventListener('DOMContentLoaded',()=>{
+  const mobile=matchMedia('(max-width:767px)');
+  const postal=document.getElementById('codigoPostalContainer');
+  const qr=document.getElementById('btnQR');
+  if(!postal||!qr)return;
+  const postalSlot=document.createComment('postal slot');
+  const qrSlot=document.createComment('QR slot');
+  postal.before(postalSlot);qr.before(qrSlot);
+  const row=document.createElement('div');row.className='premium-qr-postal-row';
+  const arrange=()=>{
+    if(mobile.matches){
+      qr.closest('.double-row-buttons').before(row);
+      row.append(qr,postal);
+    }else{
+      qrSlot.after(qr);
+      postalSlot.after(postal);
+      row.remove();
+    }
+  };
+  arrange();mobile.addEventListener('change',arrange);
+});
 </script>
 <script>
 

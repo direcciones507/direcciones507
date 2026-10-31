@@ -1487,6 +1487,24 @@
       .public-lower-layout { display: none; }
     }
 
+
+    /* New premium layout: compact navigation, horizontal rounded gallery and real social glyphs. */
+    @media (min-width: 768px) {
+      .public-navigation-section { margin-top: 0 !important; }
+      .public-lower-left { justify-content: flex-start; }
+      .negocio-galeria { display:flex; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap:14px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:10px; }
+      .negocio-galeria img { flex:0 0 clamp(170px,23%,260px); width:clamp(170px,23%,260px); height:210px; border-radius:20px; scroll-snap-align:start; }
+      .public-lower-layout .btn-social-quad .wide-card-icon { display:block !important; width:20px; height:20px; fill:currentColor; }
+      .public-lower-layout .btn-social-quad i { font-size:0 !important; }
+      .public-business-info #codigoPostalContainer { width:calc(50% - 6px) !important; display:inline-flex !important; vertical-align:top; }
+      .public-business-info .double-row-buttons { width:calc(50% - 6px); display:inline-flex !important; vertical-align:top; }
+    }
+    @media (max-width:767px) {
+      .negocio-galeria { border-radius:18px; }
+      #codigoPostalContainer, .double-row-buttons { box-sizing:border-box; }
+      .public-lower-layout ~ #codigoPostalContainer { width:50%; }
+    }
+
     /* Original glyphs render locally on wide cards; approved phone view is unchanged. */
     .wide-card-icon { display: none; }
     @media (min-width: 768px) {

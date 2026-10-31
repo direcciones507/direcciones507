@@ -39,11 +39,9 @@ export async function userPanelData(sql: Sql, user: { id: string; roles: string[
 }
 export async function handleUserPanel(req: Request, sql: Sql, auth: ReturnType<typeof createGeneralAuth>): Promise<Response | null> {
   const url = new URL(req.url);
-  if (!['/v1/user/panel','/v1/user/requests','/panel','/panel/','/commercial/panama','/commercial/international'].includes(url.pathname)) return null;
-  if (url.pathname === '/v1/user/requests') {
-    // No dormant writer: submissions require a separately reviewed implementation.
-    return Response.json({ ok: false, error: 'USER_PANEL_SUBMISSION_NOT_ENABLED' }, { status: 503, headers: { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' } });
-  }
+  // Request creation and request detail routes are handled by handleRequestRoutes
+  // before this panel handler. Never shadow the authenticated repository writer.
+  if (!['/v1/user/panel','/panel','/panel/','/commercial/panama','/commercial/international'].includes(url.pathname)) return null;
   // Render the account panel even without a session; its login view handles authentication.
   if (req.method !== 'GET') return Response.json({ ok: false, error: 'METHOD_NOT_ALLOWED' }, { status: 405, headers: { 'cache-control': 'no-store' } });
   if (url.pathname !== '/v1/user/panel') {

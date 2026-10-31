@@ -184,19 +184,20 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
     async activatePaid(addressId:string){
       if(!options.paidWorkflow)throw Error('AUTOMATIC_PAID_ACTIVATION_NOT_ENABLED');
       if(!uuid.test(addressId))throw Error('REQUEST_NOT_FOUND');
-      return sql.begin(async tx=>{
-        const rows=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' FOR UPDATE",[addressId]);
-        const row=rows[0];if(!row)throw Error('REQUEST_NOT_FOUND');
-        // A delayed authenticated IPN must acknowledge an already-confirmed request without
-        // reopening an ADMIN decision, republishing or restoring suspended benefits.
-        if(row.status==='ARCHIVED')return {id:row.id,status:'ARCHIVED',workflow:'RETIRED'};
-        if(row.request_data?.workflow==='PAYMENT_CONFIRMED'&&['PENDING_REVIEW','ACTIVE','SUSPENDED','DISABLED'].includes(row.status))return {id:row.id,status:row.status,workflow:'PAYMENT_CONFIRMED'};
-        if(!(row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING')&&!isLegacyUnpaidPaidRequest(row))throw Error('INVALID_PAID_ACTIVATION_STATE');
-        await requireConfirmedPayment(tx,row,options.paymentEnvironment??'production');
-        await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',request_data=jsonb_set(request_data,'{workflow}','\"PAYMENT_CONFIRMED\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);
-        await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_READY_FOR_REVIEW','ADDRESS',$1::uuid)",[row.id]);
-        return {id:row.id,status:'PENDING_REVIEW',workflow:'PAYMENT_CONFIRMED'};
-      });
+      // The signed Yappy IPN has already marked the order PAID. The automatic
+      // publisher rechecks that payment under lock and creates the code/receipt.
+      // Keep pending-payment drafts intact until publication succeeds, so a
+      // failed external publication can be retried safely without ADMIN approval.
+      const rows=await sql.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST'",[addressId]);
+      const row=rows[0];if(!row)throw Error('REQUEST_NOT_FOUND');
+      if(row.status==='ARCHIVED')return {id:row.id,status:'ARCHIVED',workflow:'RETIRED'};
+      if(row.status==='ACTIVE'&&row.publication_receipt)return {id:row.id,status:'ACTIVE',code:row.code,receipt:row.publication_receipt};
+      if(row.status==='SUSPENDED'||row.status==='DISABLED')return {id:row.id,status:row.status};
+      if(!automaticPaidStateAllowed(row)&&!isLegacyUnpaidPaidRequest(row))throw Error('INVALID_PAID_ACTIVATION_STATE');
+      if(isLegacyUnpaidPaidRequest(row)){
+        await sql.unsafe("UPDATE ad507.addresses SET status='DRAFT',request_data=jsonb_set(request_data,'{workflow}',to_jsonb($2::text)),updated_at=now() WHERE id=$1::uuid AND status='PENDING_REVIEW'",[row.id,'PAYMENT_PENDING']);
+      }
+      return repository.publish('',addressId,AUTOMATIC_PAID);
     },
     async publish(actorId:string,addressId:string,internalMode?:symbol) {
       const automatic=internalMode===AUTOMATIC_PAID;

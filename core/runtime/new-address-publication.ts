@@ -372,6 +372,11 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .card .white-sheet .public-lower-layout{margin-bottom:0!important;padding-bottom:0!important}
         .card .premium-footer{flex:0 0 auto!important;margin-top:0!important}
       }
+      @media (min-width:768px){
+        .card:has(.premium-footer){justify-content:flex-start!important}
+        .card:has(.premium-footer) .white-sheet{flex-grow:0!important}
+        .card:has(.premium-footer) .premium-footer{margin-top:0!important}
+      }
       ${premiumProTablet?`/* Premium Pro tablets only: fix the actual footer clone, not the hidden source links. */
       @media (min-width:768px) and (max-width:1199px) and (min-height:600px),
              (min-width:1200px) and (max-width:1366px) and (min-height:600px) and (pointer:coarse) {

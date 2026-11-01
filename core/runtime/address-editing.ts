@@ -33,6 +33,7 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
     },
     async edit(actorId:string,id:string,raw:any,files:RequestFile[],admin:boolean) {
       if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>!['version','namedCode','name','reference','description','commercialDescription','phone','landlinePhone','hours','instagram','facebook','tiktok','latitude','longitude','retainMedia','newCover'].includes(k)))throw Error('INVALID_REQUEST');
+      if(raw.namedCode!==undefined)throw Error('PUBLISHED_CODE_LOCKED');
       const row=await access(sql,actorId,id,admin);
       if(raw.version!==row.version)throw Error('EDIT_CONFLICT');
       const before=await snapshot(sql,row),plan=row.request_data.plan;

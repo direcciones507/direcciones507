@@ -103,6 +103,13 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
     }
   }
+  // New free businesses and Places do not offer postal-code information.
+  // Remove only the rendered postal card; premium plans and historical pages are untouched.
+  if(!record.extras.historical && (record.type==='PLACE' || (record.type==='BUSINESS' && record.plan?.code!=='BUSINESS_PREMIUM' && record.plan?.code!=='BUSINESS_PREMIUM_PRO'))){
+    data.codigoPostal=null;
+    template=template.replace('</head>',`<style id="hide-nonpremium-postal">#codigoPostalContainer,.premium-qr-postal-row > #codigoPostalContainer,.public-business-info #codigoPostalContainer{display:none!important;visibility:hidden!important}</style></head>`);
+    template=template.replace('</body>',`<script>(function(){function hideNonpremiumPostal(){var p=document.getElementById('codigoPostalContainer');if(p){p.style.setProperty('display','none','important');p.hidden=true;p.setAttribute('aria-hidden','true')}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hideNonpremiumPostal);else hideNonpremiumPostal();window.addEventListener('load',hideNonpremiumPostal);})()</script></body>`);
+  }
   // Place only: use the original description element exactly once, never clone its text.
   if(!record.extras.historical && record.type==='PLACE'){
     template=template.replace('</head>',`<style id="place-presentation-layout">

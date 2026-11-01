@@ -17,7 +17,7 @@ export type CanonicalPublication = {
   // Installed only after historical registry and the single previous allocator are verified.
   historicalRegistryVerified: true;
   reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string;executor?:Pick<Sql,'unsafe'>})=>Promise<string>;
-  publish: (request:{id:string;code:string;type:string;executor?:Pick<Sql,'unsafe'>})=>Promise<{confirmed:true;receipt:string}>;
+  publish: (request:{id:string;code:string;type:string;executor?:Pick<Sql,'unsafe'>;automaticPaid?:boolean})=>Promise<{confirmed:true;receipt:string}>;
 };
 export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';paidWorkflow?:boolean}) {
   const actor=async(tx:any,id:string,role:string)=>{

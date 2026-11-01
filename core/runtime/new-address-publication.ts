@@ -55,7 +55,7 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       // The existing PostgreSQL reader is the new system's publication destination.
       // No call to PLANES writes, GitHub Pages, Drive, DNS or historical generators.
       if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
-      const rows=await executor.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND ((status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED') OR ($3::boolean AND status='DRAFT' AND request_data->>'workflow'='PAYMENT_PENDING' AND request_data->>'plan' IN ('BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO') AND request_data->'migration' IS NULL))",[id,code,automaticPaid]);
+      const rows=await executor.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND ((status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED') OR ($3::boolean AND status='DRAFT' AND request_data->>'workflow'='PAYMENT_PENDING' AND request_data->>'plan'='BUSINESS_PREMIUM' AND request_data->'migration' IS NULL))",[id,code,automaticPaid]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
       if(automaticPaid){
         if(!paymentEnvironment)throw Error('PAYMENT_ENVIRONMENT_REQUIRED');

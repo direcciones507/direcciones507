@@ -1587,6 +1587,26 @@
       }
     }
 
+
+    /* Commercial description directly under photos, same width as the action cards. */
+    .white-sheet > .commercial-description.is-visible {
+      width:100%; box-sizing:border-box; margin:12px 0 18px;
+      padding:18px; border-radius:18px; background:#12243b;
+      border:1px solid rgba(96,165,250,.3);
+    }
+    @media (min-width:768px) and (max-width:1199px) {
+      .premium-qr-postal-row {
+        display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+        width:100%; gap:12px; align-items:stretch;
+      }
+      .premium-qr-postal-row > #btnQR,
+      .premium-qr-postal-row > #codigoPostalContainer {
+        width:100% !important; min-width:0; display:flex !important;
+        grid-column:auto !important; grid-row:auto !important;
+        margin:0 !important; box-sizing:border-box;
+      }
+    }
+
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }
@@ -1660,6 +1680,10 @@
       <div id="galeriaFotos" class="negocio-galeria"></div>
       <div id="galleryBusinessStatus" class="gallery-business-status" aria-live="polite"></div>
     </div>
+    <section id="commercialDescription" class="commercial-description" aria-label="Descripción comercial">
+      <p id="commercialDescriptionText" class="commercial-description-text"></p>
+    </section>
+
 
     <section class="public-lower-layout" aria-label="Contacto y datos del negocio">
       <div class="public-lower-left">
@@ -1793,9 +1817,6 @@
       </section>
     </section>
 
-    <section id="commercialDescription" class="commercial-description" aria-label="Descripción comercial">
-      <p id="commercialDescriptionText" class="commercial-description-text"></p>
-    </section>
 
     <div class="seo-text">
       <span id="seoCodigo">AD507-CODE</span>

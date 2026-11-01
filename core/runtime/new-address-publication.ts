@@ -411,7 +411,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
             if(icon){
               const glyph=icon.cloneNode(true);
               // A cloned <use> needs its symbol's coordinate system; retain all hrefs.
-              if(${premiumProTablet}){
+              {
                 const reference=glyph.querySelector('use')?.getAttribute('href');
                 const symbol=reference?.startsWith('#')?document.getElementById(reference.slice(1)):null;
                 if(symbol?.getAttribute('viewBox'))glyph.setAttribute('viewBox',symbol.getAttribute('viewBox'));

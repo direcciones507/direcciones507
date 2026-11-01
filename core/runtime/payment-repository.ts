@@ -149,7 +149,13 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','YAPPY_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[row.id,tx.json({status:row.status}),tx.json({status:proof.status,providerStatus:proof.providerStatus})]);
         return {id:row.id,status:proof.status,unchanged:false,addressId:row.address_id};
       });
-      if(confirmation.status==='PAID'&&options.onVerifiedPayment)await options.onVerifiedPayment(confirmation.addressId);
+      if(confirmation.status==='PAID'&&options.onVerifiedPayment){
+        // Payment has already been committed. Publication failure must not
+        // reject a valid signed IPN, which would make Yappy retry a paid order.
+        // Authenticated payment reads retry publication idempotently.
+        try { await options.onVerifiedPayment(confirmation.addressId); }
+        catch(error) { console.error('YAPPY_PAID_PUBLICATION_PENDING',confirmation.id,error instanceof Error?error.message:'unknown'); }
+      }
       const {addressId,...result}=confirmation;return result;
     }
   };

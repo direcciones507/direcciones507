@@ -6,8 +6,10 @@ import {publicAnalyticsScript} from '../public-analytics';
 test('four active modalities show card statistics and preserve actions',()=>{
  for(const planCode of ['BUSINESS_FREE','PLACE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
  const a={addressType:planCode==='PLACE'?'PLACE':'BUSINESS',status:'ACTIVE',planCode,code:'AD507-TEST',name:'Demo',source:'USER_REQUEST',id:'11111111-1111-4111-8111-111111111111',publicUrl:'https://direcciones507.com/AD507-TEST/'};
- expect(canOfferAnalytics(a)).toBe(true);const html=renderPanelAddressCard(a);
- for(const text of ['Estadísticas','data-analytics-code="AD507-TEST"','Copiar código','Abrir dirección digital','Editar','Ver detalles de solicitud'])expect(html).toContain(text);
+ expect(canOfferAnalytics(a)).toBe(planCode!=='BUSINESS_FREE');const html=renderPanelAddressCard(a);
+ for(const text of ['Copiar código','Abrir dirección digital','Editar','Ver detalles de solicitud'])expect(html).toContain(text);
+ if(planCode==='BUSINESS_FREE'){expect(html).not.toContain('Estadísticas');expect(html).not.toContain('data-analytics-code');}
+ else for(const text of ['Estadísticas','data-analytics-code="AD507-TEST"'])expect(html).toContain(text);
  for(const override of [{status:'DRAFT'},{addressType:'RESIDENTIAL'},{workflow:'PAYMENT_PENDING'}])expect(canOfferAnalytics({...a,...override})).toBe(false);
  }
 });

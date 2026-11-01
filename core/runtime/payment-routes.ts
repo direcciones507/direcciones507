@@ -47,6 +47,7 @@ export async function handlePaymentRoutes(req:Request,context:Context):Promise<R
   }catch(error){
     const name=error instanceof Error?error.message:'';
     const safe=/^(PAYMENT_NOT_FOUND|INVALID_PAYMENT_[A-Z_]+|INVALID_IDEMPOTENCY_KEY|INVALID_YAPPY_ORDER|PAYMENT_[A-Z_]+|YAPPY_PROVIDER_UNCONFIRMED|PAYLOAD_TOO_LARGE)$/.test(name)?name:'PAYMENT_OPERATION_FAILED';
+    if(ipn)console.error('YAPPY_IPN_REJECTED',safe,'code',name==='INVALID_PAYMENT_SIGNATURE'?'SIGNATURE':name==='INVALID_PAYMENT_NOTIFICATION'?'FORMAT':name==='PAYMENT_NOT_FOUND'?'ORDER':name==='PAYMENT_PROVIDER_REFERENCE_REQUIRED'?'PROVIDER_REFERENCE':'PROCESSING');
     const code=name==='PAYMENT_NOT_FOUND'?404:name==='INVALID_PAYMENT_SIGNATURE'?401:name==='YAPPY_PROVIDER_UNCONFIRMED'?502:name.startsWith('PAYMENT_')?409:400;
     return respond(code,ipn?{success:false}:{ok:false,error:safe,...(publicOrderId?{orderId:publicOrderId}:{})});
   }

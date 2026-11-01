@@ -17,7 +17,7 @@ export type CanonicalPublication = {
   // Installed only after historical registry and the single previous allocator are verified.
   historicalRegistryVerified: true;
   reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string;executor?:Pick<Sql,'unsafe'>})=>Promise<string>;
-  publish: (request:{id:string;code:string;type:string;executor?:Pick<Sql,'unsafe'>;automaticPaid?:boolean})=>Promise<{confirmed:true;receipt:string}>;
+  publish: (request:{id:string;code:string;type:string;executor?:Pick<Sql,'unsafe'>;automaticPaid?:boolean;paymentEnvironment?:'test'|'production'})=>Promise<{confirmed:true;receipt:string}>;
 };
 export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';paidWorkflow?:boolean}) {
   const actor=async(tx:any,id:string,role:string)=>{
@@ -243,7 +243,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         if(!codeMatchesCountry(code,row.country_code??'PA'))throw Error('CANONICAL_CODE_INVALID');
         if(!row.code)try{await session.unsafe("UPDATE ad507.addresses SET code=$2,updated_at=now() WHERE id=$1::uuid",[row.id,code]);}catch(error){if((error as {code?:string}).code==='23505')throw Error('CANONICAL_CODE_COLLISION');throw error;}
         // External allocator/publisher MUST deduplicate by this durable request id.
-        const published=await options.canonical.publish({id:row.id,code,type:row.address_type,executor:session,automaticPaid:automatic});
+        const published=await options.canonical.publish({id:row.id,code,type:row.address_type,executor:session,automaticPaid:automatic,paymentEnvironment:options.paymentEnvironment});
         if(published.confirmed!==true||typeof published.receipt!=='string'||!published.receipt||published.receipt.length>300)throw Error('PUBLICATION_UNCONFIRMED');
         await session.unsafe('BEGIN');
         try {

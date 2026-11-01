@@ -458,7 +458,11 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       })();
     </script></body>`);
   }
-  template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
+  // Premium OG metadata must use the same server-rendered public metadata path as Premium Pro.
+  // Preserve the established behavior of Place, Free Business and Premium Pro.
+  const premiumOg=record.plan?.code==='BUSINESS_PREMIUM'&&!record.extras.historical;
+  const ogDescription=premiumOg?[record.name,record.reference].filter(Boolean).join(' · '):((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507');
+  template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc(ogDescription)).replaceAll('{{CANONICAL}}',esc(record.url));
   // Social crawlers read initial HTML, not client-side JavaScript.
   // Prefer the owner logo, then the main photo. Residential keeps its existing policy.
   const preservePreview=record.type==='RESIDENTIAL'||record.extras.historical;

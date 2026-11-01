@@ -403,7 +403,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           for(const [id,label] of [['btnFacebook','Facebook'],['btnInstagram','Instagram'],['btnTikTok','TikTok']]){
             const original=document.getElementById(id);
             const href=original?.getAttribute('href');
-            if(!href||original.hidden||getComputedStyle(original).display==='none')continue;
+            if(!href||!/^https?:\/\//i.test(href))continue;
             let url;try{url=new URL(href);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)continue}catch{continue}
             const link=document.createElement('a');
             link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;link.dataset.social=label;
@@ -422,7 +422,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           }
           footer.insertBefore(center,footer.querySelector('.footer-secure-side'));
         }
-        window.addEventListener('load',placeFooterSocials,{once:true});
+        window.addEventListener('load',placeFooterSocials,{once:true});\n        // Social links are populated asynchronously by the template after load.\n        // Reconcile clones when hrefs arrive, rather than cloning empty links.\n        const sourceSocials=document.getElementById('redes-container');\n        if(sourceSocials){new MutationObserver(()=>{document.querySelector('.premium-footer .footer-social-center')?.remove();placeFooterSocials()}).observe(sourceSocials,{subtree:true,attributes:true,attributeFilter:['href','style','hidden']})}
         ${premiumProTablet?`// Position only the existing description inside the free header area.
         // Absolute placement preserves the exact gallery and lower-layout geometry.
         window.addEventListener('load',()=>{

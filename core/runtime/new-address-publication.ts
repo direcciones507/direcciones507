@@ -365,6 +365,13 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .premium-footer .footer-social-center svg{width:20px;height:20px;fill:currentColor}
         .public-lower-layout .public-social-section{display:none!important}
       }
+      /* Premium and Premium Pro: remove unused vertical space above social footer on tablets. */
+      @media (min-width:768px) and (max-width:1199px){
+        .card{min-height:0!important;justify-content:flex-start!important}
+        .card .white-sheet{flex:0 0 auto!important;margin-bottom:0!important;padding-bottom:0!important}
+        .card .white-sheet .public-lower-layout{margin-bottom:0!important;padding-bottom:0!important}
+        .card .premium-footer{flex:0 0 auto!important;margin-top:0!important}
+      }
       ${premiumProTablet?`/* Premium Pro tablets only: fix the actual footer clone, not the hidden source links. */
       @media (min-width:768px) and (max-width:1199px) and (min-height:600px),
              (min-width:1200px) and (max-width:1366px) and (min-height:600px) and (pointer:coarse) {

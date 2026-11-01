@@ -1,3 +1,4 @@
+import {assertCodeAvailable,addressPublicUrl,publicCode,personalizedCode} from './custom-public-code';
 import {publicAnalyticsScript} from './public-analytics';
 import {cookieConsentSource} from './legal';
 import { createHash } from 'node:crypto';
@@ -46,8 +47,7 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       const prefix='AD'+countryConfiguration(countryCode).prefix+'-';
       const code=personalized?(personalized.startsWith(prefix)?personalized:prefix+personalized):prefix+'N'+numericCode;
       if(historicalCodes.includes(code))throw Error('CANONICAL_CODE_COLLISION');
-      const existing=await sql.unsafe('SELECT id::text FROM ad507.addresses WHERE upper(trim(code))=$1 AND id<>$2::uuid',[code,id]);
-      if(existing.length)throw Error('CANONICAL_CODE_COLLISION');
+      await assertCodeAvailable(sql,id,code);
       return code;
     },
     async publish({id,code,type}) {
@@ -64,7 +64,11 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
 }
 
 export async function newPublicAddress(sql:Sql,code:string,origin:string) {
-  const record=await getPublicAddressByCode(sql as any,code);if(!record)return null;
+  const matches=await sql.unsafe(`SELECT code FROM ad507.addresses WHERE source='USER_REQUEST' AND (lower(code)=lower($1) OR (request_data->'migration' IS NULL AND request_data->>'plan' IN ('BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO') AND (lower(request_data->>'publicCode')=lower($1) OR EXISTS(SELECT 1 FROM jsonb_array_elements_text(COALESCE(request_data->'codeAliases','[]'::jsonb)) alias WHERE lower(alias)=lower($1))))) LIMIT 2`,[code]);
+  if(matches.length>1)throw Error('CANONICAL_CODE_COLLISION');
+  if(!matches.length)return null;
+  const internalCode=matches[0].code;
+  const record=await getPublicAddressByCode(sql as any,internalCode);if(!record)return null;
   const rows=await sql.unsafe("SELECT a.id::text,a.request_data,a.country_code,a.address_type FROM ad507.addresses a WHERE a.code=$1 AND a.source='USER_REQUEST' AND a.publication_receipt IS NOT NULL",[record.code]);
   if(!rows.length)return null;
   if(!rows[0].request_data?.migration)assertCountryPublication(rows[0].country_code??rows[0].request_data?.countryCode??'PA',rows[0].address_type,rows[0].request_data?.plan);
@@ -72,7 +76,7 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   const mediaOrigin=new URL(proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)).origin;
   const urls=media.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
   const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
-  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:historical?.originalUrl??proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code),media:urls,publication:await getPublicationMetadataByCode(sql as any,code),extras:{historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
+  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:addressPublicUrl({...rows[0],code:record.code,source:'USER_REQUEST'}),media:urls,publication:await getPublicationMetadataByCode(sql as any,internalCode),extras:{publicCode:publicCode({...rows[0],code:record.code,source:'USER_REQUEST'}),historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
@@ -447,6 +451,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   if(record.media.some(m=>m.url===previewImage)){
     template=template.replace(/\\s*<meta property="og:image:(?:width|height)" content="[^"]*">/g,'');
   }
+  if(!record.extras.historical&&record.extras.publicCode&&record.extras.publicCode!==record.code)template=template.replace('const CODE = (pathCode || \"AD507-CODE\").toUpperCase();','const CODE = '+JSON.stringify(record.extras.publicCode)+';');
   // QR/share/copy must use the stored canonical URL, even on a preview host.
   // Only adapts this renderer; the historical template/files stay untouched.
   template=template.replaceAll('window.location.href',JSON.stringify(record.url).replaceAll('<','\\u003c'));
@@ -466,11 +471,13 @@ function configuredPublicCode(code:string):boolean {
 export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
   if(context.enabled&&req.method==='GET'){
-    const publicMatch=url.pathname.match(/^\/(AD[0-9]{2,3}-[A-Z0-9_-]+)\/$/);
+    const publicMatch=url.pathname.match(/^\/([A-Za-z0-9][A-Za-z0-9_-]{0,89})\/$/);
     const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)$/);
-    if((publicMatch||apiMatch)&&configuredPublicCode((publicMatch??apiMatch)![1])){
+    if(publicMatch&&!configuredPublicCode(publicMatch[1].toUpperCase())){try{personalizedCode('BUSINESS_PREMIUM_PRO',publicMatch[1]);}catch{return null;}}
+    if(publicMatch||apiMatch&&configuredPublicCode(apiMatch[1])){
       try{const code=(publicMatch??apiMatch)![1];
         const record=await newPublicAddress(sql,code,url.origin);
+        if(record&&publicMatch&&!record.extras.historical&&publicMatch[1]!==record.extras.publicCode)return new Response(null,{status:308,headers:{location:record.url,'cache-control':'no-store'}});
         if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
         // Owner-retired pages are permanently gone: do not fall back to historical
         // rendering, and let Google discover the 410 instead of a soft-404.

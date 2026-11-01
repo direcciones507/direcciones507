@@ -1,3 +1,4 @@
+import {CODE_NAMESPACE_LOCK,personalizedCode,assertCodeAvailable,verifyHistoricalCustomCode,addressPublicUrl} from './custom-public-code';
 import type { Sql } from 'postgres';
 import { validateRequestDraft, type RequestFile } from './request-validation';
 import { createR2Storage, type R2Settings } from './r2-storage';
@@ -31,10 +32,12 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
       return sql.unsafe(`SELECT id::text,action,actor_type AS "actorType",created_at AS "createdAt",before_json AS before,after_json AS after FROM ad507.audit_log WHERE entity_type='ADDRESS' AND entity_id=$1 AND action IN ('ADDRESS_EDITED','LOCATION_REQUESTED','LOCATION_APPROVED','LOCATION_REJECTED') ORDER BY id DESC LIMIT 100`,[id]);
     },
     async edit(actorId:string,id:string,raw:any,files:RequestFile[],admin:boolean) {
-      if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>!['version','name','reference','description','commercialDescription','phone','landlinePhone','hours','instagram','facebook','tiktok','latitude','longitude','retainMedia','newCover'].includes(k)))throw Error('INVALID_REQUEST');
+      if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(k=>!['version','namedCode','name','reference','description','commercialDescription','phone','landlinePhone','hours','instagram','facebook','tiktok','latitude','longitude','retainMedia','newCover'].includes(k)))throw Error('INVALID_REQUEST');
       const row=await access(sql,actorId,id,admin);
       if(raw.version!==row.version)throw Error('EDIT_CONFLICT');
       const before=await snapshot(sql,row),plan=row.request_data.plan;
+      const custom=raw.namedCode===undefined?null:personalizedCode(plan,raw.namedCode);
+      if(custom)await verifyHistoricalCustomCode(custom,options.fetch);
       const retained=raw.retainMedia??before.media.map((m:any)=>m.id);
       if(!Array.isArray(retained)||retained.some((id:any)=>typeof id!=='string'||!before.media.some((m:any)=>m.id===id&&m.upload_status==='READY'))||new Set(retained).size!==retained.length)throw Error('INVALID_MEDIA');
       const keep=retained.map((id:string)=>before.media.find((m:any)=>m.id===id));
@@ -68,19 +71,24 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
       if(raw.newCover){const index=nextMedia.findIndex(m=>uploaded.includes(m)&&m.media_type==='IMAGE');if(index<0)throw Error('INVALID_MEDIA');const [cover]=nextMedia.splice(index,1);const first=nextMedia.findIndex(m=>m.media_type==='IMAGE');nextMedia.splice(first<0?nextMedia.length:first,0,cover);}
       if(new Set(nextMedia.map(m=>m.storage_key??m.url)).size!==nextMedia.length)throw Error('DUPLICATE_MEDIA');
       return sql.begin(async tx=>{
+        if(custom)await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[CODE_NAMESPACE_LOCK]);
         const current=await access(tx,actorId,id,admin,true);if(current.version!==raw.version)throw Error('EDIT_CONFLICT');
-        const extras={...current.request_data,media:data.media,...(location?{pendingLocation:admin?null:location}:{})};
+        if(custom)await assertCodeAvailable(tx,id,custom);
+        const aliases=[...new Set([...(current.request_data.codeAliases??[]),...(custom&&current.request_data.publicCode?[current.request_data.publicCode]:[])])];
+        const extras={...current.request_data,...(custom?{namedCode:raw.namedCode,publicCode:custom,codeAliases:aliases}:{}),media:data.media,...(location?{pendingLocation:admin?null:location}:{})};
         await tx.unsafe(`UPDATE ad507.addresses SET name=$2,reference=$3,description=$4,commercial_description=$5,phone=$6,landline_phone=$7,hours=$8,latitude=$9,longitude=$10,request_data=$11::jsonb,updated_at=clock_timestamp() WHERE id=$1::uuid`,[id,data.name,data.reference,allowsDescription?data.description:current.description,plan==='BUSINESS_PREMIUM_PRO'?data.commercialDescription:current.commercial_description,data.phone,data.landlinePhone,data.hours,admin&&location?location.latitude:current.latitude,admin&&location?location.longitude:current.longitude,tx.json(extras)]);
-        await tx.unsafe('DELETE FROM ad507.address_socials WHERE address_id=$1::uuid',[id]);
-        for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[id,platform,url]);
+        if([...new Set([...Object.keys(data.socials),...Object.keys(oldSocials)])].some(key=>data.socials[key]!==oldSocials[key])){
+          await tx.unsafe('DELETE FROM ad507.address_socials WHERE address_id=$1::uuid',[id]);
+          for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[id,platform,url]);
+        }
         // Only associations change; immutable R2 objects are kept for history/recovery.
-        if(raw.retainMedia!==undefined||uploaded.length){
+        if(uploaded.length||raw.newCover||retained.length!==before.media.length||retained.some((mediaId:string,i:number)=>mediaId!==before.media[i].id)){
           await tx.unsafe('DELETE FROM ad507.address_media WHERE address_id=$1::uuid',[id]);
           for(const [i,m]of nextMedia.entries())await tx.unsafe(`INSERT INTO ad507.address_media(id,address_id,media_type,storage_key,url,position,is_primary,upload_status) VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,'READY')`,[m.id??crypto.randomUUID(),id,m.media_type,m.storage_key,m.url,i,nextMedia.findIndex(v=>v.media_type===m.media_type)===i]);
         }
         const updated=await access(tx,actorId,id,admin);await audit(tx,actorId,id,admin,'ADDRESS_EDITED',before,await snapshot(tx,updated));
         if(location)await audit(tx,actorId,id,admin,admin?'LOCATION_APPROVED':'LOCATION_REQUESTED',{latitude:current.latitude,longitude:current.longitude,pendingLocation:current.request_data.pendingLocation??null},admin?location:{pendingLocation:location});
-        return {id,code:current.code,status:current.status,version:updated.version};
+        return {id,code:current.code,publicCode:extras.publicCode??current.code,publicUrl:addressPublicUrl({...current,request_data:extras}),status:current.status,version:updated.version};
       });
     },
     async reviewLocation(actorId:string,id:string,raw:any,approved:boolean) {

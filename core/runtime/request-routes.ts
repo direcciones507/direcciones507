@@ -1,3 +1,4 @@
+import {personalizedCode,verifyHistoricalCustomCode,assertCodeAvailable} from './custom-public-code';
 import {requireLegalAcceptance} from './legal';
 import { createAddressEditing } from './address-editing';
 import type { Sql } from 'postgres';
@@ -38,6 +39,7 @@ export async function parseRequestForm(req:Request) {
 export async function handleRequestRoutes(req:Request,context:{enabled:boolean;sql:Sql;auth:Pick<ReturnType<typeof createGeneralAuth>,'currentUser'>;repository:ReturnType<typeof createRequestRepository>;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null> {
   const url=new URL(req.url),adminCreate=url.pathname==='/v1/admin/requests'&&req.method==='POST',submit=url.pathname==='/v1/user/requests'||adminCreate;
   const edit=url.pathname.match(/^\/v1\/(user|admin)\/requests\/([a-f0-9-]{36})\/(edit|history|location-approve|location-reject)$/);
+  const availability=url.pathname==='/v1/user/code-availability';
   const userDetail=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})$/);
   const userArchive=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/archive$/);
   const userMedia=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
@@ -45,7 +47,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
   const bridge=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/bridge$/);
   const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/)||userDetail;
   const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/)||userMedia;
-  if(!submit&&!action&&!detail&&!media&&!bridge&&!edit&&!userArchive)return null;
+  if(!submit&&!action&&!detail&&!media&&!bridge&&!edit&&!userArchive&&!availability)return null;
   const respond=(status:number,value:unknown)=>Response.json(value,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
   if(!context.enabled)return respond(503,{ok:false,error:'USER_PANEL_SUBMISSION_NOT_ENABLED'});
   if(req.method!==(submit||action||userArchive||(edit&&edit[3]!=='history')?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
@@ -56,9 +58,15 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==requestOrigin)||(req.headers.has('origin')&&req.headers.get('origin')!==requestOrigin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
     const canCreateCommercial=adminCreate&&user.roles.includes('COMMERCIAL');
-    if(!((submit&&!adminCreate||userDetail||userMedia||userArchive||edit?.[1]==='user')?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
+    if(!((submit&&!adminCreate||userDetail||userMedia||userArchive||availability||edit?.[1]==='user')?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [id,item]of limits)if(now-item.at>60000)limits.delete(id);
     const item=limits.get(user.id);if(item&&++item.count>20||!item&&limits.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)limits.set(user.id,{at:now,count:1});
+    if(availability){
+      const id=url.searchParams.get('id')??'00000000-0000-0000-0000-000000000000',plan=url.searchParams.get('plan')??'',name=url.searchParams.get('name')??'';
+      if(id!=='00000000-0000-0000-0000-000000000000'){const row=await context.repository.read(user.id,id);if(row.extras?.migration||!row.canEdit||row.extras?.plan!==plan)throw Error('FORBIDDEN');}
+      const code=personalizedCode(plan,name);await verifyHistoricalCustomCode(code,context.fetch);await assertCodeAvailable(context.sql,id,code);
+      return respond(200,{ok:true,available:true,code});
+    }
     if(userArchive)return respond(200,{ok:true,request:await archiveUnprocessedRequest(context.sql,user.id,userArchive[1])});
     if(edit){
       const editor=createAddressEditing(context.sql,{r2:context.r2,fetch:context.fetch}),isAdmin=edit[1]==='admin';

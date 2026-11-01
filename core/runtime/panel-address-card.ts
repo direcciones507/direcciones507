@@ -18,9 +18,9 @@ export function renderPanelAddressCard(a: Record<string, any>): string {
   return '<article class="address-card"'+(detail?' data-request="'+esc(a.id)+'"':'')+'>'+
     '<div class="address-top"><span class="address-kind">'+type+'</span><span class="badge address-status'+(a.status==='ACTIVE'?' is-active':'')+'">'+esc(a.workflow==='PAYMENT_PENDING'?'Pendiente de pago':a.status==='PENDING_REVIEW'&&['BUSINESS_FREE','PLACE'].includes(a.planCode)?'En revisión · Hasta 48 horas':labels[String(a.status)]||'En proceso')+'</span></div>'+
     '<h3 class="address-name">'+esc(a.name)+'</h3>'+plan+
-    (a.code?'<div class="address-code-row"><code class="address-code">'+esc(a.code)+'</code></div>':'')+
+    (a.code?'<div class="address-code-row"><code class="address-code">'+esc(a.displayCode||a.code)+'</code></div>':'')+
     '<div class="address-actions">'+
-    (a.code?'<button type="button" class="copy-code secondary" data-copy-code="'+esc(a.code)+'" aria-label="Copiar código de '+esc(a.name)+'">Copiar código</button>':'')+
+    (a.code?'<button type="button" class="copy-code secondary" data-copy-code="'+esc(a.displayCode||a.code)+'" aria-label="Copiar código de '+esc(a.name)+'">Copiar código</button>':'')+
     (url?'<a class="button address-open" href="'+esc(url)+'" target="_blank" rel="noopener">Abrir dirección digital <span aria-hidden="true">↗</span></a>':'')+
     (detail&&a.status==='ACTIVE'&&a.addressType!=='RESIDENTIAL'?'<button type="button" class="secondary" data-edit-address="'+esc(a.id)+'">Editar</button>':'')+
     (detail?'<div class="address-request-pair">'+

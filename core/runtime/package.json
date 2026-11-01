@@ -16,6 +16,7 @@
     "sharp": "0.34.5"
   },
   "devDependencies": {
-    "embedded-postgres": "18.1.0-beta.15"
+    "embedded-postgres": "18.1.0-beta.15",
+    "@electric-sql/pglite": "0.5.14"
   }
 }

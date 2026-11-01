@@ -114,6 +114,11 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       .card .white-sheet .public-lower-layout .actions-triple-row>#btnLandline:not([hidden]){display:flex!important}
       .card .white-sheet .public-lower-layout #btnLandline i{color:#dc2626!important}
       @media(max-width:767px){
+        .card .white-sheet .actions-triple-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+        .card .white-sheet .actions-triple-row:has(#btnLandline:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+        .card .white-sheet .actions-triple-row>.btn-action-triple{flex:none!important;grid-column:auto!important;grid-row:auto!important;order:0!important;width:100%!important;min-width:0!important;box-sizing:border-box!important}
+        .card .white-sheet .actions-triple-row>#btnLandline[hidden]{display:none!important}
+        .card .white-sheet .actions-triple-row>#btnLandline:not([hidden]){display:flex!important}
         .card .white-sheet .public-lower-layout .actions-triple-row{gap:8px!important}
         .card .white-sheet .public-lower-layout .actions-triple-row>.btn-action-triple{padding-inline:5px!important;overflow-wrap:anywhere}
       }

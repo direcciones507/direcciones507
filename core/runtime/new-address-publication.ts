@@ -414,9 +414,9 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
             let url;try{url=new URL(href);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)continue}catch{continue}
             const link=document.createElement('a');
             link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;link.dataset.social=label;
-            const icon=original.querySelector('svg');
+            const icon=original.querySelector('svg.tablet-social-glyph')||original.querySelector('svg.wide-card-icon');
             if(icon){
-              const glyph=icon.cloneNode(true);
+              const glyph=icon.cloneNode(true);glyph.classList.remove('tablet-social-glyph');glyph.classList.add('wide-card-icon');glyph.style.display='block';glyph.style.visibility='visible';
               // A cloned <use> needs its symbol's coordinate system; retain all hrefs.
               {
                 const reference=glyph.querySelector('use')?.getAttribute('href');

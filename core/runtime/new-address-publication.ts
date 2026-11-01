@@ -103,6 +103,22 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
     }
   }
+  // Premium only: 3 equal actions without landline, 2x2 when a landline exists.
+  // Keep existing DOM order, click handlers and phone icon; never reserve hidden slots.
+  if(!record.extras.historical && record.plan?.code==='BUSINESS_PREMIUM'){
+    template=template.replace('</head>',`<style id="premium-conditional-contact-grid">
+      .card .white-sheet .public-lower-layout .actions-triple-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+      .card .white-sheet .public-lower-layout .actions-triple-row:has(#btnLandline:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      .card .white-sheet .public-lower-layout .actions-triple-row>.btn-action-triple{grid-column:auto!important;grid-row:auto!important;order:0!important;width:100%!important;min-width:0!important;box-sizing:border-box!important}
+      .card .white-sheet .public-lower-layout .actions-triple-row>#btnLandline[hidden]{display:none!important}
+      .card .white-sheet .public-lower-layout .actions-triple-row>#btnLandline:not([hidden]){display:flex!important}
+      .card .white-sheet .public-lower-layout #btnLandline i{color:#dc2626!important}
+      @media(max-width:767px){
+        .card .white-sheet .public-lower-layout .actions-triple-row{gap:8px!important}
+        .card .white-sheet .public-lower-layout .actions-triple-row>.btn-action-triple{padding-inline:5px!important;overflow-wrap:anywhere}
+      }
+    </style></head>`);
+  }
   const esc=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
   if(record.type==='PLACE')template=template.replace("if(planComercial === 'premium pro' && descripcionComercial","if(descripcionComercial");
   if(record.type==='PLACE') {

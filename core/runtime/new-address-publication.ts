@@ -128,6 +128,8 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .card .identity-block #nombre{grid-column:2!important;grid-row:1!important;text-align:left!important;align-self:end!important;font-size:clamp(17px,4.4vw,25px)!important}
         .card .identity-block #codigo{grid-column:2!important;grid-row:2!important;text-align:left!important;align-self:start!important;font-size:clamp(12px,3.2vw,16px)!important}
         .card .identity-block #placeHeaderDescription{grid-column:1/-1!important;grid-row:3!important}
+        .card .white-sheet #placeHeaderDescription{order:-2!important;box-sizing:border-box;width:100%!important;padding:16px!important;border-radius:16px;border:1px solid rgba(96,165,250,.3);background:#12243b;color:#fff;white-space:pre-line}
+        .card .white-sheet #premiumGalleryContainer{order:0!important}
         .card .identity-block{padding:22px 18px!important}
         .card .identity-block #logoBox{margin:0 auto!important}
         .card .identity-block #placeHeaderDescription{margin-top:4px!important}

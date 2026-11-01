@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:boolean;fetch?:typeof fetch}):CanonicalPublication {
   return {
     historicalRegistryVerified:options.namespaceExclusive,
-    async reserve({id,countryCode='PA',type,plan,requestedName}) {
+    async reserve({id,countryCode='PA',type,plan,requestedName,executor=sql}) {
       assertCountryPublication(countryCode,type,plan);
       if(!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       // Canonical UUID layout makes removing separators injective: malformed
@@ -47,14 +47,14 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       const prefix='AD'+countryConfiguration(countryCode).prefix+'-';
       const code=personalized?(personalized.startsWith(prefix)?personalized:prefix+personalized):prefix+'N'+numericCode;
       if(historicalCodes.includes(code))throw Error('CANONICAL_CODE_COLLISION');
-      await assertCodeAvailable(sql,id,code);
+      await assertCodeAvailable(executor,id,code);
       return code;
     },
-    async publish({id,code,type}) {
+    async publish({id,code,type,executor=sql}) {
       // The existing PostgreSQL reader is the new system's publication destination.
       // No call to PLANES writes, GitHub Pages, Drive, DNS or historical generators.
       if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
-      const rows=await sql.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
+      const rows=await executor.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED'",[id,code]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
       if(!rows[0].request_data?.migration)assertCountryPublication(rows[0].country_code??rows[0].request_data?.countryCode??'PA',rows[0].address_type,rows[0].request_data?.plan);
       if(!rows[0].request_data?.migration&&!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');

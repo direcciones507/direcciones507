@@ -90,3 +90,12 @@ test('create and publish Premium/Pro with real reservation, synthetic storage an
  expect(outcomes.filter(r=>r.status==='fulfilled')).toHaveLength(1);expect(outcomes.filter(r=>r.status==='rejected')).toHaveLength(1);
  const counts=await sql.unsafe("SELECT count(*)::int AS count FROM ad507.orders");expect(counts[0].count).toBe(0);
 });
+
+test('reservation/publication reuse the locked connection instead of requesting another pool slot',async()=>{
+ const pool={unsafe:async()=>{throw Error('POOL_SLOT_MUST_NOT_BE_REQUESTED')}} as any;
+ const publisher=createNewAddressPublication(pool,{namespaceExclusive:true,fetch:fetcher});
+ const executor={unsafe:async(query:string)=>query.includes('SELECT id,request_data,address_type,country_code')?[{id,request_data:{plan:'BUSINESS_PREMIUM_PRO'},address_type:'BUSINESS',country_code:'PA'}]:[]} as any;
+ const code=await publisher.reserve({id,type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',name:'Synthetic',requestedName:'',executor});
+ expect(code).toMatch(/^AD507-N[0-9]{8}$/);
+ expect((await publisher.publish({id,type:'BUSINESS',code,executor})).confirmed).toBe(true);
+});

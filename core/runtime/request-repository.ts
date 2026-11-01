@@ -16,8 +16,8 @@ const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export type CanonicalPublication = {
   // Installed only after historical registry and the single previous allocator are verified.
   historicalRegistryVerified: true;
-  reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string})=>Promise<string>;
-  publish: (request:{id:string;code:string;type:string})=>Promise<{confirmed:true;receipt:string}>;
+  reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string;executor?:Pick<Sql,'unsafe'>})=>Promise<string>;
+  publish: (request:{id:string;code:string;type:string;executor?:Pick<Sql,'unsafe'>})=>Promise<{confirmed:true;receipt:string}>;
 };
 export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';paidWorkflow?:boolean}) {
   const actor=async(tx:any,id:string,role:string)=>{
@@ -239,11 +239,11 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           row.request_data={...row.request_data,publicCode:custom,codeAliases:[]};
           await session.unsafe('UPDATE ad507.addresses SET request_data=$2::jsonb WHERE id=$1::uuid',[row.id,session.json(row.request_data)]);
         }
-        const code=row.code??await options.canonical.reserve({id:row.id,type:row.address_type,plan:row.request_data.plan,name:row.name,requestedName:row.request_data.publicCode?'':row.request_data.namedCode,countryCode:row.country_code??'PA'});
+        const code=row.code??await options.canonical.reserve({id:row.id,type:row.address_type,plan:row.request_data.plan,name:row.name,requestedName:row.request_data.publicCode?'':row.request_data.namedCode,countryCode:row.country_code??'PA',executor:session});
         if(!codeMatchesCountry(code,row.country_code??'PA'))throw Error('CANONICAL_CODE_INVALID');
         if(!row.code)try{await session.unsafe("UPDATE ad507.addresses SET code=$2,updated_at=now() WHERE id=$1::uuid",[row.id,code]);}catch(error){if((error as {code?:string}).code==='23505')throw Error('CANONICAL_CODE_COLLISION');throw error;}
         // External allocator/publisher MUST deduplicate by this durable request id.
-        const published=await options.canonical.publish({id:row.id,code,type:row.address_type});
+        const published=await options.canonical.publish({id:row.id,code,type:row.address_type,executor:session});
         if(published.confirmed!==true||typeof published.receipt!=='string'||!published.receipt||published.receipt.length>300)throw Error('PUBLICATION_UNCONFIRMED');
         await session.unsafe('BEGIN');
         try {

@@ -340,6 +340,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   // Paid new business cards: relocate available social links to the center of the
   // tablet/desktop footer. Historical publications and mobile layout stay intact.
   if(!record.extras.historical && ['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(record.plan?.code??'')){
+    const premiumProTablet=record.plan?.code==='BUSINESS_PREMIUM_PRO';
     const footerSocialCss = `<style id="paid-business-footer-socials">
       @media(min-width:768px){
         .premium-footer{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px}
@@ -355,6 +356,25 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .premium-footer .footer-social-center svg{width:20px;height:20px;fill:currentColor}
         .public-lower-layout .public-social-section{display:none!important}
       }
+      ${premiumProTablet?`/* Premium Pro tablets only: fix the actual footer clone, not the hidden source links. */
+      @media (min-width:768px) and (max-width:1199px) and (min-height:600px),
+             (min-width:1200px) and (max-width:1366px) and (min-height:600px) and (pointer:coarse) {
+        .premium-footer .footer-social-center a[data-social]{background:none;border:0;border-radius:0;box-shadow:none}
+        .premium-footer .footer-social-center a[data-social="Instagram"]{color:#e1306c}
+        .premium-footer .footer-social-center a[data-social="Facebook"]{color:#1877f2}
+        .premium-footer .footer-social-center a[data-social="TikTok"]{color:#fff}
+        .premium-footer .footer-social-center svg.wide-card-icon{display:block;flex:none;width:28px;height:28px;fill:currentColor}
+        .card{min-height:0}
+        .card .code-header{padding-top:14px;padding-bottom:14px}
+        .card .identity-block{min-height:0;padding-top:12px;padding-bottom:12px}
+        .card .identity-block .title-details-header{align-items:center;justify-content:center;text-align:center}
+        .card .identity-block #nombre{order:1;width:100%;text-align:center}
+        .card .identity-block #codigo{order:2;width:100%;text-align:center}
+        .card .white-sheet{flex:0 0 auto;padding-top:14px;padding-bottom:12px;gap:14px}
+        .card .white-sheet #commercialDescription{display:none!important}
+        .card .white-sheet .public-lower-layout{padding-bottom:0}
+        .card .premium-footer{margin-top:0;padding-top:8px;padding-bottom:10px}
+      }`:''}
     </style>`;
     template=template.replace('</head>',footerSocialCss+'</head>');
     template=template.replace('</body>',`<script>
@@ -373,7 +393,16 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
             const link=document.createElement('a');
             link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;link.dataset.social=label;
             const icon=original.querySelector('svg');
-            if(icon)link.append(icon.cloneNode(true));else link.textContent=label;
+            if(icon){
+              const glyph=icon.cloneNode(true);
+              // A cloned <use> needs its symbol's coordinate system; retain all hrefs.
+              if(${premiumProTablet}){
+                const reference=glyph.querySelector('use')?.getAttribute('href');
+                const symbol=reference?.startsWith('#')?document.getElementById(reference.slice(1)):null;
+                if(symbol?.getAttribute('viewBox'))glyph.setAttribute('viewBox',symbol.getAttribute('viewBox'));
+              }
+              link.append(glyph);
+            }else link.textContent=label;
             center.append(link);
           }
           footer.insertBefore(center,footer.querySelector('.footer-secure-side'));

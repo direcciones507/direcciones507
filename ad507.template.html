@@ -1688,7 +1688,8 @@
     }
     /* Compact phone gallery status: keep the desktop pill proportions. */
     @media (max-width:767px) {
-      .gallery-heading-row { align-items:center; gap:6px; }
+      .gallery-heading-row { align-items:baseline; gap:6px; }
+      .gallery-heading-row #galleryBusinessStatus { transform:translateY(-5px); }
       .gallery-heading-row #galleryBusinessStatus {
         display:inline-flex !important; width:max-content !important;
         max-width:100%; flex:0 1 auto; align-self:center;

@@ -1704,6 +1704,41 @@
         height:6px !important;
       }
     }
+    /* Tablet gallery: uniform images, continuous horizontal scrolling. */
+    @media (min-width:768px) {
+      #galeriaFotos.negocio-galeria {
+        display:flex !important; flex-flow:row nowrap !important;
+        overflow-x:auto !important; overflow-y:hidden !important;
+        gap:12px !important; scroll-snap-type:x proximity;
+        overscroll-behavior-x:contain; touch-action:pan-x pan-y;
+        scrollbar-width:thin; cursor:grab;
+      }
+      #galeriaFotos.negocio-galeria:active { cursor:grabbing; }
+      #galeriaFotos.negocio-galeria img,
+      #galeriaFotos.negocio-galeria img:first-child {
+        flex:0 0 clamp(200px,27%,300px) !important;
+        width:clamp(200px,27%,300px) !important;
+        height:230px !important; object-fit:cover !important;
+        border-radius:18px !important; scroll-snap-align:start;
+      }
+      .card .white-sheet .public-lower-layout {
+        grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+        align-items:start; gap:18px;
+      }
+      .card .white-sheet .public-business-info {
+        width:100% !important; box-sizing:border-box;
+        padding:14px 18px !important;
+      }
+      .card .white-sheet .public-business-info .accordion-item {
+        min-height:62px !important; padding:10px 0 !important;
+      }
+      .card .white-sheet .public-business-info .premium-qr-postal-row {
+        gap:10px !important; margin:0 !important;
+      }
+      .card .white-sheet .public-business-info .premium-qr-postal-row > * {
+        min-height:62px !important; padding:10px 0 !important;
+      }
+    }
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }
@@ -1973,6 +2008,27 @@
 </script>
 <script>
 /* On phones keep only QR and postal side-by-side, without moving statistics. */
+document.addEventListener('DOMContentLoaded',()=>{
+  const gallery=document.getElementById('galeriaFotos');
+  if(!gallery)return;
+  let startX=0, startScroll=0, dragging=false, moved=false;
+  gallery.addEventListener('pointerdown',e=>{
+    if(e.pointerType!=='mouse'||e.button!==0||innerWidth<768)return;
+    dragging=true; moved=false; startX=e.clientX; startScroll=gallery.scrollLeft;
+  });
+  gallery.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const delta=e.clientX-startX;
+    if(Math.abs(delta)>5){moved=true; gallery.scrollLeft=startScroll-delta;}
+  });
+  const stop=()=>{dragging=false;};
+  gallery.addEventListener('pointerup',stop);
+  gallery.addEventListener('pointercancel',stop);
+  gallery.addEventListener('pointerleave',stop);
+  gallery.addEventListener('click',e=>{
+    if(moved){e.stopImmediatePropagation();e.preventDefault();moved=false;}
+  },true);
+});
 document.addEventListener('DOMContentLoaded',()=>{
   const phone=matchMedia('(max-width:767px)');
   const gallery=document.getElementById('premiumGalleryContainer');

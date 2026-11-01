@@ -1533,6 +1533,26 @@
       .premium-qr-postal-row #qrSection { grid-column:1/-1; }
     }
 
+
+    /* Tablet: social icons visible and QR/postal in one compact row. */
+    @media (min-width:768px) and (max-width:1199px) {
+      .card .white-sheet .public-lower-layout .btn-social-quad i { display:inline-flex; align-items:center; justify-content:center; font-size:0 !important; width:23px; height:23px; }
+      .card .white-sheet .public-lower-layout .btn-social-quad .wide-card-icon { display:block !important; width:21px; height:21px; fill:currentColor; }
+      .card .white-sheet .public-lower-layout .btn-social-quad.ig i { color:#d62976; }
+      .card .white-sheet .public-lower-layout .btn-social-quad.tk i { color:#fff; }
+      .card .white-sheet .public-lower-layout .btn-social-quad.fb i { color:#1877f2; }
+      .premium-qr-postal-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:10px 0; align-items:stretch; }
+      .premium-qr-postal-row > #codigoPostalContainer,.premium-qr-postal-row > #btnQR { display:flex !important; width:100% !important; min-width:0; margin:0; padding:10px !important; min-height:76px; border-bottom:0 !important; }
+      .premium-qr-postal-row .accordion-content-text { min-width:0; }
+      .premium-qr-postal-row .accordion-value { overflow-wrap:anywhere; }
+    }
+    /* Phone: business name first, generated address code beneath it. */
+    @media (max-width:767px) {
+      .title-details-header { display:flex; flex-direction:column; }
+      .title-details-header #nombre { order:-1; color:#fff; font-size:21px; font-weight:900; line-height:1.2; margin-bottom:5px; overflow-wrap:anywhere; }
+      .title-details-header #codigo { order:1; color:#a9c0d8; font-size:13px; font-weight:600; letter-spacing:0; }
+    }
+
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }
@@ -1803,7 +1823,7 @@
 <script>
 /* On phones keep only QR and postal side-by-side, without moving statistics. */
 document.addEventListener('DOMContentLoaded',()=>{
-  const mobile=matchMedia('(max-width:767px)');
+  const mobile=matchMedia('(max-width:1199px)');
   const postal=document.getElementById('codigoPostalContainer');
   const qr=document.getElementById('btnQR');
   if(!postal||!qr)return;

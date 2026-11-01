@@ -70,7 +70,7 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
       const nextMedia=[...keep,...uploaded];
       if(raw.newCover){const index=nextMedia.findIndex(m=>uploaded.includes(m)&&m.media_type==='IMAGE');if(index<0)throw Error('INVALID_MEDIA');const [cover]=nextMedia.splice(index,1);const first=nextMedia.findIndex(m=>m.media_type==='IMAGE');nextMedia.splice(first<0?nextMedia.length:first,0,cover);}
       if(new Set(nextMedia.map(m=>m.storage_key??m.url)).size!==nextMedia.length)throw Error('DUPLICATE_MEDIA');
-      const saved=await sql.begin(async tx=>{
+      return sql.begin(async tx=>{
         if(custom)await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[CODE_NAMESPACE_LOCK]);
         const current=await access(tx,actorId,id,admin,true);if(current.version!==raw.version)throw Error('EDIT_CONFLICT');
         if(custom)await assertCodeAvailable(tx,id,custom);
@@ -81,7 +81,7 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
           await tx.unsafe('DELETE FROM ad507.address_socials WHERE address_id=$1::uuid',[id]);
           for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[id,platform,url]);
         }
-        // Update active media associations; obsolete R2 objects are deleted after commit.
+        // Only associations change; immutable R2 objects are kept for history/recovery.
         if(uploaded.length||raw.newCover||retained.length!==before.media.length||retained.some((mediaId:string,i:number)=>mediaId!==before.media[i].id)){
           await tx.unsafe('DELETE FROM ad507.address_media WHERE address_id=$1::uuid',[id]);
           for(const [i,m]of nextMedia.entries())await tx.unsafe(`INSERT INTO ad507.address_media(id,address_id,media_type,storage_key,url,position,is_primary,upload_status) VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,'READY')`,[m.id??crypto.randomUUID(),id,m.media_type,m.storage_key,m.url,i,nextMedia.findIndex(v=>v.media_type===m.media_type)===i]);
@@ -90,39 +90,6 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
         if(location)await audit(tx,actorId,id,admin,admin?'LOCATION_APPROVED':'LOCATION_REQUESTED',{latitude:current.latitude,longitude:current.longitude,pendingLocation:current.request_data.pendingLocation??null},admin?location:{pendingLocation:location});
         return {id,code:current.code,publicCode:extras.publicCode??current.code,publicUrl:addressPublicUrl({...current,request_data:extras}),status:current.status,version:updated.version};
       });
-      // After the database commit, delete replaced objects no longer referenced by any address.
-      // Failures are recorded for cleanup without rolling back a successful edit.
-      if(options.r2){
-        const removed=before.media.filter((m:any)=>m.storage_key&&!nextMedia.some(n=>n.storage_key===m.storage_key));
-        if(removed.length){
-          const storage=createR2Storage(options.r2,{fetch:options.fetch,
-            authorize:async scope=>scope.ownerId===actorId&&scope.addressId===id&&scope.action==='delete'&&!!scope.storageKey,
-            registerIntent:async()=>{}});
-          for(const m of removed){
-            // Serialize cleanup of this object key across concurrent edits.
-            const inUse=await sql.begin(async tx=>{
-              await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[m.storage_key]);
-              return tx.unsafe('SELECT 1 FROM ad507.address_media WHERE storage_key=$1 LIMIT 1',[m.storage_key]);
-            });
-            if(inUse.length)continue;
-            let lastError:unknown;
-            for(let attempt=0;attempt<3;attempt++){
-              try{
-                await storage.deletePrivate({ownerId:actorId,addressId:id,role:m.media_type==='LOGO'?'logo':'photo',countryCode:row.country_code,storageKey:m.storage_key});
-                lastError=undefined;
-                break;
-              }catch(error){lastError=error;}
-            }
-            if(lastError){
-              await audit(sql,actorId,id,admin,'EDIT_MEDIA_DELETE_FAILED',null,{storageKey:m.storage_key,error:String(lastError)});
-              // Do not claim cleanup succeeded. Keep a durable key for a later retry.
-              throw Error('R2_DELETE_FAILED');
-            }
-            await audit(sql,actorId,id,admin,'EDIT_MEDIA_DELETED',null,{storageKey:m.storage_key});
-          }
-        }
-      }
-      return saved;
     },
     async reviewLocation(actorId:string,id:string,raw:any,approved:boolean) {
       if(!raw||typeof raw.version!=='string'||typeof raw.requestId!=='string'||Object.keys(raw).some(k=>!['version','requestId'].includes(k)))throw Error('INVALID_REQUEST');

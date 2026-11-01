@@ -103,6 +103,18 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
     }
   }
+  // Place-only advertising preview. No checkout, account entry, or booking is enabled yet.
+  if(!record.extras.historical && record.type==='PLACE'){
+    template=template.replace('</head>',`<style id="place-ad-preview-style">
+      #codigoPostalContainer{display:none!important}
+      .place-ad-preview{margin:20px 0;padding:20px;border:1px solid #355273;border-radius:18px;background:#13253e;color:#f4f8ff;text-align:center}
+      .place-ad-preview strong{display:block;font-size:18px;margin-bottom:6px}
+      .place-ad-preview p{margin:5px 0;color:#cbd5e1}
+      .place-ad-preview .place-ad-price{font-size:20px;font-weight:700;color:#fff}
+      .place-ad-preview .place-ad-coming{display:inline-block;margin-top:12px;padding:10px 22px;border-radius:12px;background:#263b56;color:#fff;font-weight:700}
+    </style></head>`);
+    template=template.replace('<section id="commercialDescription"',`<aside class="place-ad-preview" aria-label="Publicidad próximamente"><strong>Anuncia tu negocio aquí</strong><p>Publicidad en este Lugar</p><p class="place-ad-price">$8.99 por 30 días</p><span class="place-ad-coming">Próximamente</span></aside><section id="commercialDescription"`);
+  }
   // Place only: compact visible actions and navigation without empty grid cells.
   if(!record.extras.historical && record.type==='PLACE'){
     template=template.replace('</head>',`<style id="place-conditional-button-grid">

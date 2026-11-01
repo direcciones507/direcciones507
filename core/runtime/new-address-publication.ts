@@ -103,6 +103,12 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
     }
   }
+  // Free business: display WhatsApp as the only phone contact.
+  // Paid plans, Places and historical pages are unchanged.
+  if(!record.extras.historical && record.type==='BUSINESS' && !['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(record.plan?.code??'')){
+    data.telefonoFijo=null;
+    template=template.replace('</head>',`<style id="free-business-whatsapp-only">#btnCall,#btnLandline{display:none!important}</style></head>`);
+  }
   // New free businesses and Places do not offer postal-code information.
   // Remove only the rendered postal card; premium plans and historical pages are untouched.
   if(!record.extras.historical && (record.type==='PLACE' || (record.type==='BUSINESS' && record.plan?.code!=='BUSINESS_PREMIUM' && record.plan?.code!=='BUSINESS_PREMIUM_PRO'))){

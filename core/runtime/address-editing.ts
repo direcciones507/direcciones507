@@ -111,9 +111,10 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
             }
             if(lastError){
               await audit(sql,actorId,id,admin,'EDIT_MEDIA_DELETE_FAILED',null,{storageKey:m.storage_key,error:String(lastError)});
-              // Never report complete cleanup when an obsolete R2 object still exists.
+              // Do not claim cleanup succeeded. Keep a durable key for a later retry.
               throw Error('R2_DELETE_FAILED');
             }
+            await audit(sql,actorId,id,admin,'EDIT_MEDIA_DELETED',null,{storageKey:m.storage_key});
           }
         }
       }

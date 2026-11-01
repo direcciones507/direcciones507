@@ -1658,6 +1658,13 @@
       }
     }
 
+    /* Phone only: show live hours next to Gallery heading and description after photos. */
+    @media (max-width:767px) {
+      .gallery-heading-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+      .gallery-heading-row #galleryBusinessStatus { display:flex !important; align-items:center; gap:8px; min-height:0; margin:0; padding:6px 9px; font-size:11px; }
+      #premiumGalleryContainer > #commercialDescription.is-visible { display:block !important; width:100%; box-sizing:border-box; margin:14px 0 0 !important; padding:14px 16px !important; }
+      #premiumGalleryContainer > #commercialDescription .commercial-description-text { font-family:inherit !important; font-size:14px !important; font-weight:600 !important; line-height:1.5 !important; }
+    }
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }
@@ -1927,6 +1934,20 @@
 </script>
 <script>
 /* On phones keep only QR and postal side-by-side, without moving statistics. */
+document.addEventListener('DOMContentLoaded',()=>{
+  const phone=matchMedia('(max-width:767px)');
+  const gallery=document.getElementById('premiumGalleryContainer');
+  const description=document.getElementById('commercialDescription');
+  if(!gallery||!description)return;
+  const originalSlot=document.createComment('description original position');
+  description.before(originalSlot);
+  const place=()=>{
+    if(phone.matches)gallery.append(description);
+    else originalSlot.after(description);
+  };
+  place();
+  phone.addEventListener('change',place);
+});
 document.addEventListener('DOMContentLoaded',()=>{
   const mobile=matchMedia('(min-width:0px)');
   const postal=document.getElementById('codigoPostalContainer');

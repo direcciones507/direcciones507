@@ -131,6 +131,13 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .card .white-sheet .public-lower-layout{order:0!important}
       }
       @media(min-width:1200px){.card .identity-block{grid-template-columns:250px minmax(0,1fr)!important}}
+      /* Place tablet only: align title/code above description to the right of the unchanged logo. */
+      @media(min-width:768px) and (max-width:1199px){
+        .card .identity-block #logoBox{grid-column:1!important;grid-row:1 / span 3!important;align-self:center!important}
+        .card .identity-block #nombre{grid-column:2!important;grid-row:1!important;justify-self:stretch!important;text-align:center!important;align-self:end!important}
+        .card .identity-block #codigo{grid-column:2!important;grid-row:2!important;justify-self:stretch!important;text-align:center!important;align-self:start!important}
+        .card .identity-block #commercialDescription{grid-column:2!important;grid-row:3!important;align-self:start!important}
+      }
       @media(max-width:767px){
         .card .identity-block{display:grid!important;grid-template-columns:minmax(0,132px) minmax(0,1fr)!important;gap:10px 16px!important;padding:22px 18px!important;text-align:left!important}
         .card .identity-block #logoBox{grid-column:1!important;grid-row:1 / span 2!important;justify-self:start!important;width:100%!important;margin:0!important}

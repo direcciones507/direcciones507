@@ -253,7 +253,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           if(automatic?!automaticPaidStateAllowed(current[0]):!['PENDING_REVIEW',...(row.request_data?.migration?['SUSPENDED']:[])].includes(current[0]?.status)||current[0]?.review_decision!=='APPROVED')throw Error('PUBLICATION_STATE_CONFLICT');
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
           if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
-          await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,request_data=jsonb_set(request_data,'{workflow}','"PUBLISHED"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
+          await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,request_data=jsonb_set(request_data,'{workflow}',to_jsonb('PUBLISHED'::text)),updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}
         return {id:row.id,code,status:'ACTIVE',receipt:published.receipt};

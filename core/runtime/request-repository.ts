@@ -145,6 +145,10 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const owners=await sql.unsafe("SELECT user_id::text FROM ad507.address_ownership WHERE address_id=$1::uuid AND ownership_role='OWNER'",[addressId]);
       const media=await sql.unsafe('SELECT id::text,media_type AS type,url,position,upload_status AS status FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position,id',[addressId]);
       const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
+      if(rows[0].status!=='ACTIVE'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(rows[0].extras?.plan)){
+        const confirmed=await sql.unsafe("SELECT 1 FROM ad507.orders WHERE address_id=$1::uuid AND status='PAID' AND confirmed_at IS NOT NULL AND payment_environment=$2 AND payment_plan=$3 LIMIT 1",[addressId,options.paymentEnvironment??'production',rows[0].extras.plan]);
+        if(confirmed.length)rows[0].extras={...rows[0].extras,workflow:'PAYMENT_CONFIRMED'};
+      }
       const {publicationReceipt,...record}=rows[0];
       const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?addressPublicUrl({code:record.code,source:'USER_REQUEST',country_code:record.countryCode,request_data:record.extras}):null;
       return {...record,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};

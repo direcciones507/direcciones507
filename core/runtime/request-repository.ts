@@ -145,7 +145,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const owners=await sql.unsafe("SELECT user_id::text FROM ad507.address_ownership WHERE address_id=$1::uuid AND ownership_role='OWNER'",[addressId]);
       const media=await sql.unsafe('SELECT id::text,media_type AS type,url,position,upload_status AS status FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position,id',[addressId]);
       const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
-      if(rows[0].status!=='ACTIVE'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(rows[0].extras?.plan)){
+      if(rows[0].status!=='ACTIVE'&&rows[0].extras?.plan==='BUSINESS_PREMIUM'){
         const confirmed=await sql.unsafe("SELECT 1 FROM ad507.orders WHERE address_id=$1::uuid AND status='PAID' AND confirmed_at IS NOT NULL AND payment_environment=$2 AND payment_plan=$3 LIMIT 1",[addressId,options.paymentEnvironment??'production',rows[0].extras.plan]);
         if(confirmed.length)rows[0].extras={...rows[0].extras,workflow:'PAYMENT_CONFIRMED'};
       }

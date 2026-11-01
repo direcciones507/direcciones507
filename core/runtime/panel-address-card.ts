@@ -16,7 +16,7 @@ export function renderPanelAddressCard(a: Record<string, any>): string {
   const image = https(a.imageUrl), url = https(a.publicUrl);
   const plan = a.planName && String(a.planName).toLocaleLowerCase() !== type.toLocaleLowerCase() ? '<span class="address-plan">'+esc(a.planName)+'</span>' : '';
   return '<article class="address-card"'+(detail?' data-request="'+esc(a.id)+'"':'')+'>'+
-    '<div class="address-top"><span class="address-kind">'+type+'</span><span class="badge address-status'+(a.status==='ACTIVE'?' is-active':'')+'">'+esc(a.workflow==='PAYMENT_PENDING'?'Pendiente de pago':a.status==='PENDING_REVIEW'&&['BUSINESS_FREE','PLACE'].includes(a.planCode)?'En revisión · Hasta 48 horas':labels[String(a.status)]||'En proceso')+'</span></div>'+
+    '<div class="address-top"><span class="address-kind">'+type+'</span><span class="badge address-status'+(a.status==='ACTIVE'?' is-active':'')+'">'+esc(a.status==='ACTIVE'?'Activa':a.workflow==='PAYMENT_CONFIRMED'?'Pago confirmado, publicación pendiente':a.workflow==='PAYMENT_PENDING'?'Pendiente de pago':a.status==='PENDING_REVIEW'&&['BUSINESS_FREE','PLACE'].includes(a.planCode)?'En revisión · Hasta 48 horas':labels[String(a.status)]||'En proceso')+'</span></div>'+
     '<h3 class="address-name">'+esc(a.name)+'</h3>'+plan+
     (a.code?'<div class="address-code-row"><code class="address-code">'+esc(a.displayCode||a.code)+'</code></div>':'')+
     '<div class="address-actions">'+

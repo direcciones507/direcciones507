@@ -103,17 +103,29 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
     }
   }
-  // Place-only presentation: centered name and description above gallery, ad in the former description area.
+  // Place only: keep Premium Pro untouched. Logo left, name and description alongside it;
+  // the former description slot below the header is reserved for the ad preview.
   if(!record.extras.historical && record.type==='PLACE'){
     template=template.replace('</head>',`<style id="place-presentation-layout">
-      .card .identity-block{display:flex!important;flex-direction:column!important;align-items:center!important;gap:12px!important;text-align:center!important}
+      .card .identity-block{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;align-items:center!important;text-align:center!important}
       .card .identity-block .title-details-header{display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important;width:100%!important;padding:0!important}
-      .card .identity-block #nombre{text-align:center!important;max-width:100%!important}
+      .card .identity-block #nombre{text-align:center!important;overflow-wrap:anywhere}
+      .card .identity-block #placeHeaderDescription{width:100%;box-sizing:border-box;margin-top:12px;padding:16px;border-radius:16px;border:1px solid rgba(96,165,250,.3);background:#12243b;color:#fff;text-align:left;white-space:pre-line;line-height:1.5}
       .card .white-sheet{display:flex;flex-direction:column}
-      .card .white-sheet #commercialDescription.is-visible{order:-3!important;width:100%;box-sizing:border-box;margin:0 0 16px!important}
+      .card .white-sheet #commercialDescription{display:none!important}
+      .card .white-sheet .place-ad-preview{order:-3!important;margin:0 0 16px!important}
       .card .white-sheet #premiumGalleryContainer{order:-2!important}
-      .card .white-sheet .place-ad-preview{order:-1!important;margin:12px 0 20px!important}
+      @media(min-width:768px){
+        .card .identity-block{grid-template-columns:210px minmax(0,1fr)!important;gap:24px!important;text-align:left!important}
+        .card .identity-block .title-details-header{align-items:flex-start!important;text-align:left!important}
+        .card .identity-block #nombre{text-align:left!important}
+      }
+      @media(min-width:1200px){.card .identity-block{grid-template-columns:250px minmax(0,1fr)!important}}
     </style></head>`);
+    template=template.replace('<div class="white-sheet">',`<div class="white-sheet">`);
+    template=template.replace('<section id="commercialDescription"',`<section id="commercialDescription"`);
+    // Reuse the already-rendered description text without duplicating user data or changing template scripts.
+    template=template.replace('</body>',`<script>(function(){function movePlaceDescription(){var source=document.getElementById('commercialDescriptionText');var title=document.querySelector('.identity-block .title-details-header');if(!source||!title)return;var value=source.textContent&&source.textContent.trim();if(!value)return;var target=document.getElementById('placeHeaderDescription');if(!target){target=document.createElement('div');target.id='placeHeaderDescription';title.appendChild(target)}target.textContent=value;}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',movePlaceDescription);else movePlaceDescription();window.addEventListener('load',movePlaceDescription);})()</script></body>`);
   }
   // Place-only advertising preview. No checkout, account entry, or booking is enabled yet.
   if(!record.extras.historical && record.type==='PLACE'){

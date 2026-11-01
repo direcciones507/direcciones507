@@ -352,11 +352,11 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
     const premiumProTablet=record.plan?.code==='BUSINESS_PREMIUM_PRO';
     const footerSocialCss = `<style id="paid-business-footer-socials">
       @media(min-width:768px){
-        .premium-footer{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:16px}
+        .premium-footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:center}
         .premium-footer .footer-brand-side{justify-self:start}
-        .premium-footer .footer-secure-side{justify-self:end}
-        .premium-footer .footer-social-center{display:flex;align-items:center;justify-content:center;gap:12px}
-        .premium-footer .footer-social-center:empty{display:none}
+        .premium-footer .footer-secure-side{grid-column:3;justify-self:end;text-align:right}
+        .premium-footer .footer-social-center{grid-column:2;display:flex;align-items:center;justify-content:center;gap:12px}
+        .premium-footer .footer-social-center:empty{visibility:hidden}
         .premium-footer .footer-social-center a{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:#182a43;color:#fff;text-decoration:none;border:1px solid #46617d}
         .premium-footer .footer-social-center a[data-social="Facebook"]{background:#1877f2;border-color:#1877f2;color:#fff}
         .premium-footer .footer-social-center a[data-social="Instagram"]{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);border-color:#d62976;color:#fff}
@@ -429,7 +429,8 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           }
           footer.insertBefore(center,footer.querySelector('.footer-secure-side'));
         }
-        window.addEventListener('load',placeFooterSocials,{once:true});
+        placeFooterSocials();
+        window.addEventListener('load',()=>{document.querySelector('.premium-footer .footer-social-center')?.remove();placeFooterSocials()},{once:true});
         // Social links are populated asynchronously by the template after load.
         // Reconcile clones when hrefs arrive, rather than cloning empty links.
         const sourceSocials=document.getElementById('redes-container');

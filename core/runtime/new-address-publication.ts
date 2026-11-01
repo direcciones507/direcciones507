@@ -108,10 +108,10 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
     template=template.replace('</head>',`<style id="place-conditional-button-grid">
       @media(min-width:768px){
         .card .white-sheet .actions-triple-row{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
-        .card .white-sheet .actions-triple-row:has(>.btn-action-triple:not([hidden]):nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+        .card .white-sheet .actions-triple-row:has(#btnCall:not([hidden])):has(#btnLandline:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))!important}
         .card .white-sheet .actions-triple-row>.btn-action-triple{grid-column:auto!important;grid-row:auto!important;order:0!important;width:100%!important;box-sizing:border-box!important}
         .card .white-sheet .actions-triple-row>.btn-action-triple[hidden]{display:none!important}
-        .card .white-sheet .main-nav-grid:has(>.nav-box:not([hidden]):nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+        .card .white-sheet .main-nav-grid:has(>.nav-box[hidden]){grid-template-columns:repeat(3,minmax(0,1fr))!important}
         .card .white-sheet .main-nav-grid>.nav-box[hidden]{display:none!important}
       }
     </style></head>`);

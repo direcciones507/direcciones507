@@ -99,7 +99,11 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
             authorize:async scope=>scope.ownerId===actorId&&scope.addressId===id&&scope.action==='delete'&&!!scope.storageKey,
             registerIntent:async()=>{}});
           for(const m of removed){
-            const inUse=await sql.unsafe('SELECT 1 FROM ad507.address_media WHERE storage_key=$1 LIMIT 1',[m.storage_key]);
+            // Serialize cleanup of this object key across concurrent edits.
+            const inUse=await sql.begin(async tx=>{
+              await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[m.storage_key]);
+              return tx.unsafe('SELECT 1 FROM ad507.address_media WHERE storage_key=$1 LIMIT 1',[m.storage_key]);
+            });
             if(inUse.length)continue;
             let lastError:unknown;
             for(let attempt=0;attempt<3;attempt++){

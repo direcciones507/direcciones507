@@ -1630,13 +1630,15 @@
       width:22px !important; height:22px !important;
       fill:currentColor !important; opacity:1 !important;
     }
-    /* Same typography as the hours value, preserving approved description color. */
-    .white-sheet .commercial-description.is-visible .commercial-description-text {
-      font-family:inherit !important;
-      font-size:14px !important;
-      font-weight:600 !important;
-      line-height:1.5 !important;
-      letter-spacing:normal !important;
+    /* Description typography change applies ONLY to phones. */
+    @media (max-width:767px) {
+      .white-sheet .commercial-description.is-visible .commercial-description-text {
+        font-family:inherit !important;
+        font-size:14px !important;
+        font-weight:600 !important;
+        line-height:1.5 !important;
+        letter-spacing:normal !important;
+      }
     }
 
     /* Legibilidad institucional: encabezado y pie de ficha pública. */

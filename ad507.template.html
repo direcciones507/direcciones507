@@ -1764,6 +1764,29 @@
         padding-left:0 !important;
       }
     }
+    /* Tablet alignment: QR icon flush with hours/reference; panel ends at WhatsApp. */
+    @media (min-width:768px) {
+      .card .white-sheet .public-lower-layout {
+        align-items:start !important;
+      }
+      .card .white-sheet .public-business-info {
+        align-self:start !important;
+        min-height:0 !important;
+        padding:15px 22px !important;
+      }
+      .card .white-sheet .public-business-info > .accordion-item,
+      .card .white-sheet .public-business-info .premium-qr-postal-row > .accordion-item {
+        min-height:70px !important;
+        padding-top:11px !important;
+        padding-bottom:11px !important;
+      }
+      .card .white-sheet .public-business-info #btnQR {
+        padding-left:0 !important;
+      }
+      .card .white-sheet .public-business-info .double-row-buttons {
+        padding-left:0 !important; margin-left:0 !important;
+      }
+    }
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }

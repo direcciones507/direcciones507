@@ -103,7 +103,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
     }
   }
-  // Place-only layout. Header name/code stay centered above logo and description.
+  // Place only: use the original description element exactly once, never clone its text.
   if(!record.extras.historical && record.type==='PLACE'){
     template=template.replace('</head>',`<style id="place-presentation-layout">
       .card .identity-block{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important;align-items:center!important;text-align:center!important}
@@ -111,32 +111,31 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       .card .identity-block #nombre{grid-row:1!important;grid-column:1/-1!important;text-align:center!important;overflow-wrap:anywhere;margin:0!important}
       .card .identity-block #codigo{grid-row:2!important;grid-column:1/-1!important;text-align:center!important;margin:0!important}
       .card .identity-block #logoBox{grid-row:3!important;grid-column:1!important;justify-self:center!important}
-      .card .identity-block #placeHeaderDescription{grid-row:4!important;grid-column:1!important;box-sizing:border-box;width:100%!important;margin:0!important;padding:16px!important;border-radius:16px;border:1px solid rgba(96,165,250,.3);background:#12243b;color:#fff;text-align:left;white-space:pre-line;line-height:1.5}
-      .card .white-sheet #commercialDescription{display:none!important}
+      .card .identity-block #commercialDescription{grid-row:4!important;grid-column:1!important;box-sizing:border-box;width:100%!important;margin:0!important;padding:16px!important;border-radius:16px;border:1px solid rgba(96,165,250,.3);background:#12243b;color:#fff;text-align:left;white-space:pre-line;line-height:1.5}
+      .card .white-sheet{display:flex!important;flex-direction:column!important}
       .card .white-sheet .place-ad-preview{order:-3!important;margin:0 0 16px!important}
-      .card .white-sheet #premiumGalleryContainer{order:-2!important}
+      .card .white-sheet #premiumGalleryContainer{order:0!important}
+      .card .white-sheet .public-lower-layout{order:-1!important}
       @media(min-width:768px){
         .card .identity-block{grid-template-columns:210px minmax(0,1fr)!important;gap:16px 24px!important}
         .card .identity-block #logoBox{grid-row:3!important;grid-column:1!important}
-        .card .identity-block #placeHeaderDescription{grid-row:3!important;grid-column:2!important;align-self:center!important}
+        .card .identity-block #commercialDescription{grid-row:3!important;grid-column:2!important;align-self:center!important}
+        .card .white-sheet #premiumGalleryContainer{order:-2!important}
+        .card .white-sheet .public-lower-layout{order:0!important}
       }
       @media(min-width:1200px){.card .identity-block{grid-template-columns:250px minmax(0,1fr)!important}}
       @media(max-width:767px){
-        .card .identity-block{grid-template-columns: minmax(0,132px) minmax(0,1fr)!important;gap:10px 16px!important;align-items:center!important;text-align:left!important}
-        .card .identity-block #logoBox{grid-column:1!important;grid-row:1 / span 2!important;justify-self:start!important;width:100%!important}
+        .card .identity-block{display:grid!important;grid-template-columns:minmax(0,132px) minmax(0,1fr)!important;gap:10px 16px!important;padding:22px 18px!important;text-align:left!important}
+        .card .identity-block #logoBox{grid-column:1!important;grid-row:1 / span 2!important;justify-self:start!important;width:100%!important;margin:0!important}
         .card .identity-block #logoNegocio{max-width:100%!important;width:100%!important;height:auto!important;object-fit:contain!important}
         .card .identity-block #nombre{grid-column:2!important;grid-row:1!important;text-align:left!important;align-self:end!important;font-size:clamp(17px,4.4vw,25px)!important}
         .card .identity-block #codigo{grid-column:2!important;grid-row:2!important;text-align:left!important;align-self:start!important;font-size:clamp(12px,3.2vw,16px)!important}
-        .card .identity-block #placeHeaderDescription{grid-column:1/-1!important;grid-row:3!important}
-        .card .white-sheet #placeHeaderDescription{order:-2!important;box-sizing:border-box;width:100%!important;padding:16px!important;border-radius:16px;border:1px solid rgba(96,165,250,.3);background:#12243b;color:#fff;white-space:pre-line}
+        .card .white-sheet #commercialDescription.is-visible{display:block!important;order:-2!important;width:100%!important;box-sizing:border-box;margin:0 0 16px!important;padding:16px!important;border-radius:16px;border:1px solid rgba(96,165,250,.3);background:#12243b;color:#fff}
         .card .white-sheet #premiumGalleryContainer{order:0!important}
-        .card .identity-block{padding:22px 18px!important}
-        .card .identity-block #logoBox{margin:0 auto!important}
-        .card .identity-block #placeHeaderDescription{margin-top:4px!important}
-        .card .white-sheet .place-ad-preview{margin:0 0 16px!important}
       }
     </style></head>`);
-    template=template.replace('</body>',`<script>(function(){function updatePlaceHeader(){var source=document.getElementById('commercialDescriptionText');var header=document.querySelector('.identity-block');if(!source||!header)return;var value=(source.textContent||'').trim();if(!value)return;var target=document.getElementById('placeHeaderDescription');if(!target){target=document.createElement('div');target.id='placeHeaderDescription';header.appendChild(target)}target.textContent=value;var ad=document.querySelector('.white-sheet .place-ad-preview');if(window.matchMedia('(max-width:767px)').matches&&ad){ad.insertAdjacentElement('afterend',target)}else if(target.parentElement!==header){header.appendChild(target)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updatePlaceHeader);else updatePlaceHeader();window.addEventListener('load',updatePlaceHeader);window.addEventListener('resize',updatePlaceHeader);})()</script></body>`);
+    // Reparent the existing description, not a copy. This prevents duplicate descriptions.
+    template=template.replace('</body>',`<script>(function(){function arrangePlace(){var d=document.getElementById('commercialDescription'),h=document.querySelector('.identity-block'),sheet=document.querySelector('.white-sheet'),ad=document.querySelector('.place-ad-preview');if(!d||!h||!sheet||!ad)return;document.getElementById('placeHeaderDescription')?.remove();if(window.matchMedia('(max-width:767px)').matches){if(d.parentElement!==sheet)ad.insertAdjacentElement('afterend',d);}else if(d.parentElement!==h){h.appendChild(d);}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',arrangePlace);else arrangePlace();window.addEventListener('load',arrangePlace);window.addEventListener('resize',arrangePlace);})()</script></body>`);
   }
   // Place-only advertising preview. No checkout, account entry, or booking is enabled yet.
   if(!record.extras.historical && record.type==='PLACE'){

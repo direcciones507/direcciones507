@@ -365,6 +365,13 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .premium-footer .footer-social-center svg{width:20px;height:20px;fill:currentColor}
         .public-lower-layout .public-social-section{display:none!important}
       }
+      /* Premium and Premium Pro: remove unused vertical space above social footer on tablets. */
+      @media (min-width:768px) and (max-width:1199px){
+        .card{min-height:0!important;justify-content:flex-start!important}
+        .card .white-sheet{flex:0 0 auto!important;margin-bottom:0!important;padding-bottom:0!important}
+        .card .white-sheet .public-lower-layout{margin-bottom:0!important;padding-bottom:0!important}
+        .card .premium-footer{flex:0 0 auto!important;margin-top:0!important}
+      }
       ${premiumProTablet?`/* Premium Pro tablets only: fix the actual footer clone, not the hidden source links. */
       @media (min-width:768px) and (max-width:1199px) and (min-height:600px),
              (min-width:1200px) and (max-width:1366px) and (min-height:600px) and (pointer:coarse) {
@@ -403,15 +410,15 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           for(const [id,label] of [['btnFacebook','Facebook'],['btnInstagram','Instagram'],['btnTikTok','TikTok']]){
             const original=document.getElementById(id);
             const href=original?.getAttribute('href');
-            if(!href||original.hidden||getComputedStyle(original).display==='none')continue;
+            if(!href||!/^https?:\/\//i.test(href))continue;
             let url;try{url=new URL(href);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)continue}catch{continue}
             const link=document.createElement('a');
             link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;link.dataset.social=label;
-            const icon=original.querySelector('svg');
+            const icon=original.querySelector('svg.tablet-social-glyph')||original.querySelector('svg.wide-card-icon');
             if(icon){
-              const glyph=icon.cloneNode(true);
+              const glyph=icon.cloneNode(true);glyph.classList.remove('tablet-social-glyph');glyph.classList.add('wide-card-icon');glyph.style.display='block';glyph.style.visibility='visible';
               // A cloned <use> needs its symbol's coordinate system; retain all hrefs.
-              if(${premiumProTablet}){
+              {
                 const reference=glyph.querySelector('use')?.getAttribute('href');
                 const symbol=reference?.startsWith('#')?document.getElementById(reference.slice(1)):null;
                 if(symbol?.getAttribute('viewBox'))glyph.setAttribute('viewBox',symbol.getAttribute('viewBox'));
@@ -423,6 +430,10 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           footer.insertBefore(center,footer.querySelector('.footer-secure-side'));
         }
         window.addEventListener('load',placeFooterSocials,{once:true});
+        // Social links are populated asynchronously by the template after load.
+        // Reconcile clones when hrefs arrive, rather than cloning empty links.
+        const sourceSocials=document.getElementById('redes-container');
+        if(sourceSocials){new MutationObserver(()=>{document.querySelector('.premium-footer .footer-social-center')?.remove();placeFooterSocials()}).observe(sourceSocials,{subtree:true,attributes:true,attributeFilter:['href','style','hidden']})}
         ${premiumProTablet?`// Position only the existing description inside the free header area.
         // Absolute placement preserves the exact gallery and lower-layout geometry.
         window.addEventListener('load',()=>{
@@ -447,7 +458,11 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       })();
     </script></body>`);
   }
-  template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
+  // Premium OG metadata must use the same server-rendered public metadata path as Premium Pro.
+  // Preserve the established behavior of Place, Free Business and Premium Pro.
+  const premiumOg=record.plan?.code==='BUSINESS_PREMIUM'&&!record.extras.historical;
+  const ogDescription=premiumOg?[record.name,record.reference].filter(Boolean).join(' · '):((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507');
+  template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc(ogDescription)).replaceAll('{{CANONICAL}}',esc(record.url));
   // Social crawlers read initial HTML, not client-side JavaScript.
   // Prefer the owner logo, then the main photo. Residential keeps its existing policy.
   const preservePreview=record.type==='RESIDENTIAL'||record.extras.historical;

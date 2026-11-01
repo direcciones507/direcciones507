@@ -9,6 +9,7 @@ import { getPublicAddressByCode } from '../postgres/public-address-repository';
 import { getPublicationMetadataByCode } from '../postgres/publication-repository';
 import { PLANES_AUTHORITY } from './scripts/integration-preflight';
 import type { CanonicalPublication } from './request-repository';
+import { requireConfirmedPayment } from './payment-repository';
 import { readFileSync } from 'node:fs';
 
 /** No counter: new reservations derive a stable eight-digit numeric identifier from their UUID, outside the historical numeric sequence.
@@ -50,12 +51,16 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
       await assertCodeAvailable(executor,id,code);
       return code;
     },
-    async publish({id,code,type,executor=sql,automaticPaid=false}) {
+    async publish({id,code,type,executor=sql,automaticPaid=false,paymentEnvironment}) {
       // The existing PostgreSQL reader is the new system's publication destination.
       // No call to PLANES writes, GitHub Pages, Drive, DNS or historical generators.
       if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
       const rows=await executor.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND ((status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED') OR ($3::boolean AND status='DRAFT' AND request_data->>'workflow'='PAYMENT_PENDING' AND request_data->>'plan' IN ('BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO') AND request_data->'migration' IS NULL))",[id,code,automaticPaid]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
+      if(automaticPaid){
+        if(!paymentEnvironment)throw Error('PAYMENT_ENVIRONMENT_REQUIRED');
+        await requireConfirmedPayment(executor,rows[0],paymentEnvironment);
+      }
       if(!rows[0].request_data?.migration)assertCountryPublication(rows[0].country_code??rows[0].request_data?.countryCode??'PA',rows[0].address_type,rows[0].request_data?.plan);
       if(!rows[0].request_data?.migration&&!options.namespaceExclusive)throw Error('HISTORICAL_NAMESPACE_NOT_VERIFIED');
       return {confirmed:true,receipt:'postgres:'+id+':'+code};

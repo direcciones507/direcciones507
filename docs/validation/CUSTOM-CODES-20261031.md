@@ -35,3 +35,11 @@ La prueba usa PostgreSQL WASM PGlite 0.5.14 con pgcrypto, esquema real de fundac
 La regresión ejecutable registra 180 aprobadas y un fallo anterior de huella de scripts en `published-card-presentation.test.ts`; la plantilla compartida permanece idéntica a main. Los cinco runners que requieren PostgreSQL nativo no se invocaron: el bloqueo de permisos del entorno anterior sigue documentado; las pruebas WASM no se presentan como validación multiconexión nativa. Los resultados locales no sustituyen comprobar la edición con la sesión real del propietario después del despliegue.
 
 Para producción: desplegar únicamente el código por el flujo habitual GitHub/Railway, observar SUCCESS y verificar la edición autenticada. No requiere variables nuevas, migraciones, renovación ni pago adicional. No hay credenciales predeterminadas ni vías de acceso especiales para la comprobación.
+
+## Comprobación publicada
+
+Railway finalizó SUCCESS para el commit b80353a (PR #187). Mediante la sesión Google del propietario se abrió Editar en la ficha Premium Pro AD507-N00900792; el valor anterior se recuperó, se comprobó la disponibilidad y se guardó exactamente direcciones-LATAM. Mi cuenta volvió a leer el nombre y mostró https://direcciones.lat/direcciones-LATAM/ sin modificar el pedido pagado existente.
+
+La nueva URL devuelve la ficha y el enlace numérico devuelve 308 al nuevo enlace. Se abrió el QR en el navegador publicado: imagen cargada de 260 px con el URL personalizado como destino. El HTML público antes/después es idéntico salvo el código mostrado y los URL canónicos/compartidos; incluye las mismas fotos, estilos, controles y datos comerciales. Los nombres internos de los otros perfiles de la cuenta permanecieron sin cambios.
+
+Se corrigió además la confirmación del editor: al recargar el detalle, el formulario anterior se desmonta; el mensaje se añade al contenedor vigente de Mi cuenta/ADMIN. Los recorridos Chromium verifican ese desmontaje real del formulario, guardado, recuperación, enlaces y validación en 390, 820 y 1440 px.

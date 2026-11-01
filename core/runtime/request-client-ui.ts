@@ -68,6 +68,9 @@ document.getElementById('addresses').addEventListener('click',async e=>{
     }catch{document.getElementById('message').textContent='No se pudo copiar. Puedes seleccionar el código de la tarjeta.'}
     finally{copy.disabled=false}return;
   }
+  // Analytics is an independent interactive section inside the address card.
+  // Opening/closing its details or changing the period must never open request details.
+  if(e.target.closest('.address-analytics'))return;
   const card=e.target.closest('[data-request]');
   if(card&&!e.target.closest('a')&&(!e.target.closest('button')||e.target.closest('[data-request-detail]')))openUserRequest(card.dataset.request);
 });

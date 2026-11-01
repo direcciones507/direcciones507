@@ -32,6 +32,13 @@ test('formats, reserved routes, invalid characters and automatic prefix',()=>{
  for(const name of ['admin','Panel','v1','AD507-demo','AD9999-test','a b','a.b','a,b','../x','a_b','a--b','-a','a-','N12345678','á','x'.repeat(81)])expect(()=>personalizedCode('BUSINESS_PREMIUM_PRO',name)).toThrow('INVALID_NAMED_CODE');
  for(const plan of ['BUSINESS_FREE','PLACE','RESIDENTIAL'])expect(()=>personalizedCode(plan,'hello')).toThrow('CAPABILITY_VIOLATION');
 });
+test('global namespace rejects a code already owned in another country regardless of case',async()=>{
+ // The existing address is in PA; the candidate has a different owner/id and may be in any LATAM country.
+ await expect(assertCodeAvailable(sql,other,'AD507-N00900792')).rejects.toThrow('CANONICAL_CODE_COLLISION');
+ await expect(assertCodeAvailable(sql,other,'ad507-n00900792')).rejects.toThrow('CANONICAL_CODE_COLLISION');
+ // Rechecking the same address does not collide with itself.
+ await expect(assertCodeAvailable(sql,id,'AD507-N00900792')).resolves.toBeUndefined();
+});
 test('historical collision and unavailable registry fail closed',async()=>{
  await expect(verifyHistoricalCustomCode('AD507-historico',fetcher)).rejects.toThrow('CANONICAL_CODE_COLLISION');
  await expect(verifyHistoricalCustomCode('AD507-test',(async()=>new Response('bad',{status:500})) as any)).rejects.toThrow('HISTORICAL_REGISTRY_UNAVAILABLE');

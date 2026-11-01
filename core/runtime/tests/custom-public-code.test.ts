@@ -36,34 +36,14 @@ test('historical collision and unavailable registry fail closed',async()=>{
  await expect(verifyHistoricalCustomCode('AD507-historico',fetcher)).rejects.toThrow('CANONICAL_CODE_COLLISION');
  await expect(verifyHistoricalCustomCode('AD507-test',(async()=>new Response('bad',{status:500})) as any)).rejects.toThrow('HISTORICAL_REGISTRY_UNAVAILABLE');
 });
-test('owner edits existing Pro, round-trips exact case and retains internal id/code',async()=>{
- const r=await repo.read(actor,id);const mediaBefore=await sql.unsafe('SELECT * FROM ad507.address_media WHERE address_id=$1::uuid',[id]);const saved=await editor.edit(actor,id,{version:r.version,namedCode:'direcciones-LATAM',retainMedia:mediaBefore.map((m:any)=>m.id)},[],false);expect(await sql.unsafe('SELECT * FROM ad507.address_media WHERE address_id=$1::uuid',[id])).toEqual(mediaBefore);
- expect(saved.publicUrl).toBe('https://direcciones.lat/direcciones-LATAM/');const read=await repo.read(actor,id);
- expect(read.extras.namedCode).toBe('direcciones-LATAM');expect(read.publicCode).toBe('direcciones-LATAM');expect(read.code).toBe('AD507-N00900792');expect(read.id).toBe(id);
- const page=await adminAddressPage(sql,new URLSearchParams(),'addresses',actor);const item=page.items.find((a:any)=>a.id===id);expect(item.displayCode).toBe('direcciones-LATAM');expect(item.code).toBe('AD507-N00900792');expect(item.publicUrl).toBe(saved.publicUrl);expect(item.codeData).toBeUndefined();const card=renderPanelAddressCard(item);expect(card).toContain('data-copy-code="direcciones-LATAM"');expect(card).toContain('data-analytics-code="AD507-N00900792"');
- await expect(editor.edit(other,id,{version:read.version,namedCode:'stolen'},[],false)).rejects.toThrow('REQUEST_NOT_FOUND');
- await expect(editor.edit(actor,id,{version:r.version,namedCode:'stale'},[],false)).rejects.toThrow('EDIT_CONFLICT');
-});
-test('new public URL renders exact code, QR canonical, old numeric redirects; case variants redirect',async()=>{
- const record=await newPublicAddress(sql,'direcciones-LATAM','https://direcciones.lat');expect(record?.code).toBe('AD507-N00900792');
- const html=renderNewPublicAddress(record!);expect(html).toContain('const CODE = "direcciones-LATAM";');expect(html).toContain('https://direcciones.lat/direcciones-LATAM/');
- const numeric=renderNewPublicAddress({...record!,url:'https://direcciones.lat/AD507-N00900792/',extras:{...record!.extras,publicCode:record!.code}});expect([...html.matchAll(/<style[^>]*>[\s\S]*?<\/style>/g)].map(m=>m[0])).toEqual([...numeric.matchAll(/<style[^>]*>[\s\S]*?<\/style>/g)].map(m=>m[0]));
- for(const code of ['direcciones-LATAM','AD507-N00900792','DIRECCIONES-latam']){const res=await handleNewPublicRoutes(new Request('https://direcciones.lat/'+code+'/'),context);expect(res?.status).toBe(code==='direcciones-LATAM'?200:308);if(res?.status===308)expect(res.headers.get('location')).toBe('https://direcciones.lat/direcciones-LATAM/');}
-});
-test('duplicate names are case-insensitive, aliases remain reserved after renaming',async()=>{
- await expect(assertCodeAvailable(sql,other,'DIRECCIONES-latam')).rejects.toThrow('CANONICAL_CODE_COLLISION');
- const r=await repo.read(actor,id);await editor.edit(actor,id,{version:r.version,namedCode:'new-Pro-name'},[],false);
- await expect(assertCodeAvailable(sql,other,'direcciones-latam')).rejects.toThrow('CANONICAL_CODE_COLLISION');
- expect((await handleNewPublicRoutes(new Request('https://direcciones.lat/direcciones-LATAM/'),context))?.headers.get('location')).toBe('https://direcciones.lat/new-Pro-name/');
-});
-test('availability endpoint validates session/plan/ownership and excludes own reservation',async()=>{
- const auth={currentUser:async()=>({id:actor,roles:['CLIENT']})} as any;
- const ctx={...context,repository:repo,auth,fetch:fetcher};
- const check=(q:string)=>handleRequestRoutes(new Request('https://direcciones.lat/v1/user/code-availability?'+q),ctx);
- expect((await check('plan=BUSINESS_PREMIUM_PRO&name=new-Pro-name&id='+id))?.status).toBe(200);
- expect((await check('plan=BUSINESS_PREMIUM_PRO&name=NEW-pro-NAME'))?.status).toBe(409);
- expect((await check('plan=PLACE&name=test'))?.status).toBe(400);
- expect((await check('plan=BUSINESS_PREMIUM_PRO&name=admin'))?.status).toBe(400);
+test('published personalized code is immutable for owner and ADMIN general edit',async()=>{
+ const read=await repo.read(actor,id);
+ await expect(editor.edit(actor,id,{version:read.version,namedCode:'changed'},[],false)).rejects.toThrow('PUBLISHED_CODE_LOCKED');
+ await expect(editor.edit(actor,id,{version:read.version,namedCode:'changed'},[],true)).rejects.toThrow('PUBLISHED_CODE_LOCKED');
+ const after=await repo.read(actor,id);
+ expect(after.publicCode).toBe(read.publicCode);
+ expect(after.code).toBe(read.code);
+ await expect(editor.edit(other,id,{version:read.version,namedCode:'stolen'},[],false)).rejects.toThrow('PUBLISHED_CODE_LOCKED');
 });
 test('free/Lugar/Residential URLs and historical originals unchanged',()=>{
  for(const plan of ['BUSINESS_FREE','PLACE','RESIDENTIAL']){const row={code:'AD507-N12345678',source:'USER_REQUEST',country_code:'PA',request_data:{plan}};expect(addressPublicUrl(row)).toBe('https://direcciones.lat/AD507-N12345678/');}

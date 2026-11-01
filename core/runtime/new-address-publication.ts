@@ -384,7 +384,11 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .card .white-sheet #commercialDescription{display:none!important}
         .card .white-sheet #commercialDescription.is-visible{display:block!important;position:absolute;top:var(--tablet-description-top);left:var(--tablet-description-left);width:var(--tablet-description-width);max-height:var(--tablet-description-height);margin:0;padding:12px;overflow:auto;box-sizing:border-box;box-shadow:none}
         .card .white-sheet .public-lower-layout{padding-bottom:0}
-        .card .premium-footer{margin-top:0;padding-top:8px;padding-bottom:10px}
+        /* Premium Pro: remove the empty flex space between the lower content and social footer. */
+        .card{justify-content:flex-start}
+        .card .white-sheet{flex-grow:0;flex-shrink:0;margin-bottom:0}
+        .card .white-sheet .public-lower-layout{margin-bottom:0;padding-bottom:0}
+        .card .premium-footer{flex:0 0 auto;align-self:stretch;margin-top:0!important;padding-top:8px;padding-bottom:10px}
       }`:''}
     </style>`;
     template=template.replace('</head>',footerSocialCss+'</head>');

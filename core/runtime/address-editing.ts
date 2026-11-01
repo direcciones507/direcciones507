@@ -81,7 +81,7 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
           await tx.unsafe('DELETE FROM ad507.address_socials WHERE address_id=$1::uuid',[id]);
           for(const [platform,url]of Object.entries(data.socials))await tx.unsafe('INSERT INTO ad507.address_socials(address_id,platform,url) VALUES($1::uuid,$2,$3)',[id,platform,url]);
         }
-        // Only associations change; immutable R2 objects are kept for history/recovery.
+        // Update active media associations; obsolete R2 objects are deleted after commit.
         if(uploaded.length||raw.newCover||retained.length!==before.media.length||retained.some((mediaId:string,i:number)=>mediaId!==before.media[i].id)){
           await tx.unsafe('DELETE FROM ad507.address_media WHERE address_id=$1::uuid',[id]);
           for(const [i,m]of nextMedia.entries())await tx.unsafe(`INSERT INTO ad507.address_media(id,address_id,media_type,storage_key,url,position,is_primary,upload_status) VALUES($1::uuid,$2::uuid,$3,$4,$5,$6,$7,'READY')`,[m.id??crypto.randomUUID(),id,m.media_type,m.storage_key,m.url,i,nextMedia.findIndex(v=>v.media_type===m.media_type)===i]);
@@ -101,8 +101,19 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
           for(const m of removed){
             const inUse=await sql.unsafe('SELECT 1 FROM ad507.address_media WHERE storage_key=$1 LIMIT 1',[m.storage_key]);
             if(inUse.length)continue;
-            try{await storage.deletePrivate({ownerId:actorId,addressId:id,role:m.media_type==='LOGO'?'logo':'photo',countryCode:row.country_code,storageKey:m.storage_key});}
-            catch(error){await audit(sql,actorId,id,admin,'EDIT_MEDIA_DELETE_FAILED',null,{storageKey:m.storage_key,error:String(error)});}
+            let lastError:unknown;
+            for(let attempt=0;attempt<3;attempt++){
+              try{
+                await storage.deletePrivate({ownerId:actorId,addressId:id,role:m.media_type==='LOGO'?'logo':'photo',countryCode:row.country_code,storageKey:m.storage_key});
+                lastError=undefined;
+                break;
+              }catch(error){lastError=error;}
+            }
+            if(lastError){
+              await audit(sql,actorId,id,admin,'EDIT_MEDIA_DELETE_FAILED',null,{storageKey:m.storage_key,error:String(lastError)});
+              // Never report complete cleanup when an obsolete R2 object still exists.
+              throw Error('R2_DELETE_FAILED');
+            }
           }
         }
       }

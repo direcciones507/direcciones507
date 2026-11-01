@@ -1,5 +1,6 @@
+import {customCodeUiScript} from './custom-code-ui';
 /** One editor shared by the existing client detail and ADMIN detail. */
-export const addressEditScript=String.raw`
+export const addressEditScript=customCodeUiScript+String.raw`
 function mountAddressEditor(host,r,admin,reload){
  if(!r.canEdit)return;
  const base='/v1/'+(admin?'admin':'user')+'/requests/'+r.id;
@@ -14,7 +15,8 @@ function mountAddressEditor(host,r,admin,reload){
  output.replaceChildren();const form=document.createElement('form');form.style.cssText='display:grid;gap:12px;max-width:680px;margin-top:16px';output.append(form);
  const inputs={};const field=(key,label,value,max=300)=>{const wrap=document.createElement('label');wrap.textContent=label;const input=document.createElement(key==='reference'||key==='description'||key==='commercialDescription'?'textarea':'input');input.value=value??'';input.maxLength=max;input.style.cssText='display:block;width:100%;min-height:44px;font:inherit;padding:10px;box-sizing:border-box';wrap.append(input);form.append(wrap);inputs[key]=input;return input};
  field('name','Nombre',r.name,160).required=true;field('phone','Celular / WhatsApp',r.phone,30);field('landlinePhone','Teléfono fijo (opcional)',r.landlinePhone,30);field('hours','Horarios',r.hours,300);field('reference','Referencia',r.reference,1000).required=true;
- const plan=r.extras.plan;if(plan==='PLACE')field('description','Descripción breve',r.description,4000);
+ const plan=r.extras.plan;let namedCodeCheck=null;if(['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan)){const initial=(r.extras.namedCode||'').replace(/^AD507-/i,'');namedCodeCheck=wireCustomCode(field('namedCode','Nombre de código personalizado',initial,80),()=>plan,r.id);}
+ if(plan==='PLACE')field('description','Descripción breve',r.description,4000);
  if(plan==='BUSINESS_PREMIUM_PRO')field('commercialDescription','Descripción comercial',r.commercialDescription,3000);
  if(['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan))for(const platform of ['instagram','facebook','tiktok'])field(platform,platform,r.socials.find(s=>s.platform===platform)?.url||'',300);
  const locationNote=document.createElement('p');locationNote.textContent=admin?'La ubicación guardada por ADMIN se publica de inmediato.':'Si cambias las coordenadas, ADMIN debe aprobarlas. La ubicación actual seguirá visible.';form.append(locationNote);
@@ -26,9 +28,9 @@ function mountAddressEditor(host,r,admin,reload){
  if(r.type==='PLACE'||plan==='BUSINESS_PREMIUM_PRO')upload('photos',r.type==='PLACE'?'Portada y fotos nuevas (máximo 4 en total)':'Fotos nuevas (máximo 5 en total)',true);
  const coverLabel=document.createElement('label'),newCover=document.createElement('input');newCover.type='checkbox';coverLabel.append(newCover,document.createTextNode(' Usar la primera foto nueva como portada'));if(uploads.photos)form.append(coverLabel);
  const save=document.createElement('button');save.type='submit';save.className='btn google';save.textContent='Guardar cambios gratis';const cancel=document.createElement('button');cancel.type='button';cancel.className='btn secondary';cancel.textContent='Cancelar';cancel.onclick=()=>output.replaceChildren();const status=document.createElement('p');status.setAttribute('role','status');form.append(save,cancel,status);
- form.onsubmit=async event=>{event.preventDefault();save.disabled=true;status.textContent='Guardando…';try{const payload={version:r.version,newCover:newCover.checked,retainMedia:retained.filter(m=>m.check.checked).map(m=>m.id)};for(const [key,input]of Object.entries(inputs))payload[key]=['latitude','longitude'].includes(key)?Number(input.value):input.value;
+ form.onsubmit=async event=>{event.preventDefault();save.disabled=true;status.textContent='Guardando…';try{if(namedCodeCheck&&!await namedCodeCheck.check()){status.textContent='Revisa el nombre de código personalizado.';return;}const payload={version:r.version,newCover:newCover.checked,retainMedia:retained.filter(m=>m.check.checked).map(m=>m.id)};for(const [key,input]of Object.entries(inputs)){if(key==='namedCode'&&!input.value&&!r.extras.namedCode)continue;payload[key]=['latitude','longitude'].includes(key)?Number(input.value):input.value;}
  const body=new FormData();body.append('payload',JSON.stringify(payload));for(const [key,input]of Object.entries(uploads))for(const file of input.files)body.append(key,file);
- const res=await fetch(base+'/edit',{method:'POST',credentials:'same-origin',body});const data=await res.json();if(!res.ok){status.textContent=data.error==='EDIT_CONFLICT'?'El registro cambió. Abre de nuevo el detalle antes de guardar.':data.error==='INVALID_MEDIA'?'Revisa las fotos: negocio requiere un logo; Lugar de 1 a 4 fotos; Premium Pro hasta 5 fotos.':'No se guardaron los cambios. Revisa los datos y las capacidades de tu plan.';return;}await reload();
+ const res=await fetch(base+'/edit',{method:'POST',credentials:'same-origin',body});const data=await res.json();if(!res.ok){status.textContent=['INVALID_NAMED_CODE','CANONICAL_CODE_COLLISION','HISTORICAL_REGISTRY_UNAVAILABLE'].includes(data.error)?namedCodeCheck.message(data.error):data.error==='EDIT_CONFLICT'?'El registro cambió. Abre de nuevo el detalle antes de guardar.':data.error==='INVALID_MEDIA'?'Revisa las fotos: negocio requiere un logo; Lugar de 1 a 4 fotos; Premium Pro hasta 5 fotos.':'No se guardaron los cambios. Revisa los datos y las capacidades de tu plan.';return;}await reload();const confirmed=document.createElement('p');confirmed.setAttribute('role','status');confirmed.textContent='Cambios guardados correctamente.'+(data.request?.publicUrl?' Enlace: '+data.request.publicUrl:'');host.parentElement?.append(confirmed);
  }catch{status.textContent='No se pudo confirmar el guardado. Abre de nuevo el detalle antes de reintentar.'}finally{save.disabled=false}};
  };
  return edit;

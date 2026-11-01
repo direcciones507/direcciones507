@@ -1,3 +1,4 @@
+import {personalizedCode} from './custom-public-code';
 import { requestCountry, countryConfiguration } from './country-configuration';
 import { inspectImage, prepareContacts, validateRequestMedia } from './panel-preparation';
 
@@ -52,6 +53,7 @@ export function validateRequestDraft(raw: unknown): RequestDraft {
   if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('INVALID_EMAIL');
   const premium=type==='BUSINESS'&&plan!=='BUSINESS_FREE';
   if((commercialDescription&&plan!=='BUSINESS_PREMIUM_PRO')||(!premium&&(namedCode||postalCode||postalZone)))throw Error('CAPABILITY_VIOLATION');
+  if(namedCode)personalizedCode(plan,namedCode);
   const socials: Record<string,string>={};
   for(const [platform,host]of Object.entries({instagram:'instagram.com',facebook:'facebook.com',tiktok:'tiktok.com'})){
     const text=field(platform,300,false);if(!text)continue;if(!premium)throw Error('CAPABILITY_VIOLATION');

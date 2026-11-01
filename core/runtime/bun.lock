@@ -9,11 +9,14 @@
         "sharp": "0.34.5",
       },
       "devDependencies": {
+        "@electric-sql/pglite": "0.5.14",
         "embedded-postgres": "18.1.0-beta.15",
       },
     },
   },
   "packages": {
+    "@electric-sql/pglite": ["@electric-sql/pglite@0.5.14", "", {}, "sha512-aAQe7iArcFB2w1xtx91l3l9trxhMzD6aZf+WnosSHNhwgp70EJz80Igw/bHnW14fUEFYWPBoQ1sGom8Xc0Jttg=="],
+
     "@embedded-postgres/darwin-arm64": ["@embedded-postgres/darwin-arm64@18.1.0-beta.16", "", { "os": "darwin", "cpu": "arm64" }, "sha512-tU/syLOamFZdXMC+p7AYczmFKIiolFlZ8y3Qb7KonX37O07ezc/OSDiQ641sheV3X0WPf9V10qyK8c81rleDdw=="],
 
     "@embedded-postgres/darwin-x64": ["@embedded-postgres/darwin-x64@18.1.0-beta.16", "", { "os": "darwin", "cpu": "x64" }, "sha512-4zHNCscGJt/3pmkpLCuU/IpMJzwENM6OqSHE+WWkOoNqYid49ZnmgB1ltOelgZgRoPRIy/HDEnrMeuVxQHBhEw=="],

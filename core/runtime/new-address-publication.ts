@@ -440,16 +440,17 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   }
   template=template.replaceAll('{{TITLE}}',esc(record.name)).replaceAll('{{DESC}}',esc((record.type==='PLACE'||record.plan?.code==='BUSINESS_PREMIUM_PRO'?record.description:null)??record.reference??'Direcciones507')).replaceAll('{{CANONICAL}}',esc(record.url));
   // Social crawlers read initial HTML, not client-side JavaScript.
-  // Use the published photo, then logo; preserve the original default when neither exists.
-  const previewImage=record.media.find(m=>m.type==='IMAGE'&&m.url?.startsWith('https://'))?.url
-    ??record.media.find(m=>m.type==='LOGO'&&m.url?.startsWith('https://'))?.url
-    ??'https://direcciones507.com/assets/logo-direcciones507.png?v=2';
+  // Prefer the owner logo, then the main photo. Residential keeps its existing policy.
+  const preservePreview=record.type==='RESIDENTIAL'||record.extras.historical;
+  const previewTypes=preservePreview?['IMAGE','LOGO']:['LOGO','IMAGE'];
+  const previewImage=previewTypes.map(type=>record.media.find(m=>m.type===type&&m.url?.startsWith('https://'))?.url).find(Boolean)
+    ??(!preservePreview&&new URL(record.url).hostname==='direcciones.lat'?'https://direcciones.lat/assets/og-latam-map-v2.jpg':'https://direcciones507.com/assets/logo-direcciones507.png?v=2');
   template=template.replace(/<meta property="og:image" content="[^"]*">/,
-    '<meta property="og:image" content="'+esc(previewImage)+'">');
+    '<meta property="og:image" content="'+esc(previewImage)+'">'+(preservePreview?'':'\n  <meta property="og:image:secure_url" content="'+esc(previewImage)+'">'));
   template=template.replaceAll('{{OG_IMAGE}}',esc(previewImage));
   // Photo dimensions are not guaranteed to be square; omit the legacy fixed dimensions.
-  if(record.media.some(m=>m.url===previewImage)){
-    template=template.replace(/\\s*<meta property="og:image:(?:width|height)" content="[^"]*">/g,'');
+  if(!preservePreview){
+    template=template.replace(/\s*<meta property="og:image:(?:width|height)" content="[^"]*">/g,'');
   }
   if(!record.extras.historical&&record.extras.publicCode&&record.extras.publicCode!==record.code)template=template.replace('const CODE = (pathCode || \"AD507-CODE\").toUpperCase();','const CODE = '+JSON.stringify(record.extras.publicCode)+';');
   // QR/share/copy must use the stored canonical URL, even on a preview host.

@@ -17,7 +17,7 @@ export type CanonicalPublication = {
   // Installed only after historical registry and the single previous allocator are verified.
   historicalRegistryVerified: true;
   reserve: (request:{id:string;type:string;plan:string;name:string;requestedName:string;countryCode?:string;executor?:Pick<Sql,'unsafe'>})=>Promise<string>;
-  publish: (request:{id:string;code:string;type:string;executor?:Pick<Sql,'unsafe'>})=>Promise<{confirmed:true;receipt:string}>;
+  publish: (request:{id:string;code:string;type:string;executor?:Pick<Sql,'unsafe'>;automaticPaid?:boolean;paymentEnvironment?:'test'|'production'})=>Promise<{confirmed:true;receipt:string}>;
 };
 export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fetch?:typeof fetch;canonical?:CanonicalPublication|null;paymentEnvironment?:'test'|'production';paidWorkflow?:boolean}) {
   const actor=async(tx:any,id:string,role:string)=>{
@@ -145,6 +145,10 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const owners=await sql.unsafe("SELECT user_id::text FROM ad507.address_ownership WHERE address_id=$1::uuid AND ownership_role='OWNER'",[addressId]);
       const media=await sql.unsafe('SELECT id::text,media_type AS type,url,position,upload_status AS status FROM ad507.address_media WHERE address_id=$1::uuid ORDER BY position,id',[addressId]);
       const socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[addressId]);
+      if(rows[0].status!=='ACTIVE'&&rows[0].extras?.plan==='BUSINESS_PREMIUM'){
+        const confirmed=await sql.unsafe("SELECT 1 FROM ad507.orders WHERE address_id=$1::uuid AND status='PAID' AND confirmed_at IS NOT NULL AND payment_environment=$2 AND payment_plan=$3 LIMIT 1",[addressId,options.paymentEnvironment??'production',rows[0].extras.plan]);
+        if(confirmed.length)rows[0].extras={...rows[0].extras,workflow:'PAYMENT_CONFIRMED'};
+      }
       const {publicationReceipt,...record}=rows[0];
       const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?addressPublicUrl({code:record.code,source:'USER_REQUEST',country_code:record.countryCode,request_data:record.extras}):null;
       return {...record,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
@@ -243,7 +247,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         if(!codeMatchesCountry(code,row.country_code??'PA'))throw Error('CANONICAL_CODE_INVALID');
         if(!row.code)try{await session.unsafe("UPDATE ad507.addresses SET code=$2,updated_at=now() WHERE id=$1::uuid",[row.id,code]);}catch(error){if((error as {code?:string}).code==='23505')throw Error('CANONICAL_CODE_COLLISION');throw error;}
         // External allocator/publisher MUST deduplicate by this durable request id.
-        const published=await options.canonical.publish({id:row.id,code,type:row.address_type,executor:session});
+        const published=await options.canonical.publish({id:row.id,code,type:row.address_type,executor:session,automaticPaid:automatic,paymentEnvironment:options.paymentEnvironment??'production'});
         if(published.confirmed!==true||typeof published.receipt!=='string'||!published.receipt||published.receipt.length>300)throw Error('PUBLICATION_UNCONFIRMED');
         await session.unsafe('BEGIN');
         try {
@@ -253,7 +257,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           if(automatic?!automaticPaidStateAllowed(current[0]):!['PENDING_REVIEW',...(row.request_data?.migration?['SUSPENDED']:[])].includes(current[0]?.status)||current[0]?.review_decision!=='APPROVED')throw Error('PUBLICATION_STATE_CONFLICT');
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
           if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
-          await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
+          await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,request_data=jsonb_set(request_data,'{workflow}',to_jsonb('PUBLISHED'::text)),updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}
         return {id:row.id,code,status:'ACTIVE',receipt:published.receipt};

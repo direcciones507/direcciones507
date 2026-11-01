@@ -103,6 +103,18 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .replace('sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"','href="'+latamIcon+'"');
     }
   }
+  // Place-only presentation: centered name and description above gallery, ad in the former description area.
+  if(!record.extras.historical && record.type==='PLACE'){
+    template=template.replace('</head>',`<style id="place-presentation-layout">
+      .card .identity-block{display:flex!important;flex-direction:column!important;align-items:center!important;gap:12px!important;text-align:center!important}
+      .card .identity-block .title-details-header{display:flex!important;flex-direction:column!important;align-items:center!important;text-align:center!important;width:100%!important;padding:0!important}
+      .card .identity-block #nombre{text-align:center!important;max-width:100%!important}
+      .card .white-sheet{display:flex;flex-direction:column}
+      .card .white-sheet #commercialDescription.is-visible{order:-3!important;width:100%;box-sizing:border-box;margin:0 0 16px!important}
+      .card .white-sheet #premiumGalleryContainer{order:-2!important}
+      .card .white-sheet .place-ad-preview{order:-1!important;margin:12px 0 20px!important}
+    </style></head>`);
+  }
   // Place-only advertising preview. No checkout, account entry, or booking is enabled yet.
   if(!record.extras.historical && record.type==='PLACE'){
     template=template.replace('</head>',`<style id="place-ad-preview-style">

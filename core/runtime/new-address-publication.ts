@@ -367,11 +367,13 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
         .card{min-height:0}
         .card .code-header{padding-top:14px;padding-bottom:14px}
         .card .identity-block{min-height:0;padding-top:12px;padding-bottom:12px}
-        .card .identity-block .title-details-header{align-items:center;justify-content:center;text-align:center}
+        .card .identity-block .title-details-header{align-items:center;justify-content:flex-start;align-self:start;text-align:center}
         .card .identity-block #nombre{order:1;width:100%;text-align:center}
         .card .identity-block #codigo{order:2;width:100%;text-align:center}
         .card .white-sheet{flex:0 0 auto;padding-top:14px;padding-bottom:12px;gap:14px}
+        /* Keep the original node/slot so existing lower-layout selectors stay intact. */
         .card .white-sheet #commercialDescription{display:none!important}
+        .card .white-sheet #commercialDescription.is-visible{display:block!important;position:absolute;top:var(--tablet-description-top);left:var(--tablet-description-left);width:var(--tablet-description-width);max-height:var(--tablet-description-height);margin:0;padding:12px;overflow:auto;box-sizing:border-box;box-shadow:none}
         .card .white-sheet .public-lower-layout{padding-bottom:0}
         .card .premium-footer{margin-top:0;padding-top:8px;padding-bottom:10px}
       }`:''}
@@ -408,6 +410,27 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           footer.insertBefore(center,footer.querySelector('.footer-secure-side'));
         }
         window.addEventListener('load',placeFooterSocials,{once:true});
+        ${premiumProTablet?`// Position only the existing description inside the free header area.
+        // Absolute placement preserves the exact gallery and lower-layout geometry.
+        window.addEventListener('load',()=>{
+          const description=document.getElementById('commercialDescription');
+          const title=document.querySelector('.identity-block .title-details-header');
+          const header=document.querySelector('.identity-block');
+          const card=document.querySelector('.card');
+          if(!description||!title||!header||!card)return;
+          const tablet=matchMedia('(min-width:768px) and (max-width:1199px) and (min-height:600px), (min-width:1200px) and (max-width:1366px) and (min-height:600px) and (pointer:coarse)');
+          const place=()=>{
+            if(!tablet.matches)return;
+            const c=card.getBoundingClientRect(),t=title.getBoundingClientRect(),h=header.getBoundingClientRect();
+            const top=t.bottom+10;
+            const values={top:top-c.top-card.clientTop,left:t.left-c.left-card.clientLeft,width:t.width,height:Math.max(0,h.bottom-12-top)};
+            for(const [key,value] of Object.entries(values))description.style.setProperty('--tablet-description-'+key,value+'px');
+          };
+          const observer=new ResizeObserver(place);observer.observe(card);observer.observe(title);observer.observe(header);
+          tablet.addEventListener('change',place);window.addEventListener('resize',place);
+          document.fonts.ready.then(place);place();
+        },{once:true});`:''}
+
       })();
     </script></body>`);
   }

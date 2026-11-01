@@ -124,7 +124,15 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       requireYappy();
       if(!uuid.test(userId)||!uuid.test(orderId))throw Error('PAYMENT_NOT_FOUND');
       const rows=await sql.unsafe("SELECT p.id,p.address_id,p.payment_plan,p.amount_cents,p.currency,p.status,p.confirmed_at,a.code,a.country_code FROM ad507.orders p JOIN ad507.users u ON u.id=p.user_id JOIN ad507.addresses a ON a.id=p.address_id WHERE p.id=$1::uuid AND p.user_id=$2::uuid AND u.status='ACTIVE' AND p.provider='YAPPY' AND p.payment_environment=$3",[orderId,userId,config.environment]);
-      if(!rows.length)throw Error('PAYMENT_NOT_FOUND');assertCountryCommerce(rows[0].country_code??'PA');return rows[0];
+      if(!rows.length)throw Error('PAYMENT_NOT_FOUND');assertCountryCommerce(rows[0].country_code??'PA');
+      // Reconcile an already-confirmed Yappy payment on authenticated status reads.
+      // A provider notification may persist PAID but fail during subsequent publication.
+      // Never create a new order or mark a pending order paid from a browser request.
+      if(rows[0].status==='PAID'&&options.onVerifiedPayment){
+        try { await options.onVerifiedPayment(rows[0].address_id); }
+        catch(error) { console.error('PAID_ADDRESS_RECONCILIATION_FAILED',rows[0].id,error instanceof Error?error.message:'unknown'); }
+      }
+      return rows[0];
     },
     async confirm(query:URLSearchParams) {
       requireYappy();

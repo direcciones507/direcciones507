@@ -1787,6 +1787,40 @@
         padding-left:0 !important; margin-left:0 !important;
       }
     }
+    /* Tablet: social links as visible brand icons, not text buttons. Tighten vertical footer gap only. */
+    @media (min-width:768px) and (max-width:1199px) {
+      .card .white-sheet .public-lower-layout .social-quad-row {
+        display:flex !important; justify-content:center; align-items:center;
+        flex-wrap:wrap; gap:18px; margin:0;
+      }
+      .card .white-sheet .public-lower-layout .btn-social-quad {
+        display:inline-flex; flex:0 0 34px !important;
+        width:34px !important; height:34px !important; min-height:0 !important;
+        padding:0 !important; margin:0 !important;
+        align-items:center; justify-content:center !important;
+        border:0 !important; border-radius:0 !important;
+        background:transparent !important; box-shadow:none !important;
+        font-size:0 !important; line-height:0 !important;
+        overflow:visible; text-decoration:none;
+      }
+      .card .white-sheet .public-lower-layout .btn-social-quad i {
+        display:inline-flex !important; align-items:center; justify-content:center;
+        width:30px !important; height:30px !important;
+        font-size:27px !important; line-height:1 !important;
+        color:#f8fafc !important; visibility:visible !important;
+      }
+      .card .white-sheet .public-lower-layout .btn-social-quad.ig i { color:#e879f9 !important; }
+      .card .white-sheet .public-lower-layout .btn-social-quad.fb i { color:#60a5fa !important; }
+      .card .white-sheet .public-lower-layout .btn-social-quad.tk i { color:#ffffff !important; }
+      .card .white-sheet .public-lower-layout .btn-social-quad.web i { color:#93c5fd !important; }
+      .card .white-sheet .public-lower-layout .btn-social-quad svg.wide-card-icon {
+        display:block !important; width:27px !important; height:27px !important;
+        fill:currentColor !important; visibility:visible !important; opacity:1 !important;
+      }
+      .card .white-sheet .public-lower-layout { padding-bottom:4px !important; }
+      .card .white-sheet { padding-bottom:12px !important; }
+      .card .premium-footer { padding-top:12px !important; padding-bottom:12px !important; }
+    }
     /* Legibilidad institucional: encabezado y pie de ficha pública. */
     .brand-title-text { font-size: 19px; letter-spacing: -.35px; }
     .brand-subtitle-text { font-size: 12px; color: #cbd5e1; }

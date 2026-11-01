@@ -415,7 +415,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
           for(const [id,label] of [['btnFacebook','Facebook'],['btnInstagram','Instagram'],['btnTikTok','TikTok']]){
             const original=document.getElementById(id);
             const href=original?.getAttribute('href');
-            if(!href||!/^https?:\/\//i.test(href))continue;
+            if(!href||!/^https?:\\/\\//i.test(href))continue;
             let url;try{url=new URL(href);if(!['https:','http:'].includes(url.protocol)||url.username||url.password)continue}catch{continue}
             const link=document.createElement('a');
             link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',label);link.title=label;link.dataset.social=label;

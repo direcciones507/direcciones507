@@ -1,5 +1,47 @@
 # Checklist maestro de cierre — Direcciones507 + LATAM
 
+## ESTADO VIGENTE Y RELEVO WORK ↔ AGENTE — 1 noviembre 2026
+
+> Este bloque es el estado operativo más reciente y prevalece sobre propuestas y prioridades históricas contradictorias que permanecen debajo por trazabilidad. **No implica despliegue ni certificación productiva.** Usar como punto de partida tanto en ChatGPT Work como en AD507 Developer (DeepSeek).
+
+### Alcance inmediato: los cuatro servicios actuales
+- **Lugar Gratis:** el propietario confirma creación, tarjetas responsive y Open Graph funcionando. **PENDIENTE:** crear una ficha real nueva y verificar guardar → Mi cuenta → ADMIN → aprobación → publicación → URL/QR; corregir solo fallos observados.
+- **Negocio Gratis:** el propietario confirma creación, tarjetas responsive y Open Graph funcionando. **DECISIÓN:** admitir solicitudes hasta el **9 de noviembre de 2026**; retirar posteriormente la opción de crear nuevas fichas, **sin borrar automáticamente fichas existentes ni afectar históricos**. Mantener reglas de vigencia existentes sin anticipar bajas ni introducir cobros. **PENDIENTE:** prueba real de un alta nueva antes del cierre.
+- **Premium:** creación, presentación y Open Graph revisados por el propietario; Yappy disponible en Panamá. **PENDIENTE:** una alta real controlada y recorrido completo, incluida confirmación de pago → ADMIN → aprobación/publicación → URL/QR; comprobar específicamente que una dirección pagada no quede en PAYMENT_PENDING ni invisible en ADMIN. No cobrar otra vez una orden ya pagada.
+- **Premium Pro:** existe una ficha real del propietario que debe preservarse. **PENDIENTE:** nueva prueba integral controlada, sin desconectar ni alterar la ficha existente; verificar pago, ADMIN, publicación, URL y QR.
+- En los cuatro servicios, **no repetir auditorías generales** de diseño, tarjetas móvil/tablet/escritorio, Open Graph ni formularios que el propietario ya revisó; solo registrar regresiones reales. Las pruebas de altas reales corresponden al propietario con apoyo puntual si aparece un fallo.
+
+### Códigos personalizados, información y Natalie
+- **CIERRE LOCAL REPORTADO por Work (NO PUBLICADO):** rama local `work/code-policy-closeout-20261101`, commit local `c8120d8`, **50 pruebas aprobadas / 0 fallidas**, seis recorridos de navegador (Panamá/LATAM × móvil/tableta/escritorio). Sin push, PR, Actions ni despliegue. Antes de integrar, **recuperar/exportar ese commit local desde el entorno Work**: no asumir que está disponible en GitHub o producción.
+- Premium: prefijo automático `AD507-`; Premium Pro: código sin prefijo; unicidad global LATAM/507 sin distinguir mayúsculas, protegiendo históricos/alias. Código publicado no editable desde Mi cuenta ni API (409); resto de campos editables y URL/QR estables.
+- Pie de página **Información** y Natalie: acceso y cuatro procedimientos probados localmente (duplicados, error de código, transferencia tras venta, recuperación). Corrección por soporte: 3–5 días hábiles estimados; transferencia: primera atención 5–7 días hábiles, titular actual con 7 días calendario para responder cuando proceda; silencio no implica consentimiento; solo ADMIN decide.
+- **PENDIENTE DE COMPROBACIÓN REAL:** propietario pregunta a Natalie por la corrección de un código publicado; proveedor de IA real no certificado. **BLOQUEO:** PostgreSQL nativo no ejecutado por restricción UID/root; PGlite no sustituye concurrencia nativa. Mantener como validación previa a integrar/publicar, sin falsos verdes.
+
+### Pagos: prioridad comercial
+- **Panamá:** Yappy es el método operativo conocido; preservar funcionamiento. Verificar únicamente con pruebas reales controladas y autorizadas, y asegurar que pago confirmado avance correctamente a revisión ADMIN/publicación.
+- **LATAM fuera de Panamá:** **PENDIENTE PRIORITARIO: PayPal** u otro medio internacional aprobado para que el usuario pueda pagar. Conectar checkout, confirmación autenticada/idempotente, asociación a pedido/dirección, estado ADMIN, publicación y errores/reintentos. No activar ni simular como operativo un proveedor real no configurado.
+- **Banco General:** integración del botón/método de pago **PENDIENTE** de definición técnica y prueba; no presentar como activo ni modificar Yappy.
+- No realizar cargos reales, activar pasarelas o cambiar producción sin autorización expresa.
+
+### Productos siguientes, sin adelantar lanzamiento
+- **Residencial:** el propietario confirma que **ya existe y funciona**; falta **solo prueba funcional integral**. Conservar como está y **lanzarlo después de retirar Negocio Gratis**. Preferencia visual: reutilizar su tarjeta/espacio en catálogo al retirar Negocio Gratis. No reconstruir Residencial ni tratarlo como producto inexistente.
+- **Publicidad en Lugares:** desarrollo local previo, **US$8.99 por 30 días**, banner 1200×400 (3:1), JPG/PNG/WebP, máximo 2 MB, adaptable; revisión ADMIN, pago confirmado, publicación y vencimiento sin gracia. **PENDIENTE:** integración/pruebas finales y decisión de visibilidad en catálogo; no habilitar cobros reales.
+- **Direcciones temporales:** desarrollo local previo, **US$4.99 por evento**, creación 0–30 días antes, vigencia hasta las 23:59:59 del día siguiente al evento, sin renovación, pago confirmado → ADMIN → publicación, URL/QR. **PENDIENTE:** integración y pruebas; no lanzar aún.
+- Publicidad y temporales pueden tener acceso propio; no sustituir automáticamente Negocio Gratis sin decisión de interfaz del propietario.
+
+### Fuera de prioridad inmediata
+- Recordatorios 15/7/1, renovaciones recurrentes o automáticas, vencimientos de membresía, gracia, estadísticas avanzadas, borrado de fotos/cuenta y mejoras cosméticas menores: **no consumir créditos hoy en estos asuntos**. Mantener lo que ya funciona, sin desactivarlo.
+- Históricos en Excel/Apps Script: semáforo y vencimientos **manuales**, sin migración ni sistema nuevo de membresías/cobros. Preservar todos sus códigos, alias, enlaces y QR.
+
+### Método de trabajo y autorización
+- **Trabajo diario por bloques pequeños:** cuando Work tenga créditos, usar Work; cuando se agoten, continuar con **AD507 Developer / DeepSeek**, leyendo este mismo checklist y la evidencia del último bloque. No duplicar trabajo ni reiniciar auditorías; dejar rama, commit, archivos, pruebas y bloqueos para el siguiente ejecutor.
+- Orden próximo: **(1)** propietario prueba una creación real por cada uno de los cuatro servicios actuales y Natalie; **(2)** corregir únicamente fallos encontrados; **(3)** PayPal LATAM; **(4)** Banco General según decisión; **(5)** prueba de Residencial y lanzamiento posterior al 9 de noviembre; **(6)** publicidad; **(7)** temporales. Ajustar solo con nuevas instrucciones del propietario.
+- **Prohibido sin autorización nueva:** modificar producción, reconectar/reiniciar Railway, push a rama productiva, PR con despliegue, GitHub Actions/workflows, despliegues, migraciones productivas, pagos reales, cambios a históricos. Trabajar en rama/copia aislada; las ramas/commits locales de Work no equivalen a cambios remotos.
+- Criterio de informe: **APROBADO / IMPLEMENTADO LOCAL / PROBADO LOCAL / PENDIENTE / BLOQUEADO / PRODUCCIÓN VERIFICADA**; no confundirlos. Registrar comandos y resultados, sin sumar suites duplicadas.
+
+---
+
+
 ## Pendientes actualizados — 26 octubre 2026
 
 ### Idea comercial futura: publicidad en fichas de Lugar (NO IMPLEMENTAR TODAVÍA)

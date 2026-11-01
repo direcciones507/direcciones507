@@ -122,9 +122,14 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       }
       @media(min-width:1200px){.card .identity-block{grid-template-columns:250px minmax(0,1fr)!important}}
       @media(max-width:767px){
+        .card .identity-block{grid-template-columns: minmax(0,132px) minmax(0,1fr)!important;gap:10px 16px!important;align-items:center!important;text-align:left!important}
+        .card .identity-block #logoBox{grid-column:1!important;grid-row:1 / span 2!important;justify-self:start!important;width:100%!important}
+        .card .identity-block #logoNegocio{max-width:100%!important;width:100%!important;height:auto!important;object-fit:contain!important}
+        .card .identity-block #nombre{grid-column:2!important;grid-row:1!important;text-align:left!important;align-self:end!important;font-size:clamp(17px,4.4vw,25px)!important}
+        .card .identity-block #codigo{grid-column:2!important;grid-row:2!important;text-align:left!important;align-self:start!important;font-size:clamp(12px,3.2vw,16px)!important}
+        .card .identity-block #placeHeaderDescription{grid-column:1/-1!important;grid-row:3!important}
         .card .identity-block{padding:22px 18px!important}
         .card .identity-block #logoBox{margin:0 auto!important}
-        .card .identity-block #nombre{font-size:clamp(20px,5vw,29px)!important}
         .card .identity-block #placeHeaderDescription{margin-top:4px!important}
         .card .white-sheet .place-ad-preview{margin:0 0 16px!important}
       }

@@ -15,11 +15,12 @@ beforeAll(async()=>{
  if(native){const u=new URL(native);if(!['127.0.0.1','localhost'].includes(u.hostname)||u.pathname!=='/paypal_sandbox_test')throw Error('ISOLATED_PAYPAL_TEST_DATABASE_REQUIRED');sql=postgres(native,{max:4});}
  else{db=new PGlite({extensions:{pgcrypto}});sql=adapter(db);}
  expect(await paypalSandboxSchemaReady(sql)).toBe(false);
+ const initial=native?await sql.reserve():sql;
  const root=new URL('../../../',import.meta.url);
- for(const name of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql','0005_general_google_auth.sql'])await sql.unsafe(readFileSync(new URL('db/migrations/'+name,root),'utf8'));
- for(const name of ['landline','requests','countries','payments','paypal'])await sql.unsafe(readFileSync(new URL('../schema-proposals/'+name+'.sql',import.meta.url),'utf8'));
+ for(const name of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql','0005_general_google_auth.sql'])await initial.unsafe(readFileSync(new URL('db/migrations/'+name,root),'utf8'));
+ for(const name of ['landline','requests','countries','payments','paypal'])await initial.unsafe(readFileSync(new URL('../schema-proposals/'+name+'.sql',import.meta.url),'utf8'));
  expect(await paypalSandboxSchemaReady(sql)).toBe(true);
- await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1,'synthetic-paypal@example.test'),($2,'synthetic-other@example.test')",[owner,other]);
+ await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1,'synthetic-paypal@example.test'),($2,'synthetic-other@example.test')",[owner,other]);if(native)await initial.release();
 },30000);
 afterAll(async()=>{if(db)await db.close();else await sql?.end();});
 async function address(plan='BUSINESS_PREMIUM',extra:any={}){

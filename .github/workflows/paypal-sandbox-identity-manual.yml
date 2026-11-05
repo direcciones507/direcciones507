@@ -1,6 +1,11 @@
 name: PayPal Sandbox credential smoke test (manual)
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - work/paypal-sandbox-20261105
+    paths:
+      - .github/workflows/paypal-sandbox-identity-manual.yml
 
 permissions:
   contents: read

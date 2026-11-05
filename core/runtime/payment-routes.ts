@@ -52,3 +52,6 @@ export async function handlePaymentRoutes(req:Request,context:Context):Promise<R
     return respond(code,ipn?{success:false}:{ok:false,error:safe,...(publicOrderId?{orderId:publicOrderId}:{})});
   }
 }
+
+// Independent Sandbox routes; the Yappy handler above is unchanged.
+export {handlePayPalRoutes} from './paypal-routes';

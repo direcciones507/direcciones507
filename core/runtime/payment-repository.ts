@@ -26,7 +26,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId);
-        if(row.request_data?.migration||!(row.status==='PENDING_REVIEW'||row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING'))throw Error('INVALID_PAYMENT_REQUEST');
+        if(!isPayableClientRequest(row)||!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(row.request_data?.plan))throw Error('INVALID_PAYMENT_REQUEST');
         const plan=row.request_data?.plan,amount=paymentAmount(plan);
         if(amount===0)return {required:false,amountCents:0};
         const operation=createHash('sha256').update('paypal:test:'+userId+':'+addressId+':'+key).digest('hex');
@@ -45,14 +45,18 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         const orders=await tx.unsafe("SELECT * FROM ad507.orders WHERE id=$1::uuid AND user_id=$2::uuid AND provider='PAYPAL' AND payment_environment='test'",[orderId,userId]);
         if(!orders.length)throw Error('PAYMENT_NOT_FOUND');await own(tx,userId,orders[0].address_id);
         const locked=await tx.unsafe("SELECT * FROM ad507.orders WHERE id=$1::uuid FOR UPDATE",[orderId]);const p=locked[0];
-        if(p.status!=='PENDING'||p.provider_reference)throw Error('PAYMENT_ALREADY_INITIALIZED');
+        if(p.provider_reference&&!p.provider_reference.startsWith('INITIALIZING:'))return p;
+        if(p.status!=='PENDING')throw Error('PAYMENT_ALREADY_INITIALIZED');
+        // Retry the same provider idempotency key only inside its six-hour retention window.
+        if(p.provider_reference&&Date.now()-new Date(p.updated_at).getTime()>5*3600000)throw Error('PAYMENT_RECONCILIATION_REQUIRED');
         if(p.amount_cents!==paymentAmount(p.payment_plan)||p.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
-        await tx.unsafe("UPDATE ad507.orders SET provider_reference='INITIALIZING:'||id::text,updated_at=now() WHERE id=$1::uuid",[orderId]);return p;
+        await tx.unsafe("UPDATE ad507.orders SET provider_reference='INITIALIZING:'||id::text,updated_at=CASE WHEN provider_reference IS NULL THEN now() ELSE updated_at END WHERE id=$1::uuid",[orderId]);return p;
       });
+      if(row.provider_reference&&!row.provider_reference.startsWith('INITIALIZING:'))return {orderId,providerOrderId:row.provider_reference};
       // Keep the committed initialization marker on uncertain failures; never replace the intent.
       const result=await provider.createOrder({id:row.id,amountCents:row.amount_cents,currency:'USD',provider_reference:null});
       await sql.begin(async tx=>{
-        const rows=await tx.unsafe("UPDATE ad507.orders SET provider_reference=$2,updated_at=now() WHERE id=$1::uuid AND provider='PAYPAL' AND provider_reference='INITIALIZING:'||id::text RETURNING id",[orderId,result.providerOrderId]);
+        const rows=await tx.unsafe("UPDATE ad507.orders SET provider_reference=$2,updated_at=now() WHERE id=$1::uuid AND provider='PAYPAL' AND (provider_reference='INITIALIZING:'||id::text OR provider_reference=$2) RETURNING id",[orderId,result.providerOrderId]);
         if(!rows.length)throw Error('PAYMENT_PROVIDER_REFERENCE_CONFLICT');
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAYPAL_ORDER_REGISTERED','ORDER',$1)",[orderId]);
       });
@@ -61,7 +65,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     async confirmPayPal(userId:string,orderId:string,provider:ReturnType<typeof createPayPalSandboxProvider>,capture=false) {
       requirePayPal();if(!uuid.test(orderId)||!uuid.test(userId))throw Error('PAYMENT_NOT_FOUND');
       const rows=await sql.unsafe("SELECT * FROM ad507.orders WHERE id=$1::uuid AND user_id=$2::uuid AND provider='PAYPAL' AND payment_environment='test'",[orderId,userId]);
-      if(!rows.length)throw Error('PAYMENT_NOT_FOUND');const p=rows[0];await own(sql,userId,p.address_id);
+      if(!rows.length)throw Error('PAYMENT_NOT_FOUND');const p=rows[0];if(!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(p.payment_plan))throw Error('INVALID_PAYMENT_REQUEST');await own(sql,userId,p.address_id);
       if(p.amount_cents!==paymentAmount(p.payment_plan)||p.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
       const proof=await provider.confirmedCapture({id:p.id,amountCents:p.amount_cents,currency:'USD',provider_reference:p.provider_reference},capture);
       const confirmation=await sql.begin(async tx=>{
@@ -74,8 +78,32 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','PAYPAL_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[orderId,tx.json({status:current.status}),tx.json({status:proof.status,captureId:proof.captureId})]);
         return {id:orderId,status:proof.status,unchanged:false};
       });
-      if(confirmation.status==='PAID'&&options.onVerifiedPayment)await options.onVerifiedPayment(p.address_id);
+      if(confirmation.status==='PAID'&&options.onVerifiedPayment){try{await options.onVerifiedPayment(p.address_id);}catch{throw Error('PAYMENT_PUBLICATION_PENDING');}}
       return confirmation;
+    },
+    async quotePayPal(userId:string,addressId:string){
+      requirePayPal();return sql.begin(async tx=>{const row=await own(tx,userId,addressId);
+        if(!isPayableClientRequest(row)||!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(row.request_data?.plan))throw Error('INVALID_PAYMENT_REQUEST');
+        const orders=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND user_id=$2::uuid AND provider='PAYPAL' AND payment_environment='test' LIMIT 1",[addressId,userId]);
+        return {addressId,plan:row.request_data.plan,amountCents:paymentAmount(row.request_data.plan),currency:'USD',orderId:orders[0]?.id??null};
+      });
+    },
+    async readPayPal(userId:string,orderId:string) {
+      requirePayPal();if(!uuid.test(userId)||!uuid.test(orderId))throw Error('PAYMENT_NOT_FOUND');
+      const rows=await sql.unsafe("SELECT id,address_id,payment_plan,amount_cents,currency,status,provider_reference,confirmed_at FROM ad507.orders WHERE id=$1::uuid AND user_id=$2::uuid AND provider='PAYPAL' AND payment_environment='test'",[orderId,userId]);
+      if(!rows.length)throw Error('PAYMENT_NOT_FOUND');await own(sql,userId,rows[0].address_id);
+      return rows[0];
+    },
+    async receivePayPalWebhook(headers:Headers,event:any,provider:ReturnType<typeof createPayPalSandboxProvider>) {
+      requirePayPal();const verified=await provider.verifyWebhook(headers,event);
+      if(!['CHECKOUT.ORDER.APPROVED','PAYMENT.CAPTURE.COMPLETED','PAYMENT.CAPTURE.DENIED'].includes(verified.eventType))return {ignored:true};
+      const reference=verified.eventType==='CHECKOUT.ORDER.APPROVED'?event.resource?.id:event.resource?.supplementary_data?.related_ids?.order_id;
+      if(typeof reference!=='string'||!/^[A-Z0-9]{1,36}$/.test(reference))throw Error('INVALID_PAYMENT_NOTIFICATION');
+      const rows=await sql.unsafe("SELECT id,user_id FROM ad507.orders WHERE provider='PAYPAL' AND payment_environment='test' AND provider_reference=$1",[reference]);
+      if(!rows.length)return {ignored:true};if(rows.length!==1)throw Error('PAYMENT_PROVIDER_REFERENCE_CONFLICT');
+      // A verified event is a wake-up signal, never payment proof: re-read merchant, order and capture.
+      try{return await this.confirmPayPal(rows[0].user_id,rows[0].id,provider,verified.eventType==='CHECKOUT.ORDER.APPROVED');}
+      catch(error){if(error instanceof Error&&error.message==='PAYMENT_CONFIRMATION_REQUIRED')return {pending:true};throw error;}
     },
     async claimProviderOrder(orderId:string) {
       requireYappy();

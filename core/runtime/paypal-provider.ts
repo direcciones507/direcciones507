@@ -1,16 +1,26 @@
 import {money} from './payment-policy';
-// No runtime wiring or production host. This release cannot enable real payments.
+// Sandbox only; live PayPal remains unsupported and disabled.
 export const PAYPAL_PAYMENTS_ENABLED=false;
-export type PayPalSandboxConfiguration={environment:'test';clientId:string;clientSecret:string;merchantId:string;webhookId:string};
+export type PayPalSandboxConfiguration={environment:'test';clientId:string;clientSecret:string;merchantId:string;webhookId:string;origin?:string};
 export function paypalSandboxConfiguration(env:Record<string,string|undefined>):PayPalSandboxConfiguration|null {
  if(env.AD507_PAYPAL_SANDBOX_ENABLED!=='true'||env.AD507_PAYPAL_ENVIRONMENT!=='test')return null;
  const c={environment:'test' as const,clientId:env.AD507_PAYPAL_CLIENT_ID??'',clientSecret:env.AD507_PAYPAL_CLIENT_SECRET??'',merchantId:env.AD507_PAYPAL_MERCHANT_ID??'',webhookId:env.AD507_PAYPAL_WEBHOOK_ID??''};
  return Object.values(c).every(value=>typeof value==='string'&&value.trim()&&value.length<=4096)?c:null;
 }
+/** Sandbox must run against an explicitly isolated acceptance database, never beside live Yappy. */
+export function paypalSandboxRuntimeEnabled(env:Record<string,string|undefined>){
+ if(env.AD507_PAYPAL_SANDBOX_ISOLATED!=='true'||env.AD507_YAPPY_PAYMENTS_ENABLED==='true')return false;
+ try{const url=new URL(env.AD507_PAYPAL_ORIGIN??'');return url.protocol==='https:'&&!url.username&&!url.password&&url.pathname==='/'&&!url.search&&!url.hash&&!!paypalSandboxConfiguration(env);}catch{return false;}
+}
+/** Read-only guard: existing reviewed PayPal uniqueness indexes must already be installed. */
+export async function paypalSandboxSchemaReady(sql:{unsafe:(query:string)=>Promise<any>}){
+ try{const rows=await sql.unsafe("SELECT count(*)::int AS n FROM pg_index i JOIN pg_class c ON c.oid=i.indexrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='ad507' AND c.relname IN ('core_paypal_operation_uidx','core_paypal_reference_uidx','core_payment_address_environment_uidx') AND i.indisunique AND i.indisvalid");return rows[0]?.n===3;}catch{return false;}
+}
 export type PayPalIntent={id:string;amountCents:number;currency:'USD';provider_reference:string|null};
 const idPattern=/^[A-Z0-9]{1,36}$/;
 export function createPayPalSandboxProvider(config:PayPalSandboxConfiguration,http:typeof fetch=fetch){
  if(config.environment!=='test'||![config.clientId,config.clientSecret,config.merchantId,config.webhookId].every(value=>typeof value==='string'&&value.trim()))throw Error('INVALID_PAYPAL_CONFIGURATION');
+ if(config.origin){const u=new URL(config.origin);if(u.protocol!=='https:'||u.username||u.password||u.pathname!=='/'||u.search||u.hash)throw Error('INVALID_PAYPAL_CONFIGURATION');}
  const base='https://api-m.sandbox.paypal.com';
  async function responseJson(response:Response){
   if(!response.ok)throw Error('PAYPAL_PROVIDER_UNCONFIRMED');
@@ -40,9 +50,9 @@ export function createPayPalSandboxProvider(config:PayPalSandboxConfiguration,ht
   async createOrder(intent:PayPalIntent){
    validateIntent(intent);if(intent.provider_reference)throw Error('PAYMENT_ALREADY_INITIALIZED');
    const key='C'+intent.id.replaceAll('-','');
-   const order=await call('/v2/checkout/orders','POST',{intent:'CAPTURE',purchase_units:[{custom_id:intent.id,payee:{merchant_id:config.merchantId},amount:{currency_code:'USD',value:money(intent.amountCents)}}]},key);
+   const order=await call('/v2/checkout/orders','POST',{intent:'CAPTURE',purchase_units:[{custom_id:intent.id,payee:{merchant_id:config.merchantId},amount:{currency_code:'USD',value:money(intent.amountCents)}}],...(config.origin?{payment_source:{paypal:{experience_context:{return_url:config.origin+'/panel/paypal/'+intent.id,cancel_url:config.origin+'/panel/paypal/'+intent.id+'?cancelled=1',user_action:'PAY_NOW',shipping_preference:'NO_SHIPPING'}}}}:{})},key);
    validateOrder(order,intent);if(!['CREATED','APPROVED','PAYER_ACTION_REQUIRED'].includes(order.status))throw Error('PAYPAL_PROVIDER_UNCONFIRMED');
-   return {providerOrderId:order.id};
+   return {providerOrderId:order.id,approvalUrl:'https://www.sandbox.paypal.com/checkoutnow?token='+order.id};
   },
   async confirmedCapture(intent:PayPalIntent,capture=false){
    validateIntent(intent);if(!intent.provider_reference||!idPattern.test(intent.provider_reference))throw Error('PAYMENT_PROVIDER_REFERENCE_REQUIRED');

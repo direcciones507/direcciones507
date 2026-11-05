@@ -32,3 +32,5 @@ async function init(){try{const r=await fetch('/v1/user/requests/'+addressId+'/p
 refresh.onclick=()=>state().catch(()=>{m.textContent='No se pudo consultar el pago.';});init();
 </script></body></html>`;
 }
+
+export {paypalPaymentPage} from './paypal-ui';

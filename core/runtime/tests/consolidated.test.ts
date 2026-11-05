@@ -806,7 +806,7 @@ test('PayPal sandbox shares orders/audit: concurrent intent, private ownership, 
     let calls=0,refunded=false;
     const provider={createOrder:async()=>{calls++;return {providerOrderId:'PAYPALISOLATED123'};},confirmedCapture:async()=>({status:refunded?'REFUNDED':'PAID',captureId:'CAPTUREISOLATED123'})} as any;
     await repo.initializePayPal(clientId,a.order.id,provider);
-    await expect(repo.initializePayPal(clientId,a.order.id,provider)).rejects.toThrow('PAYMENT_ALREADY_INITIALIZED');expect(calls).toBe(1);
+    expect((await repo.initializePayPal(clientId,a.order.id,provider)).providerOrderId).toBe('PAYPALISOLATED123');expect(calls).toBe(1);
     const confirmed=await Promise.all([repo.confirmPayPal(clientId,a.order.id,provider),repo.confirmPayPal(clientId,a.order.id,provider)]);
     expect(confirmed.filter(p=>!p.unchanged)).toHaveLength(1);
     const row=(await db.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[address]))[0];expect(row.status).toBe('PENDING_REVIEW');expect(row.review_decision).toBeNull();expect(row.code).toBeNull();
@@ -818,8 +818,8 @@ test('PayPal sandbox shares orders/audit: concurrent intent, private ownership, 
     const pending=await repo.preparePayPal(clientId,await make(),'paypal-timeout-key-001');
     const failing={createOrder:async()=>{throw Error('PAYPAL_PROVIDER_UNCONFIRMED');}} as any;
     await expect(repo.initializePayPal(clientId,pending.order.id,failing)).rejects.toThrow('PAYPAL_PROVIDER_UNCONFIRMED');
-    await expect(repo.initializePayPal(clientId,pending.order.id,provider)).rejects.toThrow('PAYMENT_ALREADY_INITIALIZED');
-    expect((await db.unsafe('SELECT status,provider_reference FROM ad507.orders WHERE id=$1::uuid',[pending.order.id]))[0]).toMatchObject({status:'PENDING',provider_reference:'INITIALIZING:'+pending.order.id});
+    await repo.initializePayPal(clientId,pending.order.id,{...provider,createOrder:async()=>({providerOrderId:'PAYPALRETRY123'})});
+    expect((await db.unsafe('SELECT status,provider_reference FROM ad507.orders WHERE id=$1::uuid',[pending.order.id]))[0]).toMatchObject({status:'PENDING',provider_reference:'PAYPALRETRY123'});
   }finally{await db.end();}
 },30000);
 

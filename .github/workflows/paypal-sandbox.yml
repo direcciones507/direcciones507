@@ -1,0 +1,48 @@
+name: PayPal Sandbox isolated acceptance
+on:
+  push:
+    branches: [work/paypal-sandbox-20261105]
+    paths-ignore: ['docs/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-paypal:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: paypal_sandbox_test
+          POSTGRES_PASSWORD: isolated-sandbox-test
+        ports: ['55441:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: core/runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - run: bun install --frozen-lockfile
+      - run: bun build server.ts --target bun --external postgres --outfile /tmp/paypal-review.js
+      - name: Provider routes Yappy compatibility and isolated WASM checkout
+        run: bun test tests/paypal-provider.test.ts tests/paypal-routes.test.ts tests/paypal-checkout.test.ts tests/payment-policy.test.ts tests/paid-activation-policy.test.ts
+      - name: Native PostgreSQL checkout publication concurrency and retries
+        run: bun test tests/paypal-checkout.test.ts
+        env:
+          AD507_PAYPAL_TEST_DATABASE_URL: postgres://postgres:isolated-sandbox-test@127.0.0.1:55441/paypal_sandbox_test
+      - name: Browser tools isolated from project dependencies
+        run: |
+          npm install --prefix /tmp/paypal-browser-tools --no-audit --no-fund playwright@1.56.1
+          browser_bin="$(command -v google-chrome || command -v chromium)"
+          echo "AD507_CHROMIUM=$browser_bin" >> "$GITHUB_ENV"
+      - name: Mobile tablet desktop simulated provider journeys
+        run: bun scripts/paypal-browser.ts
+        env:
+          AD507_PLAYWRIGHT_MODULE: /tmp/paypal-browser-tools/node_modules/playwright/index.mjs

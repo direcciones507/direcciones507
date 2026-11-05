@@ -1,0 +1,53 @@
+name: PayPal Sandbox credential smoke test (manual)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sandbox-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify configured Sandbox identity (no payments)
+        shell: bash
+        env:
+          CLIENT_ID: ${{ secrets.AD507_PAYPAL_SANDBOX_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.AD507_PAYPAL_SANDBOX_CLIENT_SECRET }}
+          MERCHANT_ID: ${{ secrets.AD507_PAYPAL_SANDBOX_MERCHANT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$CLIENT_ID" || -z "$CLIENT_SECRET" || -z "$MERCHANT_ID" ]]; then
+            echo "::error::Missing one or more PayPal Sandbox secrets"; exit 1
+          fi
+          echo "::add-mask::$CLIENT_ID"
+          echo "::add-mask::$CLIENT_SECRET"
+          echo "::add-mask::$MERCHANT_ID"
+          python3 - <<'PY'
+          import base64,json,os,urllib.request,urllib.error
+          base="https://api-m.sandbox.paypal.com"
+          cid=os.environ["CLIENT_ID"]; secret=os.environ["CLIENT_SECRET"]
+          expected=os.environ["MERCHANT_ID"].strip()
+          assert expected and expected.isalnum(), "Invalid expected merchant identifier"
+          basic=base64.b64encode((cid+":"+secret).encode()).decode()
+          def request(url,headers,data=None):
+              req=urllib.request.Request(url,headers=headers,data=data,method="POST" if data is not None else "GET")
+              with urllib.request.urlopen(req,timeout=15) as resp:
+                  if resp.status!=200: raise RuntimeError("Unexpected PayPal response")
+                  return json.load(resp)
+          try:
+              auth=request(base+"/v1/oauth2/token",{"Authorization":"Basic "+basic,"Content-Type":"application/x-www-form-urlencoded"},b"grant_type=client_credentials")
+              token=auth.get("access_token")
+              if not isinstance(token,str) or not token: raise RuntimeError("OAuth failed")
+              print("PASS: PayPal Sandbox OAuth authentication")
+              # Userinfo may require explicit identity scopes on the app. Fail closed if unavailable.
+              info=request(base+"/v1/identity/oauth2/userinfo?schema=paypalv1",{"Authorization":"Bearer "+token,"Accept":"application/json"})
+              merchant=info.get("payer_id")
+              if not merchant or merchant!=expected: raise RuntimeError("Merchant ID unavailable or mismatch")
+              print("PASS: Merchant ID matches Sandbox account")
+              print("PASS: Read-only checks complete; no orders, captures or webhooks created")
+          except Exception:
+              print("::error::Sandbox identity check failed; verify app account/scopes and secrets (no sensitive details logged)")
+              raise SystemExit(1)
+          PY

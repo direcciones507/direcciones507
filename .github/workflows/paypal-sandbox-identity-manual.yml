@@ -46,13 +46,11 @@ jobs:
               token=auth.get("access_token")
               if not isinstance(token,str) or not token: raise RuntimeError("OAuth failed")
               print("PASS: PayPal Sandbox OAuth authentication")
-              # Userinfo may require explicit identity scopes on the app. Fail closed if unavailable.
-              info=request(base+"/v1/identity/oauth2/userinfo?schema=paypalv1",{"Authorization":"Bearer "+token,"Accept":"application/json"})
-              merchant=info.get("payer_id")
-              if not merchant or merchant!=expected: raise RuntimeError("Merchant ID unavailable or mismatch")
-              print("PASS: Merchant ID matches Sandbox account")
-              print("PASS: Read-only checks complete; no orders, captures or webhooks created")
+              # Client-credentials token is app-level; userinfo is not proof of merchant ownership.
+              # Never claim the configured Merchant ID is verified from this OAuth result.
+              print("PENDING: Merchant ID ownership cannot be verified by app-only OAuth")
+              print("PASS: Read-only OAuth check complete; no orders, captures or webhooks created")
           except Exception:
-              print("::error::Sandbox identity check failed; verify app account/scopes and secrets (no sensitive details logged)")
+              print("::error::Sandbox OAuth check failed; verify Sandbox app credentials (no sensitive details logged)")
               raise SystemExit(1)
           PY

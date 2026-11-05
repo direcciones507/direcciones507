@@ -1,0 +1,38 @@
+[
+  {
+    "width": 390,
+    "hostedApprovalSimulated": true,
+    "capture": true,
+    "duplicateCapturePrevented": true,
+    "cancelDoesNotPay": true,
+    "overflow": false,
+    "jsErrors": [],
+    "realPayPal": false,
+    "realDatabase": false,
+    "physicalDevice": false
+  },
+  {
+    "width": 820,
+    "hostedApprovalSimulated": true,
+    "capture": true,
+    "duplicateCapturePrevented": true,
+    "cancelDoesNotPay": true,
+    "overflow": false,
+    "jsErrors": [],
+    "realPayPal": false,
+    "realDatabase": false,
+    "physicalDevice": false
+  },
+  {
+    "width": 1440,
+    "hostedApprovalSimulated": true,
+    "capture": true,
+    "duplicateCapturePrevented": true,
+    "cancelDoesNotPay": true,
+    "overflow": false,
+    "jsErrors": [],
+    "realPayPal": false,
+    "realDatabase": false,
+    "physicalDevice": false
+  }
+]

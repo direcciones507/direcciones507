@@ -1,0 +1,26 @@
+(pass) server prices use integer cents and unknown or inherited keys fail closed [0.35ms]
+(pass) official IPN states authenticate the exact merchant domain and reject browser success [1.02ms]
+(pass) provider adapter isolates test traffic and calculates its amount on the server [1.85ms]
+(pass) payment routes are disabled without touching auth/DB/provider; scripts parse [40.63ms]
+(pass) sandbox configuration stays disabled by default; production config refused [0.15ms]
+(pass) server create/capture verifies identity, merchant, USD total; durable idempotency keys [1.29ms]
+(pass) approval, forged browser success, wrong totals/currency/merchant and timeouts never confirm [0.84ms]
+(pass) signed webhook verification posts to fixed PayPal host; unverified events rejected [0.49ms]
+(pass) full refund is a server-read status, not a browser cancellation [0.29ms]
+(pass) only paid products use automatic activation; free and historical records remain manual [0.08ms]
+(pass) automatic eligibility distinguishes completed pending payment from incomplete drafts and exceptional review [0.04ms]
+(pass) Premium and Premium Pro publish only after verified capture via the existing canonical publisher [85.61ms]
+(pass) new server intents reject Residential free historical and foreign ownership without charging [10.79ms]
+(pass) timeout retries preserve one local intent and stable provider reference; expired uncertainty requires reconciliation [22.20ms]
+(pass) signed webhook re-reads exact order and merchant; duplicate delivery and publication failures retry safely [44.45ms]
+(skip) native concurrent prepare and confirmations keep one intent and one paid transition
+(pass) Sandbox gate requires explicit isolation HTTPS and test; refuses live Yappy coexistence [0.18ms]
+(pass) disabled routes never touch DB auth or provider; unrelated Yappy path remains separate [0.95ms]
+(pass) create capture and query require own session exact origin and strict body; no browser proof [0.87ms]
+(pass) webhook verifies via repository without a user session and preserves retry on transient errors [0.36ms]
+(pass) approval cancellation and denied capture do not fabricate paid status; scripts parse on both entry pages [0.93ms]
+ 20 pass
+ 1 skip
+ 0 fail
+ 120 expect() calls
+Ran 21 tests across 5 files. [2.51s]

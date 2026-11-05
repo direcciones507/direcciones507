@@ -1,0 +1,45 @@
+{
+  "commit": "1e8d726137003dfa5573c83676bf048627c7b8ed",
+  "run": 42085643043,
+  "job": 127449876194,
+  "result": "success",
+  "focused": {
+    "pass": 20,
+    "fail": 0,
+    "skip": 1,
+    "engine": "PostgreSQL WASM; native-only concurrency skipped"
+  },
+  "native": {
+    "pass": 5,
+    "fail": 0,
+    "engine": "PostgreSQL 18 isolated GitHub runner"
+  },
+  "browser": {
+    "widths": [
+      390,
+      820,
+      1440
+    ],
+    "provider": "simulated",
+    "repository": "simulated",
+    "jsErrors": 0,
+    "horizontalOverflow": false
+  },
+  "wideRegression": {
+    "pass": 191,
+    "skip": 3,
+    "fail": 4,
+    "baseline": {
+      "pass": 182,
+      "skip": 2,
+      "fail": 4
+    },
+    "newFailures": 0
+  },
+  "realPayPalSandbox": false,
+  "livePayments": false,
+  "deployed": false,
+  "railwayMutations": 0,
+  "remoteMigrations": 0,
+  "sqlFilesChanged": 0
+}

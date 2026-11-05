@@ -1,3 +1,23 @@
+# Actualización PayPal Sandbox — 5 noviembre 2026
+
+Rama `work/paypal-sandbox-20261105`; implementación `a1f7802`, versión comprobada `1e8d726`. [Informe y variables](../PAYPAL-SANDBOX-20261105.md). Este bloque actualiza únicamente PayPal y su integración; los estados Yappy históricos inferiores no sustituyen su estado real actual.
+
+- [x] Adaptador existente conectado a rutas de cotización, crear/reanudar, aprobación alojada, captura, consulta y webhook HTTPS.
+- [x] Firma verificada por API PayPal y nueva consulta de orden/captura; USD, importe, comercio, pedido y COMPLETED comprobados.
+- [x] Idempotencia y concurrencia, reintentos de creación incierta, conciliación tras caducidad y recuperación de publicación después de PAID.
+- [x] Publicador existente para Premium/Premium Pro; filtro Pro corregido; Residencial no expuesto ni publicado por Sandbox.
+- [x] Gate de aislamiento, índices existentes comprobados sin DDL, Live desactivado, sin cambios de Yappy/credenciales/precios/históricos.
+- [x] CI 42085643043 SUCCESS: 20 específicas + cinco nativas, cero fallidas; tres recorridos Chromium simulados en 390/820/1440.
+- [x] Build y validación de migraciones aprobados; regresión comparada con base: mismos cuatro fallos previos documentados, sin nuevas regresiones detectadas.
+- [ ] Credenciales/receptor Sandbox y entorno de aceptación existente, aislado y autorizado. No crearlo ni apagar Yappy real para habilitarlo.
+- [ ] Autorización de despliegue y revisión de esquema/respaldo si corresponde; nada desplegado ni migrado remotamente.
+- [ ] Registrar webhook y verificar aprobación/captura/evento reales en PayPal Sandbox: las pruebas anteriores usan proveedor simulado.
+- [ ] Producción PayPal, condiciones comerciales y Residencial: fuera de esta autorización; permanecen desactivados.
+
+Webhook preparado para el host Core referenciado: `https://ad507-core-production.up.railway.app/v1/payments/paypal/webhook`, **sin desplegar ni declarar operativo**. Si aceptación usa otro origen, registrar ese origen con la misma ruta. No activar Sandbox sobre el servicio de cobros reales.
+
+---
+
 # DIRECCIONES 507/LATAM | PayPal + Yappy en paralelo
 
 **Fecha:** 2026-10-18  

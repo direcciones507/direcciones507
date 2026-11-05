@@ -1,0 +1,34 @@
+2026-11-05T18:35:30.5766546Z (pass) Sandbox gate requires explicit isolation HTTPS and test; refuses live Yappy coexistence [0.20ms]
+2026-11-05T18:35:30.5776211Z (pass) disabled routes never touch DB auth or provider; unrelated Yappy path remains separate [1.03ms]
+2026-11-05T18:35:30.5790112Z (pass) create capture and query require own session exact origin and strict body; no browser proof [1.36ms]
+2026-11-05T18:35:30.5794412Z (pass) webhook verifies via repository without a user session and preserves retry on transient errors [0.45ms]
+2026-11-05T18:35:30.5803129Z (pass) approval cancellation and denied capture do not fabricate paid status; scripts parse on both entry pages [0.83ms]
+2026-11-05T18:35:30.5811384Z (pass) server prices use integer cents and unknown or inherited keys fail closed [0.15ms]
+2026-11-05T18:35:30.5820428Z (pass) official IPN states authenticate the exact merchant domain and reject browser success [0.88ms]
+2026-11-05T18:35:30.5833352Z (pass) provider adapter isolates test traffic and calculates its amount on the server [1.28ms]
+2026-11-05T18:35:30.5921500Z (pass) payment routes are disabled without touching auth/DB/provider; scripts parse [8.81ms]
+2026-11-05T18:35:32.9916226Z (pass) Premium and Premium Pro publish only after verified capture via the existing canonical publisher [78.96ms]
+2026-11-05T18:35:32.9997770Z (pass) new server intents reject Residential free historical and foreign ownership without charging [8.82ms]
+2026-11-05T18:35:33.0198127Z (pass) timeout retries preserve one local intent and stable provider reference; expired uncertainty requires reconciliation [19.95ms]
+2026-11-05T18:35:33.0585920Z (pass) signed webhook re-reads exact order and merchant; duplicate delivery and publication failures retry safely [38.68ms]
+2026-11-05T18:35:33.0588511Z (skip) native concurrent prepare and confirmations keep one intent and one paid transition
+2026-11-05T18:35:33.0731427Z (pass) only paid products use automatic activation; free and historical records remain manual [0.24ms]
+2026-11-05T18:35:33.0732802Z (pass) automatic eligibility distinguishes completed pending payment from incomplete drafts and exceptional review [0.08ms]
+2026-11-05T18:35:33.0743326Z (pass) sandbox configuration stays disabled by default; production config refused [0.13ms]
+2026-11-05T18:35:33.0754346Z (pass) server create/capture verifies identity, merchant, USD total; durable idempotency keys [1.10ms]
+2026-11-05T18:35:33.0767251Z (pass) approval, forged browser success, wrong totals/currency/merchant and timeouts never confirm [1.28ms]
+2026-11-05T18:35:33.0777383Z (pass) signed webhook verification posts to fixed PayPal host; unverified events rejected [0.63ms]
+2026-11-05T18:35:33.0798406Z (pass) full refund is a server-read status, not a browser cancellation [0.30ms]
+2026-11-05T18:35:33.0800276Z  20 pass
+2026-11-05T18:35:33.0800466Z  1 skip
+2026-11-05T18:35:33.0800659Z  0 fail
+2026-11-05T18:35:33.0801098Z Ran 21 tests across 5 files. [2.57s]
+2026-11-05T18:35:33.4309343Z (pass) Premium and Premium Pro publish only after verified capture via the existing canonical publisher [93.28ms]
+2026-11-05T18:35:33.4426360Z (pass) new server intents reject Residential free historical and foreign ownership without charging [11.72ms]
+2026-11-05T18:35:33.4700153Z (pass) timeout retries preserve one local intent and stable provider reference; expired uncertainty requires reconciliation [27.37ms]
+2026-11-05T18:35:33.5189397Z (pass) signed webhook re-reads exact order and merchant; duplicate delivery and publication failures retry safely [48.88ms]
+2026-11-05T18:35:33.5370879Z (pass) native concurrent prepare and confirmations keep one intent and one paid transition [18.16ms]
+2026-11-05T18:35:33.5423255Z  5 pass
+2026-11-05T18:35:33.5423563Z  0 fail
+2026-11-05T18:35:33.5424272Z Ran 5 tests across 1 file. [377.00ms]
+2026-11-05T18:35:40.5198402Z [{"width":390,"hostedApprovalSimulated":true,"capture":true,"duplicateCapturePrevented":true,"cancelDoesNotPay":true,"overflow":false,"jsErrors":[],"realPayPal":false,"realDatabase":false,"physicalDevice":false},{"width":820,"hostedApprovalSimulated":true,"capture":true,"duplicateCapturePrevented":true,"cancelDoesNotPay":true,"overflow":false,"jsErrors":[],"realPayPal":false,"realDatabase":false,"physicalDevice":false},{"width":1440,"hostedApprovalSimulated":true,"capture":true,"duplicateCapturePrevented":true,"cancelDoesNotPay":true,"overflow":false,"jsErrors":[],"realPayPal":false,"realDatabase":false,"physicalDevice":false}]

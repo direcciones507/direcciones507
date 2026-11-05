@@ -1,0 +1,22 @@
+{
+  "base": "816a2a491eff5bf004edde98ef99044952db1189",
+  "baseline": {
+    "pass": 182,
+    "skip": 2,
+    "fail": 4
+  },
+  "changed": {
+    "pass": 191,
+    "skip": 3,
+    "fail": 4
+  },
+  "sameFailures": [
+    "natalie-https.test.ts: DISPOSABLE_LOCAL_DATABASE_REQUIRED",
+    "public-open-graph.test.ts: BUSINESS_PREMIUM OG description assertion",
+    "startup-no-ddl.test.ts: disposable PostgreSQL required",
+    "published-card-presentation.test.ts: existing visual assertion"
+  ],
+  "newFailures": 0,
+  "fullConsolidatedNativeSuite": "not certified; root local embedded PostgreSQL cannot initialize a user",
+  "providers": "synthetic; no PayPal credentials configured locally"
+}

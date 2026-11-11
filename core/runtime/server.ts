@@ -21,6 +21,7 @@ import { createPaymentRepository } from './payment-repository';
 import { createYappyProvider } from './yappy-provider';
 import { handlePaymentRoutes } from './payment-routes';
 import { paymentPage } from './payment-ui';
+import {handleTemporaryEventRoutes} from './temporary-event-routes';
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 2, connect_timeout: 5, idle_timeout: 30, max_lifetime: 1800, connection:{statement_timeout:'15000',lock_timeout:'5000'}, application_name: 'ad507-core-general-auth' });
 const auth = createGeneralAuth(sql, process.env);
@@ -78,6 +79,8 @@ startLegacyCore(async req => {
   const publicResponse=await handleNewPublicRoutes(req,{enabled:commercialWorkflowEnabled,sql,r2:requestR2});if(publicResponse)return publicResponse;
   const requestResponse = await handleRequestRoutes(req, { enabled: commercialWorkflowEnabled, sql, auth, repository: requestRepository, r2: requestR2 });
   if (requestResponse) return requestResponse;
+  const temporaryEventResponse=await handleTemporaryEventRoutes(req,{enabled:process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true',sql,auth});
+  if(temporaryEventResponse)return temporaryEventResponse;
   const userPanel = await handleUserPanel(req, sql, auth);
   if (userPanel) return userPanel;
   if (req.method === 'GET' && url.pathname === '/' && req.headers.get('cookie')?.includes('ad507_session=')) {

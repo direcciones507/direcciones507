@@ -40,4 +40,4 @@ export function validateTemporaryEventDraft(raw:unknown):TemporaryEventDraft{
 export function temporaryEventExpiryCalendarDate(endDate:string):string{
  const day=dateDay(endDate);return new Date((day+2)*86400000).toISOString().slice(0,10);
 }
-export const TEMPORARY_EVENT_PRICE_CENTS=499;
+export const TEMPORARY_EVENT_PRICE_CENTS=799;

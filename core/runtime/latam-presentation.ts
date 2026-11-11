@@ -23,6 +23,42 @@ body.latam{background:#071321;color:#f4f7fc;color-scheme:dark}body.latam header 
 `;
  const homeCss=`
 
+/* LATAM high-visibility CTA, Natalie and footer interactions; visual only. */
+body.latam .latam-account a.button,body.latam .latam-cta a,body.latam .latam-cta button,
+body.latam .natalie-launcher,body.latam .latam-footer nav a,body.latam .latam-footer nav button{
+ cursor:pointer!important;
+ transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,background-color .22s ease,color .22s ease,border-color .22s ease,filter .22s ease!important;
+}
+body.latam .latam-account a.button:focus-visible,body.latam .latam-cta a:focus-visible,
+body.latam .latam-cta button:focus-visible,body.latam .natalie-launcher:focus-visible,
+body.latam .latam-footer nav a:focus-visible,body.latam .latam-footer nav button:focus-visible{
+ outline:3px solid #68d7ff!important;outline-offset:4px!important;
+}
+@media(hover:hover) and (pointer:fine){
+ body.latam .latam-account a.button:hover,body.latam .latam-cta a:hover,body.latam .latam-cta button:hover{
+  transform:translateY(-6px) scale(1.075)!important;
+  box-shadow:0 15px 32px rgba(17,109,255,.45)!important;
+  filter:brightness(1.2)!important;
+ }
+ body.latam .natalie-launcher:hover{
+  transform:translateY(-7px) scale(1.085)!important;
+  box-shadow:0 16px 34px rgba(0,112,224,.45)!important;
+  filter:brightness(1.18)!important;
+ }
+ body.latam .latam-footer nav a:hover,body.latam .latam-footer nav button:hover{
+  transform:translateX(6px) translateY(-2px)!important;
+  color:#83dcff!important;
+  text-shadow:0 0 12px rgba(66,186,255,.5);
+  filter:brightness(1.2);
+ }
+}
+body.latam .latam-account a.button:active,body.latam .latam-cta a:active,body.latam .latam-cta button:active,body.latam .natalie-launcher:active{transform:translateY(1px) scale(.97)!important}
+@media(prefers-reduced-motion:reduce){
+ body.latam .latam-account a.button,body.latam .latam-cta a,body.latam .latam-cta button,body.latam .natalie-launcher,body.latam .latam-footer nav a,body.latam .latam-footer nav button{transition:none!important}
+ body.latam .latam-account a.button:hover,body.latam .latam-cta a:hover,body.latam .latam-cta button:hover,body.latam .natalie-launcher:hover,body.latam .latam-footer nav a:hover,body.latam .latam-footer nav button:hover{transform:none!important}
+}
+
+
 /* Interactive country selection cards: presentation only. */
 #commercialWelcome .latam-country-grid a{
  cursor:pointer!important;

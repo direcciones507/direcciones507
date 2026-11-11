@@ -11,7 +11,7 @@ const draft=validateTemporaryEventDraft({
  timezone:'America/Panama',hours:'19:00',latitude:8.1,longitude:-80.9
 });
 const event={draft,slug:'fiesta-0123456789abcdef',status:'ACTIVE' as const,
- paymentConfirmedAt:'2026-11-11T12:00:00Z',photos:['https://example.com/photo.jpg']};
+ paymentConfirmedAt:'2026-11-11T12:00:00Z',now:new Date('2026-11-11T15:00:00Z'),photos:['https://example.com/photo.jpg']};
 test('public page escapes HTML and never exposes responsible identity',()=>{
  const html=renderTemporaryEventPage(event);
  assert.match(html,/Fiesta &lt;privada&gt;/);
@@ -40,4 +40,11 @@ test('draft form is draft-only and requires private responsible details',()=>{
  assert.match(html,/responsibleEmail/);
  assert.match(html,/publicContactConsent/);
  assert.throws(()=>renderTemporaryEventDraftForm('https://untrusted.example/submit'),/INVALID_FORM_ACTION/);
+});
+
+test('a stale ACTIVE record is treated as expired at local cutoff',()=>{
+ const html=renderTemporaryEventPage({...event,now:new Date('2026-11-13T05:00:00Z')});
+ assert.match(html,/evento ha finalizado/);
+ assert.doesNotMatch(html,/Google Maps/);
+ assert.doesNotMatch(html,/photo.jpg/);
 });

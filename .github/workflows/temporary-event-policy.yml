@@ -25,4 +25,4 @@ jobs:
         with:
           bun-version: 1.4.0
       - name: Run temporary event policy regression tests
-        run: bun test temporary-event-policy.test.ts
+        run: bun test temporary-event-policy.test.ts temporary-event-presentation.test.ts

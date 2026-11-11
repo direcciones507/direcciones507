@@ -23,6 +23,24 @@ body.latam{background:#071321;color:#f4f7fc;color-scheme:dark}body.latam header 
 `;
  const homeCss=`
 
+/* Exact LATAM hero and header CTAs: keep links and account flow untouched. */
+body.latam #latamCreate,body.latam .latam-header .latam-account a.button[data-latam-session="guest"]{
+ cursor:pointer!important;
+ transition:transform .22s ease,box-shadow .22s ease,filter .22s ease,background-color .22s ease!important;
+ transform-origin:center;
+}
+@media(hover:hover) and (pointer:fine){
+ body.latam #latamCreate:hover,body.latam .latam-header .latam-account a.button[data-latam-session="guest"]:hover{
+  transform:translateY(-7px) scale(1.075)!important;
+  box-shadow:0 18px 38px rgba(15,107,255,.48),0 0 0 3px rgba(91,207,255,.25)!important;
+  filter:brightness(1.17)!important;
+ }
+}
+body.latam #latamCreate:focus-visible,body.latam .latam-header .latam-account a.button[data-latam-session="guest"]:focus-visible{outline:3px solid #7ee0ff!important;outline-offset:4px!important}
+body.latam #latamCreate:active,body.latam .latam-header .latam-account a.button[data-latam-session="guest"]:active{transform:translateY(1px) scale(.97)!important}
+@media(prefers-reduced-motion:reduce){body.latam #latamCreate,body.latam .latam-header .latam-account a.button[data-latam-session="guest"]{transition:none!important}body.latam #latamCreate:hover,body.latam .latam-header .latam-account a.button[data-latam-session="guest"]:hover{transform:none!important}}
+
+
 /* LATAM high-visibility CTA, Natalie and footer interactions; visual only. */
 body.latam .latam-account a.button,body.latam .latam-cta a,body.latam .latam-cta button,
 body.latam .natalie-launcher,body.latam .latam-footer nav a,body.latam .latam-footer nav button{

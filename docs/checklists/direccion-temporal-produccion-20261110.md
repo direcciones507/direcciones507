@@ -6,7 +6,9 @@ Estado: PENDIENTE DE IMPLEMENTACIÓN. No confundir la tarjeta comercial visible 
 - Disponible en direcciones507.com y direcciones.lat sobre el mismo core existente.
 - Sustituye Negocio Gratis. Residencial permanece oculto comercialmente, sin borrar funcionalidad ni registros.
 - Precio fijo US$4.99 para evento de 1 a 30 días.
-- Título visible: nombre del evento o actividad (ej. Fiesta de 15 años de María Sofía); no mostrar código como título. Mantener ID único interno para enlace/QR.
+- Título visible: nombre del evento o actividad (ej. Fiesta de 15 años de María Sofía). NO emitir código AD507, código comercial ni dirección permanente. Usar solo URL con slug derivado del nombre (ej. /evento/15-anos-de-maria-sofia); resolver colisiones con sufijo corto opaco, sin exponer identificadores internos. QR opcional apunta exclusivamente al enlace temporal.
+- SEO: ficha temporal noindex, nofollow y no incluida en sitemap ni listados indexables; enlace directo compartible mientras esté vigente.
+- Sonido opcional breve en transiciones de fotos, desactivado inicialmente; solo activar tras toque explícito del visitante, con control silenciar y respeto a preferencias de accesibilidad. No reproducir música protegida sin licencia.
 - Responsable: nombre, teléfono y correo privados y obligatorios.
 - Contacto público: nombre y teléfono autorizados explícitamente; no publicar automáticamente datos privados.
 - Ubicación: país, provincia, distrito, corregimiento, referencia, coordenadas y navegación; fecha de inicio y fin, descripción y horarios.
@@ -23,7 +25,8 @@ Estado: PENDIENTE DE IMPLEMENTACIÓN. No confundir la tarjeta comercial visible 
 - [ ] Vista previa, edición y confirmación de datos.
 - [ ] Cotización exacta de US$4.99 en backend, creación de orden e integración con Yappy existente sin cobros duplicados.
 - [ ] Confirmación de pago por IPN firmado; activación idempotente, estado pendiente/error y conciliación.
-- [ ] Ficha pública, enlace/QR, navegación y carrusel aprobado.
+- [ ] Ficha pública noindex, enlace amigable basado en el nombre (sin AD507), QR del enlace, navegación y carrusel aprobado.
+- [ ] Control de sonido opt-in para transición de fotos; sin audio automático al cargar, probar en móvil y con preferencias de movimiento reducido.
 - [ ] Vencimiento automático y comprobación del estado en cada lectura; manejo de zona horaria.
 - [ ] CTA desde tarjeta de precios y desde panel autenticado en ambos dominios.
 - [ ] Corregir textos, precios y pruebas que aún refieran a Negocio Gratis/Residencial como ofertas activas.

@@ -3,7 +3,6 @@ import {validateTemporaryEventDraft,type TemporaryEventDraft} from './temporary-
 /** Standalone form for the authenticated panel; server must still authenticate and validate.
  * No payment or publication occurs on submit until the backend endpoint is connected.
  */
-const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 export function temporaryEventFormHtml():string{
  return `<section class="temporary-event-form" aria-labelledby="temporary-event-title">
  <h2 id="temporary-event-title">Crear Dirección Temporal</h2>
@@ -43,7 +42,7 @@ export function temporaryEventFormHtml():string{
 export function temporaryEventFormDraft(form:FormData):TemporaryEventDraft{
  const get=(name:string)=>String(form.get(name)??'');
  const files=['mainPhoto','photo2','photo3'].map(k=>form.get(k)).filter((f):f is File=>typeof File!=='undefined'&&f instanceof File&&f.size>0);
- if(!(form.get('mainPhoto') instanceof File)||(form.get('mainPhoto') as File).size===0)throw Error('MAIN_PHOTO_REQUIRED');
+ if(typeof File==='undefined'||!(form.get('mainPhoto') instanceof File)||(form.get('mainPhoto') as File).size===0)throw Error('MAIN_PHOTO_REQUIRED');
  return validateTemporaryEventDraft({
  eventName:get('eventName'),description:get('description'),startDate:get('startDate'),endDate:get('endDate'),
  responsibleName:get('responsibleName'),responsiblePhone:get('responsiblePhone'),responsibleEmail:get('responsibleEmail'),

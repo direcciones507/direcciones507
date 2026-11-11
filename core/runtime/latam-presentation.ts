@@ -431,6 +431,7 @@ document.getElementById('latamCreate').onclick=e=>prepareLatamRequest(e,'BUSINES
 const latamPlanCatalog={
  PLACE:{title:'Lugar Gratis',price:'Gratis',features:['Comparte ubicaciones de interés con una dirección digital fácil de encontrar','Ideal para iglesias, parques, cascadas, ríos, playas y atractivos turísticos','No se admiten comercios ni establecimientos comerciales; deben solicitar un plan de negocio','Agrega nombre, ubicación, referencia y fotografía del lugar','Comparte el lugar mediante enlace y herramientas de navegación','Disponible en los ocho países iniciales; todas las solicitudes están sujetas a revisión y aprobación']},
  RESIDENTIAL:{title:'Residencial',price:'US$12.99',features:['Dirección digital para tu hogar','Código digital y acceso mediante enlace o QR','Ubicación y referencia para compartir','Acceso residencial privado según sus controles de seguridad']},
+ BUSINESS_FREE:{title:'Negocio Gratis',price:'US$0',features:['Modalidad promocional no disponible actualmente']},
  BUSINESS_PREMIUM:{title:'Premium',price:'US$19.99',features:['Perfil comercial, ubicación y contacto','Código personalizado con nombre sujeto a disponibilidad','Redes sociales y código postal o zona postal','Sin reporte mensual de estadísticas']},
  BUSINESS_PREMIUM_PRO:{title:'Premium Pro',price:'US$39.99',features:['Todo lo incluido en Premium','Descripción comercial','Galería de hasta cinco fotografías','Estadísticas avanzadas de la dirección digital','Enlace exclusivo con nombre del negocio (próximamente; ejemplo: restaurante-manuel)']}
 };

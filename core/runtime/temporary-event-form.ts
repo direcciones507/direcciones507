@@ -1,6 +1,6 @@
 /** Dirección Temporal: draft-only form UI. Route integration must enforce authenticated owner and CSRF. */
 export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events'):string {
- if(!action.startsWith('/v1/user/'))throw Error('INVALID_FORM_ACTION');
+ if(!/^\/v1\/user\/[a-z0-9/-]+$/.test(action))throw Error('INVALID_FORM_ACTION');
  return `<section class="temporary-event-form" aria-labelledby="temporary-heading">
  <h2 id="temporary-heading">Crear Dirección Temporal</h2>
  <p>Publica una fiesta o evento por US$7.99, durante 1 a 30 días. El evento no se publica hasta confirmar el pago.</p>

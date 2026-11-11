@@ -54,12 +54,10 @@ export const temporaryEventDraftClientScript=`(() => {
   }
   const payload={...values,publicContactConsent:values.publicContactConsent==='on'};
   for(const key of ['latitude','longitude'])payload[key]=values[key]===''?null:Number(values[key]);
-  const csrf=document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-  if(!csrf){error.textContent='La sesión no está lista para guardar. Actualiza la página.';return;}
   const button=form.querySelector('button[type="submit"]');button.disabled=true;
   try {
    const response=await fetch(form.dataset.action,{method:'POST',credentials:'same-origin',
-    headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify(payload)});
+    headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify(payload)});
    if(!response.ok)throw Error('No se pudo guardar el borrador ('+response.status+').');
    const data=await response.json();
    if(typeof data.id!=='string')throw Error('Respuesta de guardado inválida.');

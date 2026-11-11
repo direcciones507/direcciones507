@@ -1,4 +1,5 @@
 import {test,expect} from 'bun:test';
+import {paymentAmount} from '../payment-policy';
 import {validateTemporaryEventDraft,temporaryEventExpiryCalendarDate,TEMPORARY_EVENT_PRICE_CENTS} from '../temporary-event-validation';
 import {temporaryEventSlug,temporaryEventShareMeta} from '../temporary-event-share';
 const draft={
@@ -15,6 +16,9 @@ test('temporary event validates 1 to 30 days and 1 to 3 photos',()=>{
  expect(()=>validateTemporaryEventDraft({...draft,endDate:'2026-12-30'})).toThrow('INVALID_EVENT_DURATION');
  expect(()=>validateTemporaryEventDraft({...draft,endDate:'2026-11-29'})).toThrow('INVALID_EVENT_DURATION');
  expect(TEMPORARY_EVENT_PRICE_CENTS).toBe(799);
+ expect(paymentAmount('TEMPORARY_ADDRESS')).toBe(799);
+ expect(paymentAmount('BUSINESS_PREMIUM')).toBe(1999);
+ expect(paymentAmount('BUSINESS_PREMIUM_PRO')).toBe(3999);
 });
 test('private responsible data never becomes public contact',()=>{
  const event=validateTemporaryEventDraft(draft);

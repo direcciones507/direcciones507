@@ -40,6 +40,7 @@ test('draft form is draft-only and requires private responsible details',()=>{
  assert.match(html,/responsibleEmail/);
  assert.match(html,/publicContactConsent/);
  assert.throws(()=>renderTemporaryEventDraftForm('https://untrusted.example/submit'),/INVALID_FORM_ACTION/);
+ assert.throws(()=>renderTemporaryEventDraftForm('/v1/user/temporary-events\" onmouseover=\"alert(1)'),/INVALID_FORM_ACTION/);
 });
 
 test('a stale ACTIVE record is treated as expired at local cutoff',()=>{

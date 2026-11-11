@@ -10,6 +10,11 @@ import {validateTemporaryEventDraft,eventSlug,type TemporaryEventDraft} from './
 import {canPublishTemporaryEvent,publicEventStatus} from './temporary-event-lifecycle';
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const requireUuid=(id:string)=>{if(!uuid.test(id))throw Error('INVALID_ID')};
+const dbDate=(value:unknown):string=>{
+ if(value instanceof Date){if(Number.isNaN(value.valueOf()))throw Error('INVALID_DB_DATE');return value.toISOString().slice(0,10)}
+ if(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value))return value;
+ throw Error('INVALID_DB_DATE');
+};
 type EventRow={id:string;slug:string;status:'DRAFT'|'AWAITING_PAYMENT'|'ACTIVE'|'EXPIRED'|'CANCELLED';starts_on:string;ends_on:string;event_timezone:string;payment_order_id:string|null;payment_confirmed_at:string|null};
 export function createTemporaryEventRepository(sql:Sql){
  return {
@@ -50,15 +55,15 @@ export function createTemporaryEventRepository(sql:Sql){
      starts_on,ends_on,event_timezone,hours_description,status,payment_confirmed_at
      FROM ad507.temporary_events WHERE slug=$1`,[slug]);
    const x=rows[0] as any;if(!x)return null;
-   const state=publicEventStatus(x.status,String(x.ends_on).slice(0,10),x.event_timezone,now);
+   const state=publicEventStatus(x.status,dbDate(x.ends_on),x.event_timezone,now);
    if(state==='UNPUBLISHED'||!x.payment_confirmed_at)return null;
    // Never return responsible_name/email/phone.
    return {id:x.id,slug:x.slug,title:x.title,description:x.description,
     publicContactName:x.public_contact_consent?x.public_contact_name:null,
     publicContactPhone:x.public_contact_consent?x.public_contact_phone:null,
     countryCode:x.country_code,province:x.region,district:x.municipality,corregimiento:x.locality,
-    reference:x.reference,latitude:x.latitude,longitude:x.longitude,
-    startsOn:x.starts_on,endsOn:x.ends_on,timezone:x.event_timezone,hours:x.hours_description,
+    reference:x.reference,latitude:x.latitude==null?null:Number(x.latitude),longitude:x.longitude==null?null:Number(x.longitude),
+    startsOn:dbDate(x.starts_on),endsOn:dbDate(x.ends_on),timezone:x.event_timezone,hours:x.hours_description,
     status:state};
   },
   /**
@@ -78,8 +83,8 @@ export function createTemporaryEventRepository(sql:Sql){
       count(*) FILTER (WHERE slot=1)::int AS primary_count
       FROM ad507.temporary_event_media WHERE event_id=$1`,[eventId]);
     const allowed=canPublishTemporaryEvent({status:e.status,paymentOrderId:e.payment_order_id,
-      paymentConfirmedAt:e.payment_confirmed_at,startsOn:String(e.starts_on).slice(0,10),
-      endsOn:String(e.ends_on).slice(0,10),timezone:e.event_timezone,now,
+      paymentConfirmedAt:e.payment_confirmed_at,startsOn:dbDate(e.starts_on),
+      endsOn:dbDate(e.ends_on),timezone:e.event_timezone,now,
       photoCount:Number(count[0].total),hasPrimaryPhoto:Number(count[0].primary_count)===1});
     if(!allowed)return false;
     await tx.unsafe(`UPDATE ad507.temporary_events SET status='ACTIVE',updated_at=now()

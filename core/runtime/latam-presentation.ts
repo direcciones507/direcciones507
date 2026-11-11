@@ -23,6 +23,24 @@ body.latam{background:#071321;color:#f4f7fc;color-scheme:dark}body.latam header 
 `;
  const homeCss=`
 
+/* Final LATAM header navigation polish: Inicio, Países, Planes, Ayuda, Ingresar. */
+body.latam .latam-header .latam-menu nav a,body.latam .latam-header .latam-account a.latam-outline[data-latam-session="guest"]{
+ display:inline-flex;align-items:center;justify-content:center;
+ padding:10px 14px;border-radius:11px;cursor:pointer!important;
+ transition:transform .2s ease,background-color .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease!important;
+}
+body.latam .latam-header .latam-menu nav a:focus-visible,body.latam .latam-header .latam-account a.latam-outline[data-latam-session="guest"]:focus-visible{outline:3px solid #70d7ff!important;outline-offset:3px!important}
+@media(hover:hover) and (pointer:fine){
+ body.latam .latam-header .latam-menu nav a:hover,body.latam .latam-header .latam-account a.latam-outline[data-latam-session="guest"]:hover{
+  transform:translateY(-5px) scale(1.085)!important;
+  background:#1c5a9b!important;color:#fff!important;border-color:#5bcaff!important;
+  box-shadow:0 11px 25px rgba(0,77,166,.45),0 0 0 2px rgba(88,203,255,.2)!important;
+ }
+}
+body.latam .latam-header .latam-menu nav a:active,body.latam .latam-header .latam-account a.latam-outline[data-latam-session="guest"]:active{transform:translateY(1px) scale(.98)!important}
+@media(prefers-reduced-motion:reduce){body.latam .latam-header .latam-menu nav a,body.latam .latam-header .latam-account a.latam-outline[data-latam-session="guest"]{transition:none!important}body.latam .latam-header .latam-menu nav a:hover,body.latam .latam-header .latam-account a.latam-outline[data-latam-session="guest"]:hover{transform:none!important}}
+
+
 /* Exact LATAM hero and header CTAs: keep links and account flow untouched. */
 body.latam #latamCreate,body.latam .latam-header .latam-account a.button[data-latam-session="guest"]{
  cursor:pointer!important;

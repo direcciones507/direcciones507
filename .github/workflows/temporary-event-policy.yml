@@ -1,0 +1,28 @@
+name: Temporary event policy checks
+on:
+  pull_request:
+    paths:
+      - 'core/runtime/temporary-event-*.ts'
+      - '.github/workflows/temporary-event-policy.yml'
+  push:
+    branches:
+      - 'work/temporary-address-foundation-20261111'
+    paths:
+      - 'core/runtime/temporary-event-*.ts'
+      - '.github/workflows/temporary-event-policy.yml'
+permissions:
+  contents: read
+jobs:
+  temporary-event-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: core/runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - name: Run temporary event policy regression tests
+        run: bun test temporary-event-policy.test.ts

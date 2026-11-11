@@ -4,7 +4,7 @@ import type {createGeneralAuth} from './general-auth';
 import {createTemporaryEventRepository} from './temporary-event-repository';
 import {renderTemporaryEventDraftForm,temporaryEventDraftClientScript} from './temporary-event-form';
 import {renderTemporaryEventPage} from './temporary-event-page';
-import {validateTemporaryEventDraft} from './temporary-event-draft';
+import type {TemporaryEventDraft} from './temporary-event-draft';
 const json=(status:number,error:string)=>Response.json({ok:false,error},{status,headers:{'cache-control':'no-store'}});
 export async function handleTemporaryEventRoutes(req:Request,ctx:{enabled:boolean;sql:Sql;auth:Pick<ReturnType<typeof createGeneralAuth>,'currentUser'>}):Promise<Response|null>{
  const url=new URL(req.url);
@@ -19,7 +19,8 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:{enabled:boolea
   try{
    const event=await repository.getPublic(match[1]);
    if(!event)return json(404,'EVENT_NOT_FOUND');
-   const data=validateTemporaryEventDraft({...event,responsibleName:'INTERNAL_NOT_PUBLIC',responsibleEmail:'internal@example.invalid',responsiblePhone:'PRIVATE'});
+   // Render only public fields; do not manufacture or load private responsible data.
+   const data={...event,responsibleName:'',responsibleEmail:'',responsiblePhone:'',publicContactConsent:!!(event.publicContactName||event.publicContactPhone)} as TemporaryEventDraft;
    const html=renderTemporaryEventPage({draft:data,slug:event.slug,status:event.status,paymentConfirmedAt:'VERIFIED',photos:[]});
    return new Response(req.method==='HEAD'?null:html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; img-src https: data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}});
   }catch{return json(503,'EVENT_UNAVAILABLE')}

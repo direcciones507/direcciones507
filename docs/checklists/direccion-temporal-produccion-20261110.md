@@ -8,7 +8,8 @@ Estado: PENDIENTE DE IMPLEMENTACIÓN. No confundir la tarjeta comercial visible 
 - Precio fijo US$4.99 para evento de 1 a 30 días.
 - Título visible: nombre del evento o actividad (ej. Fiesta de 15 años de María Sofía). NO emitir código AD507, código comercial ni dirección permanente. Usar solo URL con slug derivado del nombre (ej. /evento/15-anos-de-maria-sofia); resolver colisiones con sufijo corto opaco, sin exponer identificadores internos. QR opcional apunta exclusivamente al enlace temporal.
 - SEO: ficha temporal noindex, nofollow y no incluida en sitemap ni listados indexables; enlace directo compartible mientras esté vigente.
-- Sonido opcional breve en transiciones de fotos, desactivado inicialmente; solo activar tras toque explícito del visitante, con control silenciar y respeto a preferencias de accesibilidad. No reproducir música protegida sin licencia.
+- Música ambiental opcional para la ficha temporal, desactivada inicialmente; reproducir solo tras interacción explícita del visitante (restricciones de autoplay móvil), con controles reproducir/pausar, silenciar y volumen. Usar audio propio o con licencia válida, nunca música protegida sin autorización. El carrusel de fotos funciona independientemente del audio.
+- Open Graph dinámico por ficha: og:title = nombre del evento, og:description = descripción pública resumida, og:image = foto principal autorizada y accesible públicamente, og:url = enlace canónico temporal. Incluir twitter:card=summary_large_image y twitter:image. Metadatos generados en HTML inicial del servidor para que WhatsApp y redes sociales los lean sin JavaScript.
 - Responsable: nombre, teléfono y correo privados y obligatorios.
 - Contacto público: nombre y teléfono autorizados explícitamente; no publicar automáticamente datos privados.
 - Ubicación: país, provincia, distrito, corregimiento, referencia, coordenadas y navegación; fecha de inicio y fin, descripción y horarios.
@@ -26,7 +27,8 @@ Estado: PENDIENTE DE IMPLEMENTACIÓN. No confundir la tarjeta comercial visible 
 - [ ] Cotización exacta de US$4.99 en backend, creación de orden e integración con Yappy existente sin cobros duplicados.
 - [ ] Confirmación de pago por IPN firmado; activación idempotente, estado pendiente/error y conciliación.
 - [ ] Ficha pública noindex, enlace amigable basado en el nombre (sin AD507), QR del enlace, navegación y carrusel aprobado.
-- [ ] Control de sonido opt-in para transición de fotos; sin audio automático al cargar, probar en móvil y con preferencias de movimiento reducido.
+- [ ] Música ambiental opcional, con licencia verificada, reproducción solo tras toque del usuario, controles de audio y prueba en móvil.
+- [ ] Open Graph por evento con foto principal, título, descripción y URL; verificar vista previa de enlace en WhatsApp y redes sociales sin indexar la ficha.
 - [ ] Vencimiento automático y comprobación del estado en cada lectura; manejo de zona horaria.
 - [ ] CTA desde tarjeta de precios y desde panel autenticado en ambos dominios.
 - [ ] Corregir textos, precios y pruebas que aún refieran a Negocio Gratis/Residencial como ofertas activas.

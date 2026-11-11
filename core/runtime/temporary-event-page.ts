@@ -1,8 +1,9 @@
 /** Public event presentation. Not wired to production routing or payments yet. */
 import type {TemporaryEventDraft} from './temporary-event-draft';
 import {publicTemporaryEvent} from './temporary-event-draft';
+import {publicEventStatus} from './temporary-event-lifecycle';
 const escapeHtml=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-type PublishedEvent={draft:TemporaryEventDraft;slug:string;status:'ACTIVE'|'EXPIRED';paymentConfirmedAt:string|null;photos:string[];qrPngDataUrl?:string};
+type PublishedEvent={draft:TemporaryEventDraft;slug:string;status:'ACTIVE'|'EXPIRED';paymentConfirmedAt:string|null;photos:string[];qrPngDataUrl?:string;now?:Date};
 function safePhoto(url:string):string|null {
  try {const u=new URL(url);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null}catch{return null}
 }
@@ -15,7 +16,7 @@ export function renderTemporaryEventPage(event:PublishedEvent):string {
  if(event.status==='ACTIVE'&&!event.paymentConfirmedAt)throw Error('UNPAID_EVENT_CANNOT_PUBLISH');
  const data=publicTemporaryEvent(event.draft);
  const url=publicUrl(event.slug),title=escapeHtml(data.title);
- const active=event.status==='ACTIVE';
+ const active=publicEventStatus(event.status,data.endsOn,data.timezone,event.now??new Date())==='ACTIVE';
  const photos=event.photos.slice(0,3).map(safePhoto).filter((x):x is string=>!!x);
  const lat=data.latitude,lon=data.longitude;
  const maps=lat!=null&&lon!=null?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(lat+','+lon):null;

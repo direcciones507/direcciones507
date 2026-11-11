@@ -22,6 +22,31 @@ body.latam{background:#071321;color:#f4f7fc;color-scheme:dark}body.latam header 
 @media(max-width:359px){.latam-country-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.latam-benefit-grid{grid-template-columns:1fr}.latam-benefit-grid article{text-align:left}.latam-brand{white-space:normal}}
 `;
  const homeCss=`
+
+/* Interactive country selection cards: presentation only. */
+#commercialWelcome .latam-country-grid a{
+ cursor:pointer!important;
+ transition:transform .22s ease,background-color .22s ease,border-color .22s ease,box-shadow .22s ease,filter .22s ease!important;
+}
+#commercialWelcome .latam-country-grid a:focus-visible{
+ outline:3px solid #63d5ff!important;outline-offset:4px!important;
+}
+@media(hover:hover) and (pointer:fine){
+ #commercialWelcome .latam-country-grid a:hover{
+  transform:translateY(-7px) scale(1.045)!important;
+  background:#214e7e!important;border-color:#61caff!important;
+  box-shadow:0 14px 28px rgba(2,17,42,.45),0 0 0 2px rgba(97,202,255,.18)!important;
+  filter:brightness(1.15);
+ }
+ #commercialWelcome .latam-country-grid a:hover .flag{transform:scale(1.16)}
+}
+#commercialWelcome .latam-country-grid .flag{transition:transform .22s ease}
+#commercialWelcome .latam-country-grid a:active{transform:translateY(1px) scale(.97)!important}
+@media(prefers-reduced-motion:reduce){
+ #commercialWelcome .latam-country-grid a,#commercialWelcome .latam-country-grid .flag{transition:none!important}
+ #commercialWelcome .latam-country-grid a:hover,#commercialWelcome .latam-country-grid a:hover .flag{transform:none!important}
+}
+
 .latam-plan-action{color:inherit!important;text-decoration:none!important;display:contents}.plan-legal a{font-size:12px!important;color:#b4dcff!important;line-height:1.7}/* Homepage layout only; existing palette, map, forms and account remain unchanged. */
 body.latam #commercialWelcome{max-width:1180px;margin-inline:auto}
 #commercialWelcome .latam-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:32px;min-height:0;padding:44px 0 28px}

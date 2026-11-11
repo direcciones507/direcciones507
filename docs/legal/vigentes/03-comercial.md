@@ -22,8 +22,6 @@ Plan Para quién
 
 Residencial Personas que desean crear una dirección digital de su vivienda, privada por defecto
 
-Negocio Gratis Negocios que desean un perfil básico en la Plataforma
-
 Premium Negocios que desean funciones ampliadas del perfil
 
 Premium Pro Negocios que desean el nivel más completo de funciones
@@ -75,7 +73,7 @@ lo ya pagado.
 servicio comience en ese momento. Esta confirmación puede afectar el derecho de retracto en los países donde la ley lo
 contemple, como se explica en el Anexo.
 
-7.3. Negocio Gratis y Lugar Gratis no muestran pantalla de pago. El cliente envía la solicitud expresamente; la revisión administrativa puede tardar hasta 48 horas desde el envío y la publicación requiere aprobación. La solicitud puede ser rechazada. Los borradores no enviados permanecen privados y no ingresan a ADMIN. Cada plan está vinculado a su titular autorizado.
+7.3. Lugar Gratis no muestran pantalla de pago. El cliente envía la solicitud expresamente; la revisión administrativa puede tardar hasta 48 horas desde el envío y la publicación requiere aprobación. La solicitud puede ser rechazada. Los borradores no enviados permanecen privados y no ingresan a ADMIN. Cada plan está vinculado a su titular autorizado.
 
 8. Medios de pago
 Los medios de pago habilitados en cada país se indican en los medios que estén habilitados y visibles en el proceso de

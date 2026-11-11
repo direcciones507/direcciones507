@@ -3,7 +3,7 @@ import {paymentAmount} from '../payment-policy';
 import {validateTemporaryEventDraft,temporaryEventExpiryCalendarDate,TEMPORARY_EVENT_PRICE_CENTS} from '../temporary-event-validation';
 import {temporaryEventSlug,temporaryEventShareMeta} from '../temporary-event-share';
 const draft={
- eventName:'Fiesta de 15 años de María Sofía',responsibleName:'Responsable privado',
+ eventName:'Fiesta de 15 años de María Sofía',eventType:'Cumpleaños',honoreeOrOrganizer:'María Sofía',region:'Veraguas',municipality:'Santiago',locality:'Canto del Llano',timeZone:'America/Panama',responsibleName:'Responsable privado',
  responsiblePhone:'61234567',responsibleEmail:'responsable@example.com',
  publicContactName:'Organización',publicContactPhone:'69999999',publishPublicPhone:false,
  startDate:'2026-11-30',endDate:'2026-11-30',countryCode:'PA',
@@ -42,4 +42,10 @@ test('escape HTML in event metadata',()=>{
  expect(meta).not.toContain('<script>');
  expect(meta).toContain('&lt;script&gt;');
  expect(meta).toContain('&quot;quoted&quot;');
+});
+
+test('event requires valid territorial data and timezone',()=>{
+ expect(validateTemporaryEventDraft(draft).timeZone).toBe('America/Panama');
+ expect(()=>validateTemporaryEventDraft({...draft,timeZone:'Invalid/Timezone'})).toThrow('INVALID_TIME_ZONE');
+ expect(()=>validateTemporaryEventDraft({...draft,municipality:''})).toThrow('INVALID_MUNICIPALITY');
 });

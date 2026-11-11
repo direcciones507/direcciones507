@@ -28,8 +28,8 @@ export function validateTemporaryEventDraft(input:unknown):TemporaryEventDraft {
   province:clean(x.province,120),district:clean(x.district,120),corregimiento:clean(x.corregimiento,120),
   reference:clean(x.reference,300),startsOn:clean(x.startsOn,10),endsOn:clean(x.endsOn,10),
   timezone:clean(x.timezone,80),hours:clean(x.hours,400),
-  latitude:x.latitude===undefined||x.latitude===null?null:Number(x.latitude),
-  longitude:x.longitude===undefined||x.longitude===null?null:Number(x.longitude),
+  latitude:x.latitude===undefined||x.latitude===null||x.latitude===''?null:Number(x.latitude),
+  longitude:x.longitude===undefined||x.longitude===null||x.longitude===''?null:Number(x.longitude),
   publicContactConsent:x.publicContactConsent===true,
   publicContactName:clean(x.publicContactName,160),publicContactPhone:clean(x.publicContactPhone,40)
  };

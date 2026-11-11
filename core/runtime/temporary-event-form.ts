@@ -6,7 +6,7 @@ import {validateTemporaryEventDraft,type TemporaryEventDraft} from './temporary-
 export function temporaryEventFormHtml():string{
  return `<section class="temporary-event-form" aria-labelledby="temporary-event-title">
  <h2 id="temporary-event-title">Crear Dirección Temporal</h2>
- <p>Evento de 1 a 30 días · Precio único: $4.99. La dirección se activa después del pago confirmado.</p>
+ <p>Evento de 1 a 30 días · Precio único: $7.99. La dirección se activa después del pago confirmado.</p>
  <form id="temporaryEventForm" enctype="multipart/form-data">
  <label>Nombre del evento <input name="eventName" maxlength="160" required placeholder="Fiesta de 15 años de María Sofía"></label>
  <label>Descripción <textarea name="description" maxlength="4000"></textarea></label>

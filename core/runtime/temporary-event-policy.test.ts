@@ -43,3 +43,10 @@ test('slugs use controlled opaque suffix',()=>{
  assert.equal(eventSlug('Fiesta Pública','0123456789abcdef'),'fiesta-publica-0123456789abcdef');
  assert.throws(()=>eventSlug('Fiesta','guessable'));
 });
+
+test('blank coordinates are absent rather than pointing to zero-zero',()=>{
+ const draft=validateTemporaryEventDraft({...base,latitude:'',longitude:''});
+ assert.equal(draft.latitude,null);
+ assert.equal(draft.longitude,null);
+ assert.throws(()=>validateTemporaryEventDraft({...base,latitude:'',longitude:-80.9}),/COORDINATES/);
+});

@@ -14,7 +14,7 @@ test('temporary event validates 1 to 30 days and 1 to 3 photos',()=>{
  expect(()=>validateTemporaryEventDraft({...draft,photoCount:4})).toThrow('INVALID_PHOTO_COUNT');
  expect(()=>validateTemporaryEventDraft({...draft,endDate:'2026-12-30'})).toThrow('INVALID_EVENT_DURATION');
  expect(()=>validateTemporaryEventDraft({...draft,endDate:'2026-11-29'})).toThrow('INVALID_EVENT_DURATION');
- expect(TEMPORARY_EVENT_PRICE_CENTS).toBe(499);
+ expect(TEMPORARY_EVENT_PRICE_CENTS).toBe(799);
 });
 test('private responsible data never becomes public contact',()=>{
  const event=validateTemporaryEventDraft(draft);

@@ -854,6 +854,26 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
   .plan-pricing-card, a[href], button, [role="button"], input, select, textarea { transition: none !important; }
   .plan-pricing-card:hover { transform: none !important; }
 }
+
+/* Stronger feedback on the Panama plan dialog and legal controls; CSS only. */
+@media (hover:hover) and (pointer:fine) {
+ #plan507Details button:hover, #plan507Details a:hover, #modalPoliticas button:hover, #modalPoliticas a:hover,
+ .footer-legal-links a:hover, .footer-cookie-settings:hover {
+   transform: translateY(-3px) scale(1.025);
+   filter: brightness(1.23);
+   box-shadow: 0 9px 22px rgba(18,148,255,.28);
+ }
+ #plan507Details li:hover { transform: translateX(4px); border-color:#58caff !important; background:#234a6b !important; }
+ #plan507Details button:active, #plan507Details a:active, #modalPoliticas button:active, #modalPoliticas a:active { transform:translateY(1px) scale(.98); }
+}
+#plan507Details button, #plan507Details a, #plan507Details li,
+#modalPoliticas button, #modalPoliticas a, .footer-legal-links a, .footer-cookie-settings {
+ transition:transform .2s ease, filter .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+}
+@media (prefers-reduced-motion:reduce) {
+ #plan507Details button, #plan507Details a, #plan507Details li, #modalPoliticas button, #modalPoliticas a, .footer-legal-links a, .footer-cookie-settings {transition:none!important;}
+ #plan507Details button:hover, #plan507Details a:hover, #plan507Details li:hover, #modalPoliticas button:hover, #modalPoliticas a:hover {transform:none!important;}
+}
 </style>
 <script src="/historical-entry.js" defer></script></head>
 <body>

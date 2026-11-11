@@ -1,6 +1,6 @@
 /** Validación aislada para Dirección Temporal. Sin efectos en los planes existentes. */
 export type TemporaryEventDraft={
- eventName:string; responsibleName:string; responsiblePhone:string; responsibleEmail:string;
+ eventName:string; eventType:string; honoreeOrOrganizer:string; region:string; municipality:string; locality:string; timeZone:string; responsibleName:string; responsiblePhone:string; responsibleEmail:string;
  publicContactName:string; publicContactPhone:string|null; publishPublicPhone:boolean;
  startDate:string; endDate:string; countryCode:string; reference:string; description:string;
  latitude:number;longitude:number; photoCount:number;
@@ -33,7 +33,9 @@ export function validateTemporaryEventDraft(raw:unknown):TemporaryEventDraft{
  if(typeof latitude!=='number'||!Number.isFinite(latitude)||latitude < -90||latitude>90||typeof longitude!=='number'||!Number.isFinite(longitude)||longitude < -180||longitude>180)throw Error('INVALID_COORDINATES');
  const photoCount=v.photoCount;
  if(!Number.isInteger(photoCount)||photoCount<1||photoCount>3)throw Error('INVALID_PHOTO_COUNT');
- return {eventName:str(v,'eventName',160),responsibleName:str(v,'responsibleName',160),responsiblePhone,responsibleEmail,publicContactName,publicContactPhone,publishPublicPhone,startDate,endDate,countryCode:str(v,'countryCode',2),reference:str(v,'reference',1000),description:str(v,'description',4000,false),latitude,longitude,photoCount};
+ const timeZone=str(v,'timeZone',80);
+ try {new Intl.DateTimeFormat('en-US',{timeZone});}catch{throw Error('INVALID_TIME_ZONE');}
+ return {eventName:str(v,'eventName',160),eventType:str(v,'eventType',100),honoreeOrOrganizer:str(v,'honoreeOrOrganizer',160,false),region:str(v,'region',120),municipality:str(v,'municipality',120),locality:str(v,'locality',120,false),timeZone,responsibleName:str(v,'responsibleName',160),responsiblePhone,responsibleEmail,publicContactName,publicContactPhone,publishPublicPhone,startDate,endDate,countryCode:str(v,'countryCode',2),reference:str(v,'reference',1000),description:str(v,'description',4000,false),latitude,longitude,photoCount};
 }
 /** El día posterior al evento está incluido; UTC es solo fecha de referencia.
  * Para producción convertir medianoche de la zona horaria local del evento. */

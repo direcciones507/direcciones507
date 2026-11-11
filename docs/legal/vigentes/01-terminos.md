@@ -20,8 +20,7 @@ Usuario: persona que navega, crea una cuenta o utiliza los servicios. Titular: u
 dirección, negocio o lugar. Dirección digital: registro con código único, enlace y código QR que permite compartir una
 ubicación. Dirección residencial: dirección de una vivienda o residencia de personas naturales. Negocio: actividad
 comercial, profesional o de servicios, con o sin fines de lucro, que ofrece bienes o servicios. Lugar de interés: sitio
-público, comunitario, religioso, natural o turístico no comercial. Plan: modalidad de servicio (Residencial, Negocio Gratis,
-Premium, Premium Pro u otras que se habiliten), descrita en la Política Comercial.
+público, comunitario, religioso, natural o turístico no comercial. Plan: modalidad de servicio (Residencial, Premium, Premium Pro u otras que se habiliten), descrita en la Política Comercial.
 
 Servicios externos: aplicaciones y sitios de terceros a los que la Plataforma enlaza, como Google Maps, Waze, Uber y
 WhatsApp.
@@ -80,7 +79,7 @@ panel o escribiendo a soporte@direcciones507.com.
 sección 12. Daremos prioridad a estas denuncias.
 
 7. Negocios
-7.1. Los negocios deben registrarse en los planes comerciales correspondientes (Negocio Gratis, Premium, Premium Pro
+7.1. Los negocios deben registrarse en los planes comerciales correspondientes (Premium, Premium Pro
 u otros habilitados en su país) y no pueden utilizar Lugar Gratis.
 
 7.2. El Titular declara que es dueño del negocio o que está autorizado para representarlo, y que la información publicada
@@ -106,7 +105,7 @@ no cumple estas reglas.
 8.5. Si el lugar es administrado por una comunidad, institución o persona determinada, la solicitud debe ser presentada
 por quien tenga autorización para ello, y no debe incluir datos personales de terceros sin su consentimiento.
 9. Revisión administrativa, rechazo, suspensión y retiro
-9.1. Residencial, Premium y Premium Pro se activan automáticamente tras pago verificado y controles de seguridad, sin aprobación administrativa rutinaria. No se publican antes del pago verificado. Los riesgos detectados pueden quedar en revisión excepcional justificada. Negocio Gratis y Lugar Gratis requieren envío expreso y aprobación administrativa, con plazo de revisión de hasta 48 horas desde el envío. Los borradores no enviados son privados y no ingresan a la bandeja ADMIN. Podemos revisar contenidos antes o después de su publicación por motivos de seguridad o cumplimiento.
+9.1. Residencial, Premium y Premium Pro se activan automáticamente tras pago verificado y controles de seguridad, sin aprobación administrativa rutinaria. No se publican antes del pago verificado. Los riesgos detectados pueden quedar en revisión excepcional justificada. Lugar Gratis requieren envío expreso y aprobación administrativa, con plazo de revisión de hasta 48 horas desde el envío. Los borradores no enviados son privados y no ingresan a la bandeja ADMIN. Podemos revisar contenidos antes o después de su publicación por motivos de seguridad o cumplimiento.
 
 9.2. Podemos rechazar, suspender, ocultar o eliminar una dirección, negocio, lugar, fotografía o cuenta cuando: (a)
 incumpla estos términos o la ley; (b) existan indicios de información falsa, suplantación o fraude; (c) exista una denuncia

@@ -712,6 +712,24 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 .ad507-motion-ready .ad507-reveal.ad507-in{opacity:1;translate:0 0}
 @media(prefers-reduced-motion:reduce){#mainGlobalHeroView .main-hero-title,#mainGlobalHeroView .hero-copy-cta-stack,#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .hero-phone-showcase,#mainGlobalHeroView .hero-phone-preview-image{animation:none!important}.ad507-motion-ready .ad507-reveal{opacity:1;translate:none;transition:none}}
 </style>
+
+<style id="ad507-phone-motion-styles">
+/* Motion graphics applied to the existing phone-showcase visual language, not the prototype map. */
+#ad507PhoneMotion{display:grid;justify-items:center;gap:14px;padding:20px 12px 34px;perspective:1000px}
+#ad507PhoneMotion .ad507-phone-device{width:min(315px,88vw);max-width:100%;padding:10px;border-radius:39px;transform:rotate(-4deg);animation:ad507PhoneEnter 1.15s cubic-bezier(.18,1,.3,1) both,ad507PhoneHover 6s ease-in-out 1.15s infinite;box-shadow:0 34px 80px #0009,0 0 50px #1f6fff30}
+#ad507PhoneMotion .ad507-phone-screen{background:#0b1d33;border-radius:31px;overflow:hidden;color:#fff;min-height:440px}
+#ad507PhoneMotion .ad507-phone-top{padding:27px 18px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;background:#0c1a2d}
+#ad507PhoneMotion .ad507-phone-brand{font-weight:900;letter-spacing:.07em}#ad507PhoneMotion .ad507-phone-brand span{color:#57a8ff}#ad507PhoneMotion .ad507-phone-signal{color:#77b9ff;font-size:9px}
+#ad507PhoneMotion .ad507-phone-photo{height:145px;background:radial-gradient(circle at 50% 45%,#338bfa 0,#183e70 42%,#0a1b31 85%);display:grid;place-items:center;color:#a7d6ff;font-size:66px}
+#ad507PhoneMotion .ad507-phone-photo i{filter:drop-shadow(0 8px 22px #4eacff88)}
+#ad507PhoneMotion .ad507-phone-content{padding:20px 17px 24px}#ad507PhoneMotion .ad507-phone-content small{color:#81baff;font-size:10px;letter-spacing:.16em;font-weight:800}#ad507PhoneMotion .ad507-phone-content h3{font-size:22px;line-height:1.2;margin:10px 0;color:white}#ad507PhoneMotion .ad507-phone-content p{color:#c4d7ed;font-size:13px;margin:0 0 15px}#ad507PhoneMotion .ad507-phone-code{border:1px solid #355e8b;border-radius:11px;background:#132f50;text-align:center;padding:12px;font-weight:750;font-size:13px}
+#ad507PhoneMotion .ad507-phone-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}#ad507PhoneMotion .ad507-phone-actions span{padding:10px 4px;text-align:center;border:1px solid #35506e;border-radius:9px;font-size:11px;background:#19334f;color:#edf7ff}#ad507PhoneMotion .ad507-phone-actions i{margin-right:3px;color:#77b9ff}
+#ad507PhoneMotion .ad507-phone-caption{color:#a7c5e9;font-size:13px;letter-spacing:.04em;text-align:center}
+@keyframes ad507PhoneEnter{from{opacity:0;transform:translateY(65px) rotate(-12deg) scale(.88)}to{opacity:1;transform:translateY(0) rotate(-4deg) scale(1)}}
+@keyframes ad507PhoneHover{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-13px) rotate(-2deg)}}
+@media(min-width:993px){#ad507PhoneMotion{padding:24px 12px 38px}}
+@media(prefers-reduced-motion:reduce){#ad507PhoneMotion .ad507-phone-device{animation:none!important;transform:none!important}}
+</style>
 </head>
 <body>
 
@@ -838,6 +856,17 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
       </div>
 
+      <div id="ad507PhoneMotion" class="ad507-phone-stage" aria-label="Vista previa de una Dirección507 en celular">
+        <div class="hero-phone-showcase ad507-phone-device">
+          <div class="ad507-phone-screen">
+            <div class="ad507-phone-top"><span class="ad507-phone-brand">DIRECCIONES<span>507</span></span><span class="ad507-phone-signal" aria-hidden="true">● ● ●</span></div>
+            <div class="ad507-phone-photo" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="ad507-phone-content"><small>MI DIRECCIÓN DIGITAL</small><h3>Mi ubicación en Panamá</h3><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Panamá, Panamá</p><div class="ad507-phone-code">AD507 · Tu dirección</div>
+            <div class="ad507-phone-actions"><span><i class="fa-solid fa-map-location-dot"></i> Maps</span><span><i class="fa-solid fa-route"></i> Waze</span><span><i class="fa-solid fa-car"></i> Uber</span><span><i class="fa-brands fa-whatsapp"></i> WhatsApp</span></div></div>
+          </div>
+        </div>
+        <div class="ad507-phone-caption">Tu dirección digital, lista para compartir</div>
+      </div>
       <div class="hero-section-divider" role="separator" aria-hidden="true"></div>
 
           <div class="free-address-card" id="solicitaDireccionGratis">

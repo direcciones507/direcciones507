@@ -8,11 +8,11 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: temporary-events-${{ github.ref }}
+  group: temporary-events-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   temporary-event-policy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     services:
       postgres:

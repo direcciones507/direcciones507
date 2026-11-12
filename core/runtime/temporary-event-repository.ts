@@ -10,7 +10,7 @@ import {validateTemporaryEventDraft,eventSlug,type TemporaryEventDraft} from './
 import {canPublishTemporaryEvent,publicEventStatus} from './temporary-event-lifecycle';
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const requireUuid=(id:string)=>{if(!uuid.test(id))throw Error('INVALID_ID')};
-const dbDate=(value:unknown):string=>{
+export const dbDate=(value:unknown):string=>{
  if(value instanceof Date){if(Number.isNaN(value.valueOf()))throw Error('INVALID_DB_DATE');return value.toISOString().slice(0,10)}
  if(typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value))return value;
  throw Error('INVALID_DB_DATE');
@@ -35,13 +35,35 @@ export function createTemporaryEventRepository(sql:Sql){
       x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,
       x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,
       x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours]);
-     return rows[0] as {id:string;slug:string;status:'DRAFT'};
+     return rows[0] as unknown as {id:string;slug:string;status:'DRAFT'};
     }catch(error){
      if((error as {code?:string}).code==='23505')continue;
      throw error;
     }
    }
    throw Error('EVENT_SLUG_COLLISION');
+  },
+  async photos(eventId:string){
+   requireUuid(eventId);
+   return sql.unsafe('SELECT slot,object_key FROM ad507.temporary_event_media WHERE event_id=$1 ORDER BY slot',[eventId]);
+  },
+  async savePhoto(ownerId:string,eventId:string,slot:number,key:string,size:number){
+   requireUuid(ownerId);requireUuid(eventId);
+   if(!Number.isInteger(slot)||slot<1||slot>3)throw Error('INVALID_PHOTO_SLOT');
+   return sql.begin(async tx=>{
+    const rows=await tx.unsafe("SELECT id FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2 AND status='DRAFT' FOR UPDATE",[eventId,ownerId]);
+    if(!rows.length)throw Error('EVENT_NOT_EDITABLE');
+    await tx.unsafe(`INSERT INTO ad507.temporary_event_media(event_id,slot,object_key,mime_type,byte_size) VALUES($1,$2,$3,'image/webp',$4)
+     ON CONFLICT(event_id,slot) DO UPDATE SET object_key=excluded.object_key,byte_size=excluded.byte_size`,[eventId,slot,key,size]);
+   });
+  },
+  async updateDraft(ownerId:string,eventId:string,input:unknown){
+   requireUuid(ownerId);requireUuid(eventId);const x=validateTemporaryEventDraft(input);
+   const rows=await sql.unsafe(`UPDATE ad507.temporary_events SET title=$3,description=$4,responsible_name=$5,responsible_email=$6,responsible_phone=$7,
+    public_contact_name=$8,public_contact_phone=$9,public_contact_consent=$10,country_code=$11,region=$12,municipality=$13,locality=$14,
+    reference=$15,latitude=$16,longitude=$17,starts_on=$18,ends_on=$19,event_timezone=$20,hours_description=$21,updated_at=now()
+    WHERE id=$1 AND owner_user_id=$2 AND status='DRAFT' RETURNING id,slug,status`,[eventId,ownerId,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours]);
+   if(!rows.length)throw Error('EVENT_NOT_EDITABLE');return rows[0];
   },
   async getOwned(ownerId:string,eventId:string){
    requireUuid(ownerId);requireUuid(eventId);
@@ -76,7 +98,7 @@ export function createTemporaryEventRepository(sql:Sql){
    return sql.begin(async tx=>{
     const rows=await tx.unsafe(`SELECT id,status,starts_on,ends_on,event_timezone,payment_order_id,
       payment_confirmed_at FROM ad507.temporary_events WHERE id=$1 FOR UPDATE`,[eventId]);
-    const e=rows[0] as EventRow|undefined;if(!e)return false;
+    const e=rows[0] as unknown as EventRow|undefined;if(!e)return false;
     if(e.status==='ACTIVE')return e.payment_order_id===orderId&&!!e.payment_confirmed_at;
     if(e.payment_order_id!==orderId)return false;
     const count=await tx.unsafe(`SELECT count(*)::int AS total,

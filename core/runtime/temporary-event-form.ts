@@ -1,7 +1,7 @@
 /** Dirección Temporal: draft-only form UI. Route integration must enforce authenticated owner and CSRF. */
-export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events'):string {
+export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events',paymentsEnabled=false):string {
  if(!/^\/v1\/user\/[a-z0-9/-]+$/.test(action))throw Error('INVALID_FORM_ACTION');
- return `<section class="temporary-event-form" aria-labelledby="temporary-heading">
+ return `<style>*{box-sizing:border-box}body{margin:0;background:#eef3fa;color:#152c4a;font:16px system-ui}.temporary-event-form{max-width:850px;margin:auto;padding:24px 16px}fieldset{border:0;border-radius:16px;padding:22px;background:white;margin:18px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}legend{font-weight:700;padding-top:20px}label{display:block;min-width:0}input,textarea{display:block;width:100%;font:inherit;padding:12px;border:1px solid #a9b8cb;border-radius:8px;margin-top:7px}input[type=checkbox]{display:inline;width:auto}button,.event-link{padding:14px 18px;border:0;border-radius:10px;background:#1760ce;color:white;font:inherit;cursor:pointer;display:inline-block;margin:6px 0}button:disabled{opacity:.5}a{overflow-wrap:anywhere}iframe{width:100%;height:600px;border:1px solid #a9b8cb}#event-after-save[hidden]{display:none}@media(max-width:600px){fieldset{grid-template-columns:1fr;padding:16px}.temporary-event-form{padding:14px}input,textarea{min-width:0}}</style><section class="temporary-event-form" aria-labelledby="temporary-heading">
  <h2 id="temporary-heading">Crear Dirección Temporal</h2>
  <p>Publica una fiesta o evento por US$7.99, durante 1 a 30 días. El evento no se publica hasta confirmar el pago.</p>
  <form id="temporary-event-draft" data-action="${action}" novalidate>
@@ -33,14 +33,24 @@ export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events'
  <label>Teléfono visible <input name="publicContactPhone" type="tel" maxlength="40"></label>
  <label><input name="publicContactConsent" type="checkbox"> Autorizo publicar estos datos de contacto en la ficha del evento.</label>
  </fieldset>
+ <fieldset><legend>Fotografías</legend><label>Foto principal obligatoria<input name="photo1" type="file" accept="image/jpeg,image/png,image/webp"></label><label>Fotografía 2 (opcional)<input name="photo2" type="file" accept="image/jpeg,image/png,image/webp"></label><label>Fotografía 3 (opcional)<input name="photo3" type="file" accept="image/jpeg,image/png,image/webp"></label><p>Hasta 3 fotos, máximo 8 MB cada una. Puedes guardar el borrador antes de subirlas.</p></fieldset>
+ <button type="button" id="event-geolocation">Usar mi ubicación</button>
  <p id="temporary-event-error" role="alert" aria-live="polite"></p>
  <button type="submit">Guardar borrador</button>
- </form></section>`;
+ </form><section id="event-after-save" hidden><a id="event-preview-link" target="_blank" rel="noopener" class="event-link">Ver vista previa privada</a><p>Revisa la vista previa antes de pagar.</p><label><input id="event-reviewed" type="checkbox"> He revisado la vista previa</label><label>Celular Yappy<input id="event-alias" type="tel" inputmode="numeric" maxlength="8"></label><div id="event-pay-container">${paymentsEnabled?'<btn-yappy theme="blue"></btn-yappy>':'<p>Cobros desactivados. Puedes guardar y revisar tu borrador.</p>'}</div><button id="event-state" type="button">Consultar estado</button><p id="event-payment-message" role="status"></p></section></section>`;
 }
 /** Bind only on authenticated pages; server must independently validate and check session + CSRF. */
 export const temporaryEventDraftClientScript=`(() => {
  const form=document.getElementById('temporary-event-draft');if(!form)return;
- const error=document.getElementById('temporary-event-error');
+ const error=document.getElementById('temporary-event-error');let eventId=new URL(location.href).searchParams.get('draft');
+ const ajax={'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'};
+ const state=async()=>{if(!eventId)return;const r=await fetch('/v1/user/temporary-events/'+eventId,{cache:'no-store'});const data=await r.json();if(!r.ok)throw Error('No se pudo recuperar el borrador');return data.event};
+ document.getElementById('event-geolocation').onclick=()=>{if(!navigator.geolocation){error.textContent='Ubicación no disponible';return}navigator.geolocation.getCurrentPosition(p=>{form.elements.latitude.value=p.coords.latitude;form.elements.longitude.value=p.coords.longitude},()=>{error.textContent='No se pudo obtener la ubicación. Puedes escribir las coordenadas.'})};
+ const after=()=>{document.getElementById('event-after-save').hidden=false;document.getElementById('event-preview-link').href='/v1/user/temporary-events/'+eventId+'/preview'};
+ document.getElementById('event-state').onclick=async()=>{try{const e=await state();const m=document.getElementById('event-payment-message');m.textContent=e.status==='ACTIVE'?'Pago confirmado. Dirección publicada.':e.status==='EXPIRED'?'Evento finalizado.':'Estado: '+e.status;if(e.status==='ACTIVE'){const a=document.createElement('a');a.href='/evento/'+e.slug;a.textContent=' Abrir evento';m.append(a)}}catch(e){error.textContent=e.message}};
+ if(eventId)state().then(e=>{const fields={title:'title',description:'description',responsibleName:'responsible_name',responsibleEmail:'responsible_email',responsiblePhone:'responsible_phone',countryCode:'country_code',province:'region',district:'municipality',corregimiento:'locality',reference:'reference',latitude:'latitude',longitude:'longitude',startsOn:'starts_on',endsOn:'ends_on',timezone:'event_timezone',hours:'hours_description',publicContactName:'public_contact_name',publicContactPhone:'public_contact_phone'};for(const [k,v]of Object.entries(fields))form.elements[k].value=e[v]??'';form.elements.publicContactConsent.checked=e.public_contact_consent;after()}).catch(e=>error.textContent=e.message);
+ const pay=document.querySelector('btn-yappy');if(pay)pay.addEventListener('eventClick',async()=>{if(!eventId||!document.getElementById('event-reviewed').checked){error.textContent='Guarda y revisa la vista previa antes de pagar.';return}try{const r=await fetch('/v1/user/temporary-events/'+eventId+'/payment',{method:'POST',headers:ajax,body:JSON.stringify({alias:document.getElementById('event-alias').value})});const v=await r.json();if(!r.ok)throw Error(v.error);pay.eventPayment({transactionId:v.transactionId,token:v.token,documentName:v.documentName});document.getElementById('event-payment-message').textContent='Confirma en Yappy y consulta el estado.'}catch(e){error.textContent='No se pudo iniciar el pago: '+e.message}});
+
  form.addEventListener('submit',async ev=>{
   ev.preventDefault();error.textContent='';
   if(!form.reportValidity())return;
@@ -54,13 +64,16 @@ export const temporaryEventDraftClientScript=`(() => {
   }
   const payload={...values,publicContactConsent:values.publicContactConsent==='on'};
   for(const key of ['latitude','longitude'])payload[key]=values[key]===''?null:Number(values[key]);
+  for(const k of ['photo1','photo2','photo3'])delete payload[k];
   const button=form.querySelector('button[type="submit"]');button.disabled=true;
   try {
-   const response=await fetch(form.dataset.action,{method:'POST',credentials:'same-origin',
+   const response=await fetch(eventId?form.dataset.action+'/'+eventId:form.dataset.action,{method:eventId?'PUT':'POST',credentials:'same-origin',
     headers:{'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify(payload)});
    if(!response.ok)throw Error('No se pudo guardar el borrador ('+response.status+').');
    const data=await response.json();
    if(typeof data.id!=='string')throw Error('Respuesta de guardado inválida.');
+   eventId=data.id;const u=new URL(location.href);u.searchParams.set('draft',eventId);history.replaceState(null,'',u);after();
+   for(let slot=1;slot<=3;slot++){const f=form.elements['photo'+slot].files[0];if(!f)continue;const body=new FormData();body.set('slot',String(slot));body.set('photo',f);const result=await fetch('/v1/user/temporary-events/'+eventId+'/photos',{method:'POST',headers:{'X-Requested-With':'XMLHttpRequest'},body});if(!result.ok)throw Error('Borrador guardado; no se pudo subir la fotografía '+slot+'. Puedes reintentar.');form.elements['photo'+slot].value=''}
    error.textContent='Borrador guardado. Continúa con las fotografías y la vista previa.';
    form.dispatchEvent(new CustomEvent('temporary-event:saved',{bubbles:true,detail:{id:data.id}}));
   }catch(e){error.textContent=e instanceof Error?e.message:'Error de conexión';}

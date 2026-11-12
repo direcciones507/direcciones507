@@ -35,7 +35,7 @@ CREATE TABLE ad507.temporary_events (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CHECK (ends_on >= starts_on AND ends_on - starts_on BETWEEN 0 AND 29),
-  CHECK ((latitude IS NULL AND longitude IS NULL) OR (latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180)),
+  CHECK ((latitude IS NULL AND longitude IS NULL) OR (latitude IS NOT NULL AND longitude IS NOT NULL AND latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180)),
   CHECK (public_contact_consent OR (public_contact_name IS NULL AND public_contact_phone IS NULL)),
   CHECK (status <> 'ACTIVE' OR (payment_order_id IS NOT NULL AND payment_confirmed_at IS NOT NULL))
 );
@@ -52,4 +52,17 @@ CREATE TABLE ad507.temporary_event_media (
   UNIQUE(event_id,slot)
 );
 COMMENT ON TABLE ad507.temporary_events IS 'Proposal only. Never expose responsible contact fields or publish before verified payment.';
+CREATE TABLE ad507.temporary_event_orders (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ event_id uuid NOT NULL UNIQUE REFERENCES ad507.temporary_events(id),
+ provider_order_id text NOT NULL UNIQUE CHECK(provider_order_id ~ '^[A-Za-z0-9]{1,15}$'),
+ amount_cents integer NOT NULL DEFAULT 799 CHECK(amount_cents=799),
+ currency text NOT NULL DEFAULT 'USD' CHECK(currency='USD'),
+ environment text NOT NULL CHECK(environment IN ('test','production')),
+ status text NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING','PAID','FAILED','CANCELLED')),
+ provider_reference text,
+ confirmed_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE ad507.temporary_events ADD CONSTRAINT temporary_event_order_fk FOREIGN KEY(payment_order_id) REFERENCES ad507.temporary_event_orders(id);
 COMMIT;

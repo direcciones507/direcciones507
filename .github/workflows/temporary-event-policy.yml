@@ -1,28 +1,44 @@
 name: Temporary event policy checks
 on:
   pull_request:
-    paths:
-      - 'core/runtime/temporary-event-*.ts'
-      - '.github/workflows/temporary-event-policy.yml'
+    paths: ['core/runtime/**', '.github/workflows/temporary-event-policy.yml']
   push:
-    branches:
-      - 'work/temporary-address-foundation-20261111'
-    paths:
-      - 'core/runtime/temporary-event-*.ts'
-      - '.github/workflows/temporary-event-policy.yml'
+    branches: ['work/temporary-address-foundation-20261111']
+    paths: ['core/runtime/**', '.github/workflows/temporary-event-policy.yml']
 permissions:
   contents: read
+concurrency:
+  group: temporary-events-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   temporary-event-policy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18.1
+        env:
+          POSTGRES_PASSWORD: isolated-test-only
+        ports: ['55439:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     defaults:
       run:
         working-directory: core/runtime
+    env:
+      AD507_TEST_DATABASE_URL: postgres://postgres:isolated-test-only@127.0.0.1:55439/postgres
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
-      - name: Run temporary event policy regression tests
-        run: bun test temporary-event-policy.test.ts temporary-event-presentation.test.ts temporary-event-routes.test.ts
+      - run: bun install --frozen-lockfile
+      - run: bun x --no-install tsc -p tsconfig.temporary-events.json
+      - run: bun build server.ts --target bun --external postgres --outfile /tmp/ad507-events.js
+      - name: Run full regression and native PostgreSQL event integration
+        run: bun test tests temporary-event-policy.test.ts temporary-event-presentation.test.ts temporary-event-routes.test.ts temporary-event-integration.test.ts
+      - name: Install browser
+        run: bun x playwright install --with-deps chromium
+      - name: Android and desktop workflow
+        run: bun test browser-tests/temporary-event.test.ts

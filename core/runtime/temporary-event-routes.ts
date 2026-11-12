@@ -54,7 +54,7 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
   if(owned)return await eventOwnerRoute(req,ctx.sql,user.id,ctx);
   if(form){
    const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">'+(ctx.payment?'<script type="module" src="https://bt-cdn.yappy.cloud/v1/cdn/web-component-btn-yappy.js"></script>':'')+'</head><body>'+renderTemporaryEventDraftForm('/v1/user/temporary-events',!!ctx.payment)+'<script>'+temporaryEventDraftClientScript+'</script></body></html>';
-   return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex','content-security-policy':"default-src 'self'; script-src 'unsafe-inline' https://bt-cdn.yappy.cloud; connect-src 'self' https://*.yappy.cloud https://*.bgeneral.cloud; img-src 'self' data: https:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"}});
+   return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex','content-security-policy':"default-src 'self'; script-src 'unsafe-inline' https://bt-cdn.yappy.cloud https://unpkg.com; connect-src 'self' https://*.yappy.cloud https://*.bgeneral.cloud; img-src 'self' data: https:; style-src 'unsafe-inline' https://unpkg.com; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"}});
   }
   const body=await req.text();if(body.length>24000)return json(413,'PAYLOAD_TOO_LARGE');
   let input:unknown;try{input=JSON.parse(body)}catch{return json(400,'INVALID_JSON')}

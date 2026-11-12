@@ -713,22 +713,58 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 @media(prefers-reduced-motion:reduce){#mainGlobalHeroView .main-hero-title,#mainGlobalHeroView .hero-copy-cta-stack,#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .hero-phone-showcase,#mainGlobalHeroView .hero-phone-preview-image{animation:none!important}.ad507-motion-ready .ad507-reveal{opacity:1;translate:none;transition:none}}
 </style>
 
-<style id="ad507-phone-motion-styles">
-/* Motion graphics applied to the existing phone-showcase visual language, not the prototype map. */
-#ad507PhoneMotion{display:grid;justify-items:center;gap:14px;padding:20px 12px 34px;perspective:1000px}
-#ad507PhoneMotion .ad507-phone-device{width:min(315px,88vw);max-width:100%;padding:10px;border-radius:39px;transform:rotate(-4deg);animation:ad507PhoneEnter 1.15s cubic-bezier(.18,1,.3,1) both,ad507PhoneHover 6s ease-in-out 1.15s infinite;box-shadow:0 34px 80px #0009,0 0 50px #1f6fff30}
-#ad507PhoneMotion .ad507-phone-screen{background:#0b1d33;border-radius:31px;overflow:hidden;color:#fff;min-height:440px}
-#ad507PhoneMotion .ad507-phone-top{padding:27px 18px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;background:#0c1a2d}
-#ad507PhoneMotion .ad507-phone-brand{font-weight:900;letter-spacing:.07em}#ad507PhoneMotion .ad507-phone-brand span{color:#57a8ff}#ad507PhoneMotion .ad507-phone-signal{color:#77b9ff;font-size:9px}
-#ad507PhoneMotion .ad507-phone-photo{height:145px;background:radial-gradient(circle at 50% 45%,#338bfa 0,#183e70 42%,#0a1b31 85%);display:grid;place-items:center;color:#a7d6ff;font-size:66px}
-#ad507PhoneMotion .ad507-phone-photo i{filter:drop-shadow(0 8px 22px #4eacff88)}
-#ad507PhoneMotion .ad507-phone-content{padding:20px 17px 24px}#ad507PhoneMotion .ad507-phone-content small{color:#81baff;font-size:10px;letter-spacing:.16em;font-weight:800}#ad507PhoneMotion .ad507-phone-content h3{font-size:22px;line-height:1.2;margin:10px 0;color:white}#ad507PhoneMotion .ad507-phone-content p{color:#c4d7ed;font-size:13px;margin:0 0 15px}#ad507PhoneMotion .ad507-phone-code{border:1px solid #355e8b;border-radius:11px;background:#132f50;text-align:center;padding:12px;font-weight:750;font-size:13px}
-#ad507PhoneMotion .ad507-phone-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}#ad507PhoneMotion .ad507-phone-actions span{padding:10px 4px;text-align:center;border:1px solid #35506e;border-radius:9px;font-size:11px;background:#19334f;color:#edf7ff}#ad507PhoneMotion .ad507-phone-actions i{margin-right:3px;color:#77b9ff}
-#ad507PhoneMotion .ad507-phone-caption{color:#a7c5e9;font-size:13px;letter-spacing:.04em;text-align:center}
-@keyframes ad507PhoneEnter{from{opacity:0;transform:translateY(65px) rotate(-12deg) scale(.88)}to{opacity:1;transform:translateY(0) rotate(-4deg) scale(1)}}
-@keyframes ad507PhoneHover{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-13px) rotate(-2deg)}}
-@media(min-width:993px){#ad507PhoneMotion{padding:24px 12px 38px}}
-@media(prefers-reduced-motion:reduce){#ad507PhoneMotion .ad507-phone-device{animation:none!important;transform:none!important}}
+
+<style id="ad507-full-homepage-20261112">
+/* Adaptation of the supplied motion-graphics homepage: navy, bone, luminous borders, reveal, responsive layouts. Scoped to public 507 homepage. */
+@property --ad507-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes ad507-border-spin{to{--ad507-angle:360deg}}
+@keyframes ad507-ambient-left{to{transform:translate3d(16vw,8vw,0) scale(1.12)}}
+@keyframes ad507-ambient-right{to{transform:translate3d(-12vw,-8vw,0) scale(.9)}}
+@keyframes ad507-home-enter{from{opacity:0;transform:translateY(24px);filter:blur(5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+#mainGlobalHeroView{--ad507-navy:#14284b;--ad507-bone:#f5f1e8;--ad507-sky:#8fb0ea;--ad507-muted:#5b6578;--ad507-ease:cubic-bezier(.22,1,.36,1);color:#1b2335!important;background:#f5f1e8!important;border-radius:0 0 36px 36px;max-width:none!important;width:100%!important;padding:0 max(18px,calc((100vw - 1100px)/2)) 72px!important;overflow:hidden}
+#mainGlobalHeroView .hero-view-wrapper{position:relative;isolation:isolate;background:transparent!important;padding:48px 0 30px!important}
+#mainGlobalHeroView .hero-view-wrapper:before,#mainGlobalHeroView .hero-view-wrapper:after{content:"";position:absolute;z-index:-1;pointer-events:none;border-radius:50%;width:48vw;height:48vw;filter:blur(80px)}
+#mainGlobalHeroView .hero-view-wrapper:before{left:-25vw;top:-26vw;background:#2e5db0;opacity:.24;animation:ad507-ambient-left 20s ease-in-out infinite alternate}
+#mainGlobalHeroView .hero-view-wrapper:after{right:-25vw;top:-22vw;background:#8fb0ea;opacity:.28;animation:ad507-ambient-right 26s ease-in-out infinite alternate}
+#mainGlobalHeroView .hero-grid-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:20px!important}
+#mainGlobalHeroView .main-hero-title{color:#14284b!important;font-weight:850!important;letter-spacing:-.045em!important;font-size:clamp(42px,7vw,72px)!important;line-height:1.05!important;max-width:900px}
+#mainGlobalHeroView .main-hero-title span{color:#1d3866!important;-webkit-text-fill-color:#1d3866!important}
+#mainGlobalHeroView .main-hero-desc{color:#5b6578!important;font-size:clamp(16px,2vw,19px)!important;max-width:760px!important}
+#mainGlobalHeroView .hero-copy-cta-stack{gap:20px!important}
+#mainGlobalHeroView .hero-create-address-btn,#mainGlobalHeroView .free-address-btn,#mainGlobalHeroView .btn-plan-action-trigger{background:#14284b!important;color:#f5f1e8!important;border:1px solid #14284b!important;border-radius:14px!important;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s!important}
+#mainGlobalHeroView .hero-create-address-btn:hover,#mainGlobalHeroView .free-address-btn:hover,#mainGlobalHeroView .btn-plan-action-trigger:hover{transform:translateY(-4px)!important;box-shadow:0 14px 30px #14284b44!important}
+#mainGlobalHeroView .hero-section-divider{background:#14284b25!important;margin:36px 0!important}
+#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card,#mainGlobalHeroView .latam-expansion-card{position:relative!important;border-radius:24px!important;background:#fff!important;color:#1b2335!important;border:1px solid #14284b22!important;box-shadow:0 10px 40px #14284b10!important;overflow:hidden;isolation:isolate}
+#mainGlobalHeroView .free-address-card{max-width:100%!important;padding:30px!important;margin:0 auto 40px!important}
+#mainGlobalHeroView .free-address-card h3,#mainGlobalHeroView .feat-premium-card h4,#mainGlobalHeroView .plan-pricing-card h4,#mainGlobalHeroView .plans-title,#mainGlobalHeroView .latam-expansion-card h4{color:#14284b!important}
+#mainGlobalHeroView .free-address-card p,#mainGlobalHeroView .feat-premium-card p,#mainGlobalHeroView .plan-pricing-card p,#mainGlobalHeroView .latam-expansion-card p{color:#5b6578!important}
+#mainGlobalHeroView .free-kicker,#mainGlobalHeroView .title-accent,#mainGlobalHeroView .plans-title span{color:#1d3866!important;-webkit-text-fill-color:#1d3866!important}
+#mainGlobalHeroView .features-grid-view,#mainGlobalHeroView .planes-grid-layout{gap:16px!important}
+#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card{padding:24px!important;transition:transform .5s cubic-bezier(.22,1,.36,1),box-shadow .5s!important}
+#mainGlobalHeroView .feat-premium-card:hover,#mainGlobalHeroView .plan-pricing-card:hover{transform:translateY(-9px)!important;box-shadow:0 20px 48px #14284b25!important}
+#mainGlobalHeroView .feat-premium-card:before,#mainGlobalHeroView .plan-pricing-card:before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;opacity:.8;background:conic-gradient(from var(--ad507-angle),transparent 0%,#1d3866 14%,transparent 32%,#8fb0ea 56%,transparent 78%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ad507-border-spin 8s linear infinite}
+#mainGlobalHeroView .feat-premium-card:nth-child(2):before,#mainGlobalHeroView .plan-pricing-card:nth-child(2):before{animation-delay:-2s}
+#mainGlobalHeroView .feat-premium-card:nth-child(3):before,#mainGlobalHeroView .plan-pricing-card:nth-child(3):before{animation-delay:-4s}
+#mainGlobalHeroView .feat-premium-card:nth-child(4):before,#mainGlobalHeroView .plan-pricing-card:nth-child(4):before{animation-delay:-6s}
+#mainGlobalHeroView .feat-card-icon{background:#14284b!important;color:#f5f1e8!important;border-radius:15px!important;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+#mainGlobalHeroView .feat-premium-card:hover .feat-card-icon{transform:rotate(-8deg) scale(1.1)}
+#mainGlobalHeroView .plan-numeric-val{color:#14284b!important}
+#mainGlobalHeroView .plan-507-tag{background:#f5f1e8!important;color:#14284b!important}
+#mainGlobalHeroView .plan-pricing-card.popular{background:#14284b!important;color:#f5f1e8!important}
+#mainGlobalHeroView .plan-pricing-card.popular h4,#mainGlobalHeroView .plan-pricing-card.popular .plan-numeric-val,#mainGlobalHeroView .plan-pricing-card.popular p{color:#f5f1e8!important}
+#mainGlobalHeroView .plan-pricing-card.popular .btn-plan-action-trigger{background:#f5f1e8!important;color:#14284b!important;border-color:#f5f1e8!important}
+#mainGlobalHeroView .plan-pricing-card.popular:before{background:conic-gradient(from var(--ad507-angle),transparent 0%,#f5f1e8 12%,transparent 30%,#8fb0ea 54%,transparent 76%)}
+#mainGlobalHeroView .plan-pricing-card button:disabled{background:#d5dbe5!important;color:#45566b!important}
+#mainGlobalHeroView .free-address-card:before{display:none!important}
+#mainAppHeader{background:#14284b!important;box-shadow:0 8px 24px #0e1d3825}
+#mainAppHeader .header-account-actions a{border-radius:12px!important;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s!important}
+#mainAppHeader .header-account-actions a:hover{transform:translateY(-3px)!important}
+#mainGlobalHeroView .main-hero-title{animation:ad507-home-enter .9s cubic-bezier(.22,1,.36,1) both}
+#mainGlobalHeroView .hero-copy-cta-stack{animation:ad507-home-enter .9s cubic-bezier(.22,1,.36,1) .2s both}
+.ad507-motion-ready #mainGlobalHeroView .ad507-reveal{opacity:0;translate:0 28px;transition:opacity .85s cubic-bezier(.22,1,.36,1),translate .85s cubic-bezier(.22,1,.36,1);transition-delay:var(--ad507-delay,0ms)}
+.ad507-motion-ready #mainGlobalHeroView .ad507-reveal.ad507-in{opacity:1;translate:0 0}
+@media(max-width:700px){#mainGlobalHeroView{padding:0 18px 50px!important;border-radius:0 0 24px 24px}#mainGlobalHeroView .hero-view-wrapper{padding:36px 0 20px!important}#mainGlobalHeroView .main-hero-title{font-size:clamp(38px,10vw,50px)!important}#mainGlobalHeroView .free-address-card{padding:22px 18px!important}#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card{padding:20px!important}}
+@media(prefers-reduced-motion:reduce){#mainGlobalHeroView *,#mainGlobalHeroView *:before,#mainGlobalHeroView *:after{animation:none!important;transition:none!important}#mainGlobalHeroView .ad507-reveal{opacity:1!important;translate:none!important}}
 </style>
 </head>
 <body>
@@ -856,17 +892,6 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
       </div>
 
-      <div id="ad507PhoneMotion" class="ad507-phone-stage" aria-label="Vista previa de una Dirección507 en celular">
-        <div class="hero-phone-showcase ad507-phone-device">
-          <div class="ad507-phone-screen">
-            <div class="ad507-phone-top"><span class="ad507-phone-brand">DIRECCIONES<span>507</span></span><span class="ad507-phone-signal" aria-hidden="true">● ● ●</span></div>
-            <div class="ad507-phone-photo" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></div>
-            <div class="ad507-phone-content"><small>MI DIRECCIÓN DIGITAL</small><h3>Mi ubicación en Panamá</h3><p><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Panamá, Panamá</p><div class="ad507-phone-code">AD507 · Tu dirección</div>
-            <div class="ad507-phone-actions"><span><i class="fa-solid fa-map-location-dot"></i> Maps</span><span><i class="fa-solid fa-route"></i> Waze</span><span><i class="fa-solid fa-car"></i> Uber</span><span><i class="fa-brands fa-whatsapp"></i> WhatsApp</span></div></div>
-          </div>
-        </div>
-        <div class="ad507-phone-caption">Tu dirección digital, lista para compartir</div>
-      </div>
       <div class="hero-section-divider" role="separator" aria-hidden="true"></div>
 
           <div class="free-address-card" id="solicitaDireccionGratis">

@@ -48,7 +48,7 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
  if(((draft||owned)&&!['GET','HEAD'].includes(req.method))&&(req.headers.get('origin')!==origin||(!url.pathname.endsWith('/photos')&&req.headers.get('content-type')?.split(';')[0]!=='application/json')||req.headers.get('x-requested-with')!=='XMLHttpRequest'))return json(403,'REQUEST_DENIED');
  try{
   const user=await ctx.auth.currentUser(req);
-  if(!user)return json(401,'UNAUTHENTICATED');
+  if(!user){if(form)return new Response(null,{status:302,headers:{location:'/panel','cache-control':'no-store'}});return json(401,'UNAUTHENTICATED');}
   if(!user.roles.some(r=>r==='CLIENT'||r==='ADMIN'))return json(403,'FORBIDDEN');
   if(draft&&req.method==='GET'){const events=await ctx.sql.unsafe('SELECT id,slug,title,status,created_at FROM ad507.temporary_events WHERE owner_user_id=$1 ORDER BY created_at DESC LIMIT 100',[user.id]);return Response.json({ok:true,events},{headers:{'cache-control':'no-store'}})}
   if(owned)return await eventOwnerRoute(req,ctx.sql,user.id,ctx);

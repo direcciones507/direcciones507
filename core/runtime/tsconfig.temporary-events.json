@@ -1,4 +1,4 @@
 {
  "compilerOptions":{"target":"ES2022","module":"preserve","moduleResolution":"bundler","noEmit":true,"skipLibCheck":true,"types":["bun"]},
- "include":["temporary-event-*.ts","browser-checks/temporary-event.test.ts"]
+ "include":["temporary-event-*.ts","browser-checks/temporary-event.test.ts","scripts/temporary-event-release.ts","tests/temporary-release-backup.test.ts"]
 }

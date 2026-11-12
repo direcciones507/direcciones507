@@ -66,3 +66,5 @@ test('draft never activates payment from browser request',async()=>{
  assert.match(statement,/,'DRAFT'\)/);
  assert.doesNotMatch(statement,/payment_confirmed_at/);
 });
+
+test('event form sends signed-out visitors to the existing account login',async()=>{const r=await handleTemporaryEventRoutes(new Request('https://direcciones.lat/panel/evento/nuevo'),{...ctx,auth:{currentUser:async()=>null}});assert.equal(r?.status,302);assert.equal(r?.headers.get('location'),'/panel');});

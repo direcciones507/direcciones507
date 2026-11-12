@@ -1,3 +1,4 @@
+import {publicCardPresentation} from './public-card-presentation';
 import {assertCodeAvailable,addressPublicUrl,publicCode,personalizedCode} from './custom-public-code';
 import {publicAnalyticsScript} from './public-analytics';
 import {cookieConsentSource} from './legal';
@@ -591,6 +592,8 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
   template=template.replace("if(window.location.protocol === 'file:') return;","return; // New records do not write historical counters.");
   template=template.replace("document.getElementById('btnStats').addEventListener('click', async function(){","document.getElementById('btnStats').hidden=true; document.getElementById('btnStats').addEventListener('click', async function(){return;");
   template=template.replace('</body>','<script>'+cookieConsentSource+'</script><script>'+publicAnalyticsScript(record.code)+'</script></body>');
+  // Presentation only for new public BUSINESS/PLACE cards; legacy and private pages stay unchanged.
+  if(!record.extras.historical && record.type==='BUSINESS' && record.plan?.code==='BUSINESS_PREMIUM_PRO')template=publicCardPresentation(template);
   return template;
 }
 

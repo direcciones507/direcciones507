@@ -1792,16 +1792,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     document.getElementById("btnOcultarQR").onclick = () => { document.getElementById("printCardWrap").style.display = "none"; };
     document.getElementById("btnImprimirQR").onclick = () => {
       const w = window.open("", "_blank");
-      w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script><script id="ad507-owner-scroll-reveal">
-document.addEventListener('DOMContentLoaded',function(){
-  const hero=document.getElementById('mainGlobalHeroView');
-  if(!hero||!('IntersectionObserver' in window)||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  const cards=hero.querySelectorAll('.free-address-card,.feat-premium-card,.plan-pricing-card,.latam-expansion-card');
-  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){entry.target.classList.add('ad507-visible');observer.unobserve(entry.target);}}},{threshold:0.08,rootMargin:'0px 0px 60px 0px'});
-  cards.forEach(card=>{card.classList.add('ad507-visual-reveal');observer.observe(card);});
-});
-</script>
-</body></html>`);
+      w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
       w.document.close();
     };
     const lightboxOverlay=document.getElementById('lightboxOverlay');if(lightboxOverlay)lightboxOverlay.onclick = function(){ this.classList.remove('show'); };

@@ -119,7 +119,7 @@ try{
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true);
 
     await page.locator('[data-request-detail]').click();
-    await page.getByRole('heading',{name:'Solicitud de prueba'}).waitFor();
+    await page.locator('#requestDetail').getByRole('heading',{name:'Solicitud de prueba',exact:true}).waitFor();
     assert.equal(await page.getByRole('link',{name:'Ir al pago'}).getAttribute('href'),'/panel/payments/'+id);
     assert.equal(await page.locator('#requestForm').isVisible(),false);
     await page.getByRole('button',{name:'Cerrar detalle'}).click();

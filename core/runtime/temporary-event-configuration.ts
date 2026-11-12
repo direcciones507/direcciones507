@@ -5,6 +5,6 @@ export function temporaryYappyConfiguration(env:Record<string,string|undefined>)
  const config=yappyConfiguration({...env,AD507_YAPPY_IPN_URL:env.AD507_TEMPORARY_YAPPY_IPN_URL});
  if(!config)return null;
  const ipn=new URL(config.ipnUrl);
- if(ipn.origin!==new URL(config.domain).origin||ipn.pathname!=='/v1/payments/temporary-events/yappy/ipn'||ipn.search)return null;
+ if(ipn.origin!=='https://direcciones.lat'||ipn.pathname!=='/v1/payments/temporary-events/yappy/ipn'||ipn.search)return null;
  return config;
 }

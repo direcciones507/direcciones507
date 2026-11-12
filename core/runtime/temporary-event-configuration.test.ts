@@ -4,6 +4,7 @@ const env={AD507_TEMPORARY_EVENTS_ENABLED:'true',AD507_TEMPORARY_PAYMENTS_ENABLE
 test('event charges require every explicit release switch and their own provider callback',()=>{
  expect(temporaryYappyConfiguration({})).toBeNull();expect(temporaryYappyConfiguration(env)?.ipnUrl).toBe(env.AD507_TEMPORARY_YAPPY_IPN_URL);
  for(const key of ['AD507_TEMPORARY_EVENTS_ENABLED','AD507_TEMPORARY_PAYMENTS_ENABLED','AD507_COMMERCIAL_WORKFLOW_ENABLED','AD507_YAPPY_PAYMENTS_ENABLED'])expect(temporaryYappyConfiguration({...env,[key]:'false'})).toBeNull();
+ expect(temporaryYappyConfiguration({...env,AD507_YAPPY_DOMAIN:'https://direcciones507.com'})?.domain).toBe('https://direcciones507.com');
  expect(env.AD507_YAPPY_IPN_URL).toBe('https://direcciones.lat/v1/payments/yappy/ipn');
 });
 test('missing or malformed event callback safely disables payment without crashing startup',()=>{

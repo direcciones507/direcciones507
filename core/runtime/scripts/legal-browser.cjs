@@ -17,6 +17,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
     const free=payload.type==='PLACE'||payload.plan==='BUSINESS_FREE';return route.fulfill({contentType:'application/json',body:JSON.stringify({request:{id:'11111111-1111-4111-8111-111111111111',status:free?'PENDING_REVIEW':'DRAFT',...(free?{}:{workflow:'PAYMENT_PENDING'})}})});
    }
    if(url.pathname==='/v1/auth/email/register'){registers++;return route.fulfill({contentType:'application/json',body:'{"ok":true}'});}
+   if(url.pathname==='/v1/user/code-availability')return route.fulfill({json:{ok:true,available:true,code:(url.searchParams.get('plan')==='BUSINESS_PREMIUM'?'AD507-':'')+url.searchParams.get('name')}});
    if(url.pathname==='/v1/legal/account-acceptance')return route.fulfill({contentType:'application/json',body:'{"ok":true}'});
    let filename;
    if(url.pathname==='/')filename=url.hostname==='direcciones507.com'?path.join(root,'index.html'):path.join(fixtures,'latam.html');

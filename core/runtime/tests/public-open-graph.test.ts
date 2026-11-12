@@ -11,7 +11,7 @@ for(const [type,plan] of [['BUSINESS','BUSINESS_FREE'],['BUSINESS','BUSINESS_PRE
  expect(head).toContain('<meta name="twitter:card" content="summary_large_image">');
  expect(head).toContain('<meta property="og:title" content="Nombre &amp; negocio">');
  expect(head).toContain('<meta property="og:url" content="https://direcciones.lat/nombre-propio/">');
- expect(head).toContain('<meta property="og:description" content="'+(['PLACE_FREE','BUSINESS_PREMIUM_PRO'].includes(plan)?'Descripción propia':'Frente al parque')+'">');
+ expect(head).toContain('<meta property="og:description" content="'+(plan==='BUSINESS_PREMIUM'?'Nombre &amp; negocio · Frente al parque':['PLACE_FREE','BUSINESS_PREMIUM_PRO'].includes(plan)?'Descripción propia':'Frente al parque')+'">');
  expect(head).not.toContain('og:image:width');expect(head).not.toContain('og:image:height');
 });
 test('main photo and site image are fallbacks; residential policy remains unchanged',()=>{

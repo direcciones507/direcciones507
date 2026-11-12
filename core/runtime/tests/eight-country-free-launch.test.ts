@@ -64,7 +64,7 @@ test('foreign publication requires reviewed request with a free plan, without ex
 test('LATAM presentation advertises all eight free countries, while original Panama and historical HTML are unaffected',()=>{
  for(const country of FREE_LAUNCH_COUNTRIES){
   const html=latamWelcome(country,COUNTRIES,FREE_LAUNCH_COUNTRIES);
-  expect(html).toContain('Negocio Gratis');
+  expect(html).toContain('Dirección Temporal');
   expect(html).toContain('Lugar Gratis');
   expect(html).toContain('Gratis disponible');
   expect(html).not.toContain('Solo Panamá y Costa Rica');

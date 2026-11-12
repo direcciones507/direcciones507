@@ -17,6 +17,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
     const free=payload.type==='PLACE'||payload.plan==='BUSINESS_FREE';return route.fulfill({contentType:'application/json',body:JSON.stringify({request:{id:'11111111-1111-4111-8111-111111111111',status:free?'PENDING_REVIEW':'DRAFT',...(free?{}:{workflow:'PAYMENT_PENDING'})}})});
    }
    if(url.pathname==='/v1/auth/email/register'){registers++;return route.fulfill({contentType:'application/json',body:'{"ok":true}'});}
+   if(url.pathname==='/v1/user/code-availability')return route.fulfill({json:{ok:true,available:true,code:(url.searchParams.get('plan')==='BUSINESS_PREMIUM'?'AD507-':'')+url.searchParams.get('name')}});
    if(url.pathname==='/v1/legal/account-acceptance')return route.fulfill({contentType:'application/json',body:'{"ok":true}'});
    let filename;
    if(url.pathname==='/')filename=url.hostname==='direcciones507.com'?path.join(root,'index.html'):path.join(fixtures,'latam.html');
@@ -58,18 +59,19 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   assert.equal(registers,1);await page.locator('#latamAccess').screenshot({path:path.join(out,device+'-account-legal.png')});
   await page.locator('#latamAccess button[aria-label="Cerrar acceso"]').click();
   if(await page.locator('#ad507CookieOptions').isVisible())await page.locator('[data-analytics-choice="false"]').click();
-  assert.equal(await page.locator('.latam-plan-card').count(),5);
+  assert.equal(await page.locator('.latam-plan-card').count(),4);
   for(const card of await page.locator('.latam-plan-card').all())assert.equal(await card.locator('.plan-legal a').count(),0);
   await page.locator('#planes').screenshot({path:path.join(out,device+'-latam-plans.png')});
   authenticated=true;
   const png=fs.readFileSync(path.join(fixtures,'fixture.png'));
-  for(const plan of ['RESIDENTIAL','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE']){
+  for(const plan of ['RESIDENTIAL','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE']){
    console.log('Form',device,plan);await page.goto('https://direcciones.lat/panel?selectedPlan='+plan);try{await page.waitForSelector('#requestForm:not(.hidden)');}catch(error){await page.screenshot({path:path.join(out,device+'-panel-failure.png')});fs.writeFileSync(path.join(out,device+'-panel-failure.json'),JSON.stringify({errors,url:page.url(),text:await page.locator('body').innerText()},null,2));throw error;}
    assert.equal(await page.locator('#requestTermsAccepted').isChecked(),false);const before=posts.length;
    await page.locator('#name').fill('Fixture '+plan);await page.locator('#reference').fill('Ubicación sintética');await page.locator('#coordinates').fill('8.1, -80.9');
    if(plan.startsWith('BUSINESS'))await page.locator('#logo').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:png});
    if(plan==='PLACE')await page.locator('#cover').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:png});
    await page.locator('#send').click();assert.equal(posts.length,before,'unchecked form must not send');
+   if(['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan)){await page.locator('#namedCode').fill('Fixture-'+plan.replaceAll('_','-'));await page.locator('#name').focus();await page.getByRole('status').filter({hasText:'Código disponible:'}).waitFor();}
    await page.locator('#requestTermsAccepted').check();
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'form overflow '+device+' '+plan);
    if(plan==='RESIDENTIAL')await page.locator('#requestForm').screenshot({path:path.join(out,device+'-form-legal.png')});
@@ -79,5 +81,5 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
   }
   assert.deepEqual(errors,[],'browser JS errors '+device);await context.close();
  }
- fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(results,null,2)+'\n');await browser.close();console.log('Legal browser checks passed: 3 viewports, 4 policies, 5 forms and optional cookies.');
+ fs.writeFileSync(path.join(out,'results.json'),JSON.stringify(results,null,2)+'\n');await browser.close();console.log('Legal browser checks passed: 3 viewports, 4 policies, 4 current forms and optional cookies.');
 })().catch(error=>{console.error(error);process.exit(1);});

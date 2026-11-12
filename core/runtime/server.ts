@@ -1,3 +1,6 @@
+import {temporaryYappyConfiguration} from './temporary-event-configuration';
+import {createTemporaryEventMedia} from './temporary-event-media';
+import {createTemporaryEventPayment} from './temporary-event-payment';
 import {handleLatamOpenGraphImage} from './latam-open-graph';
 import {handleAnalyticsRoutes} from './analytics-repository';
 import {handleAutomaticSitemap} from '../postgres/sitemap-handler';
@@ -21,15 +24,19 @@ import { createPaymentRepository } from './payment-repository';
 import { createYappyProvider } from './yappy-provider';
 import { handlePaymentRoutes } from './payment-routes';
 import { paymentPage } from './payment-ui';
+import {handleTemporaryEventRoutes} from './temporary-event-routes';
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 2, connect_timeout: 5, idle_timeout: 30, max_lifetime: 1800, connection:{statement_timeout:'15000',lock_timeout:'5000'}, application_name: 'ad507-core-general-auth' });
 const auth = createGeneralAuth(sql, process.env);
 const requestR2 = r2Settings(process.env);
+const temporaryMedia=requestR2?createTemporaryEventMedia(requestR2):null;
 const commercialWorkflowEnabled = REQUEST_WORKFLOW_ENABLED && process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 const namespaceExclusive = process.env.AD507_HISTORICAL_NAMESPACE_VERIFIED === 'true';
 const paymentConfig = yappyConfiguration(process.env);
 const yappyEnabled = yappyPaymentsEnabled(process.env) && commercialWorkflowEnabled;
 const paymentProvider = yappyEnabled && paymentConfig ? createYappyProvider(paymentConfig) : null;
+const eventPaymentConfig=temporaryYappyConfiguration(process.env);
+const temporaryPayment=eventPaymentConfig?createTemporaryEventPayment(sql,eventPaymentConfig,createYappyProvider(eventPaymentConfig)):null;
 const requestRepository = createRequestRepository(sql, { r2: requestR2, canonical: commercialWorkflowEnabled ? createNewAddressPublication(sql,{namespaceExclusive}) : null,
   // Publication eligibility is independent of provider activation. Free requests
   // need no order; paid plans must remain pending until a real payment exists.
@@ -78,6 +85,8 @@ startLegacyCore(async req => {
   const publicResponse=await handleNewPublicRoutes(req,{enabled:commercialWorkflowEnabled,sql,r2:requestR2});if(publicResponse)return publicResponse;
   const requestResponse = await handleRequestRoutes(req, { enabled: commercialWorkflowEnabled, sql, auth, repository: requestRepository, r2: requestR2 });
   if (requestResponse) return requestResponse;
+  const temporaryEventResponse=await handleTemporaryEventRoutes(req,{enabled:process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true',sql,auth,media:temporaryMedia,payment:temporaryPayment});
+  if(temporaryEventResponse)return temporaryEventResponse;
   const userPanel = await handleUserPanel(req, sql, auth);
   if (userPanel) return userPanel;
   if (req.method === 'GET' && url.pathname === '/' && req.headers.get('cookie')?.includes('ad507_session=')) {

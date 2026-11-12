@@ -19,7 +19,7 @@ const context={enabled:true,sql,r2:null};
 beforeAll(async()=>{
  const root=new URL('../../../',import.meta.url);
  for(const file of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql','0005_general_google_auth.sql'])await db.exec(readFileSync(new URL('db/migrations/'+file,root),'utf8'));
- for(const file of ['landline','requests','countries'])await db.exec(readFileSync(new URL('../schema-proposals/'+file+'.sql',import.meta.url),'utf8'));
+ for(const file of ['landline','requests','countries','payments'])await db.exec(readFileSync(new URL('../schema-proposals/'+file+'.sql',import.meta.url),'utf8'));
  await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,'owner@example.test'),($2::uuid,'other@example.test')",[actor,other]);
  await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT'),($1::uuid,'ADMIN'),($2::uuid,'CLIENT')",[actor,other]);
  await sql.unsafe(`INSERT INTO ad507.addresses(id,code,address_type,status,plan_id,name,reference,latitude,longitude,source,request_data,publication_receipt,country_code) VALUES($1::uuid,'AD507-N00900792','BUSINESS','ACTIVE',(SELECT id FROM ad507.plans WHERE code='BUSINESS_PREMIUM_PRO'),'Synthetic','Synthetic',8,-80,'USER_REQUEST',$2::jsonb,'synthetic','PA')`,[id,sql.json({plan:'BUSINESS_PREMIUM_PRO',media:{logos:1,placePhotos:0,galleryPhotos:0},namedCode:'Old-name'})]);

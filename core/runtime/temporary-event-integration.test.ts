@@ -3,6 +3,7 @@ import postgres from 'postgres';
 import {readFileSync} from 'node:fs';
 import {createHmac} from 'node:crypto';
 import sharp from 'sharp';
+import {prepareTemporaryEvents} from './scripts/prepare-temporary-events';
 import {createTemporaryEventRepository} from './temporary-event-repository';
 import {createTemporaryEventPayment} from './temporary-event-payment';
 import {createTemporaryEventMedia} from './temporary-event-media';
@@ -19,7 +20,9 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
  const sql=postgres(u.href,{max:1,onnotice:()=>{}});
  try{
   for(const name of ['0000_migration_ledger.sql','0001_core_foundation.sql','0002_plan_catalog.sql','0003_plan_capabilities.sql','0005_general_google_auth.sql'])await sql.unsafe(readFileSync(new URL('../../db/migrations/'+name,import.meta.url),'utf8'));
-  await sql.unsafe(readFileSync(new URL('./schema-proposals/temporary-events.sql',import.meta.url),'utf8'));
+  const migration=prepareTemporaryEvents(database,0,'a'.repeat(40));
+  await sql.unsafe(migration);
+  let repeat='';try{await sql.unsafe(migration)}catch(e){repeat=String(e)}finally{await sql.unsafe('ROLLBACK')}expect(repeat).toContain('MIGRATION_ALREADY_APPLIED');
   await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1,'one@example.test'),($2,'two@example.test')",[owner,other]);
   const objects=new Map<string,Uint8Array>();let puts=0,providerCalls=0;
   const media=createTemporaryEventMedia({configurationVerified:true,accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'fixture',secretAccessKey:'fixture'},(async(url:any,options:any)=>{
@@ -35,6 +38,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   const draft=await handleTemporaryEventRoutes(request('/v1/user/temporary-events','POST',{...eventFixture,status:'ACTIVE',paymentConfirmedAt:new Date().toISOString()}),ctx);expect(draft?.status).toBe(201);
   const created=await draft!.json();expect(created.status).toBe('DRAFT');const id=created.id,base='/v1/user/temporary-events/'+id;
   expect((await handleTemporaryEventRoutes(request('/evento/'+created.slug),ctx))?.status).toBe(404);
+  const list=await handleTemporaryEventRoutes(request('/v1/user/temporary-events'),ctx);expect((await list!.json()).events[0].id).toBe(id);
   expect((await handleTemporaryEventRoutes(request(base),{...ctx,auth:{currentUser:async()=>({id:other,roles:['ADMIN']})}}))?.status).toBe(404);
   expect((await handleTemporaryEventRoutes(request(base,'PUT',eventFixture,{origin:'https://evil.example'}),ctx))?.status).toBe(403);
   expect((await handleTemporaryEventRoutes(request(base+'/payment','POST',{alias:'60000000'}),{...ctx,payment:null}))?.status).toBe(503);

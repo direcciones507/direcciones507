@@ -6,7 +6,7 @@ import {createTemporaryEventRepository} from './temporary-event-repository';
 import {renderTemporaryEventDraftForm,temporaryEventDraftClientScript} from './temporary-event-form';
 import {renderTemporaryEventPage} from './temporary-event-page';
 import type {TemporaryEventDraft} from './temporary-event-draft';
-const json=(status:number,error:string)=>Response.json({ok:false,error},{status,headers:{'cache-control':'no-store'}});
+const json=(status:number,error:string)=>Response.json({ok:false,error},{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
 export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{enabled:boolean;sql:Sql;auth:{currentUser:(req:Request)=>Promise<{id:string;roles:unknown[]}|null>}}):Promise<Response|null>{
  const url=new URL(req.url);
  const form=url.pathname==='/panel/evento/nuevo';
@@ -42,14 +42,15 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
    return new Response(req.method==='HEAD'?null:html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; img-src 'self' https: data:; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}});
   }catch{return json(503,'EVENT_UNAVAILABLE')}
  }
- if(form&&req.method!=='GET'||draft&&req.method!=='POST')return json(405,'METHOD_NOT_ALLOWED');
+ if(form&&req.method!=='GET'||draft&&!['GET','POST'].includes(req.method))return json(405,'METHOD_NOT_ALLOWED');
  const origin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin;
  if(req.headers.get('sec-fetch-site')==='cross-site'||(req.headers.has('origin')&&req.headers.get('origin')!==origin))return json(403,'ORIGIN_DENIED');
- if((draft||owned&&!['GET','HEAD'].includes(req.method))&&(req.headers.get('origin')!==origin||(!url.pathname.endsWith('/photos')&&req.headers.get('content-type')?.split(';')[0]!=='application/json')||req.headers.get('x-requested-with')!=='XMLHttpRequest'))return json(403,'REQUEST_DENIED');
+ if(((draft||owned)&&!['GET','HEAD'].includes(req.method))&&(req.headers.get('origin')!==origin||(!url.pathname.endsWith('/photos')&&req.headers.get('content-type')?.split(';')[0]!=='application/json')||req.headers.get('x-requested-with')!=='XMLHttpRequest'))return json(403,'REQUEST_DENIED');
  try{
   const user=await ctx.auth.currentUser(req);
   if(!user)return json(401,'UNAUTHENTICATED');
   if(!user.roles.some(r=>r==='CLIENT'||r==='ADMIN'))return json(403,'FORBIDDEN');
+  if(draft&&req.method==='GET'){const events=await ctx.sql.unsafe('SELECT id,slug,title,status,created_at FROM ad507.temporary_events WHERE owner_user_id=$1 ORDER BY created_at DESC LIMIT 100',[user.id]);return Response.json({ok:true,events},{headers:{'cache-control':'no-store'}})}
   if(owned)return await eventOwnerRoute(req,ctx.sql,user.id,ctx);
   if(form){
    const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">'+(ctx.payment?'<script type="module" src="https://bt-cdn.yappy.cloud/v1/cdn/web-component-btn-yappy.js"></script>':'')+'</head><body>'+renderTemporaryEventDraftForm('/v1/user/temporary-events',!!ctx.payment)+'<script>'+temporaryEventDraftClientScript+'</script></body></html>';
@@ -59,5 +60,5 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
   let input:unknown;try{input=JSON.parse(body)}catch{return json(400,'INVALID_JSON')}
   try{return Response.json({ok:true,...await repository.createDraft(user.id,input)},{status:201,headers:{'cache-control':'no-store'}})}
   catch(e){if(e instanceof Error&&/^(INVALID_|EVENT_DURATION_|PUBLIC_CONTACT_)/.test(e.message))return json(400,e.message);throw e}
- }catch{return json(503,'EVENT_UNAVAILABLE')}
+ }catch(e){const m=e instanceof Error?e.message:'';if(/^(INVALID_|EVENT_DURATION_|PUBLIC_CONTACT_|PRIMARY_PHOTO_)/.test(m))return json(400,m);if(['EVENT_NOT_EDITABLE','EVENT_NOT_PAYABLE'].includes(m))return json(409,m);return json(503,'EVENT_UNAVAILABLE')}
 }

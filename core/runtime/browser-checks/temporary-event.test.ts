@@ -29,7 +29,7 @@ test('Android and desktop: save, recover, upload, private preview, carousel one 
   const preview=await page.locator('#event-preview-link').getAttribute('href');await page.goto(server.url+preview!.slice(1));
   expect(await page.getByText('Vista previa privada · Aún sin publicar').count()).toBe(1);expect(await page.locator('.photos img').count()).toBe(3);
   await page.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0));expect(await page.content()).not.toContain('PRIVATE_NAME');
-  await page.clock.install();await page.clock.fastForward(3500);expect(await page.locator('[data-slide="1"]').getAttribute('aria-current')).toBe('true');await page.clock.fastForward(7000);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');await page.clock.fastForward(14000);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');
+  await page.clock.install();await page.clock.fastForward(3500);expect(await page.locator('[data-slide="1"]').getAttribute('aria-current')).toBe('true');await page.clock.fastForward(3500);await page.clock.fastForward(3500);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');await page.clock.fastForward(14000);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');
   await page.locator('[data-slide="2"]').tap();expect(await page.locator('[data-slide="2"]').getAttribute('aria-current')).toBe('true');
   const draftUrl=server.url+'panel/evento/nuevo?draft='+(await sql.unsafe('SELECT id FROM ad507.temporary_events'))[0].id;
   await page.goto(draftUrl);await page.waitForFunction(()=>document.querySelector<HTMLInputElement>('[name=title]')?.value==='Fiesta de Santiago');

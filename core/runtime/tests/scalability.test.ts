@@ -23,10 +23,14 @@ test.skipIf(!external)('synthetic 1k/10k/100k real tables, paginated country rea
   const started=performance.now(),results:any[]=[];let previous=0;
   for(const size of [1000,10000,100000]){
    const insertStart=performance.now();
-   await db.unsafe(`INSERT INTO ad507.addresses(id,code,country_code,address_type,status,name,reference,description,latitude,longitude,source,created_at,updated_at,request_data)
+   // Fixture generation is not a request latency check; allow slower hosted CI disks.
+   const insertConnection=await db.reserve();
+   try{await insertConnection.unsafe("SET statement_timeout='20000'");
+   await insertConnection.unsafe(`INSERT INTO ad507.addresses(id,code,country_code,address_type,status,name,reference,description,latitude,longitude,source,created_at,updated_at,request_data)
      SELECT md5('latam-synthetic-'||g)::uuid,'AD'||CASE g%3 WHEN 0 THEN '507' WHEN 1 THEN '57' ELSE '506' END||'-SYNTHETIC'||g,
      CASE g%3 WHEN 0 THEN 'PA' WHEN 1 THEN 'CO' ELSE 'CR' END,CASE WHEN g%5=0 THEN 'PLACE' ELSE 'BUSINESS' END,CASE WHEN g%4=0 THEN 'PENDING_REVIEW' ELSE 'ACTIVE' END,
      'Synthetic business '||g,'Synthetic reference',repeat('x',512),8,-80,'USER_REQUEST',TIMESTAMPTZ '2026-01-01'+g*INTERVAL '1 microsecond',TIMESTAMPTZ '2026-01-01'+g*INTERVAL '1 microsecond','{}'::jsonb FROM generate_series($1::int,$2::int) g`,[previous+1,size]);
+   }finally{await insertConnection.unsafe("SET statement_timeout='5000'");insertConnection.release();}
    const insertMs=performance.now()-insertStart;previous=size;await db.unsafe('ANALYZE ad507.addresses');
    const times:number[]=[],pointTimes:number[]=[];
    for(let i=0;i<40;i++){

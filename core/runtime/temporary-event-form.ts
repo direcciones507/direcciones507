@@ -2,7 +2,7 @@
 export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events',paymentsEnabled=false):string {
  if(!/^\/v1\/user\/[a-z0-9/-]+$/.test(action))throw Error('INVALID_FORM_ACTION');
  return `<style>*{box-sizing:border-box}body{margin:0;background:#eef3fa;color:#152c4a;font:16px system-ui}.temporary-event-form{max-width:850px;margin:auto;padding:24px 16px}fieldset{border:0;border-radius:16px;padding:22px;background:white;margin:18px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}legend{font-weight:700;padding-top:20px}label{display:block;min-width:0}input,textarea{display:block;width:100%;font:inherit;padding:12px;border:1px solid #a9b8cb;border-radius:8px;margin-top:7px}input[type=checkbox]{display:inline;width:auto}button,.event-link{padding:14px 18px;border:0;border-radius:10px;background:#1760ce;color:white;font:inherit;cursor:pointer;display:inline-block;margin:6px 0}button:disabled{opacity:.5}a{overflow-wrap:anywhere}iframe{width:100%;height:600px;border:1px solid #a9b8cb}#event-after-save[hidden]{display:none}@media(max-width:600px){fieldset{grid-template-columns:1fr;padding:16px}.temporary-event-form{padding:14px}input,textarea{min-width:0}}</style><section class="temporary-event-form" aria-labelledby="temporary-heading">
- <h2 id="temporary-heading">Crear Dirección Temporal</h2>
+ <nav id="event-drafts" aria-label="Mis eventos"></nav><h2 id="temporary-heading">Crear Dirección Temporal</h2>
  <p>Publica una fiesta o evento por US$7.99, durante 1 a 30 días. El evento no se publica hasta confirmar el pago.</p>
  <form id="temporary-event-draft" data-action="${action}" novalidate>
  <fieldset><legend>Información del evento</legend>
@@ -43,6 +43,7 @@ export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events'
 export const temporaryEventDraftClientScript=`(() => {
  const form=document.getElementById('temporary-event-draft');if(!form)return;
  const error=document.getElementById('temporary-event-error');let eventId=new URL(location.href).searchParams.get('draft');
+ fetch('/v1/user/temporary-events',{cache:'no-store'}).then(r=>r.json()).then(data=>{const list=document.getElementById('event-drafts');for(const e of data.events||[]){const a=document.createElement('a');a.href='/panel/evento/nuevo?draft='+encodeURIComponent(e.id);a.textContent=e.title+' · '+e.status;const p=document.createElement('p');p.append(a);list.append(p)}}).catch(()=>{});
  const ajax={'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'};
  const state=async()=>{if(!eventId)return;const r=await fetch('/v1/user/temporary-events/'+eventId,{cache:'no-store'});const data=await r.json();if(!r.ok)throw Error('No se pudo recuperar el borrador');return data.event};
  document.getElementById('event-geolocation').onclick=()=>{if(!navigator.geolocation){error.textContent='Ubicación no disponible';return}navigator.geolocation.getCurrentPosition(p=>{form.elements.latitude.value=p.coords.latitude;form.elements.longitude.value=p.coords.longitude},()=>{error.textContent='No se pudo obtener la ubicación. Puedes escribir las coordenadas.'})};

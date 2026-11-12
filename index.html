@@ -686,6 +686,25 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  #mainAppHeader #headerNavigation{order:3}
 }
 </style>
+<style id="ad507-home-visual-only">
+/* Visual-only: no customer profiles, links, account handlers, or generated pages changed. */
+@keyframes ad507-home-rise{from{opacity:.4;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ad507-home-halo{0%,100%{filter:blur(52px);opacity:.2}50%{filter:blur(70px);opacity:.35}}
+#mainGlobalHeroView{position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(155deg,#f8f6f0 0%,#eef2f9 55%,#f8f6f0 100%)!important;color:#172b4b!important}
+#mainGlobalHeroView:before{content:"";position:absolute;z-index:-1;top:-200px;right:-150px;width:560px;height:560px;border-radius:50%;background:#7295d4;animation:ad507-home-halo 9s ease-in-out infinite;pointer-events:none}
+#mainGlobalHeroView .main-hero-title{color:#14284b!important;letter-spacing:-.035em!important;line-height:1.07!important;animation:ad507-home-rise .85s ease both}
+#mainGlobalHeroView .hero-copy-cta-stack{animation:ad507-home-rise 1s ease .15s both}
+#mainGlobalHeroView .main-hero-desc{color:#47566c!important}
+#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card,#mainGlobalHeroView .latam-expansion-card{border-radius:22px!important;box-shadow:0 10px 32px rgba(20,40,75,.12)!important;transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s ease!important}
+#mainGlobalHeroView .free-address-card:hover,#mainGlobalHeroView .feat-premium-card:hover,#mainGlobalHeroView .plan-pricing-card:hover,#mainGlobalHeroView .latam-expansion-card:hover{transform:translateY(-7px)!important;box-shadow:0 22px 48px rgba(20,40,75,.2)!important}
+#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card{border:1px solid rgba(36,75,130,.2)!important}
+#mainGlobalHeroView .feat-card-icon{transition:transform .4s ease}
+#mainGlobalHeroView .feat-premium-card:hover .feat-card-icon{transform:translateY(-3px) scale(1.08)}
+#mainAppHeader .header-account-actions .btn-nav-action{transition:transform .3s ease,box-shadow .3s ease!important;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+#mainAppHeader .header-account-actions .btn-nav-action:hover{transform:translateY(-3px)!important;box-shadow:0 9px 24px rgba(0,0,0,.24)}
+@media(max-width:650px){#mainGlobalHeroView{overflow:hidden}#mainGlobalHeroView .main-hero-title{letter-spacing:-.025em!important}#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card{border-radius:17px!important}}
+@media(prefers-reduced-motion:reduce){#mainGlobalHeroView:before,#mainGlobalHeroView .main-hero-title,#mainGlobalHeroView .hero-copy-cta-stack{animation:none!important}#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card,#mainGlobalHeroView .latam-expansion-card{transition:none!important}}
+</style>
 </head>
 <body>
 

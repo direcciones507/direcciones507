@@ -705,6 +705,41 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 @media(max-width:650px){#mainGlobalHeroView{overflow:hidden}#mainGlobalHeroView .main-hero-title{letter-spacing:-.025em!important}#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card{border-radius:17px!important}}
 @media(prefers-reduced-motion:reduce){#mainGlobalHeroView:before,#mainGlobalHeroView .main-hero-title,#mainGlobalHeroView .hero-copy-cta-stack{animation:none!important}#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card,#mainGlobalHeroView .latam-expansion-card{transition:none!important}}
 </style>
+<style id="ad507-owner-landing-visual">
+/* Public homepage only. Uses original published phone preview, not a generated mockup. */
+@keyframes ad507-rise-in{from{opacity:0;transform:translate3d(0,36px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes ad507-phone-float{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-13px) rotate(-2deg)}}
+@keyframes ad507-aura{0%,100%{transform:translate(-8%,-5%) scale(.96)}50%{transform:translate(8%,5%) scale(1.07)}}
+#mainGlobalHeroView{background:linear-gradient(140deg,#f8f4eb 0%,#f4f5f9 50%,#e8edf7 100%)!important;color:#162a49!important;border-radius:0 0 36px 36px!important;padding:52px clamp(18px,4vw,64px) 80px!important;max-width:none!important;position:relative;isolation:isolate;overflow:hidden}
+#mainGlobalHeroView:before{content:"";position:absolute;z-index:-1;top:-270px;right:-170px;width:800px;height:650px;border-radius:50%;background:radial-gradient(circle,#95b3e7aa 0%,#c1d2f355 42%,transparent 72%);animation:ad507-aura 16s ease-in-out infinite;pointer-events:none}
+#mainGlobalHeroView .hero-view-wrapper{max-width:1150px;margin:auto;padding:22px 0 12px!important}
+#mainGlobalHeroView .hero-grid-layout{grid-template-columns:minmax(0,1fr)!important;text-align:center!important}
+#mainGlobalHeroView .main-hero-title{font-size:clamp(42px,6vw,78px)!important;color:#14284b!important;line-height:1.04!important;letter-spacing:-.052em!important;font-weight:900!important;animation:ad507-rise-in .9s both}
+#mainGlobalHeroView .main-hero-title span{color:#2459a4!important;-webkit-text-fill-color:#2459a4!important;background:none!important}
+#mainGlobalHeroView .main-hero-desc{color:#46576e!important;max-width:780px!important;margin-inline:auto!important;font-size:clamp(16px,1.9vw,20px)!important}
+#mainGlobalHeroView .hero-copy-cta-stack{animation:ad507-rise-in 1s .15s both}
+#mainGlobalHeroView .hero-create-address-btn,#mainGlobalHeroView .free-address-btn{background:#14284b!important;color:#fff!important;border:1px solid #14284b!important;border-radius:14px!important;box-shadow:0 12px 24px #14284b33!important;transition:transform .3s ease,box-shadow .3s ease!important}
+#mainGlobalHeroView .hero-create-address-btn:hover,#mainGlobalHeroView .free-address-btn:hover{transform:translateY(-4px)!important;box-shadow:0 18px 35px #14284b55!important}
+#mainGlobalHeroView .ad507-original-phone{width:min(285px,72vw);margin:34px auto 52px;position:relative;filter:drop-shadow(0 28px 30px #14284b44);animation:ad507-rise-in .95s .25s both}
+#mainGlobalHeroView .ad507-original-phone img{display:block;width:100%;height:auto;object-fit:contain;animation:ad507-phone-float 7s ease-in-out 1.3s infinite;transform-origin:center}
+#mainGlobalHeroView .hero-section-divider{background:#14284b22!important;margin:28px auto 36px!important;max-width:1100px}
+#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card,#mainGlobalHeroView .latam-expansion-card{border-radius:24px!important;background:#fff!important;color:#172b49!important;border:1px solid #a5b8d055!important;box-shadow:0 16px 38px #14284b16!important;transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s!important}
+#mainGlobalHeroView .free-address-card{max-width:1050px!important;margin:0 auto 42px!important;padding:clamp(24px,4vw,42px)!important}
+#mainGlobalHeroView .free-address-card h3,#mainGlobalHeroView .feat-premium-card h4,#mainGlobalHeroView .plan-pricing-card h4,#mainGlobalHeroView .latam-expansion-card h4{color:#14284b!important}
+#mainGlobalHeroView .free-address-card p,#mainGlobalHeroView .feat-premium-card p,#mainGlobalHeroView .plan-pricing-card p,#mainGlobalHeroView .latam-expansion-card p{color:#52627a!important}
+#mainGlobalHeroView .free-address-card .free-kicker,#mainGlobalHeroView .free-address-card .title-accent{color:#2459a4!important;-webkit-text-fill-color:#2459a4!important}
+#mainGlobalHeroView .feat-premium-card:hover,#mainGlobalHeroView .plan-pricing-card:hover,#mainGlobalHeroView .latam-expansion-card:hover{transform:translateY(-9px)!important;box-shadow:0 25px 55px #14284b33!important}
+#mainGlobalHeroView .plan-pricing-card.popular{background:#14284b!important;color:#fff!important}
+#mainGlobalHeroView .plan-pricing-card.popular h4,#mainGlobalHeroView .plan-pricing-card.popular p,#mainGlobalHeroView .plan-pricing-card.popular .plan-numeric-val{color:#fff!important}
+#mainGlobalHeroView .plans-title,#mainGlobalHeroView .plan-numeric-val{color:#14284b!important}
+#mainGlobalHeroView .ad507-visual-reveal{opacity:0;translate:0 38px;transition:opacity .8s cubic-bezier(.22,1,.36,1),translate .8s cubic-bezier(.22,1,.36,1)}
+#mainGlobalHeroView .ad507-visual-reveal.ad507-visible{opacity:1;translate:0 0}
+#mainAppHeader .header-account-actions a{border-radius:14px!important;transition:transform .3s ease,box-shadow .3s ease!important}
+#mainAppHeader .header-account-actions a:hover{transform:translateY(-4px)!important;box-shadow:0 12px 24px #06132766!important}
+@media(min-width:950px){#mainGlobalHeroView .hero-view-wrapper{max-width:1050px}#mainGlobalHeroView .ad507-original-phone{width:290px}}
+@media(max-width:700px){#mainGlobalHeroView{padding:28px 16px 55px!important;border-radius:0 0 22px 22px!important}#mainGlobalHeroView .ad507-original-phone{width:min(240px,72vw);margin:22px auto 35px}#mainGlobalHeroView .free-address-card{padding:22px!important}#mainGlobalHeroView .main-hero-title{font-size:clamp(40px,10vw,54px)!important}}
+@media(prefers-reduced-motion:reduce){#mainGlobalHeroView .ad507-original-phone,#mainGlobalHeroView .ad507-original-phone img,#mainGlobalHeroView:before{animation:none!important}#mainGlobalHeroView .ad507-visual-reveal{opacity:1!important;translate:none!important;transition:none!important}}
+</style>
 </head>
 <body>
 
@@ -830,6 +865,8 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
         </div>
 
       </div>
+
+      <div class="ad507-original-phone" aria-label="Vista previa de la tarjeta de dirección digital"><img src="/ad507-the1920-phone-preview.jpg" alt="Tarjeta digital original de Direcciones507 en un celular" loading="eager"></div>
 
       <div class="hero-section-divider" role="separator" aria-hidden="true"></div>
 
@@ -1771,7 +1808,16 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     document.getElementById("btnOcultarQR").onclick = () => { document.getElementById("printCardWrap").style.display = "none"; };
     document.getElementById("btnImprimirQR").onclick = () => {
       const w = window.open("", "_blank");
-      w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
+      w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script><script id="ad507-owner-scroll-reveal">
+document.addEventListener('DOMContentLoaded',function(){
+  const hero=document.getElementById('mainGlobalHeroView');
+  if(!hero||!('IntersectionObserver' in window)||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const cards=hero.querySelectorAll('.free-address-card,.feat-premium-card,.plan-pricing-card,.latam-expansion-card');
+  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){entry.target.classList.add('ad507-visible');observer.unobserve(entry.target);}}},{threshold:0.08,rootMargin:'0px 0px 60px 0px'});
+  cards.forEach(card=>{card.classList.add('ad507-visual-reveal');observer.observe(card);});
+});
+</script>
+</body></html>`);
       w.document.close();
     };
     const lightboxOverlay=document.getElementById('lightboxOverlay');if(lightboxOverlay)lightboxOverlay.onclick = function(){ this.classList.remove('show'); };

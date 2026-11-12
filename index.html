@@ -919,17 +919,18 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 @keyframes ad507-border{to{--ad507-angle:360deg}}
 #mainGlobalHeroView{background:#F5F1E8!important;color:#1B2335!important;max-width:none!important;padding:0 0 64px!important;overflow:hidden}
 #mainGlobalHeroView .hero-view-wrapper{max-width:none!important;padding:0!important}
-#mainGlobalHeroView .hero-grid-layout{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(240px,.95fr)!important;align-items:center;gap:36px!important;padding:56px max(24px,calc((100vw - 1080px)/2)) 72px;background:#14284B;color:#F5F1E8;border-radius:0 0 44px 44px;text-align:left!important}
+#mainGlobalHeroView .hero-grid-layout{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(240px,.95fr)!important;align-items:center;gap:36px!important;width:100%!important;max-width:none!important;margin:0!important;padding:56px max(24px,calc((100vw - 1080px)/2)) 72px;background:#14284B;color:#F5F1E8;border-radius:0 0 44px 44px;text-align:left!important}
 #mainGlobalHeroView .hero-grid-layout:before,#mainGlobalHeroView .hero-grid-layout:after{content:"";position:absolute;z-index:-1;width:65vmax;height:65vmax;border-radius:50%;pointer-events:none;filter:blur(65px)}
 #mainGlobalHeroView .hero-grid-layout:before{left:-30vmax;top:-40vmax;background:#2e5db066;animation:ad507-blue-glow 20s ease-in-out infinite alternate}
 #mainGlobalHeroView .hero-grid-layout:after{right:-40vmax;bottom:-45vmax;background:#8fb0ea33;animation:ad507-blue-glow 26s ease-in-out infinite alternate-reverse}
 #mainGlobalHeroView .hero-grid-layout>div:first-child{max-width:560px!important;align-items:flex-start!important;text-align:left!important;transform:none!important}
-#mainGlobalHeroView .main-hero-title{font-family:system-ui,-apple-system,"Segoe UI",sans-serif!important;font-size:clamp(40px,5.4vw,70px)!important;font-weight:800!important;line-height:1.04!important;letter-spacing:-.04em!important;color:#F5F1E8!important;animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) both}
+#mainGlobalHeroView .main-hero-title{font-family:system-ui,-apple-system,"Segoe UI",sans-serif!important;font-size:clamp(40px,4.8vw,64px)!important;font-weight:800!important;line-height:1.04!important;letter-spacing:-.04em!important;color:#F5F1E8!important;animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) both}
 #mainGlobalHeroView .main-hero-title span{white-space:normal;background:none!important;color:#F5F1E8!important;-webkit-text-fill-color:#F5F1E8!important}
 #mainGlobalHeroView .main-hero-desc{margin:22px 0 0!important;max-width:46ch!important;color:#f5f1e8c7!important;font-size:18px!important;line-height:1.6!important}
 #mainGlobalHeroView .hero-copy-cta-stack{animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) .25s both}
 #mainGlobalHeroView .hero-create-address-btn{background:#F5F1E8!important;color:#14284B!important;border:1px solid #F5F1E8!important;border-radius:14px!important;box-shadow:none!important;padding:14px 22px!important;font-size:15px!important}
-#mainGlobalHeroView .ad507-original-phone{width:min(285px,100%);margin:0 auto!important;transform:none!important;filter:drop-shadow(0 26px 30px #080f2270);animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) .4s both}
+#mainGlobalHeroView .hero-apps-line{white-space:normal!important;display:block}
+#mainGlobalHeroView .ad507-original-phone{width:min(265px,100%);padding:9px;background:linear-gradient(145deg,#101827,#020617);border:2px solid #8fb0ea55;border-radius:34px;margin:0 auto!important;transform:none!important;filter:drop-shadow(0 26px 30px #080f2270);animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) .4s both}
 #mainGlobalHeroView .ad507-original-phone img{display:block;width:100%;height:auto;object-fit:contain;border-radius:24px}
 #mainGlobalHeroView .hero-section-divider{display:none}
 #mainGlobalHeroView :is(.free-address-card,.features-grid-view,.planes-section-wrapper){width:calc(100% - 40px);max-width:1080px;margin-inline:auto!important}

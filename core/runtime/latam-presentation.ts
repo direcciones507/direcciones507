@@ -448,6 +448,24 @@ body.latam .latam-footer-inner nav[aria-label="Información y contacto"] a[href^
 @media(prefers-reduced-motion:reduce){#latamAccess input{transition:none}}
 #latamAccess [hidden]{display:none!important}
 @media(max-width:480px),(max-height:600px){#latamAccess{padding:16px}#latamAccess h2{font-size:21px}}
+
+/* Owner Motion Graphics palette; access card only, existing controls unchanged. */
+@keyframes ad507-access-enter{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+#latamAccess{background:#F5F1E8;border:1px solid #14284b24;border-radius:26px;color:#1B2335;box-shadow:0 30px 70px #0e1d3866;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+#latamAccess[open]{animation:ad507-access-enter .45s cubic-bezier(.22,1,.36,1) both}
+#latamAccess::backdrop{background:#0e1d38cc;backdrop-filter:blur(8px)}
+#latamAccess h2{color:#14284B!important;letter-spacing:-.03em!important}
+#latamAccessCountry{background:#ECE6D8;color:#1D3866}
+#latamAccess input:not([type="checkbox"]){background:#fff;color:#1B2335;border-color:#14284b33;border-radius:14px}
+#latamAccess input:focus-visible{outline:2px solid #8FB0EA;outline-offset:2px;border-color:#1D3866;box-shadow:none}
+#latamAccess #latamEmailSubmit{background:#14284B;color:#F5F1E8;box-shadow:0 8px 20px #14284b20;border-radius:14px}
+#latamAccess #latamGoogleAccess{background:#fff;color:#14284B;border-color:#14284b33;border-radius:14px}
+#latamAccess #latamTogglePassword,#latamAccess>form button{background:#ECE6D8;color:#14284B;border-color:#14284b24}
+#latamAccess .latam-auth-links button{color:#1D3866}
+#latamAccess #latamPasswordNotice,#latamAccess .latam-auth-divider{color:#5B6578}
+#latamAccess :is(button,a){transition:transform .2s,box-shadow .2s}
+@media(hover:hover){#latamAccess :is(#latamEmailSubmit,#latamGoogleAccess):hover{transform:translateY(-2px);box-shadow:0 10px 24px #14284b26}}
+@media(prefers-reduced-motion:reduce){#latamAccess[open]{animation:none}#latamAccess :is(button,a){transition:none}}
 `;
  return html.replace(/<footer class="account-footer">[\s\S]*?<\/footer>/,'').replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)

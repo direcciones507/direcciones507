@@ -689,40 +689,60 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
 
 <style id="ad507-template-motion-style">
-/* Motion graphics homepage design from owner reference. Scope: homepage only. */
-@keyframes ad507-enter{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
-@keyframes ad507-blue-glow{from{transform:translate(-8%,-5%) scale(.9)}to{transform:translate(9%,8%) scale(1.15)}}
-@keyframes ad507-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-#mainGlobalHeroView{background:#0e1d38!important;color:#f5f1e8!important;max-width:none!important;width:100%!important;padding:72px clamp(18px,5vw,70px) 84px!important;position:relative;isolation:isolate;overflow:hidden;border-radius:0 0 44px 44px}
-#mainGlobalHeroView:before{content:"";position:absolute;z-index:-1;left:-22vw;top:-25vw;width:65vw;height:65vw;min-width:500px;min-height:500px;border-radius:50%;background:radial-gradient(circle,#2e5db088,transparent 70%);animation:ad507-blue-glow 20s ease-in-out infinite alternate;pointer-events:none}
-#mainGlobalHeroView:after{content:"";position:absolute;z-index:-1;right:-25vw;bottom:-25vw;width:70vw;height:70vw;border-radius:50%;background:radial-gradient(circle,#8fb0ea33,transparent 70%);pointer-events:none}
-#mainGlobalHeroView .hero-view-wrapper{max-width:1080px!important;margin:0 auto!important;padding:0!important}
-#mainGlobalHeroView .hero-grid-layout{grid-template-columns:minmax(0,1fr)!important;text-align:center!important;gap:18px!important}
-#mainGlobalHeroView .main-hero-title{font-size:clamp(44px,6vw,76px)!important;color:#f5f1e8!important;font-weight:900!important;line-height:1.08!important;letter-spacing:-.05em!important;animation:ad507-enter .8s ease both}
-#mainGlobalHeroView .main-hero-title span{color:#8fb0ea!important;-webkit-text-fill-color:#8fb0ea!important;background:none!important}
-#mainGlobalHeroView .main-hero-desc{max-width:760px!important;margin:0 auto 24px!important;color:#d3ddec!important;font-size:clamp(16px,2vw,19px)!important;line-height:1.7!important}
-#mainGlobalHeroView .hero-copy-cta-stack{animation:ad507-enter .9s ease .14s both}
-#mainGlobalHeroView .hero-create-address-btn{background:#f5f1e8!important;color:#0e1d38!important;border:1px solid #f5f1e8!important;border-radius:14px!important;box-shadow:0 14px 32px #0003!important;transition:transform .3s,box-shadow .3s!important}
-#mainGlobalHeroView .hero-create-address-btn:hover{transform:translateY(-4px)!important;box-shadow:0 20px 38px #0005!important}
-#mainGlobalHeroView .ad507-original-phone{width:min(285px,75vw);margin:25px auto 48px!important;filter:drop-shadow(0 24px 28px #0009);animation:ad507-enter .9s ease .2s both}
-#mainGlobalHeroView .ad507-original-phone img{display:block;width:100%;height:auto;object-fit:contain;animation:ad507-bob 6s ease-in-out 1s infinite}
-#mainGlobalHeroView .hero-section-divider{background:#f5f1e844!important;max-width:1080px!important;margin:25px auto 40px!important}
-#mainGlobalHeroView .free-address-card,#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card,#mainGlobalHeroView .latam-expansion-card{background:#fff!important;border:1px solid #e0e5ee!important;border-radius:26px!important;color:#172b49!important;box-shadow:0 12px 38px #0002!important;transition:transform .4s cubic-bezier(.2,.8,.2,1),box-shadow .4s!important}
-#mainGlobalHeroView .free-address-card{max-width:1080px!important;margin:0 auto 40px!important;padding:clamp(24px,4vw,40px)!important}
-#mainGlobalHeroView .free-address-card h3,#mainGlobalHeroView .feat-premium-card h4,#mainGlobalHeroView .plan-pricing-card h4{color:#0e1d38!important}
-#mainGlobalHeroView .free-address-card p,#mainGlobalHeroView .feat-premium-card p,#mainGlobalHeroView .plan-pricing-card p{color:#536277!important}
-#mainGlobalHeroView .free-address-card .free-kicker,#mainGlobalHeroView .free-address-card .title-accent{color:#2e5db0!important;-webkit-text-fill-color:#2e5db0!important}
-#mainGlobalHeroView .free-address-btn{background:#0e1d38!important;color:#f5f1e8!important;border-radius:14px!important;transition:transform .3s!important}
-#mainGlobalHeroView .free-address-btn:hover{transform:translateY(-4px)!important}
-#mainGlobalHeroView .feat-premium-card:hover,#mainGlobalHeroView .plan-pricing-card:hover{transform:translateY(-8px)!important;box-shadow:0 24px 50px #0004!important}
-#mainGlobalHeroView .plan-pricing-card.popular{background:#17345f!important;color:#fff!important}
-#mainGlobalHeroView .plan-pricing-card.popular h4,#mainGlobalHeroView .plan-pricing-card.popular p{color:#fff!important}
-#mainGlobalHeroView .ad507-visual-reveal{opacity:0;translate:0 32px;transition:opacity .7s ease,translate .7s ease}
+/* Owner's Motion Graphics reference: navy hero, bone sections, white cards.
+   Presentation stays inside the homepage and its existing header. */
+@keyframes ad507-enter{from{opacity:0;transform:translateY(24px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes ad507-blue-glow{to{transform:translate(12%,10%) scale(1.15)}}
+@property --ad507-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes ad507-border{to{--ad507-angle:360deg}}
+#mainGlobalHeroView{background:#F5F1E8!important;color:#1B2335!important;max-width:none!important;padding:0 0 64px!important;overflow:hidden}
+#mainGlobalHeroView .hero-view-wrapper{max-width:none!important;padding:0!important}
+#mainGlobalHeroView .hero-grid-layout{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(240px,.95fr)!important;align-items:center;gap:36px!important;padding:56px max(24px,calc((100vw - 1080px)/2)) 72px;background:#14284B;color:#F5F1E8;border-radius:0 0 44px 44px;text-align:left!important}
+#mainGlobalHeroView .hero-grid-layout:before,#mainGlobalHeroView .hero-grid-layout:after{content:"";position:absolute;z-index:-1;width:65vmax;height:65vmax;border-radius:50%;pointer-events:none;filter:blur(65px)}
+#mainGlobalHeroView .hero-grid-layout:before{left:-30vmax;top:-40vmax;background:#2e5db066;animation:ad507-blue-glow 20s ease-in-out infinite alternate}
+#mainGlobalHeroView .hero-grid-layout:after{right:-40vmax;bottom:-45vmax;background:#8fb0ea33;animation:ad507-blue-glow 26s ease-in-out infinite alternate-reverse}
+#mainGlobalHeroView .hero-grid-layout>div:first-child{max-width:560px!important;align-items:flex-start!important;text-align:left!important;transform:none!important}
+#mainGlobalHeroView .main-hero-title{font-family:system-ui,-apple-system,"Segoe UI",sans-serif!important;font-size:clamp(40px,5.4vw,70px)!important;font-weight:800!important;line-height:1.04!important;letter-spacing:-.04em!important;color:#F5F1E8!important;animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) both}
+#mainGlobalHeroView .main-hero-title span{white-space:normal;background:none!important;color:#F5F1E8!important;-webkit-text-fill-color:#F5F1E8!important}
+#mainGlobalHeroView .main-hero-desc{margin:22px 0 0!important;max-width:46ch!important;color:#f5f1e8c7!important;font-size:18px!important;line-height:1.6!important}
+#mainGlobalHeroView .hero-copy-cta-stack{animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) .25s both}
+#mainGlobalHeroView .hero-create-address-btn{background:#F5F1E8!important;color:#14284B!important;border:1px solid #F5F1E8!important;border-radius:14px!important;box-shadow:none!important;padding:14px 22px!important;font-size:15px!important}
+#mainGlobalHeroView .ad507-original-phone{width:min(285px,100%);margin:0 auto!important;transform:none!important;filter:drop-shadow(0 26px 30px #080f2270);animation:ad507-enter 1s cubic-bezier(.22,1,.36,1) .4s both}
+#mainGlobalHeroView .ad507-original-phone img{display:block;width:100%;height:auto;object-fit:contain;border-radius:24px}
+#mainGlobalHeroView .hero-section-divider{display:none}
+#mainGlobalHeroView :is(.free-address-card,.features-grid-view,.planes-section-wrapper){width:calc(100% - 40px);max-width:1080px;margin-inline:auto!important}
+#mainGlobalHeroView .free-address-card{margin-top:56px!important;margin-bottom:0!important;padding:32px!important}
+#mainGlobalHeroView .features-grid-view{gap:16px!important;margin-top:32px!important}
+#mainGlobalHeroView :is(.free-address-card,.feat-premium-card,.plan-pricing-card,.latam-expansion-card){position:relative;background:#fff!important;border:1px solid #14284b24!important;border-radius:26px!important;color:#1B2335!important;box-shadow:0 10px 40px #14284b0f!important;transition:box-shadow .3s,transform .3s!important}
+#mainGlobalHeroView :is(.free-address-card,.feat-premium-card,.plan-pricing-card):before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;background:conic-gradient(from var(--ad507-angle),transparent 0,#1D3866 14%,transparent 32%,#8FB0EA 56%,transparent 78%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ad507-border 8s linear infinite;opacity:.7}
+#mainGlobalHeroView .feat-premium-card:nth-child(2):before{animation-delay:-2s}
+#mainGlobalHeroView .feat-premium-card:nth-child(3):before{animation-delay:-4s}
+#mainGlobalHeroView .feat-premium-card:nth-child(4):before{animation-delay:-6s}
+#mainGlobalHeroView :is(.free-address-card h3,.feat-premium-card h4,.plan-pricing-card h4,.plans-title){color:#14284B!important;text-shadow:none!important}
+#mainGlobalHeroView :is(.free-address-card p,.feat-premium-card p,.plan-pricing-card p,.planes-section-wrapper>p){color:#5B6578!important}
+#mainGlobalHeroView :is(.free-kicker,.title-accent,.plans-title span){color:#1D3866!important;-webkit-text-fill-color:#1D3866!important;background:none!important}
+#mainGlobalHeroView :is(.feat-card-icon,.plan-507-icon){background:#14284B!important;color:#F5F1E8!important;border:0!important;border-radius:15px!important;box-shadow:none!important}
+#mainGlobalHeroView .plan-507-tag{color:#1D3866!important;background:#F5F1E8!important;border-color:#14284b24!important}
+#mainGlobalHeroView .plan-numeric-val{color:#14284B!important;font-weight:800!important}
+#mainGlobalHeroView :is(.free-address-btn,.btn-plan-action-trigger){background:#14284B!important;color:#F5F1E8!important;border-radius:14px!important;box-shadow:none!important;font-size:14px!important;letter-spacing:0!important;text-transform:none!important}
+#mainGlobalHeroView .planes-grid-layout{gap:16px;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#mainGlobalHeroView .plan-pricing-card{padding:24px!important;min-height:0!important}
+#mainGlobalHeroView .plan-pricing-card.popular{background:#14284B!important;color:#F5F1E8!important}
+#mainGlobalHeroView .plan-pricing-card.popular :is(h4,p,.plan-numeric-val){color:#F5F1E8!important}
+#mainGlobalHeroView .plan-pricing-card.popular .btn-plan-action-trigger{background:#F5F1E8!important;color:#14284B!important}
+#mainGlobalHeroView .latam-expansion-card{margin-top:24px;background:#14284B!important;color:#F5F1E8!important;border:0!important}
+#mainGlobalHeroView .latam-expansion-card :is(h4,p,.latam-expansion-kicker){color:#F5F1E8!important}
+#mainGlobalHeroView .latam-expansion-card :is(h4 span,.latam-expansion-symbol){color:#8FB0EA!important}
+#mainGlobalHeroView .latam-expansion-link{background:#F5F1E8!important;color:#14284B!important;border:0!important;border-radius:14px!important;box-shadow:none!important}
+#mainGlobalHeroView .ad507-visual-reveal{opacity:0;translate:0 24px;transition:opacity .8s cubic-bezier(.22,1,.36,1),translate .8s cubic-bezier(.22,1,.36,1)!important}
 #mainGlobalHeroView .ad507-visual-reveal.ad507-visible{opacity:1;translate:0 0}
-#mainAppHeader .header-account-actions a{border-radius:14px!important;transition:transform .25s,box-shadow .25s!important}
-#mainAppHeader .header-account-actions a:hover{transform:translateY(-3px)!important;box-shadow:0 10px 26px #0004!important}
-@media(max-width:700px){#mainGlobalHeroView{padding:36px 16px 65px!important;border-radius:0 0 28px 28px}#mainGlobalHeroView .main-hero-title{font-size:clamp(38px,10vw,56px)!important}#mainGlobalHeroView .ad507-original-phone{width:min(245px,76vw)}}
-@media(prefers-reduced-motion:reduce){#mainGlobalHeroView:before,#mainGlobalHeroView .main-hero-title,#mainGlobalHeroView .hero-copy-cta-stack,#mainGlobalHeroView .ad507-original-phone,#mainGlobalHeroView .ad507-original-phone img{animation:none!important}#mainGlobalHeroView .ad507-visual-reveal{opacity:1!important;translate:none!important}}
+#mainAppHeader{background:#0E1D38!important;border-bottom:1px solid #f5f1e824!important}
+#mainAppHeader .header-account-actions a{border-radius:14px!important}
+#mainAppHeader .header-account-actions .btn-nav-register{background:#F5F1E8!important;color:#14284B!important;border-color:#F5F1E8!important}
+@media(hover:hover){#mainGlobalHeroView :is(.hero-create-address-btn,.free-address-btn,.btn-plan-action-trigger):hover{transform:translateY(-2px)!important;box-shadow:0 12px 26px #0e1d3833!important}#mainGlobalHeroView .feat-premium-card:hover{transform:translateY(-4px)!important;box-shadow:0 14px 40px #14284b20!important}}
+@media(max-width:960px){#mainGlobalHeroView .hero-grid-layout{grid-template-columns:1fr!important;padding:40px 24px 52px;gap:32px!important}#mainGlobalHeroView .hero-grid-layout>div:first-child{max-width:650px!important;margin-inline:auto!important}#mainGlobalHeroView .planes-grid-layout{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){#mainGlobalHeroView .hero-grid-layout{padding:32px 20px 40px;border-radius:0 0 28px 28px}#mainGlobalHeroView .main-hero-title{font-size:clamp(36px,10vw,52px)!important}#mainGlobalHeroView .main-hero-desc{font-size:16px!important}#mainGlobalHeroView .ad507-original-phone{width:225px}#mainGlobalHeroView .free-address-card{margin-top:32px!important;padding:24px!important}#mainGlobalHeroView .planes-grid-layout{grid-template-columns:1fr!important}#mainGlobalHeroView .plans-title{font-size:30px!important}}
+@media(prefers-reduced-motion:reduce){#mainGlobalHeroView *,#mainGlobalHeroView *:before,#mainGlobalHeroView *:after{animation:none!important;transition:none!important}#mainGlobalHeroView .ad507-visual-reveal{opacity:1!important;translate:none!important}}
 </style>
 </head>
 <body>
@@ -848,9 +868,8 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
           <div id="msgLogBusqueda" style="display: none; margin-top: 14px; font-size: 14px; color: var(--cyan-brand); font-weight: 600; padding-left: 16px;"></div>
         </div>
 
-      </div>
-
       <div class="ad507-original-phone" aria-label="Vista previa de la tarjeta de dirección digital"><img src="/ad507-the1920-phone-preview.jpg" alt="Tarjeta digital original de Direcciones507 en un celular" loading="eager"></div>
+      </div>
 
       <div class="hero-section-divider" role="separator" aria-hidden="true"></div>
 

@@ -689,6 +689,16 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 
 <style>
 /* AD507 landing motion 2026-11-12: visual-only; no map or pin */
+/* AD507 motion visibility correction: animate real homepage cards, not missing phone mockup. */
+#mainGlobalHeroView .free-address-card{position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(80,157,255,.48)!important;box-shadow:0 20px 60px rgba(31,111,255,.16)!important;transition:transform .55s cubic-bezier(.22,1,.36,1),box-shadow .55s ease!important}
+#mainGlobalHeroView .free-address-card:before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(115deg,transparent 20%,rgba(111,190,255,.16) 48%,transparent 70%);translate:-130% 0;animation:ad507Shimmer 6s ease-in-out infinite}
+@keyframes ad507Shimmer{0%,25%{translate:-130% 0}65%,100%{translate:130% 0}}
+#mainGlobalHeroView .free-address-card:hover{transform:translateY(-7px)!important;box-shadow:0 28px 75px rgba(31,111,255,.28)!important}
+#mainGlobalHeroView .feat-premium-card,#mainGlobalHeroView .plan-pricing-card,#mainGlobalHeroView .latam-expansion-card{transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s ease,border-color .45s ease!important}
+#mainGlobalHeroView .feat-premium-card:hover,#mainGlobalHeroView .plan-pricing-card:hover,#mainGlobalHeroView .latam-expansion-card:hover{transform:translateY(-8px)!important;box-shadow:0 20px 55px rgba(31,111,255,.18)!important;border-color:rgba(88,166,255,.65)!important}
+#mainAppHeader .header-account-actions{animation:ad507Rise .9s cubic-bezier(.22,1,.36,1) both;animation-delay:.2s}
+@media(prefers-reduced-motion:reduce){#mainGlobalHeroView .free-address-card:before,#mainAppHeader .header-account-actions{animation:none!important}}
+
 @keyframes ad507Rise{from{opacity:0;transform:translate3d(0,22px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 @keyframes ad507Float{0%,100%{translate:0 0}50%{translate:0 -7px}}
 @keyframes ad507Glow{0%,100%{box-shadow:0 12px 36px rgba(31,111,255,.10)}50%{box-shadow:0 18px 46px rgba(31,111,255,.22)}}

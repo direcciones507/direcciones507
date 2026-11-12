@@ -39,6 +39,7 @@ export async function runRelease(env:Record<string,string|undefined>){
  if(!/^[a-f0-9]{40}$/.test(env.AD507_RELEASE_COMMIT||''))throw Error('INVALID_RELEASE_COMMIT');
  const settings=r2Settings(env);if(!settings)throw Error('R2_NOT_VERIFIED');
  const secret=env.AD507_TEMPORARY_BACKUP_KEY||'';if(!/^[a-f0-9]{64}$/.test(secret))throw Error('INVALID_BACKUP_KEY');
+ if(env.AD507_RELEASE_MODE==='acceptance')return (await import('./temporary-event-live-acceptance')).liveAcceptance(env,settings);
  const sql=postgres(target.href,{max:2,connect_timeout:10,connection:{application_name:'temporary-events-release-225',timezone:'UTC',statement_timeout:120000,lock_timeout:5000},onnotice:()=>{}});
  const work=await mkdtemp(join(tmpdir(),'ad507-release-'));
  const prefix='release-backups/temporary-events/'+new Date().toISOString().replace(/[^0-9TZ]/g,'');

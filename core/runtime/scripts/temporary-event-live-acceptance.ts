@@ -38,9 +38,12 @@ export async function liveAcceptance(env:Record<string,string|undefined>,setting
    await context.addCookies([{name:'ad507_session',value:cookie.slice('ad507_session='.length),url:base}]);
    await page.goto(base+'/panel/evento/nuevo?draft='+event.id);await page.waitForFunction((title:string)=>document.querySelector<HTMLInputElement>('[name=title]')?.value===title,draft.title);
    check(await page.locator('[name=startsOn]').inputValue()===today&&await page.locator('[name=endsOn]').inputValue()===today,'DATES_RECOVERED');check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'FORM_OVERFLOW_'+width);check(await page.locator('btn-yappy').count()===0,'NO_PAYMENT_BUTTON');
-   await page.clock.install();await page.goto(base+path+'/preview');await page.waitForFunction(()=>document.images.length>=3&&[...document.images].every(i=>i.complete&&i.naturalWidth>0));
+   await page.goto(base+path+'/preview',{waitUntil:'domcontentloaded'});
+   await page.waitForFunction(()=>document.querySelector('[data-slide="1"]')?.getAttribute('aria-current')==='true',null,{timeout:12000});
+   await page.waitForTimeout(7600);await page.waitForFunction(()=>document.querySelector('[data-slide="0"]')?.getAttribute('aria-current')==='true',null,{timeout:12000});
+   await page.waitForTimeout(3700);check(await page.locator('[data-slide="0"]').getAttribute('aria-current')==='true','CAROUSEL_STOP');
+   await page.waitForFunction(()=>document.images.length>=3&&[...document.images].every(i=>i.complete&&i.naturalWidth>0));
    check(await page.locator('.photos img').count()===3,'THREE_PHOTOS');check(await page.getByRole('link',{name:'Descargar QR PNG'}).count()===1,'QR_DOWNLOAD');check(await page.getByRole('button',{name:'Imprimir cartel QR'}).count()===1,'POSTER');
-   await page.clock.runFor(3900);check(await page.locator('[data-slide="1"]').getAttribute('aria-current')==='true','CAROUSEL_START');await page.clock.runFor(7000);check(await page.locator('[data-slide="0"]').getAttribute('aria-current')==='true','CAROUSEL_ONE_CYCLE');await page.clock.fastForward(14000);check(await page.locator('[data-slide="0"]').getAttribute('aria-current')==='true','CAROUSEL_STOP');
    check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'PREVIEW_OVERFLOW_'+width);check(errors.length===0,'BROWSER_ERRORS');
    const screenshot=await save('live-acceptance-'+width+'.png',await page.screenshot({fullPage:true}));report.viewports.push({width,photos:3,carousel:true,overflow:false,screenshot});await context.close();
   }

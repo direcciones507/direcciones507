@@ -39,6 +39,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   const created=await draft!.json();expect(created.status).toBe('DRAFT');const id=created.id,base='/v1/user/temporary-events/'+id;
   expect((await handleTemporaryEventRoutes(request('/evento/'+created.slug),ctx))?.status).toBe(404);
   const list=await handleTemporaryEventRoutes(request('/v1/user/temporary-events'),ctx);expect((await list!.json()).events[0].id).toBe(id);
+  const recovered=await handleTemporaryEventRoutes(request(base),ctx);expect((await recovered!.json()).event.starts_on).toBe(today);
   expect((await handleTemporaryEventRoutes(request(base),{...ctx,auth:{currentUser:async()=>({id:other,roles:['ADMIN']})}}))?.status).toBe(404);
   expect((await handleTemporaryEventRoutes(request(base,'PUT',eventFixture,{origin:'https://evil.example'}),ctx))?.status).toBe(403);
   expect((await handleTemporaryEventRoutes(request(base+'/payment','POST',{alias:'60000000'}),{...ctx,payment:null}))?.status).toBe(503);
@@ -51,6 +52,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   expect(puts).toBe(3);expect(objects.size).toBe(1);expect((await sharp(Buffer.from([...objects.values()][0])).metadata()).format).toBe('webp');
   await expect(media.upload(id,new Uint8Array([1,2,3]),'image/jpeg')).rejects.toThrow('INVALID_IMAGE');
   const preview=await handleTemporaryEventRoutes(request(base+'/preview'),ctx);expect(preview?.status).toBe(200);const previewHtml=await preview!.text();expect(previewHtml).toContain('Vista previa privada');expect(previewHtml).not.toContain('PRIVATE_');expect(previewHtml).toContain('Descargar QR PNG');expect(previewHtml).toContain('únicamente después de un pago confirmado');expect(previewHtml).not.toContain('Compartir por WhatsApp');
+  const proxyPreview=await handleTemporaryEventRoutes(new Request('http://direcciones.lat'+base+'/preview',{headers:{'x-forwarded-proto':'https'}}),ctx);const proxyHtml=await proxyPreview!.text();expect(proxyHtml).toContain('https://direcciones.lat'+base+'/preview?photo=1');expect(proxyHtml).not.toContain('src="http://direcciones.lat');
   expect((await handleTemporaryEventRoutes(request(base,'PUT',{...eventFixture,title:'Fiesta editada'}),ctx))?.status).toBe(200);
   expect((await handleTemporaryEventRoutes(request(base+'/payment','POST',{alias:'60000000'}),ctx))?.status).toBe(200);expect(providerCalls).toBe(2);
   await expect(payment.initialize(owner,id,'60000000')).rejects.toThrow('EVENT_NOT_PAYABLE');expect(providerCalls).toBe(2);

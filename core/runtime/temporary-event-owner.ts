@@ -1,3 +1,4 @@
+import QRCode from 'qrcode';
 import type {Sql} from 'postgres';
 import {createTemporaryEventRepository,dbDate} from './temporary-event-repository';
 import {renderTemporaryEventPage} from './temporary-event-page';
@@ -31,7 +32,7 @@ export async function eventOwnerRoute(req:Request,sql:Sql,userId:string,services
    return new Response(await services.media.read(p.object_key),{headers:{'content-type':'image/webp','cache-control':'no-store','x-content-type-options':'nosniff'}});
   }
   const draft={title:event.title,description:event.description,responsibleName:'',responsibleEmail:'',responsiblePhone:'',countryCode:event.country_code,province:event.region,district:event.municipality,corregimiento:event.locality,reference:event.reference,latitude:event.latitude==null?null:Number(event.latitude),longitude:event.longitude==null?null:Number(event.longitude),startsOn:dbDate(event.starts_on),endsOn:dbDate(event.ends_on),timezone:event.event_timezone,hours:event.hours_description,publicContactConsent:event.public_contact_consent,publicContactName:event.public_contact_name,publicContactPhone:event.public_contact_phone};
-  return new Response(renderTemporaryEventPage({draft,slug:event.slug,status:'ACTIVE',paymentConfirmedAt:null,preview:true,photos:photos.map(p=>url.origin+url.pathname+'?photo='+p.slot)}),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: data:; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"}});
+  return new Response(renderTemporaryEventPage({draft,slug:event.slug,status:'ACTIVE',paymentConfirmedAt:null,preview:true,qrPngDataUrl:await QRCode.toDataURL('https://direcciones.lat/evento/'+event.slug,{width:640,margin:4}),photos:photos.map(p=>url.origin+url.pathname+'?photo='+p.slot)}),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: data:; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"}});
  }
  if(action==='payment'&&req.method==='POST'){
   if(!services.payment)return fail(503,'EVENT_PAYMENTS_DISABLED');

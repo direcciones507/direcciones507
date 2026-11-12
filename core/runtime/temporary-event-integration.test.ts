@@ -50,7 +50,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   }
   expect(puts).toBe(3);expect(objects.size).toBe(1);expect((await sharp(Buffer.from([...objects.values()][0])).metadata()).format).toBe('webp');
   await expect(media.upload(id,new Uint8Array([1,2,3]),'image/jpeg')).rejects.toThrow('INVALID_IMAGE');
-  const preview=await handleTemporaryEventRoutes(request(base+'/preview'),ctx);expect(preview?.status).toBe(200);const previewHtml=await preview!.text();expect(previewHtml).toContain('Vista previa privada');expect(previewHtml).not.toContain('PRIVATE_');
+  const preview=await handleTemporaryEventRoutes(request(base+'/preview'),ctx);expect(preview?.status).toBe(200);const previewHtml=await preview!.text();expect(previewHtml).toContain('Vista previa privada');expect(previewHtml).not.toContain('PRIVATE_');expect(previewHtml).toContain('Descargar QR PNG');expect(previewHtml).toContain('únicamente después de un pago confirmado');expect(previewHtml).not.toContain('Compartir por WhatsApp');
   expect((await handleTemporaryEventRoutes(request(base,'PUT',{...eventFixture,title:'Fiesta editada'}),ctx))?.status).toBe(200);
   expect((await handleTemporaryEventRoutes(request(base+'/payment','POST',{alias:'60000000'}),ctx))?.status).toBe(200);expect(providerCalls).toBe(2);
   await expect(payment.initialize(owner,id,'60000000')).rejects.toThrow('EVENT_NOT_PAYABLE');expect(providerCalls).toBe(2);

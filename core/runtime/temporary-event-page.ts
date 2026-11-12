@@ -24,6 +24,7 @@ export function renderTemporaryEventPage(event:PublishedEvent):string {
  const qr=event.qrPngDataUrl&&/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(event.qrPngDataUrl)?event.qrPngDataUrl:null;
  const location=[data.corregimiento,data.district,data.province,data.countryCode].filter(Boolean).join(', ');
  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <link rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-192.png">
  <meta name="robots" content="noindex,nofollow"><title>${title} | Direcciones LATAM</title>
  <meta property="og:title" content="${title}"><meta property="og:description" content="${escapeHtml(data.description.slice(0,180))}">
  ${active&&photos[0]?'<meta property="og:image" content="'+escapeHtml(photos[0])+'">':''}

@@ -26,15 +26,15 @@ test('Android and desktop: save, recover, upload, private preview, carousel one 
   await page.waitForFunction(()=>document.getElementById('temporary-event-error')?.textContent?.startsWith('Borrador guardado. Continúa'));
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(objects.size).toBe(1);
   expect(await page.locator('#event-after-save').isVisible()).toBe(true);expect(await page.locator('btn-yappy').count()).toBe(0);
-  const preview=await page.locator('#event-preview-link').getAttribute('href');await page.goto(server.url+preview!.slice(1));
+  const preview=await page.locator('#event-preview-link').getAttribute('href');await page.clock.install();await page.goto(server.url+preview!.slice(1));
   expect(await page.getByText('Vista previa privada · Aún sin publicar').count()).toBe(1);expect(await page.locator('.photos img').count()).toBe(3);
   await page.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0));expect(await page.content()).not.toContain('PRIVATE_NAME');
-  await page.clock.install();await page.clock.fastForward(3500);expect(await page.locator('[data-slide="1"]').getAttribute('aria-current')).toBe('true');await page.clock.fastForward(3500);await page.clock.fastForward(3500);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');await page.clock.fastForward(14000);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');
+  await page.clock.runFor(3900);expect(await page.locator('[data-slide="1"]').getAttribute('aria-current')).toBe('true');await page.clock.runFor(3500);await page.clock.runFor(3500);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');await page.clock.fastForward(14000);expect(await page.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');
   await page.locator('[data-slide="2"]').tap();expect(await page.locator('[data-slide="2"]').getAttribute('aria-current')).toBe('true');
   const draftUrl=server.url+'panel/evento/nuevo?draft='+(await sql.unsafe('SELECT id FROM ad507.temporary_events'))[0].id;
   await page.goto(draftUrl);await page.waitForFunction(()=>document.querySelector<HTMLInputElement>('[name=title]')?.value==='Fiesta de Santiago');
   for(const width of [360,768,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)}
-  const reduced=await browser.newPage({viewport:{width:393,height:851},reducedMotion:'reduce'});await reduced.goto(server.url+preview!.slice(1));await reduced.clock.install();await reduced.clock.fastForward(20000);expect(await reduced.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');
+  const reduced=await browser.newPage({viewport:{width:393,height:851},reducedMotion:'reduce'});await reduced.clock.install();await reduced.goto(server.url+preview!.slice(1));await reduced.clock.fastForward(20000);expect(await reduced.locator('[data-slide="0"]').getAttribute('aria-current')).toBe('true');
   // Published layout and expired state use the same renderer; test both widths.
   for(const width of [393,1440]){
    await page.setViewportSize({width,height:900});await page.route('https://example.test/**',r=>r.fulfill({body:image,contentType:'image/jpeg'}));

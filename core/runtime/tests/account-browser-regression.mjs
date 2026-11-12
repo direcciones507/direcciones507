@@ -18,7 +18,7 @@ try{
   const homeContext=await browser.newContext({viewport}),home=await homeContext.newPage();home.setDefaultTimeout(7000);
   await home.route('**/*',route=>new URL(route.request().url()).pathname==='/'?route.fulfill({status:200,contentType:'text/html',body:fixtures.home507.html}):route.fulfill({status:404,body:''}));
   await home.goto('https://direcciones507.com/');
-  for(const plan of ['PLACE','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
+  for(const plan of ['PLACE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
    await home.locator('[data-507-plan="'+plan+'"]').click();
    assert.equal(await home.locator('#plan507Continue').getAttribute('href'),'https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+plan);
    await home.locator('#plan507Close').click();

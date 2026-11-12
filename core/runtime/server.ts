@@ -1,3 +1,4 @@
+import {temporaryYappyConfiguration} from './temporary-event-configuration';
 import {createTemporaryEventMedia} from './temporary-event-media';
 import {createTemporaryEventPayment} from './temporary-event-payment';
 import {handleLatamOpenGraphImage} from './latam-open-graph';
@@ -34,8 +35,8 @@ const namespaceExclusive = process.env.AD507_HISTORICAL_NAMESPACE_VERIFIED === '
 const paymentConfig = yappyConfiguration(process.env);
 const yappyEnabled = yappyPaymentsEnabled(process.env) && commercialWorkflowEnabled;
 const paymentProvider = yappyEnabled && paymentConfig ? createYappyProvider(paymentConfig) : null;
-const eventPaymentConfig=paymentConfig&&process.env.AD507_TEMPORARY_YAPPY_IPN_URL?{...paymentConfig,ipnUrl:process.env.AD507_TEMPORARY_YAPPY_IPN_URL}:null;
-const temporaryPayment=process.env.AD507_TEMPORARY_PAYMENTS_ENABLED==='true'&&yappyEnabled&&eventPaymentConfig&&new URL(eventPaymentConfig.ipnUrl).pathname==='/v1/payments/temporary-events/yappy/ipn'?createTemporaryEventPayment(sql,eventPaymentConfig,createYappyProvider(eventPaymentConfig)):null;
+const eventPaymentConfig=temporaryYappyConfiguration(process.env);
+const temporaryPayment=eventPaymentConfig?createTemporaryEventPayment(sql,eventPaymentConfig,createYappyProvider(eventPaymentConfig)):null;
 const requestRepository = createRequestRepository(sql, { r2: requestR2, canonical: commercialWorkflowEnabled ? createNewAddressPublication(sql,{namespaceExclusive}) : null,
   // Publication eligibility is independent of provider activation. Free requests
   // need no order; paid plans must remain pending until a real payment exists.

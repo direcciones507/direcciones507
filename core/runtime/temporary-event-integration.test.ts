@@ -61,6 +61,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   await sql.unsafe('ALTER TABLE ad507.temporary_event_orders DROP CONSTRAINT temporary_event_orders_amount_cents_check');await sql.unsafe('UPDATE ad507.temporary_event_orders SET amount_cents=1 WHERE event_id=$1',[id]);
   await expect(payment.confirm(ipn)).rejects.toThrow('INVALID_PAYMENT_ORDER');await sql.unsafe('UPDATE ad507.temporary_event_orders SET amount_cents=799 WHERE event_id=$1',[id]);
   const confirmations=await Promise.all([payment.confirm(ipn),payment.confirm(ipn)]);expect(confirmations.filter(x=>x.unchanged)).toHaveLength(1);
+  const notification=await handleTemporaryEventRoutes(request('/v1/payments/temporary-events/yappy/ipn?'+ipn.toString()),ctx);expect(await notification!.json()).toEqual({success:true});
   const page=await handleTemporaryEventRoutes(request('/evento/'+created.slug),ctx);expect(page?.status).toBe(200);const html=await page!.text();expect(html).toContain('Fiesta editada');expect(html).toContain('Descargar QR PNG');expect(html).toContain('og:image');expect(html).not.toContain('PRIVATE_');expect(html).not.toContain('private@example');
   const png=await handleTemporaryEventRoutes(request('/evento/'+created.slug+'/qr.png'),ctx);expect(png?.headers.get('content-type')).toBe('image/png');expect(Buffer.from(await png!.arrayBuffer()).subarray(1,4).toString()).toBe('PNG');
   expect((await handleTemporaryEventRoutes(request('/evento/'+created.slug+'/foto/1'),ctx))?.status).toBe(200);

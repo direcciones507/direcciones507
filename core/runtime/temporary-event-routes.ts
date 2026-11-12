@@ -20,7 +20,7 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
  if(ipn){
   if(req.method!=='GET')return json(405,'METHOD_NOT_ALLOWED');
   if(!ctx.payment)return json(503,'EVENT_PAYMENTS_DISABLED');
-  try{return Response.json(await ctx.payment.confirm(url.searchParams),{headers:{'cache-control':'no-store'}})}catch{return json(400,'INVALID_PAYMENT_NOTIFICATION')}
+  try{await ctx.payment.confirm(url.searchParams);return Response.json({success:true},{headers:{'cache-control':'no-store'}})}catch{return json(400,'INVALID_PAYMENT_NOTIFICATION')}
  }
  if(match){
   if(req.method!=='GET'&&req.method!=='HEAD')return json(405,'METHOD_NOT_ALLOWED');

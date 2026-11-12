@@ -8,7 +8,7 @@ import {eventIsExpired} from './temporary-event-lifecycle';
 export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,provider:ReturnType<typeof createYappyProvider>){
  return {
   async initialize(userId:string,eventId:string,alias:string){
-   if(!/^6\d{7}$/.test(alias))throw Error('INVALID_YAPPY_ALIAS');
+   if(typeof alias!=='string'||!/^6\d{7}$/.test(alias))throw Error('INVALID_YAPPY_ALIAS');
    const order=await sql.begin(async tx=>{
     const events=await tx.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2 FOR UPDATE',[eventId,userId]);
     const e=events[0];if(!e)throw Error('EVENT_NOT_FOUND');

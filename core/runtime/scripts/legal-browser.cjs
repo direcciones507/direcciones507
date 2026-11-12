@@ -71,7 +71,7 @@ const fixtures=path.join(root,'.legal-browser-fixtures');
    if(plan.startsWith('BUSINESS'))await page.locator('#logo').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:png});
    if(plan==='PLACE')await page.locator('#cover').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:png});
    await page.locator('#send').click();assert.equal(posts.length,before,'unchecked form must not send');
-   if(['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan))await page.locator('#namedCode').fill('Fixture-'+plan.replaceAll('_','-'));
+   if(['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(plan)){await page.locator('#namedCode').fill('Fixture-'+plan.replaceAll('_','-'));await page.locator('#name').focus();await page.getByRole('status').filter({hasText:'Código disponible:'}).waitFor();}
    await page.locator('#requestTermsAccepted').check();
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'form overflow '+device+' '+plan);
    if(plan==='RESIDENTIAL')await page.locator('#requestForm').screenshot({path:path.join(out,device+'-form-legal.png')});

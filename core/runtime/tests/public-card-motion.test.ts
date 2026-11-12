@@ -12,7 +12,7 @@ test('presentation preserves every original element and script after removing it
 });
 for(const [type,plan] of [['BUSINESS','BUSINESS_PREMIUM_PRO'],['BUSINESS','BUSINESS_PREMIUM'],['BUSINESS','BUSINESS_FREE'],['PLACE','PLACE']])test(plan+' receives only the visual layer and preserves descriptive gating',()=>{
  const html=renderNewPublicAddress(fixture(type,plan));
- if(plan==='BUSINESS_PREMIUM_PRO'){expect(html).toContain('<body class="public-card-motion">');expect(html).toContain('id="new-public-card-motion"');}else expect(html).not.toContain('new-public-card-motion');
+ expect(html).toContain('<body class="public-card-motion">');expect(html).toContain('id="new-public-card-motion"');
  expect(html).toContain('"descripcionComercial":'+(plan==='BUSINESS_PREMIUM_PRO'||type==='PLACE'?'"Descripción propia"':'null'));
  for(const id of ['btnGoogle','btnWaze','btnUber','btnWhats','btnQR','qrImg'])expect(html.match(new RegExp('id="'+id+'"','g'))?.length).toBe(1);
  for(const s of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(s[1])).not.toThrow();

@@ -28,7 +28,33 @@ export function renderTemporaryEventPage(event:PublishedEvent):string {
  <meta property="og:title" content="${title}"><meta property="og:description" content="${escapeHtml(data.description.slice(0,180))}">
  ${active&&photos[0]?'<meta property="og:image" content="'+escapeHtml(photos[0])+'">':''}
  <meta property="og:url" content="${escapeHtml(url)}"><meta property="og:type" content="website">
- <style>body{overflow-wrap:anywhere;margin:0;background:#0c1830;color:white;font:16px system-ui,sans-serif}main{max-width:740px;margin:auto;padding:28px 18px}h1{font-size:clamp(28px,5vw,44px)}.card{padding:20px;border-radius:18px;background:#172d4a;margin:16px 0}.photos{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth}.photos img{flex:0 0 100%;scroll-snap-align:start}.indicators{display:flex;justify-content:center;gap:12px;margin:12px}.indicators button{min-width:44px;min-height:44px;border-radius:24px;border:1px solid white;background:#172d4a;color:white}.indicators button[aria-current=true]{background:#317bff}@media(prefers-reduced-motion:reduce){.photos{scroll-behavior:auto}}.photos img{width:100%;min-width:0;aspect-ratio:4/3;object-fit:cover;border-radius:12px}.actions{display:flex;gap:12px;flex-wrap:wrap}.actions a,.print{display:inline-block;background:#317bff;color:white;border:0;border-radius:10px;padding:12px 18px;font:inherit;text-decoration:none;cursor:pointer}.qr{background:white;color:#10213b;padding:20px;border-radius:16px;text-align:center}.qr img{width:min(70vw,290px);image-rendering:pixelated}.status{font-weight:700;color:#ffd26b}@media print{body{background:white;color:black}.actions,.print,.photos,.indicators{display:none!important}.card{background:white;color:black;border:1px solid #bbb}.qr{break-inside:avoid}main{max-width:100%;padding:0}@page{size:A4;margin:16mm}}</style></head>
+ <style>body{overflow-wrap:anywhere;margin:0;background:#0c1830;color:white;font:16px system-ui,sans-serif}main{max-width:740px;margin:auto;padding:28px 18px}h1{font-size:clamp(28px,5vw,44px)}.card{padding:20px;border-radius:18px;background:#172d4a;margin:16px 0}.photos{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth}.photos img{flex:0 0 100%;scroll-snap-align:start}.indicators{display:flex;justify-content:center;gap:12px;margin:12px}.indicators button{min-width:44px;min-height:44px;border-radius:24px;border:1px solid white;background:#172d4a;color:white}.indicators button[aria-current=true]{background:#317bff}@media(prefers-reduced-motion:reduce){.photos{scroll-behavior:auto}}.photos img{width:100%;min-width:0;aspect-ratio:4/3;object-fit:cover;border-radius:12px}.actions{display:flex;gap:12px;flex-wrap:wrap}.actions a,.print{display:inline-block;background:#317bff;color:white;border:0;border-radius:10px;padding:12px 18px;font:inherit;text-decoration:none;cursor:pointer}.qr{background:white;color:#10213b;padding:20px;border-radius:16px;text-align:center}.qr img{width:min(70vw,290px);image-rendering:pixelated}.status{font-weight:700;color:#ffd26b}@media print{body{background:white;color:black}.actions,.print,.photos,.indicators{display:none!important}.card{background:white;color:black;border:1px solid #bbb}.qr{break-inside:avoid}main{max-width:100%;padding:0}@page{size:A4;margin:16mm}}
+main{max-width:860px;padding:36px 18px 70px}
+main>p:first-child{color:#9bbaf0;font-size:.88rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase}
+h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.045em;line-height:1.12;margin:12px 0 22px}
+.card{border:1px solid #345071;border-radius:22px;background:linear-gradient(145deg,#1b3555,#122842);box-shadow:0 14px 35px rgba(0,0,0,.13);padding:clamp(18px,4vw,30px)}
+.card p{line-height:1.7}
+.card strong{color:#c9ddff}
+.photos{border-radius:22px;border:1px solid #345071;background:#142844;box-shadow:0 16px 35px rgba(0,0,0,.2)}
+.photos img{aspect-ratio:16/10;border-radius:0}
+.indicators{gap:8px;margin:14px 0 24px}
+.indicators button{border:1px solid #6d91c2;background:#1a3557;cursor:pointer;transition:background .18s,transform .18s,box-shadow .18s}
+.indicators button:hover{background:#295c9c;transform:translateY(-2px)}
+.indicators button:active{transform:translateY(1px)}
+.indicators button[aria-current=true]{background:#317bff;border-color:#88b5ff;box-shadow:0 0 0 3px #317bff33}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:22px 0}
+.actions a,.print{min-height:50px;display:inline-flex;align-items:center;justify-content:center;text-align:center;border-radius:14px;padding:13px 18px;font-weight:750;transition:background .18s,transform .18s,box-shadow .18s}
+.actions a:hover,.print:hover{background:#145dc5;transform:translateY(-2px);box-shadow:0 9px 20px #0003}
+.actions a:active,.print:active{transform:translateY(1px)}
+.actions a:focus-visible,.print:focus-visible,.indicators button:focus-visible{outline:3px solid #b6d5ff;outline-offset:3px}
+.qr{margin-top:26px;background:#fff;color:#173456;border:1px solid #d8e6f8}
+.qr strong{color:#173456}
+.qr img{max-width:100%;border-radius:12px}
+.status{display:inline-block;padding:9px 14px;background:#4a3517;border:1px solid #a97c2c;border-radius:999px}
+@media(max-width:520px){main{padding:22px 12px 45px}.card{border-radius:18px}.photos img{aspect-ratio:4/3}.actions{grid-template-columns:1fr}.print{width:100%;box-sizing:border-box;margin:5px 0}}
+@media(prefers-reduced-motion:reduce){.actions a,.print,.indicators button{transition:none!important;transform:none!important}}
+@media print{.card{box-shadow:none;background:white;color:black}.status{color:black;background:white}.qr{border:1px solid #aaa}}
+</style></head>
  <body><main><p>Direcciones LATAM · Dirección Temporal</p><h1>${title}</h1>${event.preview?'<p class="status">Vista previa privada · Aún sin publicar</p>':''}
  ${active?'':'<p class="status">Este evento ha finalizado.</p>'}
  <section class="card"><p>${escapeHtml(data.description)}</p><p><strong>Fecha:</strong> ${escapeHtml(data.startsOn)} al ${escapeHtml(data.endsOn)}</p><p><strong>Horario:</strong> ${escapeHtml(data.hours)}</p><p><strong>Ubicación:</strong> ${escapeHtml(location)}</p><p>${escapeHtml(data.reference)}</p>

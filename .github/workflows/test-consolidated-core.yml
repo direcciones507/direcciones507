@@ -30,7 +30,7 @@ jobs:
             const head = context.payload.pull_request?.head.sha ?? context.sha;
             const { data } = await github.rest.actions.listWorkflowRunsForRepo({ ...context.repo, branch, per_page: 50 });
             for (const run of data.workflow_runs) {
-              if (run.name === 'Consolidated Core compatibility' && run.head_sha !== head && ['queued','in_progress'].includes(run.status)) {
+              if (['Consolidated Core compatibility','Temporary event policy checks'].includes(run.name) && run.head_sha !== head && ['queued','in_progress','pending'].includes(run.status)) {
                 await github.rest.actions.cancelWorkflowRun({ ...context.repo, run_id: run.id });
               }
             }

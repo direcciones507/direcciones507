@@ -1,7 +1,40 @@
 /** Dirección Temporal: draft-only form UI. Route integration must enforce authenticated owner and CSRF. */
 export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events',paymentsEnabled=false):string {
  if(!/^\/v1\/user\/[a-z0-9/-]+$/.test(action))throw Error('INVALID_FORM_ACTION');
- return `<style>*{box-sizing:border-box}body{margin:0;background:#eef3fa;color:#152c4a;font:16px system-ui}.temporary-event-form{max-width:850px;margin:auto;padding:24px 16px}fieldset{border:0;border-radius:16px;padding:22px;background:white;margin:18px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}legend{font-weight:700;padding-top:20px}label{display:block;min-width:0}input,textarea{display:block;width:100%;font:inherit;padding:12px;border:1px solid #a9b8cb;border-radius:8px;margin-top:7px}input[type=checkbox]{display:inline;width:auto}button,.event-link{padding:14px 18px;border:0;border-radius:10px;background:#1760ce;color:white;font:inherit;cursor:pointer;display:inline-block;margin:6px 0}button:disabled{opacity:.5}a{overflow-wrap:anywhere}iframe{width:100%;height:600px;border:1px solid #a9b8cb}#event-after-save[hidden]{display:none}@media(max-width:600px){fieldset{grid-template-columns:1fr;padding:16px}.temporary-event-form{padding:14px}input,textarea{min-width:0}}</style><section class="temporary-event-form" aria-labelledby="temporary-heading">
+ return `<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef3fa;color:#152c4a;font:16px/1.55 system-ui,-apple-system,sans-serif}
+.temporary-event-form{max-width:940px;margin:0 auto;padding:32px 18px 64px}
+.temporary-event-form h2{font-size:clamp(1.65rem,3vw,2.25rem);letter-spacing:-.035em;margin:12px 0}
+.temporary-event-form>p{color:#52677f;max-width:68ch}
+.temporary-event-form form{display:grid;gap:20px}
+.temporary-event-form fieldset{border:1px solid #e0e8f3;border-radius:22px;padding:24px;background:#fff;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;box-shadow:0 7px 28px rgba(20,48,86,.045)}
+.temporary-event-form legend{font-size:1.13rem;font-weight:750;letter-spacing:-.02em;padding:0 8px;color:#17375e}
+.temporary-event-form label{display:block;min-width:0;font-weight:570;color:#203b5c}
+.temporary-event-form input:not([type=checkbox]):not([type=file]),.temporary-event-form textarea{display:block;width:100%;font:inherit;color:#183554;background:#f8fbff;padding:13px 14px;border:1.5px solid #b9c9de;border-radius:12px;margin-top:8px;min-height:48px;transition:border-color .18s,box-shadow .18s,background .18s}
+.temporary-event-form textarea{min-height:112px;resize:vertical}
+.temporary-event-form input:hover,.temporary-event-form textarea:hover{border-color:#6198e9}
+.temporary-event-form input:focus-visible,.temporary-event-form textarea:focus-visible,.temporary-event-form button:focus-visible,.temporary-event-form a:focus-visible{outline:3px solid #91bfff;outline-offset:3px}
+.temporary-event-form input:not([type=checkbox]):not([type=file]):focus,.temporary-event-form textarea:focus{background:#fff;border-color:#1760ce;box-shadow:0 0 0 4px rgba(23,96,206,.12);outline:0}
+.temporary-event-form input[type=checkbox]{width:19px;height:19px;accent-color:#1760ce;vertical-align:middle;margin-right:8px;cursor:pointer}
+.temporary-event-form input[type=file]{display:block;width:100%;margin-top:9px;padding:12px;border:1.5px dashed #8eadd6;border-radius:14px;background:#f5f9ff;color:#52677f;font:inherit;font-size:.9rem;cursor:pointer;transition:background .18s,border-color .18s,box-shadow .18s}
+.temporary-event-form input[type=file]:hover{background:#eaf3ff;border-color:#1760ce}
+.temporary-event-form input[type=file]::file-selector-button{background:#1760ce;color:#fff;border:0;border-radius:10px;padding:12px 15px;font:inherit;font-weight:700;margin-right:12px;cursor:pointer;transition:background .18s,transform .18s}
+.temporary-event-form input[type=file]:hover::file-selector-button{background:#104ba8}
+.temporary-event-form button,.temporary-event-form .event-link{padding:13px 19px;min-height:48px;border:1px solid transparent;border-radius:12px;background:#1760ce;color:#fff;font:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;margin:6px 0;text-decoration:none;transition:background .18s,box-shadow .18s,transform .18s}
+.temporary-event-form button:hover:not(:disabled),.temporary-event-form .event-link:hover{background:#104ba8;box-shadow:0 7px 17px rgba(23,96,206,.2);transform:translateY(-1px)}
+.temporary-event-form button:active:not(:disabled){background:#0b3a86;transform:translateY(1px);box-shadow:none}
+.temporary-event-form button:disabled{opacity:.5;cursor:not-allowed}
+#event-geolocation{background:#e8f1ff;color:#1454b5;border-color:#b7d2fa;justify-self:start}
+#event-geolocation:hover{background:#d5e6ff;color:#0c408f}
+#temporary-event-error:not(:empty){padding:12px 16px;background:#edf5ff;border-left:4px solid #1760ce;border-radius:10px}
+#event-drafts a,.temporary-event-form a{overflow-wrap:anywhere}
+#event-after-save{background:#fff;border:1px solid #e0e8f3;border-radius:20px;padding:24px;margin-top:20px}
+#event-after-save[hidden]{display:none}
+.temporary-event-form iframe{width:100%;height:600px;border:1px solid #a9b8cb}
+@media(max-width:650px){.temporary-event-form fieldset{grid-template-columns:1fr;padding:20px 16px;gap:16px}.temporary-event-form{padding:20px 12px 40px}.temporary-event-form button[type=submit]{width:100%}.temporary-event-form input[type=file]::file-selector-button{margin-right:8px;padding:10px}}
+@media(prefers-reduced-motion:reduce){.temporary-event-form *, .temporary-event-form *::file-selector-button{transition:none!important;transform:none!important}}
+</style><section class="temporary-event-form" aria-labelledby="temporary-heading">
  <nav id="event-drafts" aria-label="Mis eventos"></nav><h2 id="temporary-heading">Crear Dirección Temporal</h2>
  <p>Publica una fiesta o evento por US$7.99, durante 1 a 30 días. El evento no se publica hasta confirmar el pago.</p>
  <form id="temporary-event-draft" data-action="${action}" novalidate>

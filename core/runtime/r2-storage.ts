@@ -50,7 +50,7 @@ export function createR2Storage(settings: R2Settings, options?: { authorize: Med
     if (storageKey && !new RegExp('^(?:countries/(?:CO|CR|GT|SV|HN|NI|MX)/)?addresses/' + scope.addressId + '/' + scope.role + '/[a-f0-9]{64}\\.webp$').test(storageKey)) throw new Error('INVALID_STORAGE_KEY');
     if (!await options!.authorize({ ...scope, action, storageKey })) throw new Error('MEDIA_FORBIDDEN');
   }
-  async function send(method: 'PUT' | 'GET' | 'DELETE', key: string, bytes = new Uint8Array()) {
+  async function send(method: 'PUT' | 'GET' | 'DELETE', key: string, bytes: Uint8Array = new Uint8Array()) {
     const signed = signedR2Request(settings, method, key, bytes, 'image/webp');
     try {
       return await http(signed.url, { method, headers: signed.headers, ...(method === 'PUT' ? { body: Buffer.from(bytes) } : {}),

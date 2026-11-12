@@ -23,7 +23,7 @@ test('required acceptance rejects false/string/stale choices, normalizes server 
  const evidence=requireLegalAcceptance({legalAcceptance:{accepted:true,version:LEGAL_VERSION,acceptedAt:'forged',userId:'forged',text:'forged',analytics:false}});
  expect(evidence.text).toBe(LEGAL_ACCEPTANCE_TEXT);expect(evidence.contentHash).toBe(LEGAL_CONTENT_HASH);expect(evidence.acceptedAt).not.toBe('forged');expect(Number.isFinite(Date.parse(evidence.acceptedAt))).toBe(true);expect(evidence).not.toHaveProperty('userId');
 });
-test('shared forms preserve required unselected checkbox and five plan cards each contain four links',()=>{
+test('shared forms preserve required unselected checkbox and four current plan cards preserve legal access',()=>{
  for(const html of [userPanelHtml,commercialEntryHtml(true,new URL('https://direcciones.lat/'))]){
   const checkbox=html.match(/<input id="requestTermsAccepted"[^>]*>/)?.[0]||'';expect(checkbox).toContain('required');expect(checkbox).not.toContain('checked');
   for(const doc of documents)expect(html).toContain('href="/legal/'+doc.key+'"');
@@ -31,7 +31,7 @@ test('shared forms preserve required unselected checkbox and five plan cards eac
   for(const script of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
  }
  const html=commercialEntryHtml(true,new URL('https://direcciones.lat/'));
- const cards=[...html.matchAll(/<article class="latam-plan-card"[\s\S]*?<\/article>/g)].map(x=>x[0]);expect(cards).toHaveLength(5);
+ const cards=[...html.matchAll(/<article class="latam-plan-card"[\s\S]*?<\/article>/g)].map(x=>x[0]);expect(cards).toHaveLength(4);
  for(const card of cards)for(const doc of documents)expect(card).not.toContain('/legal/'+doc.key);
  expect(html).toContain('latamRegistrationTermsAccepted');
 });

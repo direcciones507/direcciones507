@@ -71,7 +71,7 @@ script = r'''
 <script id="ad507-hero-phone-layout">
 document.addEventListener('DOMContentLoaded', function () {
   const hero = document.getElementById('mainGlobalHeroView');
-  if (!hero || hero.querySelector('.hero-intro-layout')) return;
+  if (!hero || hero.querySelector('.hero-intro-layout') || hero.querySelector('.ad507-original-phone')) return;
   const title = hero.querySelector('.main-hero-title');
   const desc = hero.querySelector('.main-hero-desc');
   if (!title || !desc) return;

@@ -984,7 +984,7 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 #mainGlobalHeroView.ad507-motion-ready .main-hero-title{opacity:0;translate:-32px 0;transition:opacity .9s ease,translate 1s cubic-bezier(.22,1,.36,1)!important}
 #mainGlobalHeroView.ad507-motion-ready .ad507-phone-stage{opacity:0;translate:40px 0;rotate:y -7deg;transition:opacity 1s ease,translate 1.1s cubic-bezier(.22,1,.36,1),rotate 1.1s ease!important}
 #mainGlobalHeroView.ad507-motion-ready .main-hero-title.ad507-motion-visible,#mainGlobalHeroView.ad507-motion-ready .ad507-phone-stage.ad507-motion-visible{opacity:1;translate:0 0;rotate:y 0deg}
-#mainGlobalHeroView .main-hero-title.ad507-motion-visible .ad507-title-orbit:before,#mainGlobalHeroView .ad507-phone-stage.ad507-motion-visible .ad507-phone-float{animation-play-state:running}
+#mainGlobalHeroView .main-hero-title.ad507-motion-active .ad507-title-orbit:before,#mainGlobalHeroView .ad507-phone-stage.ad507-motion-active .ad507-phone-float{animation-play-state:running}
 @media(max-width:960px){#mainGlobalHeroView .ad507-phone-stage{padding:18px 26px 24px}#mainGlobalHeroView .ad507-title-orbit{inset:-24% 0}}
 @media(max-width:560px){#mainGlobalHeroView .ad507-phone-float{width:225px}#mainGlobalHeroView .ad507-phone-stage{padding:16px 22px 24px}#mainGlobalHeroView .ad507-title-orbit{inset:-18% -2%}#mainGlobalHeroView .ad507-title-orbit:before{border-width:1px;opacity:.75}}
 @media(prefers-reduced-motion:reduce){#mainGlobalHeroView .ad507-phone-float,#mainGlobalHeroView .ad507-title-orbit:before{animation:none!important}#mainGlobalHeroView.ad507-motion-ready .main-hero-title,#mainGlobalHeroView.ad507-motion-ready .ad507-phone-stage{opacity:1;translate:none;rotate:none;transition:none!important}#mainGlobalHeroView .ad507-original-phone{transform:rotateX(3deg) rotateY(-9deg)!important;transition:none!important}}
@@ -2504,10 +2504,10 @@ document.addEventListener('DOMContentLoaded',function(){
  const pointer=window.matchMedia('(hover: hover) and (pointer: fine)');
  let frame=0,x=0,y=0;
  function resetTilt(){if(frame)cancelAnimationFrame(frame);frame=0;phone.style.removeProperty('--ad507-tilt-x');phone.style.removeProperty('--ad507-tilt-y');}
- function showAll(){hero.classList.remove('ad507-motion-ready');title.classList.add('ad507-motion-visible');stage.classList.add('ad507-motion-visible');resetTilt();}
+ function showAll(){hero.classList.remove('ad507-motion-ready');title.classList.add('ad507-motion-visible','ad507-motion-active');stage.classList.add('ad507-motion-visible','ad507-motion-active');resetTilt();}
  if('IntersectionObserver' in window){
   hero.classList.add('ad507-motion-ready');
-  const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{entry.target.classList.toggle('ad507-motion-visible',entry.isIntersecting);if(!entry.isIntersecting&&entry.target===stage)resetTilt();});},{threshold:.12});
+  const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting)entry.target.classList.add('ad507-motion-visible');entry.target.classList.toggle('ad507-motion-active',entry.isIntersecting);if(!entry.isIntersecting&&entry.target===stage)resetTilt();});},{threshold:.12});
   observer.observe(title);observer.observe(stage);
  }else showAll();
  stage.addEventListener('pointermove',function(event){

@@ -749,7 +749,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 <style id="ad507-hero-3d-style">
 /* Homepage decoration only. Nested layers keep entry, float and pointer tilt independent. */
 #mainGlobalHeroView .main-hero-title{position:relative;isolation:isolate;animation:none!important}
-#mainGlobalHeroView .ad507-title-orbit{position:absolute;display:block;inset:-36% -5%;z-index:-1;pointer-events:none;perspective:900px}
+#mainGlobalHeroView .ad507-title-orbit{position:absolute;display:block;inset:-36% -5%;z-index:-1;pointer-events:none;perspective:900px;overflow:hidden;mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent)}
 #mainGlobalHeroView .ad507-title-orbit:before{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid #a6b6ca70;border-top-color:#d4dfecaa;border-bottom-color:#6b829c33;box-shadow:inset 0 1px 1px #eef5ff33,0 1px 2px #889fb733;transform:rotateZ(-24deg) rotateX(52deg) rotateY(10deg);animation:ad507-orbit 32s linear infinite;animation-play-state:paused}
 @keyframes ad507-orbit{to{transform:rotateZ(336deg) rotateX(52deg) rotateY(10deg)}}
 #mainGlobalHeroView .ad507-phone-stage{width:100%;min-width:0;padding:18px 20px;perspective:1100px;transform:none!important;transform-style:preserve-3d}

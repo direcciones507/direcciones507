@@ -34,7 +34,7 @@ export async function handlePaymentRoutes(req:Request,context:Context):Promise<R
     if(quote![2]==='installment'&&req.method==='GET')return respond(200,{ok:true,quote:await context.repository.quoteSecond(user.id,quote![1])});
     if(req.method==='GET')return respond(200,{ok:true,quote:await (quote![2]==='renewal'?context.repository.quoteRenewal(user.id,quote![1]):context.repository.quote(user.id,quote![1],url.searchParams.get('mode')||'ANNUAL'))});
     if(!req.headers.get('content-type')?.startsWith('application/json'))throw Error('INVALID_PAYMENT_REQUEST');
-    const body=JSON.parse((await readRequestBody(req,1024)).toString('utf8'));
+    const body=JSON.parse((await readRequestBody(req,quote![2]==='advertising'?8192:1024)).toString('utf8'));
     if(!body||typeof body.alias!=='string'||Object.keys(body).some(key=>!['alias','mode','advertising','legalAcceptance'].includes(key))||body.mode!==undefined&&!['ANNUAL','INSTALLMENTS','PLACE_AD_30','PLACE_AD_365'].includes(body.mode)||!/^6[0-9]{7}$/.test(body.alias))throw Error('INVALID_PAYMENT_REQUEST');
     const acceptance=requireLegalAcceptance(body);
     const intent=await (quote![2]==='advertising'?context.repository.prepareAdvertising(user.id,quote![1],req.headers.get('idempotency-key')??'',body.mode||'PLACE_AD_30',body.advertising):quote![2]==='installment'?context.repository.prepareSecond(user.id,quote![1],req.headers.get('idempotency-key')??''):quote![2]==='renewal'?context.repository.prepareRenewal(user.id,quote![1],req.headers.get('idempotency-key')??''):context.repository.prepare(user.id,quote![1],req.headers.get('idempotency-key')??'',body.mode||'ANNUAL'));

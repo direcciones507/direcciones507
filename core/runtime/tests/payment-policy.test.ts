@@ -42,3 +42,11 @@ test('payment routes are disabled without touching auth/DB/provider; scripts par
 });
 
 test('old Core quotes remain legitimate and unapproved amounts stay rejected',async()=>{const {validStoredOrderAmount}=await import('../payment-policy');for(const [p,c,old] of [['RESIDENTIAL',1499,1299],['BUSINESS_PREMIUM',2999,1999],['BUSINESS_PREMIUM_PRO',4999,3999]] as const){expect(validStoredOrderAmount(p,c)).toBe(true);expect(validStoredOrderAmount(p,old)).toBe(true);expect(validStoredOrderAmount(p,1)).toBe(false);} });
+
+test('advertising checkout accepts the approved form payload above the old alias-only limit without a real provider call',async()=>{
+ const {handlePaymentRoutes}=await import('../payment-routes'),{LEGAL_VERSION}=await import('../legal');let amount=0,prepared=0;
+ const id=crypto.randomUUID(),orderId=crypto.randomUUID(),advertising={title:'Synthetic advertisement',text:'a'.repeat(500),link:'https://example.test/?q='+'a'.repeat(1500),mediaId:crypto.randomUUID()};
+ const repository={prepareAdvertising:async(user:string,address:string,key:string,mode:string,data:any)=>{expect(data).toEqual(advertising);prepared++;return {required:true,order:{id:orderId,amount_cents:16189,provider_order_id:'fixture12345678',provider_reference:null,status:'PENDING'}};},acceptPurchase:async()=>{},claimProviderOrder:async()=>{},completeProviderOrder:async()=>{}} as any;
+ const response=await handlePaymentRoutes(new Request('https://direcciones.lat/v1/user/requests/'+id+'/advertising',{method:'POST',headers:{origin:'https://direcciones.lat','sec-fetch-site':'same-origin','content-type':'application/json','idempotency-key':'synthetic-advertising-001'},body:JSON.stringify({alias:'60000000',mode:'PLACE_AD_365',advertising,legalAcceptance:{accepted:true,version:LEGAL_VERSION}})}),{enabled:true,auth:{currentUser:async()=>({id:crypto.randomUUID(),roles:['CLIENT']})} as any,repository,provider:{createOrder:async(order:any)=>{amount=order.amountCents;return {transactionId:'synthetic',token:'synthetic',documentName:'synthetic'};}} as any});
+ expect(response?.status).toBe(200);expect(prepared).toBe(1);expect(amount).toBe(16189);
+});

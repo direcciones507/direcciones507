@@ -31,7 +31,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
    return new Response(objects.has(path)?Buffer.from(objects.get(path)!):null,{status:objects.has(path)?200:404,headers:{'content-type':'image/webp'}});
   }) as typeof fetch);
   const config={environment:'production' as const,merchantId:'fixture',domain:'https://direcciones.lat',ipnUrl:'https://direcciones.lat/v1/payments/temporary-events/yappy/ipn',secret:Buffer.from('test-secret.payload').toString('base64')};
-  const provider=createYappyProvider(config,(async(_url:any,options:any)=>{providerCalls++;const body=JSON.parse(options.body);if(providerCalls===1)return Response.json({body:{token:'server-token',epochTime:123}});expect(body.total).toBe('7.99');return Response.json({body:{transactionId:'fixture-tx',token:'fixture-button',documentName:'fixture-doc'}})}) as typeof fetch);
+  const provider=createYappyProvider(config,(async(_url:any,options:any)=>{providerCalls++;const body=JSON.parse(options.body);if(providerCalls===1)return Response.json({body:{token:'server-token',epochTime:123}});expect(body.total).toBe('12.99');return Response.json({body:{transactionId:'fixture-tx',token:'fixture-button',documentName:'fixture-doc'}})}) as typeof fetch);
   const payment=createTemporaryEventPayment(sql,config,provider),repository=createTemporaryEventRepository(sql);
   const ctx={enabled:true,sql,media,payment,auth:{currentUser:async()=>({id:owner,roles:['CLIENT']})}};
   const request=(path:string,method='GET',body?:unknown,extra:Record<string,string>={})=>new Request('https://direcciones.lat'+path,{method,headers:{...(method!=='GET'?{origin:'https://direcciones.lat','x-requested-with':'XMLHttpRequest','content-type':'application/json'}:{}),...extra},...(body!==undefined?{body:JSON.stringify(body)}:{})});
@@ -61,7 +61,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   await expect(payment.confirm(ipn)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');expect((await repository.getOwned(owner,id))?.status).toBe('AWAITING_PAYMENT');
   ipn.set('hash',createHmac('sha256','test-secret').update(order.provider_order_id+'E'+config.domain).digest('hex'));
   await sql.unsafe('ALTER TABLE ad507.temporary_event_orders DROP CONSTRAINT temporary_event_orders_amount_cents_check');await sql.unsafe('UPDATE ad507.temporary_event_orders SET amount_cents=1 WHERE event_id=$1',[id]);
-  await expect(payment.confirm(ipn)).rejects.toThrow('INVALID_PAYMENT_ORDER');await sql.unsafe('UPDATE ad507.temporary_event_orders SET amount_cents=799 WHERE event_id=$1',[id]);
+  await expect(payment.confirm(ipn)).rejects.toThrow('INVALID_PAYMENT_ORDER');await sql.unsafe('UPDATE ad507.temporary_event_orders SET amount_cents=1299 WHERE event_id=$1',[id]);
   const confirmations=await Promise.all([payment.confirm(ipn),payment.confirm(ipn)]);expect(confirmations.filter(x=>x.unchanged)).toHaveLength(1);
   const notification=await handleTemporaryEventRoutes(request('/v1/payments/temporary-events/yappy/ipn?'+ipn.toString()),ctx);expect(await notification!.json()).toEqual({success:true});
   const page=await handleTemporaryEventRoutes(request('/evento/'+created.slug),ctx);expect(page?.status).toBe(200);const html=await page!.text();expect(html).toContain('Fiesta editada');expect(html).toContain('Descargar QR');expect(html).toContain('og:image');expect(html).not.toContain('PRIVATE_');expect(html).not.toContain('private@example');

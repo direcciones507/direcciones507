@@ -29,7 +29,7 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   expect(await page.locator('#event-after-save').isVisible()).toBe(true);expect(await page.locator('btn-yappy').count()).toBe(0);
   const preview=await page.locator('#event-preview-link').getAttribute('href');await page.clock.install();await page.goto(server.url+preview!.slice(1));
   expect(await page.getByText('Vista previa privada · Aún sin publicar').count()).toBe(1);expect(await page.locator('.photos img').count()).toBe(3);
-  await page.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0));expect(await page.content()).not.toContain('PRIVATE_NAME');
+  await page.waitForFunction(()=>[...document.images].filter(i=>i.hasAttribute('src')).every(i=>i.complete&&i.naturalWidth>0));expect(await page.content()).not.toContain('PRIVATE_NAME');
   expect(await page.locator('.photo-progress span[aria-current="true"]').count()).toBe(1);
   expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).toBe('rgb(28, 49, 68)');
   expect(await page.evaluate(()=>document.querySelector('main')!.getBoundingClientRect().width)).toBeLessThanOrEqual(520);
@@ -73,10 +73,10 @@ test('continuous viewer opens the selected photo, navigates without closing and 
    await page.getByRole('button',{name:'Foto siguiente',exact:true}).click();
    expect(await page.locator('.cg-count').textContent()).toBe('3 / 3');expect(await page.locator('#continuousGallery').isVisible()).toBe(true);
    await page.keyboard.press('ArrowLeft');await page.keyboard.press('ArrowLeft');expect(await page.locator('.cg-count').textContent()).toBe('1 / 3');
-   await page.locator('.cg-stage').dispatchEvent('touchstart',{touches:[{clientX:300,clientY:200}]});
-   await page.locator('.cg-stage').dispatchEvent('touchend',{changedTouches:[{clientX:100,clientY:205}]});expect(await page.locator('.cg-count').textContent()).toBe('2 / 3');
-   await page.locator('.cg-stage').dispatchEvent('touchstart',{touches:[{clientX:100,clientY:200}]});
-   await page.locator('.cg-stage').dispatchEvent('touchend',{changedTouches:[{clientX:300,clientY:205}]});expect(await page.locator('.cg-count').textContent()).toBe('1 / 3');
+   await page.locator('.cg-stage').dispatchEvent('touchstart',{touches:[{identifier:0,clientX:300,clientY:200}]});
+   await page.locator('.cg-stage').dispatchEvent('touchend',{changedTouches:[{identifier:0,clientX:100,clientY:205}]});expect(await page.locator('.cg-count').textContent()).toBe('2 / 3');
+   await page.locator('.cg-stage').dispatchEvent('touchstart',{touches:[{identifier:0,clientX:100,clientY:200}]});
+   await page.locator('.cg-stage').dispatchEvent('touchend',{changedTouches:[{identifier:0,clientX:300,clientY:205}]});expect(await page.locator('.cg-count').textContent()).toBe('1 / 3');
    expect(await page.evaluate(()=>document.documentElement.style.overflow)).toBe('hidden');await page.keyboard.press('Escape');expect(await page.locator('#continuousGallery').isVisible()).toBe(false);expect(await page.evaluate(()=>document.documentElement.style.overflow)).toBe('');
    await page.setContent(html([4]));await page.locator('#galeriaFotos img').click();expect(await page.locator('.cg-count').textContent()).toBe('1 / 1');expect(await page.getByRole('button',{name:'Foto siguiente',exact:true}).isVisible()).toBe(false);expect(await page.locator('.cg-image').getAttribute('src')).toBe(photo(4));
    await page.getByRole('button',{name:'Cerrar visor de fotografías'}).click();await page.close();

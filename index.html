@@ -1124,10 +1124,10 @@ dialog#plan507Details #plan507Close{background:#e7e0d4!important;color:#182944!i
     </div>
   </main>
 
-<dialog id="plan507Details" aria-labelledby="plan507Title" style="position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(560px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:min(88dvh,780px);overflow:auto;border:1px solid #2c6684;border-radius:22px;padding:clamp(20px,4vw,30px);background:linear-gradient(155deg,#112b48,#071626);color:white;box-shadow:0 30px 85px #000b">
-<h3 id="plan507Title" style="font-size:27px;margin:0 0 10px;color:white"></h3><p id="plan507Price" style="font-size:25px;font-weight:900;color:#4ee0f5;margin:0 0 18px"></p><ul id="plan507Features" style="list-style:none;padding:0;display:grid;gap:10px"></ul>
-<p id="plan507FreeTerms" hidden aria-hidden="true"></p><p style="font-size:12px;color:#b8d1e3;line-height:1.6">Solicitud sujeta a las condiciones y revisión aplicables. Los planes de pago no generan un cobro al consultar los detalles.</p>
-<p id="plan507ReviewNotice" hidden style="color:#fff;font-size:15px">La revisión administrativa puede tardar hasta 48 horas después del envío. La activación no es automática y la solicitud puede ser rechazada.</p><div style="display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:20px"><button type="button" id="plan507Close" style="border:1px solid #57718c;border-radius:12px;padding:14px;background:#1c3853;color:white;font-weight:800">Regresar</button><a id="plan507Continue" href="https://direcciones.lat/?country=PA" style="border-radius:12px;padding:14px;background:linear-gradient(135deg,#08b6d2,#1768e7);color:white;font-weight:800;text-decoration:none;text-align:center">Continuar con mi dirección</a></div>
+<dialog id="plan507Details" aria-labelledby="plan507Title" style="position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(570px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 28px);overflow:auto;border:1px solid #a89b84;border-radius:12px;padding:clamp(22px,4vw,34px);background:#f8f6f0;color:#182944;box-shadow:0 30px 85px #0008;color-scheme:light">
+<h3 id="plan507Title" style="font-size:27px;margin:0 0 10px;color:#182944"></h3><p id="plan507Price" style="font-size:25px;font-weight:900;color:#64748b;margin:0 0 18px"></p><ul id="plan507Features" style="list-style:none;padding:0;display:grid;gap:10px"></ul>
+<p id="plan507FreeTerms" hidden aria-hidden="true"></p><p style="font-size:12px;color:#536173;line-height:1.6">Solicitud sujeta a las condiciones y revisión aplicables. Los planes de pago no generan un cobro al consultar los detalles.</p>
+<p id="plan507ReviewNotice" hidden style="color:#536173;font-size:15px">La revisión administrativa puede tardar hasta 48 horas después del envío. La activación no es automática y la solicitud puede ser rechazada.</p><div style="display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:20px"><button type="button" id="plan507Close" style="border:1px solid #c8bca9;border-radius:5px;padding:14px;background:#e7e0d4;color:#182944;font-weight:800">Regresar</button><a id="plan507Continue" href="https://direcciones.lat/?country=PA" style="border-radius:5px;padding:14px;background:#182944;color:#f7f4ec;font-weight:800;text-decoration:none;text-align:center">Continuar con mi dirección</a></div>
 </dialog>
 <script>
 (function(){
@@ -1138,7 +1138,7 @@ dialog#plan507Details #plan507Close{background:#e7e0d4!important;color:#182944!i
  title.textContent=card.querySelector('h4').textContent;
  dialog.classList.toggle('premium-pro-selected',button.dataset['507Plan']==='BUSINESS_PREMIUM_PRO');
  price.textContent=card.querySelector('.plan-numeric-val').textContent;
- list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\s*/, '');item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
+ list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\s*/, '');item.style.cssText='padding:14px 16px;border:1px solid #d4cabb;border-left:3px solid #c4a87c;border-radius:6px;background:#fff;color:#1e293b;line-height:1.55';return item;}));
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';
  document.getElementById('plan507ReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(button.dataset['507Plan']);
  dialog.scrollTop=0;

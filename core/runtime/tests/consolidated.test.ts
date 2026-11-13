@@ -694,17 +694,17 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
   const signed=(orderId:string,status:string)=>new URLSearchParams({orderId,status,domain:config.domain,hash:createHmac('sha256','isolated-key').update(orderId+status+config.domain).digest('hex')});
   try{
     const address=await make('BUSINESS_PREMIUM');
-    expect(await repo.quote(clientId,address)).toMatchObject({plan:'BUSINESS_PREMIUM',amountCents:1999,orderId:null,currency:'USD'});
+    expect(await repo.quote(clientId,address)).toMatchObject({plan:'BUSINESS_PREMIUM',amountCents:2999,orderId:null,currency:'USD'});
     await expect(repo.quote(adminId,address)).rejects.toThrow('PAYMENT_NOT_FOUND');
     // All three paid plans must quote correctly for real saved, unpublished drafts.
-    for(const [plan,amount] of [['RESIDENTIAL',1299],['BUSINESS_PREMIUM',1999],['BUSINESS_PREMIUM_PRO',3999]] as const){
+    for(const [plan,amount] of [['RESIDENTIAL',1499],['BUSINESS_PREMIUM',2999],['BUSINESS_PREMIUM_PRO',4999]] as const){
       const type=plan==='RESIDENTIAL'?'RESIDENTIAL':'BUSINESS';
       const draft=await db.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source,request_key_hash,request_data) VALUES(NULL,$1,'DRAFT','Unpaid Yappy quote fixture','USER_REQUEST',$2,$3::jsonb) RETURNING id",[type,crypto.randomUUID(),db.json({plan,workflow:'PAYMENT_PENDING'})]);
       await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[draft[0].id,clientId]);
       expect(await repo.quote(clientId,draft[0].id)).toMatchObject({plan,amountCents:amount,orderId:null});
     }
     const [a,b]=await Promise.all([repo.prepare(clientId,address,'payment-test-key-0001'),repo.prepare(clientId,address,'payment-test-key-0001')]);
-    expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(1999);
+    expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(2999);
     await expect(repo.prepare(clientId,address,'payment-test-key-0002')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
     await expect(repo.read(adminId,a.order.id)).rejects.toThrow('PAYMENT_NOT_FOUND');
     await expect(repo.confirm(signed(a.order.provider_order_id,'E'))).rejects.toThrow('PAYMENT_PROVIDER_REFERENCE_REQUIRED');
@@ -799,7 +799,7 @@ test('PayPal sandbox shares orders/audit: concurrent intent, private ownership, 
   };
   try{
     const address=await make();const [a,b]=await Promise.all([repo.preparePayPal(clientId,address,'paypal-shared-key-001'),repo.preparePayPal(clientId,address,'paypal-shared-key-001')]);
-    expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(1999);
+    expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(2999);
     await expect(repo.preparePayPal(clientId,address,'paypal-another-key-001')).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
     await expect(repo.preparePayPal(adminId,address,'paypal-foreign-owner-001')).rejects.toThrow('PAYMENT_NOT_FOUND');
     const yappy=createPaymentRepository(db,{environment:'test',merchantId:'fixture',domain:'https://example.test',ipnUrl:'https://example.test/ipn',secret:Buffer.from('fixture.key').toString('base64')});

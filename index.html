@@ -728,6 +728,24 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 @media(prefers-reduced-motion:reduce){#plan507Details.plan-motion-active,#plan507Details.plan-motion-active::before,#plan507Details.plan-motion-active :is(h2,h3,#plan507Price,#latamPlanDetailsPrice),#plan507Details.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important}}
 
 
+
+/* Owner-supplied premium card reference: staggered slide-in, no spinning emblem. */
+#plan507Details[open].plan-motion-active{animation:premiumCardEnter .55s cubic-bezier(.175,.885,.32,1.15) both!important}
+#plan507Details.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{
+ opacity:0;transform:translateX(-18px);
+ animation:premiumFeatureEnter .5s ease forwards!important;
+ animation-delay:calc(.12s + (var(--premium-step,0) * .11s))!important;
+ transition:background-color .25s ease,box-shadow .25s ease,transform .25s ease!important;
+}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li:hover{
+ background:#fcfbfa!important;box-shadow:0 4px 12px #152b4515!important;
+ border-left-color:#c4a87c!important;
+}
+@keyframes premiumCardEnter{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes premiumFeatureEnter{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){
+ #plan507Details[open].plan-motion-active,#plan507Details.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important;opacity:1!important;transform:none!important}
+}
 </style>
 
 
@@ -1076,6 +1094,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  next.href='https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
  dialog.classList.remove('plan-motion-active');
  void dialog.offsetWidth;
+ list.querySelectorAll('li').forEach((li,i)=>li.style.setProperty('--premium-step',String(Math.min(i,12))));
  dialog.showModal();dialog.classList.add('plan-motion-active');dialog.scrollTop=0;
  }));
  document.getElementById('plan507Close').onclick=()=>dialog.close();

@@ -381,6 +381,49 @@ function prepareLatamRequest(e,type,plan){
  #latamPlanDetails[open].plan-motion-active,#latamPlanDetails.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important;opacity:1!important;transform:none!important}
 }
 `;
+ const premiumMotionEnhancedCss=`
+/* Premium motion reference: original plan dialog, no demo overlay or fake payment. */
+dialog#latamPlanDetails[open]{
+ background:linear-gradient(#f8f6f0,#f8f6f0) padding-box,conic-gradient(from var(--premium-angle,0deg),#bca47b,#eee4d0,#273a56,#bca47b) border-box!important;
+ border:2px solid transparent!important;
+ box-shadow:0 25px 55px #0006,0 0 42px #c4a87c26!important;
+ animation:premiumBorderGlow 5s ease-in-out infinite alternate!important;
+}
+dialog#latamPlanDetails[open].plan-motion-active{animation:premiumBorderGlow 5s ease-in-out infinite alternate,premiumCardEnter .55s cubic-bezier(.175,.885,.32,1.15) both!important}
+dialog#latamPlanDetails #latamPlanDetailsTitle{
+ background:linear-gradient(90deg,#1e293b,#b08d57,#1e293b)!important;
+ background-size:220% auto!important;
+ -webkit-background-clip:text!important;background-clip:text!important;
+ -webkit-text-fill-color:transparent!important;
+ animation:premiumTitleShine 3.5s linear infinite!important;
+}
+dialog#latamPlanDetails.premium-pro-selected #latamPlanDetailsTitle::after{
+ content:" 👑";-webkit-text-fill-color:initial!important;
+ background:none!important;display:inline-block;font-size:.78em;
+ animation:premiumCrownFloat 2.2s ease-in-out infinite!important;
+}
+dialog#latamPlanDetails #latamPlanDetailsContinue{
+ position:relative!important;overflow:hidden!important;
+ background:linear-gradient(135deg,#1e293b,#334155)!important;
+ color:#e6cfaa!important;border:1px solid #a48c65!important;
+ animation:premiumButtonPulse 2.4s ease-in-out infinite!important;
+ transition:transform .25s ease,background .25s ease!important;
+}
+dialog#latamPlanDetails #latamPlanDetailsContinue::after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(105deg,transparent 30%,#ffffff36 50%,transparent 70%);
+ transform:translateX(-120%);animation:premiumButtonShine 3.5s ease-in-out infinite;
+}
+dialog#latamPlanDetails #latamPlanDetailsContinue:hover{background:linear-gradient(135deg,#c4a87c,#b08d57)!important;color:#1e293b!important;transform:translateY(-2px)!important;animation:none!important}
+dialog#latamPlanDetails :is(#plan507Features,#latamPlanDetailsFeatures) li{transition:background-color .3s ease,box-shadow .3s ease!important}
+dialog#latamPlanDetails :is(#plan507Features,#latamPlanDetailsFeatures) li:hover{background:#fcfbfa!important;box-shadow:0 4px 12px #1e293b14!important}
+@keyframes premiumTitleShine{to{background-position:220% center}}
+@keyframes premiumCrownFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes premiumBorderGlow{from{box-shadow:0 25px 55px #0006,0 0 10px #c4a87c16}to{box-shadow:0 25px 55px #0006,0 0 32px #c4a87c66}}
+@keyframes premiumButtonPulse{0%,100%{box-shadow:0 0 0 0 #c4a87c66}65%{box-shadow:0 0 0 9px #c4a87c00}}
+@keyframes premiumButtonShine{0%,30%{transform:translateX(-120%)}75%,100%{transform:translateX(120%)}}
+@media(prefers-reduced-motion:reduce){dialog#latamPlanDetails[open],dialog#latamPlanDetails #latamPlanDetailsTitle,dialog#latamPlanDetails #latamPlanDetailsContinue,dialog#latamPlanDetails #latamPlanDetailsContinue::after,dialog#latamPlanDetails.premium-pro-selected #latamPlanDetailsTitle::after{animation:none!important}}
+`;
  const accessCss=`
 #latamPlanDetails{width:min(570px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(18px,4vw,30px);border:1px solid #d5e5f5;border-radius:20px;background:#fff;color:#16324d;box-shadow:0 24px 75px #0009;color-scheme:light}
 #latamPlanDetails::backdrop{background:#031326bb}
@@ -533,7 +576,7 @@ body.latam .latam-footer-inner nav[aria-label="Información y contacto"] a[href^
 `;
  return html.replace(/<footer class="account-footer">[\s\S]*?<\/footer>/,'').replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
- .replace('</style>',css+accessCss+homeCss+sharedVisualStyle+dialogParityCss+motionProDialogCss+motionRepairCss+premiumReferenceCss+'</style>')
+ .replace('</style>',css+accessCss+homeCss+sharedVisualStyle+dialogParityCss+motionProDialogCss+motionRepairCss+premiumReferenceCss+premiumMotionEnhancedCss+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
  .replace('<script>',notice+`<dialog id="latamPlanDetails" aria-labelledby="latamPlanDetailsTitle"><h2 id="latamPlanDetailsTitle"></h2><p id="latamPlanDetailsPrice"></p><p id="latamPlanDetailsCountry"></p><ul id="latamPlanDetailsFeatures"></ul><p id="latamPlanDetailsTerms"></p><p id="latamPlanReviewNotice" hidden>Importante: Tu solicitud será revisada por nuestro equipo. La aprobación y publicación pueden tardar hasta 48 horas después del envío. La activación no es automática. La solicitud puede ser rechazada.</p><div class="latam-plan-detail-actions"><button type="button" id="latamPlanDetailsBack">Regresar</button><button type="button" id="latamPlanDetailsContinue">Continuar con mi dirección</button></div></dialog>`+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><label id="latamRegistrationTerms" style="display:flex;gap:10px;color:#fff;font-size:14px;line-height:1.6"><input id="latamRegistrationTermsAccepted" type="checkbox" style="width:22px;height:22px;flex:none;accent-color:#3286ff"><span>${LEGAL_ACCEPTANCE_TEXT}</span></label><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><svg class="latam-google-logo" viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.88 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.9 23.9 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48Z"/></svg> Continuar con Google</a><div class="latam-access-legal-note"><span>Consulta nuestros documentos:</span><nav aria-label="Condiciones de cuenta">${legalLinks}</nav></div></dialog>`+'<script>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')
@@ -623,6 +666,7 @@ function showLatamPlanDetails(e,type,plan){
  const item=latamPlanCatalog[detailsKey],country=document.getElementById('commercialCountry');
  latamSelectedPlan={type,plan};
  document.getElementById('latamPlanDetailsTitle').textContent=item.title;
+ latamPlanDialog.classList.toggle('premium-pro-selected',detailsKey==='PREMIUM_PRO');
  document.getElementById('latamPlanDetailsPrice').textContent=item.price+(item.price==='Gratis'?'':' · Precio de referencia, confirmar vigencia');
  document.getElementById('latamPlanDetailsCountry').textContent='País seleccionado: '+country.options[country.selectedIndex].textContent;
  document.getElementById('latamPlanDetailsFeatures').replaceChildren(...item.features.map(feature=>{const li=document.createElement('li');li.textContent=feature;return li;}));

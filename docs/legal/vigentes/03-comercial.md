@@ -46,6 +46,8 @@ variar por país. Lugar Gratis está disponible inicialmente solo en Panamá y C
 5.1. Los precios vigentes de cada plan, por país, se publican en la sección Planes del sitio web correspondiente, con
 indicación de la moneda y de si incluyen impuestos.
 
+Tarifas de referencia para nuevas contrataciones (USD): Negocio Premium US$29.99/año; Negocio Premium Pro US$49.99/año; Dirección Temporal en Panamá US$12.99 por 1–30 días; publicidad comercial de Lugar US$14.99/30 días. Dirección Residencial US$14.99/año (no disponible actualmente para nuevas contrataciones). Dirección Temporal de 31–60 días US$19.99, únicamente cuando se habilite esa modalidad en el formulario y en el pago. Los importes finales e impuestos aplicables se informan antes de contratar. Las órdenes anteriores mantienen sus condiciones originales.
+
 5.2. Antes de contratar un plan de pago se le mostrará el precio total, la moneda, los impuestos aplicables, la duración
 del período contratado y las condiciones principales. No se cobrarán conceptos que no se hayan informado antes de la
 contratación.

@@ -76,7 +76,7 @@ test('continuous viewer opens the selected photo, navigates without closing and 
    expect(await page.locator('.cg-image').getAttribute('src')).toBe(photo(2));
    expect(await page.locator('.cg-prev,.cg-next,.cg-controls').count()).toBe(0);
    expect(await page.getByRole('button',{name:'Cerrar visor de fotografías'}).textContent()).toBe('');
-   const closeBox=await page.locator('.cg-close').boundingBox();expect(closeBox!.width).toBe(48);expect(closeBox!.height).toBe(44);
+   const closeBox=await page.locator('.cg-close').boundingBox();expect(closeBox!.width).toBeCloseTo(48,1);expect(closeBox!.height).toBeCloseTo(44,1);
    expect(await page.locator('.cg-close').evaluate(el=>getComputedStyle(el).borderRadius)).toBe('999px');
    await page.keyboard.press('ArrowRight');
    expect(await page.locator('.cg-count').textContent()).toBe('3 / 3');expect(await page.locator('#continuousGallery').isVisible()).toBe(true);

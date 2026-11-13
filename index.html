@@ -715,6 +715,17 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 @keyframes planMotionEntrance{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes planMotionRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){#plan507Details,#plan507Details::before,#plan507Details :is(h2,h3,#plan507Price,#latamPlanDetailsPrice),#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important}}
+
+/* Plan dialog visual repair: clean benefit rows, stronger but restrained motion. */
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li{position:relative!important;padding:15px 16px!important;overflow-wrap:break-word!important;word-break:normal!important;hyphens:auto;min-height:50px;box-sizing:border-box}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li::before{content:none!important;display:none!important}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li::marker{content:""}
+#plan507Details.plan-motion-active::before{animation:planMotionSweep 2.4s linear infinite!important;height:4px!important;background:linear-gradient(90deg,#a58d60 0%,#e6d4b1 16%,#182944 36%,#a58d60 60%,#e6d4b1 80%,#a58d60 100%)!important;background-size:220% 100%!important}
+#plan507Details.plan-motion-active{animation:planMotionEntrance .7s cubic-bezier(.18,.8,.2,1) both!important}
+#plan507Details.plan-motion-active :is(h2,h3){animation:planMotionRise .7s .08s both!important}
+#plan507Details.plan-motion-active :is(#plan507Price,#latamPlanDetailsPrice){animation:planMotionRise .7s .18s both!important}
+#plan507Details.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:planMotionRise .65s both!important}
+@media(prefers-reduced-motion:reduce){#plan507Details.plan-motion-active,#plan507Details.plan-motion-active::before,#plan507Details.plan-motion-active :is(h2,h3,#plan507Price,#latamPlanDetailsPrice),#plan507Details.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important}}
 </style>
 
 
@@ -1061,7 +1072,9 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  document.getElementById('plan507ReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(button.dataset['507Plan']);
  dialog.scrollTop=0;
  next.href='https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
- dialog.showModal();dialog.scrollTop=0;
+ dialog.classList.remove('plan-motion-active');
+ void dialog.offsetWidth;
+ dialog.showModal();dialog.classList.add('plan-motion-active');dialog.scrollTop=0;
  }));
  document.getElementById('plan507Close').onclick=()=>dialog.close();
  dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();});

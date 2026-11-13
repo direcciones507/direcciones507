@@ -21,7 +21,7 @@ export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,pr
     return rows[0];
    });
    // A committed intent survives ambiguous timeouts; never create another charge on retry.
-   const result=await provider.createOrder({providerOrderId:order.provider_order_id,amountCents:799},alias);
+   const result=await provider.createOrder({providerOrderId:order.provider_order_id,amountCents:order.amount_cents},alias);
    await sql.unsafe("UPDATE ad507.temporary_event_orders SET provider_reference=$2 WHERE id=$1 AND provider_reference='INITIALIZING'",[order.id,result.transactionId]);
    return {...result,orderId:order.id};
   },
@@ -31,7 +31,7 @@ export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,pr
     const rows=await tx.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE provider_order_id=$1 FOR UPDATE',[proof.orderId]);
     const p=rows[0];if(!p)throw Error('PAYMENT_NOT_FOUND');
     // V2 signs order/status/domain, not amount: bind receipt to the immutable server quote.
-    if(p.amount_cents!==799||p.currency!=='USD'||p.environment!==config.environment||!p.provider_reference||p.provider_reference==='INITIALIZING')throw Error('INVALID_PAYMENT_ORDER');
+    if(![799,1299].includes(p.amount_cents)||p.currency!=='USD'||p.environment!==config.environment||!p.provider_reference||p.provider_reference==='INITIALIZING')throw Error('INVALID_PAYMENT_ORDER');
     if(p.status==='PAID')return {ok:true,unchanged:true};
     if(proof.status!=='PAID'){
      await tx.unsafe('UPDATE ad507.temporary_event_orders SET status=$2 WHERE id=$1',[p.id,proof.status]);

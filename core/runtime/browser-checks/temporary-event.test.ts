@@ -1,3 +1,4 @@
+import {continuousGallery} from '../continuous-gallery';
 import {test,expect} from 'bun:test';
 import {chromium} from '@playwright/test';
 import {PGlite} from '@electric-sql/pglite';
@@ -37,9 +38,10 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   await page.getByRole('button',{name:'Cerrar código QR'}).click();
   expect(await page.locator('.qr-modal').isVisible()).toBe(false);
   expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
-  await page.locator('.photo-next').tap();expect(await page.locator('.photo-counter').textContent()).toBe('2 / 3');
-  await page.locator('.photo-next').tap();expect(await page.locator('.photo-counter').textContent()).toBe('3 / 3');
-  await page.locator('.photo-next').tap();expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
+  await page.locator('.photo-next').tap();expect(await page.locator('#continuousGallery').isVisible()).toBe(true);
+  await page.getByRole('button',{name:'Foto siguiente',exact:true}).tap();expect(await page.locator('.cg-count').textContent()).toBe('2 / 3');
+  await page.getByRole('button',{name:'Foto siguiente',exact:true}).tap();expect(await page.locator('.cg-count').textContent()).toBe('3 / 3');
+  await page.getByRole('button',{name:'Cerrar visor de fotografías'}).tap();expect(await page.locator('#continuousGallery').isVisible()).toBe(false);
   await page.clock.fastForward(14000);expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
   const draftUrl=server.url+'panel/evento/nuevo?draft='+(await sql.unsafe('SELECT id FROM ad507.temporary_events'))[0].id;
   await page.goto(draftUrl);await page.waitForFunction(()=>document.querySelector<HTMLInputElement>('[name=title]')?.value==='Fiesta de Santiago');
@@ -54,4 +56,30 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   }
   expect(errors).toEqual([]);await context.close();await reduced.close();
  }finally{await browser.close();server.stop(true);await db.close()}
+},45000);
+
+// Isolated DOM fixtures verify viewer behavior without production writes or plan changes.
+test('continuous viewer opens the selected photo, navigates without closing and isolates cards',async()=>{
+ const browser=await chromium.launch({executablePath:process.env.AD507_CHROMIUM_PATH,headless:true,args:['--no-sandbox']});
+ try{
+  for(const width of [393,768,1440]){
+   const page=await browser.newPage({viewport:{width,height:900},hasTouch:width<1000,isMobile:width<500});
+   const photo=(n:number)=>'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text y="40">'+n+'</text></svg>');
+   const html=(numbers:number[])=>continuousGallery('<html><head></head><body style="min-height:2000px"><div id="galeriaFotos">'+numbers.map(n=>'<img width="100" height="100" src="'+photo(n)+'" alt="Foto '+n+'">').join('')+'</div></body></html>');
+   await page.setContent(html([1,2,2,3]));
+   await page.locator('#galeriaFotos img').nth(1).click();
+   expect(await page.locator('.cg-count').textContent()).toBe('2 / 3');
+   expect(await page.locator('.cg-image').getAttribute('src')).toBe(photo(2));
+   await page.getByRole('button',{name:'Foto siguiente',exact:true}).click();
+   expect(await page.locator('.cg-count').textContent()).toBe('3 / 3');expect(await page.locator('#continuousGallery').isVisible()).toBe(true);
+   await page.keyboard.press('ArrowLeft');await page.keyboard.press('ArrowLeft');expect(await page.locator('.cg-count').textContent()).toBe('1 / 3');
+   await page.locator('.cg-stage').dispatchEvent('touchstart',{touches:[{clientX:300,clientY:200}]});
+   await page.locator('.cg-stage').dispatchEvent('touchend',{changedTouches:[{clientX:100,clientY:205}]});expect(await page.locator('.cg-count').textContent()).toBe('2 / 3');
+   await page.locator('.cg-stage').dispatchEvent('touchstart',{touches:[{clientX:100,clientY:200}]});
+   await page.locator('.cg-stage').dispatchEvent('touchend',{changedTouches:[{clientX:300,clientY:205}]});expect(await page.locator('.cg-count').textContent()).toBe('1 / 3');
+   expect(await page.evaluate(()=>document.documentElement.style.overflow)).toBe('hidden');await page.keyboard.press('Escape');expect(await page.locator('#continuousGallery').isVisible()).toBe(false);expect(await page.evaluate(()=>document.documentElement.style.overflow)).toBe('');
+   await page.setContent(html([4]));await page.locator('#galeriaFotos img').click();expect(await page.locator('.cg-count').textContent()).toBe('1 / 1');expect(await page.getByRole('button',{name:'Foto siguiente',exact:true}).isVisible()).toBe(false);expect(await page.locator('.cg-image').getAttribute('src')).toBe(photo(4));
+   await page.getByRole('button',{name:'Cerrar visor de fotografías'}).click();await page.close();
+  }
+ }finally{await browser.close();}
 },45000);

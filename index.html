@@ -1086,6 +1086,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  document.querySelectorAll('[data-507-plan]').forEach(button=>button.addEventListener('click',()=>{
  const card=button.closest('.plan-pricing-card');
  title.textContent=card.querySelector('h4').textContent;
+ dialog.classList.toggle('premium-pro-selected',button.dataset['507Plan']==='BUSINESS_PREMIUM_PRO');
  price.textContent=card.querySelector('.plan-numeric-val').textContent;
  list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\s*/, '');item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';
@@ -1938,6 +1939,48 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     document.getElementById("btnImprimirQR").onclick = () => {
       const w = window.open("", "_blank");
       w.document.write(`<html><head><title>Imprimir QR</title><style id="plan507-final-dialog-style">
+/* Premium motion reference: original plan dialog, no demo overlay or fake payment. */
+dialog#plan507Details[open]{
+ background:linear-gradient(#f8f6f0,#f8f6f0) padding-box,conic-gradient(from var(--premium-angle,0deg),#bca47b,#eee4d0,#273a56,#bca47b) border-box!important;
+ border:2px solid transparent!important;
+ box-shadow:0 25px 55px #0006,0 0 42px #c4a87c26!important;
+ animation:premiumBorderGlow 5s ease-in-out infinite alternate!important;
+}
+dialog#plan507Details[open].plan-motion-active{animation:premiumBorderGlow 5s ease-in-out infinite alternate,premiumCardEnter .55s cubic-bezier(.175,.885,.32,1.15) both!important}
+dialog#plan507Details #plan507Title{
+ background:linear-gradient(90deg,#1e293b,#b08d57,#1e293b)!important;
+ background-size:220% auto!important;
+ -webkit-background-clip:text!important;background-clip:text!important;
+ -webkit-text-fill-color:transparent!important;
+ animation:premiumTitleShine 3.5s linear infinite!important;
+}
+dialog#plan507Details.premium-pro-selected #plan507Title::after{
+ content:" 👑";-webkit-text-fill-color:initial!important;
+ background:none!important;display:inline-block;font-size:.78em;
+ animation:premiumCrownFloat 2.2s ease-in-out infinite!important;
+}
+dialog#plan507Details #plan507Continue{
+ position:relative!important;overflow:hidden!important;
+ background:linear-gradient(135deg,#1e293b,#334155)!important;
+ color:#e6cfaa!important;border:1px solid #a48c65!important;
+ animation:premiumButtonPulse 2.4s ease-in-out infinite!important;
+ transition:transform .25s ease,background .25s ease!important;
+}
+dialog#plan507Details #plan507Continue::after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(105deg,transparent 30%,#ffffff36 50%,transparent 70%);
+ transform:translateX(-120%);animation:premiumButtonShine 3.5s ease-in-out infinite;
+}
+dialog#plan507Details #plan507Continue:hover{background:linear-gradient(135deg,#c4a87c,#b08d57)!important;color:#1e293b!important;transform:translateY(-2px)!important;animation:none!important}
+dialog#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li{transition:background-color .3s ease,box-shadow .3s ease!important}
+dialog#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li:hover{background:#fcfbfa!important;box-shadow:0 4px 12px #1e293b14!important}
+@keyframes premiumTitleShine{to{background-position:220% center}}
+@keyframes premiumCrownFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes premiumBorderGlow{from{box-shadow:0 25px 55px #0006,0 0 10px #c4a87c16}to{box-shadow:0 25px 55px #0006,0 0 32px #c4a87c66}}
+@keyframes premiumButtonPulse{0%,100%{box-shadow:0 0 0 0 #c4a87c66}65%{box-shadow:0 0 0 9px #c4a87c00}}
+@keyframes premiumButtonShine{0%,30%{transform:translateX(-120%)}75%,100%{transform:translateX(120%)}}
+@media(prefers-reduced-motion:reduce){dialog#plan507Details[open],dialog#plan507Details #plan507Title,dialog#plan507Details #plan507Continue,dialog#plan507Details #plan507Continue::after,dialog#plan507Details.premium-pro-selected #plan507Title::after{animation:none!important}}
+
 /* Authoritative 507 dialog styling after all homepage styles. */
 dialog#plan507Details{background:#f7f4ec!important;color:#182944!important;border:1px solid #a89b84!important;border-radius:12px!important;padding:clamp(22px,4vw,34px)!important;width:min(570px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 28px)!important}
 dialog#plan507Details #plan507Title,dialog#plan507Details #plan507Price{color:#182944!important}

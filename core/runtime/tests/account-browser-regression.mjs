@@ -33,12 +33,12 @@ try{
   await payPage.route('https://direcciones.lat/**',route=>{
     const path=new URL(route.request().url()).pathname;
     if(path==='/panel/payments/'+id)return route.fulfill({status:200,contentType:'text/html',body:fixtures.payment.html});
-    if(path==='/v1/user/requests/'+id+'/payment')return route.fulfill({status:200,json:{ok:true,quote:{amountCents:3999,orderId:null}}});
+    if(path==='/v1/user/requests/'+id+'/payment')return route.fulfill({status:200,json:{ok:true,quote:{amountCents:4999,orderId:null}}});
     return route.fulfill({status:404,body:''});
   });
   await payPage.goto('https://direcciones.lat/panel/payments/'+id);
   await payPage.locator('#checkout').waitFor({state:'visible'});
-  assert.equal(await payPage.locator('#quote').textContent(),'Importe: $39.99');
+  assert.equal(await payPage.locator('#quote').textContent(),'Importe: $49.99');
   assert.equal(await payPage.locator('btn-yappy').count(),1);
   assert.equal(await payPage.locator('.back-link').getAttribute('href'),'/panel');
   const backStyle=await payPage.locator('.back-link').evaluate(link=>({

@@ -467,9 +467,63 @@ body.latam .latam-footer-inner nav[aria-label="Información y contacto"] a[href^
 @media(hover:hover){#latamAccess :is(#latamEmailSubmit,#latamGoogleAccess):hover{transform:translateY(-2px);box-shadow:0 10px 24px #14284b26}}
 @media(prefers-reduced-motion:reduce){#latamAccess[open]{animation:none}#latamAccess :is(button,a){transition:none}}
 `;
+
+ const museumCardsCss=`
+/* Commercial cards only: same editorial museum design as Direcciones507. */
+#commercialWelcome .latam-plan-card{
+ isolation:isolate;position:relative;overflow:hidden;display:flex;flex-direction:column;
+ background:#f7f4ec!important;color:#182944!important;
+ border:1px solid #c8c1b2!important;border-radius:8px!important;
+ box-shadow:0 18px 42px rgba(15,29,50,.14)!important;
+ padding:32px 25px 26px!important;gap:14px!important;
+ font-family:Inter,system-ui,sans-serif!important;text-align:left!important;
+ transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s ease!important;
+}
+#commercialWelcome .latam-plan-card::before{
+ content:"";position:absolute;inset:0 0 auto;height:3px;pointer-events:none;
+ background:linear-gradient(90deg,transparent,#a38b61 38%,#d3b77f 50%,#a38b61 62%,transparent);
+ background-size:220% 100%;animation:latamMuseumLine 6s linear infinite;
+}
+#commercialWelcome .latam-plan-card::after{
+ content:"";position:absolute;right:23px;top:23px;bottom:23px;width:1px;
+ background:linear-gradient(180deg,transparent,#b8aa90 40%,transparent 72%);opacity:.48;pointer-events:none;
+}
+@keyframes latamMuseumLine{from{background-position:220% 0}to{background-position:-220% 0}}
+#commercialWelcome .latam-plan-card h3{
+ color:#182944!important;font-size:clamp(21px,2vw,25px)!important;
+ font-weight:850!important;letter-spacing:-.04em!important;line-height:1.17!important;
+ margin:0!important;
+}
+#commercialWelcome .latam-plan-card :is(p,.latam-plan-price,span,.plan-legal,.plan-legal a,a[href^="/legal/"]){
+ color:#4f5a66!important;line-height:1.65!important;
+}
+#commercialWelcome .latam-plan-card .latam-plan-price{
+ color:#182944!important;font-size:clamp(28px,3vw,40px)!important;
+ font-weight:850!important;letter-spacing:-.045em!important;
+}
+#commercialWelcome .latam-plan-card p{
+ font-size:13px!important;margin:0!important;
+ padding-top:16px;border-top:1px solid #cfc6b7;
+}
+#commercialWelcome .latam-plan-card .latam-plan-action{
+ display:flex!important;align-items:center;justify-content:center;
+ width:100%!important;min-height:49px!important;margin-top:auto!important;
+ background:#182944!important;color:#f7f4ec!important;
+ border-radius:4px!important;border:0!important;box-shadow:none!important;
+ font-weight:800!important;text-align:center!important;text-decoration:none!important;
+}
+#commercialWelcome .latam-plan-card[aria-disabled=true]{opacity:.7}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ #commercialWelcome .latam-plan-card:hover{
+ transform:translateY(-7px)!important;box-shadow:0 26px 52px rgba(15,29,50,.2)!important;
+ }
+}
+@media(max-width:700px){#commercialWelcome .latam-plan-card{padding:26px 20px 22px!important}}
+@media(prefers-reduced-motion:reduce){#commercialWelcome .latam-plan-card::before{animation:none;background-position:center}}
+`;
  return html.replace(/<footer class="account-footer">[\s\S]*?<\/footer>/,'').replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
- .replace('</style>',css+accessCss+homeCss+sharedVisualStyle+'</style>')
+ .replace('</style>',css+accessCss+homeCss+sharedVisualStyle+museumCardsCss+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
  .replace('<script>',notice+`<dialog id="latamPlanDetails" aria-labelledby="latamPlanDetailsTitle"><h2 id="latamPlanDetailsTitle"></h2><p id="latamPlanDetailsPrice"></p><p id="latamPlanDetailsCountry"></p><ul id="latamPlanDetailsFeatures"></ul><p id="latamPlanDetailsTerms"></p><p id="latamPlanReviewNotice" hidden>Importante: Tu solicitud será revisada por nuestro equipo. La aprobación y publicación pueden tardar hasta 48 horas después del envío. La activación no es automática. La solicitud puede ser rechazada.</p><div class="latam-plan-detail-actions"><button type="button" id="latamPlanDetailsBack">Regresar</button><button type="button" id="latamPlanDetailsContinue">Continuar con mi dirección</button></div></dialog>`+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><label id="latamRegistrationTerms" style="display:flex;gap:10px;color:#fff;font-size:14px;line-height:1.6"><input id="latamRegistrationTermsAccepted" type="checkbox" style="width:22px;height:22px;flex:none;accent-color:#3286ff"><span>${LEGAL_ACCEPTANCE_TEXT}</span></label><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><svg class="latam-google-logo" viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.88 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.9 23.9 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48Z"/></svg> Continuar con Google</a><div class="latam-access-legal-note"><span>Consulta nuestros documentos:</span><nav aria-label="Condiciones de cuenta">${legalLinks}</nav></div></dialog>`+'<script>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')

@@ -685,6 +685,19 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  #mainAppHeader .header-account-actions .btn-nav-action{width:100%;min-width:0;padding:12px 8px}
  #mainAppHeader #headerNavigation{order:3}
 }
+
+/* Plan detail window only: identical elongated editorial style on both portals. */
+#plan507Details{width:min(570px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 28px)!important;padding:clamp(22px,4vw,34px)!important;border:1px solid #a89b84!important;border-radius:12px!important;background:#f7f4ec!important;color:#182944!important;box-shadow:0 30px 90px #0008!important;color-scheme:light}
+#plan507Details::backdrop{background:rgba(4,15,29,.7);backdrop-filter:blur(3px)}
+#plan507Title{color:#182944!important;font-family:Inter,system-ui,sans-serif!important;font-weight:850!important;letter-spacing:-.035em}
+#plan507Price{color:#182944!important;font-size:clamp(27px,4vw,35px)!important;letter-spacing:-.04em}
+#plan507Features{gap:10px!important}
+#plan507Features li{background:#fffdf8!important;border:1px solid #d4cabb!important;border-left:3px solid #a58d60!important;border-radius:5px!important;color:#273953!important;line-height:1.55!important}
+#plan507Details > p{color:#536173!important}
+#plan507Close,#plan507Continue{border-radius:5px!important;box-shadow:none!important;font-family:Inter,system-ui,sans-serif!important}
+#plan507Close{background:#e7e0d4!important;color:#182944!important;border:1px solid #c8bca9!important}
+#plan507Continue{background:#182944!important;color:#f7f4ec!important}
+@media(max-width:440px){#plan507Details > div:last-child{grid-template-columns:1fr!important}}
 </style>
 
 
@@ -1034,6 +1047,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  dialog.showModal();dialog.scrollTop=0;
  }));
  document.getElementById('plan507Close').onclick=()=>dialog.close();
+ dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();});
 })();
 </script>
 

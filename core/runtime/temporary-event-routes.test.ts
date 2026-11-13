@@ -77,3 +77,17 @@ test('cross-site homepage navigation can open only the authenticated GET form',a
  assert.equal((await handleTemporaryEventRoutes(new Request('https://direcciones.lat/v1/user/temporary-events',{headers}),ctx))?.status,403);
  assert.equal((await handleTemporaryEventRoutes(new Request('https://direcciones.lat/panel/evento/nuevo',{method:'POST',headers}),ctx))?.status,405);
 });
+
+
+test('event checkout permits only the exact official Yappy transaction origins when enabled',async()=>{
+ const domains=['https://identitytoolkit.googleapis.com','https://securetoken.googleapis.com','https://firestore.googleapis.com'];
+ for(const enabled of [false,true]){
+  const response=await handleTemporaryEventRoutes(new Request('https://direcciones.lat/panel/evento/nuevo'),{...ctx,payment:enabled?{} as any:null});
+  assert.equal(response?.status,200);
+  const policy=response!.headers.get('content-security-policy')!;
+  const connect=policy.split(';').find(x=>x.trim().startsWith('connect-src'))!;
+  for(const domain of domains)assert.equal(connect.split(/\s+/).includes(domain),enabled);
+  assert.doesNotMatch(connect,/https:\/\/\*\.googleapis\.com|(?:^|\s)\*(?:$|\s)/);
+  const html=await response!.text();assert.equal(html.includes('web-component-btn-yappy.js'),enabled);
+ }
+});

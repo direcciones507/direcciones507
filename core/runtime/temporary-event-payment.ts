@@ -32,6 +32,7 @@ export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,pr
    return sql.begin(async tx=>{
     const rows=await tx.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE provider_order_id=$1 FOR UPDATE',[proof.orderId]);
     const p=rows[0];if(!p)throw Error('PAYMENT_NOT_FOUND');
+    if(trialEventId&&p.event_id!==trialEventId)throw Error('INVALID_PAYMENT_ORDER');
     // V2 signs order/status/domain, not amount: bind receipt to the immutable server quote.
     if(![799,1299].includes(p.amount_cents)||p.currency!=='USD'||p.environment!==config.environment||!p.provider_reference||p.provider_reference==='INITIALIZING')throw Error('INVALID_PAYMENT_ORDER');
     if(p.status==='PAID')return {ok:true,unchanged:true};

@@ -698,6 +698,23 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 #plan507Close{background:#e7e0d4!important;color:#182944!important;border:1px solid #c8bca9!important}
 #plan507Continue{background:#182944!important;color:#f7f4ec!important}
 @media(max-width:440px){#plan507Details > div:last-child{grid-template-columns:1fr!important}}
+
+/* Motion Graphics Pro: scoped exclusively to the plan details window. */
+#plan507Details{isolation:isolate;overflow-x:hidden;animation:planMotionEntrance .42s cubic-bezier(.2,.75,.25,1) both}
+#plan507Details::before{content:"";display:block;height:3px;margin:-8px 0 24px;background:linear-gradient(90deg,transparent,#9a8666,#182944,#9a8666,transparent);background-size:220% 100%;animation:planMotionSweep 5s linear infinite;pointer-events:none}
+#plan507Details :is(h2,h3){animation:planMotionRise .5s .08s both}
+#plan507Details :is(#plan507Price,#latamPlanDetailsPrice){animation:planMotionRise .5s .16s both}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:planMotionRise .45s both}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li:nth-child(1){animation-delay:.12s}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li:nth-child(2){animation-delay:.18s}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li:nth-child(3){animation-delay:.24s}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li:nth-child(4){animation-delay:.30s}
+#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li:nth-child(n+5){animation-delay:.36s}
+#plan507Details :is(button,a):focus-visible{outline:3px solid #8d795a!important;outline-offset:3px}
+@keyframes planMotionSweep{from{background-position:220% 0}to{background-position:-220% 0}}
+@keyframes planMotionEntrance{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes planMotionRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){#plan507Details,#plan507Details::before,#plan507Details :is(h2,h3,#plan507Price,#latamPlanDetailsPrice),#plan507Details :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important}}
 </style>
 
 

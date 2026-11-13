@@ -666,7 +666,7 @@ function showLatamPlanDetails(e,type,plan){
  const item=latamPlanCatalog[detailsKey],country=document.getElementById('commercialCountry');
  latamSelectedPlan={type,plan};
  document.getElementById('latamPlanDetailsTitle').textContent=item.title;
- latamPlanDialog.classList.toggle('premium-pro-selected',detailsKey==='PREMIUM_PRO');
+ latamPlanDialog.classList.toggle('premium-pro-selected',detailsKey==='BUSINESS_PREMIUM_PRO');
  document.getElementById('latamPlanDetailsPrice').textContent=item.price+(item.price==='Gratis'?'':' · Precio de referencia, confirmar vigencia');
  document.getElementById('latamPlanDetailsCountry').textContent='País seleccionado: '+country.options[country.selectedIndex].textContent;
  document.getElementById('latamPlanDetailsFeatures').replaceChildren(...item.features.map(feature=>{const li=document.createElement('li');li.textContent=feature;return li;}));

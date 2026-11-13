@@ -1,8 +1,8 @@
 import {test,expect} from 'bun:test';
 import {createPayPalSandboxProvider,paypalSandboxConfiguration,PAYPAL_PAYMENTS_ENABLED} from '../paypal-provider';
 const config={environment:'test' as const,clientId:'fixture-client',clientSecret:'fixture-secret',merchantId:'FIXTUREMERCHANT',webhookId:'fixture-webhook'};
-const intent={id:'11111111-1111-4111-8111-111111111111',amountCents:1999,currency:'USD' as const,provider_reference:null as string|null};
-const order=(status='COMPLETED',captureStatus='COMPLETED')=>({id:'FIXTUREORDER123',status,purchase_units:[{custom_id:intent.id,payee:{merchant_id:config.merchantId},amount:{currency_code:'USD',value:'19.99'},payments:{captures:[{id:'FIXTURECAPTURE123',status:captureStatus,amount:{currency_code:'USD',value:'19.99'},final_capture:true}]}}]});
+const intent={id:'11111111-1111-4111-8111-111111111111',amountCents:2999,currency:'USD' as const,provider_reference:null as string|null};
+const order=(status='COMPLETED',captureStatus='COMPLETED')=>({id:'FIXTUREORDER123',status,purchase_units:[{custom_id:intent.id,payee:{merchant_id:config.merchantId},amount:{currency_code:'USD',value:'29.99'},payments:{captures:[{id:'FIXTURECAPTURE123',status:captureStatus,amount:{currency_code:'USD',value:'29.99'},final_capture:true}]}}]});
 test('sandbox configuration stays disabled by default; production config refused',()=>{
  expect(PAYPAL_PAYMENTS_ENABLED).toBe(false);expect(paypalSandboxConfiguration({})).toBeNull();
  const env={AD507_PAYPAL_SANDBOX_ENABLED:'true',AD507_PAYPAL_ENVIRONMENT:'test',AD507_PAYPAL_CLIENT_ID:config.clientId,AD507_PAYPAL_CLIENT_SECRET:config.clientSecret,AD507_PAYPAL_MERCHANT_ID:config.merchantId,AD507_PAYPAL_WEBHOOK_ID:config.webhookId};
@@ -21,7 +21,7 @@ test('server create/capture verifies identity, merchant, USD total; durable idem
  await provider.confirmedCapture({...intent,provider_reference:'FIXTUREORDER123'},true);
  expect(calls.filter(c=>c.url.endsWith('/capture'))).toHaveLength(1);
  expect(calls.every(c=>c.url.startsWith('https://api-m.sandbox.paypal.com/'))).toBe(true);
- const create=calls.find(c=>c.url.endsWith('/v2/checkout/orders'));expect(JSON.parse(create.body).purchase_units[0].amount.value).toBe('19.99');
+ const create=calls.find(c=>c.url.endsWith('/v2/checkout/orders'));expect(JSON.parse(create.body).purchase_units[0].amount.value).toBe('29.99');
  expect(create.headers['PayPal-Request-Id']).toBe('C'+intent.id.replaceAll('-',''));
  expect(calls.find(c=>c.url.endsWith('/capture')).headers['PayPal-Request-Id']).toBe('P'+intent.id.replaceAll('-',''));
 });

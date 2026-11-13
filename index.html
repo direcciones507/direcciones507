@@ -1067,7 +1067,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  const card=button.closest('.plan-pricing-card');
  title.textContent=card.querySelector('h4').textContent;
  price.textContent=card.querySelector('.plan-numeric-val').textContent;
- list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent='✓ '+li.textContent.trim();item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
+ list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\\s*/, '');item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';
  document.getElementById('plan507ReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(button.dataset['507Plan']);
  dialog.scrollTop=0;

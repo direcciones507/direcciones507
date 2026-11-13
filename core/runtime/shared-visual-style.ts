@@ -57,4 +57,44 @@ body .address-card .analytics-actions strong{font-size:13px;text-align:right}
 body .address-card .analytics-summary select{background:#fff;color:#142c4b;border:1px solid #819bb9;border-radius:6px;padding:8px;max-width:100%;margin:4px 0 8px}
 body .address-card .analytics-daily-chart li>div{height:9px;background:#dbe6f4;border-radius:4px;overflow:hidden;margin:3px 0 6px}
 body .address-card .analytics-daily-chart span{display:block;height:100%;background:#1769aa}
+
+/* Unified commercial cards: presentation only, no workflow or pricing changes. */
+body :is(.address-card,.latam-plan-card,.free-address-card,.section-card){
+ border-radius:20px;
+ border:1px solid rgba(142,169,197,.35);
+ box-shadow:0 12px 34px rgba(12,37,70,.12);
+ transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s ease,border-color .3s ease;
+ min-width:0;
+ overflow:hidden;
+}
+body :is(.address-card,.latam-plan-card,.free-address-card,.section-card) :is(h2,h3,.address-name){
+ line-height:1.2;letter-spacing:-.025em;overflow-wrap:anywhere;
+}
+body :is(.address-card,.latam-plan-card,.free-address-card,.section-card) img{
+ max-width:100%;height:auto;object-fit:cover;border-radius:14px;
+}
+body :is(.address-card,.latam-plan-card,.free-address-card,.section-card) :is(a.button,a.btn,button,.latam-cta,.latam-secondary){
+ min-height:44px;border-radius:12px;font-weight:750;
+}
+body .address-card .address-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+body .address-card .address-kind,body .address-card .address-plan{
+ display:inline-flex;align-items:center;max-width:100%;font-size:12px;font-weight:800;
+ letter-spacing:.03em;line-height:1.35;
+}
+body .address-card .address-code{white-space:normal;overflow-wrap:anywhere}
+body .address-card .address-actions{display:flex;flex-wrap:wrap;gap:10px}
+body .address-card .address-actions>*{flex:1 1 145px}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ body :is(.address-card,.latam-plan-card,.free-address-card,.section-card):hover{
+  transform:translateY(-5px);box-shadow:0 20px 44px rgba(12,37,70,.17);border-color:rgba(82,136,190,.55)
+ }
+}
+@media(max-width:640px){
+ body :is(.address-card,.latam-plan-card,.free-address-card,.section-card){border-radius:17px}
+ body .address-card .address-actions>*{flex-basis:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ body :is(.address-card,.latam-plan-card,.free-address-card,.section-card){transition:none!important}
+}
+
 `;

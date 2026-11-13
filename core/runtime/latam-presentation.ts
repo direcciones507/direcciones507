@@ -362,6 +362,25 @@ function prepareLatamRequest(e,type,plan){
 #latamPlanDetails.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:planMotionRise .65s both!important}
 @media(prefers-reduced-motion:reduce){#latamPlanDetails.plan-motion-active,#latamPlanDetails.plan-motion-active::before,#latamPlanDetails.plan-motion-active :is(h2,h3,#plan507Price,#latamPlanDetailsPrice),#latamPlanDetails.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important}}
 `;
+ const premiumReferenceCss=`
+/* Owner-supplied premium card reference: staggered slide-in, no spinning emblem. */
+#latamPlanDetails[open].plan-motion-active{animation:premiumCardEnter .55s cubic-bezier(.175,.885,.32,1.15) both!important}
+#latamPlanDetails.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{
+ opacity:0;transform:translateX(-18px);
+ animation:premiumFeatureEnter .5s ease forwards!important;
+ animation-delay:calc(.12s + (var(--premium-step,0) * .11s))!important;
+ transition:background-color .25s ease,box-shadow .25s ease,transform .25s ease!important;
+}
+#latamPlanDetails :is(#plan507Features,#latamPlanDetailsFeatures) li:hover{
+ background:#fcfbfa!important;box-shadow:0 4px 12px #152b4515!important;
+ border-left-color:#c4a87c!important;
+}
+@keyframes premiumCardEnter{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes premiumFeatureEnter{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){
+ #latamPlanDetails[open].plan-motion-active,#latamPlanDetails.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important;opacity:1!important;transform:none!important}
+}
+`;
  const accessCss=`
 #latamPlanDetails{width:min(570px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(18px,4vw,30px);border:1px solid #d5e5f5;border-radius:20px;background:#fff;color:#16324d;box-shadow:0 24px 75px #0009;color-scheme:light}
 #latamPlanDetails::backdrop{background:#031326bb}
@@ -514,7 +533,7 @@ body.latam .latam-footer-inner nav[aria-label="Información y contacto"] a[href^
 `;
  return html.replace(/<footer class="account-footer">[\s\S]*?<\/footer>/,'').replaceAll('Direcciones507 · Panamá','Direcciones LATAM · Panamá').replace('<body>','<body class="latam">')
  .replace(/<header>[\s\S]*?<\/header>/,header)
- .replace('</style>',css+accessCss+homeCss+sharedVisualStyle+dialogParityCss+motionProDialogCss+motionRepairCss+'</style>')
+ .replace('</style>',css+accessCss+homeCss+sharedVisualStyle+dialogParityCss+motionProDialogCss+motionRepairCss+premiumReferenceCss+'</style>')
  .replace(/<footer class="card"[^>]*>[\s\S]*?<\/footer>/,footer)
  .replace('<script>',notice+`<dialog id="latamPlanDetails" aria-labelledby="latamPlanDetailsTitle"><h2 id="latamPlanDetailsTitle"></h2><p id="latamPlanDetailsPrice"></p><p id="latamPlanDetailsCountry"></p><ul id="latamPlanDetailsFeatures"></ul><p id="latamPlanDetailsTerms"></p><p id="latamPlanReviewNotice" hidden>Importante: Tu solicitud será revisada por nuestro equipo. La aprobación y publicación pueden tardar hasta 48 horas después del envío. La activación no es automática. La solicitud puede ser rechazada.</p><div class="latam-plan-detail-actions"><button type="button" id="latamPlanDetailsBack">Regresar</button><button type="button" id="latamPlanDetailsContinue">Continuar con mi dirección</button></div></dialog>`+`<dialog id="latamAccess" aria-label="Acceso a Direcciones LATAM"><form method="dialog"><button type="submit" aria-label="Cerrar acceso">Cerrar</button></form><h2>Accede a tu cuenta</h2><p id="latamAccessCountry"></p><label for="latamAccessEmail">Correo electrónico</label><input id="latamAccessEmail" type="email" required maxlength="320" autocomplete="email" placeholder="tu@correo.com"><label id="latamPasswordLabel" for="latamAccessPassword">Contraseña</label><div class="latam-password-row" id="latamPasswordRow"><input id="latamAccessPassword" type="password" autocomplete="current-password" placeholder="Contraseña" minlength="12"><button type="button" id="latamTogglePassword" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div><label id="latamRegistrationTerms" style="display:flex;gap:10px;color:#fff;font-size:14px;line-height:1.6"><input id="latamRegistrationTermsAccepted" type="checkbox" style="width:22px;height:22px;flex:none;accent-color:#3286ff"><span>${LEGAL_ACCEPTANCE_TEXT}</span></label><button type="button" id="latamEmailSubmit">Crear cuenta con correo</button><p id="latamPasswordNotice" role="status">Regístrate con tu correo o continúa con Google.</p><div class="latam-auth-links"><button type="button" id="latamHaveAccount">Ya tengo una cuenta</button><button type="button" id="latamCreateAccount">Crear cuenta</button><button type="button" id="latamForgotPassword">¿Olvidaste tu contraseña?</button></div><div class="latam-auth-divider">o</div><a id="latamGoogleAccess" class="button" href="/auth/google/login"><svg class="latam-google-logo" viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6C44.4 38.03 46.98 31.88 46.98 24.55Z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.9 23.9 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19Z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48Z"/></svg> Continuar con Google</a><div class="latam-access-legal-note"><span>Consulta nuestros documentos:</span><nav aria-label="Condiciones de cuenta">${legalLinks}</nav></div></dialog>`+'<script>')
  .replace(/<section id="login" class="card hidden">[\s\S]*?<\/section>/,'<section id="login" class="hidden" hidden><button id="google" hidden>Continuar con Google</button></section>')
@@ -611,6 +630,7 @@ function showLatamPlanDetails(e,type,plan){
  document.getElementById('latamPlanReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(detailsKey);
  latamPlanDialog.classList.remove('plan-motion-active');
  void latamPlanDialog.offsetWidth;
+ document.querySelectorAll('#latamPlanDetailsFeatures li').forEach((li,i)=>li.style.setProperty('--premium-step',String(Math.min(i,12))));
  latamPlanDialog.showModal();latamPlanDialog.classList.add('plan-motion-active');latamPlanDialog.scrollTop=0;requestAnimationFrame(()=>{latamPlanDialog.scrollTop=0;});
 }
 document.getElementById('latamPlanDetailsBack').onclick=()=>latamPlanDialog.close();

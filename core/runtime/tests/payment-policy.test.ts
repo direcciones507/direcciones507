@@ -7,9 +7,9 @@ function notification(status:string='E'){
   q.set('hash',createHmac('sha256','isolated-signing-key').update(q.get('orderId')!+status+config.domain).digest('hex'));return q;
 }
 test('server prices use integer cents and unknown or inherited keys fail closed',()=>{
-  expect(['RESIDENTIAL','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RENEWAL','CORPORATE_PRO'].map(paymentAmount)).toEqual([1299,0,1999,3999,1299,3999]);
+  expect(['RESIDENTIAL','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RENEWAL','CORPORATE_PRO'].map(paymentAmount)).toEqual([1499,0,2999,4999,1499,4999]);
   for(const plan of ['PLACE','toString','__proto__','premium'])expect(()=>paymentAmount(plan)).toThrow('INVALID_PAYMENT_PLAN');
-  expect(money(1999)).toBe('19.99');expect(()=>money(1.99)).toThrow();expect(YAPPY_PAYMENTS_ENABLED).toBe(false);
+  expect(money(2999)).toBe('29.99';expect(()=>money(1.99)).toThrow();expect(YAPPY_PAYMENTS_ENABLED).toBe(false);
 });
 test('official IPN states authenticate the exact merchant domain and reject browser success',()=>{
   for(const [status,expected]of [['E','PAID'],['R','FAILED'],['X','FAILED'],['C','CANCELLED']])expect(verifyYappyIPN(notification(status),config).status).toBe(expected);
@@ -25,12 +25,12 @@ test('provider adapter isolates test traffic and calculates its amount on the se
   const {createYappyProvider}=await import('../yappy-provider');const calls:any[]=[];
   const http=(async(url:any,init:any)=>{calls.push({url:String(url),body:JSON.parse(init.body),headers:init.headers});return Response.json(calls.length===1?{body:{token:'private-fixture',epochTime:123}}:{body:{transactionId:'fixture-transaction',token:'button-fixture',documentName:'fixture-document'}});}) as typeof fetch;
   const provider=createYappyProvider(config,http);
-  expect((await provider.createOrder({providerOrderId:'abcdef12345678',amountCents:1999},'60000000')).transactionId).toBe('fixture-transaction');
+  expect((await provider.createOrder({providerOrderId:'abcdef12345678',amountCents:2999},'60000000')).transactionId).toBe('fixture-transaction');
   expect(calls.every(c=>c.url.startsWith('https://api-comecom-uat.yappycloud.com/'))).toBe(true);
-  expect(calls[1].body.total).toBe('19.99');expect(calls[1].headers.authorization).toBe('private-fixture');
+  expect(calls[1].body.total).toBe('29.99');expect(calls[1].headers.authorization).toBe('private-fixture');
   await expect(provider.createOrder({providerOrderId:'x',amountCents:0},'60000000')).rejects.toThrow('INVALID_YAPPY_ORDER');
   const failing=createYappyProvider(config,(async()=>{throw Error('secret upstream error');}) as typeof fetch);
-  await expect(failing.createOrder({providerOrderId:'x',amountCents:1999},'60000000')).rejects.toThrow('YAPPY_PROVIDER_UNCONFIRMED');
+  await expect(failing.createOrder({providerOrderId:'x',amountCents:2999},'60000000')).rejects.toThrow('YAPPY_PROVIDER_UNCONFIRMED');
 });
 
 

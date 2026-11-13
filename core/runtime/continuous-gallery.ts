@@ -14,7 +14,7 @@ export const continuousGalleryScript=`(()=>{
  function show(n){index=(n+photos.length)%photos.length;image.src=photos[index].src;image.alt=photos[index].alt;count.textContent=(index+1)+' / '+photos.length;prev.hidden=next.hidden=photos.length<2;image.classList.remove('cg-change');void image.offsetWidth;image.classList.add('cg-change');}
  function close(){if(!dialog.open)return;dialog.close();document.documentElement.style.overflow=oldHtml;document.body.style.overflow=oldBody;image.removeAttribute('src');photos=[];touch=null;opener?.focus?.({preventScroll:true});}
  document.addEventListener('click',event=>{
-  const target=event.target;if(!(target instanceof Element)||dialog.contains(target))return;
+  const target=event.target;if(!dialog.isConnected||!(target instanceof Element)||dialog.contains(target))return;
   const photo=target.closest('#galeriaFotos img,#logoNegocio,.photo-stage .photos img'),advance=target.closest('.photo-stage .photo-next');if(!photo&&!advance)return;
   const stage=(photo||advance).closest('.photo-stage');let group=stage?[...stage.querySelectorAll('.photos img')]:photo.id==='logoNegocio'?[photo]:[...document.querySelectorAll('#galeriaFotos img')];
   const selected=advance?group[Math.max(0,Number(stage.querySelector('.photo-counter')?.textContent?.split('/')[0]||1)-1)]:photo;

@@ -30,6 +30,12 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   expect(await page.getByText('Vista previa privada · Aún sin publicar').count()).toBe(1);expect(await page.locator('.photos img').count()).toBe(3);
   await page.waitForFunction(()=>[...document.images].every(i=>i.complete&&i.naturalWidth>0));expect(await page.content()).not.toContain('PRIVATE_NAME');
   expect(await page.locator('.photo-progress span[aria-current="true"]').count()).toBe(1);
+  expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).toBe('rgb(28, 49, 68)');
+  expect(await page.evaluate(()=>document.querySelector('main')!.getBoundingClientRect().width)).toBeLessThanOrEqual(520);
+  await page.getByRole('button',{name:'Ver código QR',exact:true}).click();
+  expect(await page.locator('.qr-modal').isVisible()).toBe(true);
+  await page.getByRole('button',{name:'Cerrar código QR'}).click();
+  expect(await page.locator('.qr-modal').isVisible()).toBe(false);
   expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
   await page.locator('.photo-next').tap();expect(await page.locator('.photo-counter').textContent()).toBe('2 / 3');
   await page.locator('.photo-next').tap();expect(await page.locator('.photo-counter').textContent()).toBe('3 / 3');

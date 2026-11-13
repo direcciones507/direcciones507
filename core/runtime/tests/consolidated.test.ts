@@ -702,6 +702,7 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
       const draft=await db.unsafe("INSERT INTO ad507.addresses(code,address_type,status,name,source,request_key_hash,request_data) VALUES(NULL,$1,'DRAFT','Unpaid Yappy quote fixture','USER_REQUEST',$2,$3::jsonb) RETURNING id",[type,crypto.randomUUID(),db.json({plan,workflow:'PAYMENT_PENDING'})]);
       await db.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[draft[0].id,clientId]);
       expect(await repo.quote(clientId,draft[0].id)).toMatchObject({plan,amountCents:amount,orderId:null});
+      if(plan==='RESIDENTIAL'){expect((await repo.quote(clientId,draft[0].id)).paymentAvailable).toBe(false);await expect(repo.prepare(clientId,draft[0].id,'residential-disabled-001')).rejects.toThrow('PAYMENT_PRODUCT_NOT_AVAILABLE');expect((await db.unsafe('SELECT id FROM ad507.orders WHERE address_id=$1::uuid',[draft[0].id])).length).toBe(0);}
     }
     const [a,b]=await Promise.all([repo.prepare(clientId,address,'payment-test-key-0001'),repo.prepare(clientId,address,'payment-test-key-0001')]);
     expect(a.order.id).toBe(b.order.id);expect(a.order.amount_cents).toBe(2999);
@@ -1452,4 +1453,20 @@ test('PayPal remains sandbox-only and can consume the same installment and renew
  const partial=(await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService;expect(partial.fullyPaid).toBe(false);expect(partial.endsAt).toBe(original.endsAt);
  await expect(repo.prepareRenewal(clientId,id,'unpaid-renew-'+stamp)).rejects.toThrow('PAYMENT_INSTALLMENT_PENDING');
 
+});
+
+test('real Core publisher activates a confirmed Premium Pro without ADMIN and leaves unpaid drafts private',async()=>{
+ const {createNewAddressPublication,newPublicAddress}=await import('../new-address-publication'),{createRequestRepository}=await import('../request-repository'),{createPaymentRepository}=await import('../payment-repository'),{createHmac}=await import('node:crypto');
+ const stamp=crypto.randomUUID(),owner=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[owner,'real-pro-'+stamp+'@example.test']);await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const},png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
+ const requests=createRequestRepository(sql,{canonical:createNewAddressPublication(sql,{namespaceExclusive:true}),r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
+ const request=await requests.submit(owner,'real-pro-'+stamp,{type:'BUSINESS',plan:'BUSINESS_PREMIUM_PRO',name:'Real Pro '+stamp,reference:'Synthetic only',latitude:8.49,longitude:-80.49},[{role:'logo',mime:'image/png',bytes:png}]);
+ // Reserve a synthetic code inside the isolated fixture; the actual publication
+ // adapter and payment/activation transactions below are not mocked.
+ const code='AD507-N'+String(80000000+Math.floor(Math.random()*10000000));await sql.unsafe('UPDATE ad507.addresses SET code=$2 WHERE id=$1::uuid',[request.id,code]);
+ expect(await newPublicAddress(sql,code,origin)).toBeNull();await expect(requests.activatePaid(request.id)).rejects.toThrow('PAYMENT_CONFIRMATION_REQUIRED');
+ const config={environment:'test' as const,merchantId:'real-pro',domain:origin,ipnUrl:origin+'/ipn',secret:Buffer.from('real-pro-fixture.secret').toString('base64')},payments=createPaymentRepository(sql,config,{commercialEnabled:true,onVerifiedPayment:id=>requests.activatePaid(id)});
+ const intent=await payments.prepare(owner,request.id,'real-pro-payment-'+stamp);expect(intent.order.amount_cents).toBe(4999);await payments.registerProviderOrder(intent.order.id,'real-pro-reference-'+stamp);
+ const proof=new URLSearchParams({orderId:intent.order.provider_order_id,status:'E',domain:origin,hash:createHmac('sha256','real-pro-fixture').update(intent.order.provider_order_id+'E'+origin).digest('hex')});
+ await payments.confirm(proof);await payments.confirm(proof);const active=await requests.read(owner,request.id) as any;expect(active.status).toBe('ACTIVE');expect(active.review).toBeNull();expect(active.extras.annualService.startsAt).toBeTruthy();expect((await newPublicAddress(sql,code,origin))?.plan?.code).toBe('BUSINESS_PREMIUM_PRO');
 });

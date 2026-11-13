@@ -45,7 +45,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId);
         if(row.request_data?.migration||!(row.status==='PENDING_REVIEW'||row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING'))throw Error('INVALID_PAYMENT_REQUEST');
-        const plan=row.request_data?.plan,q=commercialQuote(plan,mode),amount=q.amountCents;if(!options.commercialEnabled&&mode!=='ANNUAL')throw Error('PAYMENT_MODALITY_NOT_ENABLED');
+        const plan=row.request_data?.plan,q=commercialQuote(plan,mode),amount=q.amountCents;if(plan==='RESIDENTIAL')throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');if(!options.commercialEnabled&&mode!=='ANNUAL')throw Error('PAYMENT_MODALITY_NOT_ENABLED');
         if(amount===0)return {required:false,amountCents:0};
         const operation=createHash('sha256').update('paypal:test:'+userId+':'+addressId+':'+key).digest('hex');
         const previous=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='PAYPAL' AND operation_key=$1",[operation]);
@@ -120,7 +120,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         const plan=row.request_data.plan,q=commercialQuote(plan,mode);
         const orders=await tx.unsafe("SELECT * FROM ad507.orders WHERE address_id=$1::uuid AND user_id=$2::uuid AND provider='YAPPY' AND payment_environment=$3 ORDER BY created_at DESC LIMIT 1",[addressId,userId,config.environment]);
         const saved=orders.length&&options.commercialEnabled?await tx.unsafe('SELECT quote FROM ad507.commercial_payment_terms WHERE order_id=$1::uuid',[orders[0].id]):[];
-        return {...(saved[0]?.quote??q),addressId,code:row.code,modalitiesEnabled:!!options.commercialEnabled,amountCents:orders.length&&await validOrder(tx,orders[0])?orders[0].amount_cents:q.amountCents,orderId:orders[0]?.id??null};
+        return {...(saved[0]?.quote??q),addressId,code:row.code,modalitiesEnabled:!!options.commercialEnabled,paymentAvailable:plan!=='RESIDENTIAL',amountCents:orders.length&&await validOrder(tx,orders[0])?orders[0].amount_cents:q.amountCents,orderId:orders[0]?.id??null};
       });
     },
     // Backend adapter hook only; never expose this method directly to a client.
@@ -137,7 +137,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         const row=await own(tx,userId,addressId);
         if(!isPayableClientRequest(row))throw Error('INVALID_PAYMENT_REQUEST');
         if(!options.commercialEnabled&&mode!=='ANNUAL')throw Error('PAYMENT_MODALITY_NOT_ENABLED');
-        const plan=row.request_data.plan,q=commercialQuote(plan,mode),amount=q.amountCents;
+        const plan=row.request_data.plan,q=commercialQuote(plan,mode),amount=q.amountCents;if(plan==='RESIDENTIAL')throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
         const operation=createHash('sha256').update(config.environment+':'+userId+':'+addressId+':'+key).digest('hex');
         const existing=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='YAPPY' AND operation_key=$1",[operation]);
         if(existing.length){const p=existing[0];if(p.payment_plan!==plan||!await validOrder(tx,p))throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:p};}

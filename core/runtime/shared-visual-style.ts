@@ -58,6 +58,20 @@ body .address-card .analytics-summary select{background:#fff;color:#142c4b;borde
 body .address-card .analytics-daily-chart li>div{height:9px;background:#dbe6f4;border-radius:4px;overflow:hidden;margin:3px 0 6px}
 body .address-card .analytics-daily-chart span{display:block;height:100%;background:#1769aa}
 
+/* Direcciones507 identity: Inter typography, midnight canvas and restrained blue glow. */
+body :is(.address-card,.latam-plan-card,.free-address-card,.section-card){
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+ letter-spacing:-.01em;
+ border-color:rgba(31,111,255,.25);
+}
+body :is(.address-card,.latam-plan-card,.free-address-card,.section-card) :is(h2,h3,.address-name){
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+ font-weight:850;letter-spacing:-.035em;
+}
+body :is(.address-card,.latam-plan-card,.free-address-card,.section-card) :is(a.button,a.btn,button,.latam-cta,.latam-secondary):focus-visible{
+ outline:3px solid #1f6fff;outline-offset:3px;
+}
+
 /* Unified commercial cards: presentation only, no workflow or pricing changes. */
 body :is(.address-card,.latam-plan-card,.free-address-card,.section-card){
  border-radius:20px;

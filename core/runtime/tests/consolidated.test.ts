@@ -1434,7 +1434,7 @@ test('PayPal remains sandbox-only and can consume the same installment and renew
  const stamp=crypto.randomUUID(),id=crypto.randomUUID();const plan=(await sql.unsafe("SELECT id FROM ad507.plans WHERE code='BUSINESS_PREMIUM_PRO'"))[0].id;
  await sql.unsafe("INSERT INTO ad507.addresses(id,address_type,status,name,source,request_key_hash,request_data,country_code,plan_id) VALUES($1::uuid,'BUSINESS','PENDING_REVIEW','PayPal commercial fixture','USER_REQUEST',$2,$3::jsonb,'PA',$4::uuid)",[id,stamp,sql.json({countryCode:'PA',plan:'BUSINESS_PREMIUM_PRO'}),plan]);
  await sql.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[id,clientId]);
- const repo=createPaymentRepository(sql,{provider:'PAYPAL',environment:'test'},{commercialEnabled:true});let count=0;const provider={createOrder:async()=>({providerOrderId:'PAYPALCOMMERCIAL'+(++count)}),confirmedCapture:async()=>({status:'PAID',captureId:'CAPTURECOMMERCIAL'+count})} as any;
+ const repo=createPaymentRepository(sql,{provider:'PAYPAL',environment:'test'},{commercialEnabled:true});let count=0,refunded=false;const provider={createOrder:async()=>({providerOrderId:'PAYPALCOMMERCIAL'+(++count)}),confirmedCapture:async()=>({status:refunded?'REFUNDED':'PAID',captureId:'CAPTURECOMMERCIAL'+count})} as any;
  const initial=await repo.preparePayPal(clientId,id,'paypal-commercial-'+stamp,'INSTALLMENTS');expect(initial.order.amount_cents).toBe(2750);expect(initial.order.provider).toBe('PAYPAL');
  await repo.initializePayPal(clientId,initial.order.id,provider);await repo.confirmPayPal(clientId,initial.order.id,provider);
  await sql.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt='synthetic',code=$2 WHERE id=$1::uuid",[id,'AD507-N'+String(80000000+Math.floor(Math.random()*10000000))]);
@@ -1446,4 +1446,10 @@ test('PayPal remains sandbox-only and can consume the same installment and renew
  const renew=await repo.prepareRenewal(clientId,id,'paypal-renewal-'+stamp);expect(renew.order.provider).toBe('PAYPAL');expect(renew.order.amount_cents).toBe(4999);
  await repo.initializePayPal(clientId,renew.order.id,provider);await repo.confirmPayPal(clientId,renew.order.id,provider);await repo.confirmPayPal(clientId,renew.order.id,provider);
  const updated=(await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService;expect(Date.parse(updated.endsAt)).toBeGreaterThan(Date.parse(original.endsAt));expect(count).toBe(3);
+ refunded=true;await repo.confirmPayPal(clientId,renew.order.id,provider);
+ expect((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService.endsAt).toBe(original.endsAt);
+ await repo.confirmPayPal(clientId,second.order.id,provider);
+ const partial=(await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService;expect(partial.fullyPaid).toBe(false);expect(partial.endsAt).toBe(original.endsAt);
+ await expect(repo.prepareRenewal(clientId,id,'unpaid-renew-'+stamp)).rejects.toThrow('PAYMENT_INSTALLMENT_PENDING');
+
 });

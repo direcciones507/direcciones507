@@ -1,6 +1,6 @@
 import {createAdvertisingRepository,confirmPlaceAdvertising} from './place-advertising';
 import {commercialQuote} from './commercial-policy';
-import {ANNUAL_POLICY,annualPlans,applyAnnualRenewal} from './annual-service';
+import {ANNUAL_POLICY,annualPlans,applyAnnualRenewal,applyCommercialRefund} from './annual-service';
 import { assertCountryCommerce } from './country-configuration';
 import type { createPayPalSandboxProvider } from './paypal-provider';
 import type { Sql } from 'postgres';
@@ -94,6 +94,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         if(proof.status==='REFUNDED'&&current.status!=='PAID')throw Error('INVALID_PAYMENT_STATE');
         await tx.unsafe("UPDATE ad507.orders SET status=$2,confirmed_at=CASE WHEN $2='PAID' THEN now() ELSE confirmed_at END,updated_at=now() WHERE id=$1::uuid",[orderId,proof.status]);
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','PAYPAL_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[orderId,tx.json({status:current.status}),tx.json({status:proof.status,captureId:proof.captureId})]);
+        if(proof.status==='REFUNDED'&&options.commercialEnabled)await applyCommercialRefund(tx,{...current,status:'REFUNDED'});
         if(proof.status==='PAID'){const paid={...current,status:'PAID',confirmed_at:new Date().toISOString()};await applyAnnualRenewal(tx,paid);await confirmPlaceAdvertising(tx,paid);}
         return {id:orderId,status:proof.status,unchanged:false};
       });
@@ -177,6 +178,8 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       requireCommercial();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId),s=row.request_data?.annualService;
         if(row.status!=='ACTIVE'||!row.publication_receipt||row.request_data?.migration||s?.policy!==ANNUAL_POLICY||!s.endsAt||!annualPlans.includes(s.plan)||s.plan!==row.request_data.plan)throw Error('INVALID_PAYMENT_REQUEST');
+        if(s.paymentHold&&Date.parse(s.endsAt)>Date.now())throw Error('PAYMENT_RECONCILIATION_REQUIRED');
+        if(s.mode==='INSTALLMENTS'&&!s.fullyPaid&&Date.parse(s.endsAt)>Date.now())throw Error('PAYMENT_INSTALLMENT_PENDING');
         const orders=s.pendingRenewalOrderId?await tx.unsafe("SELECT id,amount_cents FROM ad507.orders WHERE id=$1::uuid AND address_id=$2::uuid AND payment_environment=$3",[s.pendingRenewalOrderId,addressId,config.environment]):[];
         return {addressId,plan:s.plan,amountCents:orders[0]?.amount_cents??paymentAmount(s.plan),currency:'USD',orderId:orders[0]?.id??null,endsAt:s.endsAt,renewal:true};
       });
@@ -186,6 +189,8 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId),s=row.request_data?.annualService;
         if(row.status!=='ACTIVE'||!row.publication_receipt||row.request_data?.migration||s?.policy!==ANNUAL_POLICY||!s.endsAt||!annualPlans.includes(s.plan)||s.plan!==row.request_data.plan)throw Error('INVALID_PAYMENT_REQUEST');
+        if(s.paymentHold&&Date.parse(s.endsAt)>Date.now())throw Error('PAYMENT_RECONCILIATION_REQUIRED');
+        if(s.mode==='INSTALLMENTS'&&!s.fullyPaid&&Date.parse(s.endsAt)>Date.now())throw Error('PAYMENT_INSTALLMENT_PENDING');
         const operation=createHash('sha256').update('renew:'+config.environment+':'+userId+':'+addressId+':'+key).digest('hex');
         const existing=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider=$2 AND operation_key=$1",[operation,paypal?'PAYPAL':'YAPPY']);
         if(existing.length)return {required:true,order:existing[0]};
@@ -193,7 +198,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         // browser/key must reuse/reconcile the original intent, never create a charge.
         if(s.pendingRenewalOrderId||s.renewalForEnd===s.endsAt)throw Error('PAYMENT_ALREADY_EXISTS');
         const orders=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,$8,$4,$5,$6,$7) RETURNING *",[userId,addressId,paymentAmount(s.plan),s.plan,config.environment,randomBytes(7).toString('hex'),operation,paypal?'PAYPAL':'YAPPY']);
-        await tx.unsafe("INSERT INTO ad507.commercial_payment_terms(order_id,address_id,payment_environment,purpose,cycle,quote) VALUES($1::uuid,$2::uuid,$3,'RENEWAL',$4,$5::jsonb)",[orders[0].id,addressId,config.environment,s.endsAt,tx.json(commercialQuote(s.plan,'RENEWAL'))]);
+        await tx.unsafe("INSERT INTO ad507.commercial_payment_terms(order_id,address_id,payment_environment,purpose,cycle,quote) VALUES($1::uuid,$2::uuid,$3,'RENEWAL',$4,$5::jsonb)",[orders[0].id,addressId,config.environment,s.endsAt,tx.json({...commercialQuote(s.plan,'RENEWAL'),priorService:s})]);
         await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService}',$2::jsonb) WHERE id=$1::uuid",[addressId,tx.json({...s,pendingRenewalOrderId:orders[0].id,renewalForEnd:s.endsAt})]);
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id) VALUES($1::uuid,'USER','MANUAL_RENEWAL_PREPARED','ORDER',$2)",[userId,orders[0].id]);
         return {required:true,order:orders[0]};

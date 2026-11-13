@@ -54,7 +54,7 @@ export async function getPublicationMetadataByCode(
   return {
     code: row.code,
     canonicalPath: `/${row.code}/`,
-    indexable: row.public_indexing === true&&!serviceExpired(row.service_data)&&!(row.service_data?.annualService?.policy===ANNUAL_POLICY&&row.service_data.annualService.mode==='INSTALLMENTS'&&!row.service_data.annualService.fullyPaid),
+    indexable: row.public_indexing === true&&!row.service_data?.annualService?.paymentHold&&!serviceExpired(row.service_data)&&!(row.service_data?.annualService?.policy===ANNUAL_POLICY&&row.service_data.annualService.mode==='INSTALLMENTS'&&!row.service_data.annualService.fullyPaid),
     updatedAt,
   };
 }

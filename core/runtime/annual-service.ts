@@ -11,7 +11,7 @@ export function serviceExpired(data:any,now=Date.now()):boolean {
 }
 export function effectiveServicePlan(data:any,plan:string|null,now=Date.now()):string|null {
  if(data?.migration||data?.annualService?.policy!==ANNUAL_POLICY)return plan;
- if(serviceExpired(data,now))return plan==='RESIDENTIAL'?plan:'BUSINESS_FREE';
+ if(data.annualService.paymentHold||serviceExpired(data,now))return plan==='RESIDENTIAL'?plan:'BUSINESS_FREE';
  const s=data.annualService;
  if(s.mode==='INSTALLMENTS'&&!s.fullyPaid){
   if(plan==='BUSINESS_PREMIUM_PRO'&&s.secondDueAt&&now>Date.parse(s.secondDueAt)+5*86400000)return 'BUSINESS_PREMIUM';
@@ -41,7 +41,27 @@ export async function applyAnnualRenewal(tx:any,order:any){
  if(s.pendingRenewalOrderId!==order.id)return;
  if(order.status!=='PAID'||!order.confirmed_at||order.payment_plan!==s.plan||!s.endsAt)throw Error('PAYMENT_CONFIRMATION_REQUIRED');
  const startsAt=new Date(Math.max(Date.parse(s.endsAt),Date.parse(order.confirmed_at))).toISOString();
- const terms={...s,endsAt:annualEnd(startsAt),lastPaidOrderId:order.id,pendingRenewalOrderId:null,mode:'ANNUAL',fullyPaid:true,secondDueAt:null,pendingSecondOrderId:null};
+ const terms={...s,endsAt:annualEnd(startsAt),lastPaidOrderId:order.id,pendingRenewalOrderId:null,mode:'ANNUAL',fullyPaid:true,paymentHold:false,secondDueAt:null,pendingSecondOrderId:null};
  await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService}',$2::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id,tx.json(terms)]);
  await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,metadata) VALUES('SYSTEM','ANNUAL_SERVICE_RENEWED','ADDRESS',$1,$2::jsonb)",[row.id,tx.json({orderId:order.id,startsAt,endsAt:terms.endsAt})]);
+}
+
+/** Provider-verified refunds affect only their new, purpose-bound service. */
+export async function applyCommercialRefund(tx:any,order:any){
+ const rows=await tx.unsafe("SELECT request_data,source FROM ad507.addresses WHERE id=$1::uuid FOR UPDATE",[order.address_id]);const row=rows[0],data=row?.request_data;
+ if(!row||row.source!=='USER_REQUEST'||data?.migration)return;
+ const terms=await tx.unsafe('SELECT purpose,quote,cycle FROM ad507.commercial_payment_terms WHERE order_id=$1::uuid',[order.id]);if(!terms[0])return;
+ const s=data?.annualService;let next=s;
+ if(s?.policy===ANNUAL_POLICY){
+  if(terms[0].purpose==='RENEWAL'&&s.lastPaidOrderId===order.id&&terms[0].quote.priorService)next=terms[0].quote.priorService;
+  else if(s.orderId===order.id||terms[0].purpose==='INSTALLMENT'&&terms[0].cycle===s.orderId){
+   if(s.mode==='INSTALLMENTS'){
+    const paid=await tx.unsafe("SELECT count(*)::int AS n FROM ad507.orders o JOIN ad507.commercial_payment_terms t ON t.order_id=o.id WHERE o.address_id=$1::uuid AND o.payment_environment=$2 AND o.status='PAID' AND (o.id=$3::uuid OR t.purpose='INSTALLMENT' AND t.cycle=$3::text)",[order.address_id,order.payment_environment,s.orderId]);
+    next={...s,fullyPaid:paid[0].n>=2,paymentHold:paid[0].n===0};
+   }else next={...s,paymentHold:true};
+  }
+  if(next!==s)await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService}',$2::jsonb),updated_at=now() WHERE id=$1::uuid",[order.address_id,tx.json(next)]);
+ }
+ if(data?.adService?.orderId===order.id)await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{adService,status}','\"REFUNDED\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[order.address_id]);
+ await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,metadata) VALUES('SYSTEM','COMMERCIAL_REFUND_APPLIED','ORDER',$1,$2::jsonb)",[order.id,tx.json({addressId:order.address_id})]);
 }

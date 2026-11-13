@@ -16,6 +16,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
   if(!paypal)validateYappyConfiguration(config as YappyConfiguration);
   const requireYappy=()=>{if(paypal)throw Error('PAYMENT_PROVIDER_NOT_ENABLED');};
   const requirePayPal=()=>{if(!paypal||config.environment!=='test')throw Error('PAYMENT_PROVIDER_NOT_ENABLED');};
+  const requireCommercial=()=>paypal?requirePayPal():requireYappy();
   const own=async(tx:any,userId:string,addressId:string)=>{
     if(!uuid.test(userId)||!uuid.test(addressId))throw Error('PAYMENT_NOT_FOUND');
     const rows=await tx.unsafe("SELECT a.*,o.user_id FROM ad507.addresses a JOIN ad507.address_ownership o ON o.address_id=a.id JOIN ad507.users u ON u.id=o.user_id WHERE a.id=$1::uuid AND o.user_id=$2::uuid AND o.ownership_role='OWNER' AND u.status='ACTIVE' AND a.source='USER_REQUEST' FOR UPDATE OF a",[addressId,userId]);
@@ -27,7 +28,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     if(!terms.length)return validStoredOrderAmount(row.payment_plan,row.amount_cents);
     const q=terms[0].quote;try{return q.plan===row.payment_plan&&row.amount_cents===commercialQuote(q.plan,q.mode).amountCents&&Object.entries(commercialQuote(q.plan,q.mode)).every(([key,value])=>q[key]===value)}catch{return false}
   };
-  const advertising=createAdvertisingRepository(sql,config.environment,!!options.commercialEnabled&&!!options.placeAdvertisingEnabled);
+  const advertising=createAdvertisingRepository(sql,config.environment,!!options.commercialEnabled&&!!options.placeAdvertisingEnabled,paypal?'PAYPAL':'YAPPY');
   return {
     quoteAdvertising:advertising.quote,prepareAdvertising:advertising.prepare,
     async acceptPurchase(userId:string,orderId:string,evidence:any){
@@ -38,20 +39,24 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
 
     // PayPal preparation shares orders, ownership, server prices, state and audit.
     // Backend-only sandbox hooks; no public routes are enabled in this release.
-    async preparePayPal(userId:string,addressId:string,key:string) {
+    async preparePayPal(userId:string,addressId:string,key:string,mode='ANNUAL') {
       requirePayPal();
       if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId);
         if(row.request_data?.migration||!(row.status==='PENDING_REVIEW'||row.status==='DRAFT'&&row.request_data?.workflow==='PAYMENT_PENDING'))throw Error('INVALID_PAYMENT_REQUEST');
-        const plan=row.request_data?.plan,amount=paymentAmount(plan);
+        const plan=row.request_data?.plan,q=commercialQuote(plan,mode),amount=q.amountCents;if(!options.commercialEnabled&&mode!=='ANNUAL')throw Error('PAYMENT_MODALITY_NOT_ENABLED');
         if(amount===0)return {required:false,amountCents:0};
         const operation=createHash('sha256').update('paypal:test:'+userId+':'+addressId+':'+key).digest('hex');
         const previous=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='PAYPAL' AND operation_key=$1",[operation]);
-        if(previous.length){if(previous[0].payment_plan!==plan||!validStoredOrderAmount(plan,previous[0].amount_cents))throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:previous[0]};}
+        if(previous.length){if(previous[0].payment_plan!==plan||!await validOrder(tx,previous[0]))throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:previous[0]};}
         const active=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment='test'",[addressId]);
         if(active.length)throw Error('PAYMENT_ALREADY_EXISTS');
         const rows=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,'PAYPAL',$4,'test',$5,$6) RETURNING *",[userId,addressId,amount,plan,randomBytes(7).toString('hex'),operation]);
+        if(options.commercialEnabled){
+          await tx.unsafe("INSERT INTO ad507.commercial_payment_terms(order_id,address_id,payment_environment,purpose,cycle,quote) VALUES($1::uuid,$2::uuid,'test','INITIAL',$2::text,$3::jsonb)",[rows[0].id,addressId,tx.json(q)]);
+          await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService}',$2::jsonb) WHERE id=$1::uuid",[addressId,tx.json({policy:ANNUAL_POLICY,plan,mode,fullyPaid:mode==='ANNUAL',orderId:rows[0].id,startsAt:null,endsAt:null})]);
+        }
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id) VALUES($1::uuid,'USER','PAYMENT_PREPARED','ORDER',$2)",[userId,rows[0].id]);
         return {required:true,order:rows[0]};
       });
@@ -89,6 +94,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         if(proof.status==='REFUNDED'&&current.status!=='PAID')throw Error('INVALID_PAYMENT_STATE');
         await tx.unsafe("UPDATE ad507.orders SET status=$2,confirmed_at=CASE WHEN $2='PAID' THEN now() ELSE confirmed_at END,updated_at=now() WHERE id=$1::uuid",[orderId,proof.status]);
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','PAYPAL_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[orderId,tx.json({status:current.status}),tx.json({status:proof.status,captureId:proof.captureId})]);
+        if(proof.status==='PAID'){const paid={...current,status:'PAID',confirmed_at:new Date().toISOString()};await applyAnnualRenewal(tx,paid);await confirmPlaceAdvertising(tx,paid);}
         return {id:orderId,status:proof.status,unchanged:false};
       });
       if(confirmation.status==='PAID'&&options.onVerifiedPayment)await options.onVerifiedPayment(p.address_id);
@@ -149,26 +155,26 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       });
     },
     async quoteSecond(userId:string,addressId:string){
-      requireYappy();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');
+      requireCommercial();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');
       return sql.begin(async tx=>{const row=await own(tx,userId,addressId),s=row.request_data?.annualService;
         if(row.status!=='ACTIVE'||row.request_data?.migration||s?.policy!==ANNUAL_POLICY||s.mode!=='INSTALLMENTS'||s.fullyPaid||!s.startsAt||Date.parse(s.endsAt)<=Date.now())throw Error('INVALID_PAYMENT_REQUEST');
         return {...commercialQuote(s.plan,'SECOND_INSTALLMENT'),addressId,orderId:s.pendingSecondOrderId??null,endsAt:s.endsAt,secondDueAt:s.secondDueAt};
       });
     },
     async prepareSecond(userId:string,addressId:string,key:string){
-      requireYappy();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
+      requireCommercial();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       return sql.begin(async tx=>{const row=await own(tx,userId,addressId),s=row.request_data?.annualService;
         if(row.status!=='ACTIVE'||row.request_data?.migration||s?.policy!==ANNUAL_POLICY||s.mode!=='INSTALLMENTS'||s.fullyPaid||!s.startsAt||Date.parse(s.endsAt)<=Date.now())throw Error('INVALID_PAYMENT_REQUEST');
         if(s.pendingSecondOrderId){const rows=await tx.unsafe('SELECT * FROM ad507.orders WHERE id=$1::uuid',[s.pendingSecondOrderId]);return {required:true,order:rows[0]};}
         const q=commercialQuote(s.plan,'SECOND_INSTALLMENT'),operation=createHash('sha256').update('second:'+config.environment+':'+addressId+':'+s.orderId).digest('hex');
-        const rows=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,$5,$6,$7) RETURNING *",[userId,addressId,q.amountCents,s.plan,config.environment,randomBytes(7).toString('hex'),operation]);
+        const rows=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,$8,$4,$5,$6,$7) RETURNING *",[userId,addressId,q.amountCents,s.plan,config.environment,randomBytes(7).toString('hex'),operation,paypal?'PAYPAL':'YAPPY']);
         await tx.unsafe("INSERT INTO ad507.commercial_payment_terms(order_id,address_id,payment_environment,purpose,cycle,quote) VALUES($1::uuid,$2::uuid,$3,'INSTALLMENT',$4,$5::jsonb)",[rows[0].id,addressId,config.environment,s.orderId,tx.json(q)]);
         await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService}',$2::jsonb) WHERE id=$1::uuid",[addressId,tx.json({...s,pendingSecondOrderId:rows[0].id})]);
         return {required:true,order:rows[0]};
       });
     },
     async quoteRenewal(userId:string,addressId:string){
-      requireYappy();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');return sql.begin(async tx=>{
+      requireCommercial();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId),s=row.request_data?.annualService;
         if(row.status!=='ACTIVE'||!row.publication_receipt||row.request_data?.migration||s?.policy!==ANNUAL_POLICY||!s.endsAt||!annualPlans.includes(s.plan)||s.plan!==row.request_data.plan)throw Error('INVALID_PAYMENT_REQUEST');
         const orders=s.pendingRenewalOrderId?await tx.unsafe("SELECT id,amount_cents FROM ad507.orders WHERE id=$1::uuid AND address_id=$2::uuid AND payment_environment=$3",[s.pendingRenewalOrderId,addressId,config.environment]):[];
@@ -176,17 +182,17 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       });
     },
     async prepareRenewal(userId:string,addressId:string,key:string){
-      requireYappy();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
+      requireCommercial();if(!options.commercialEnabled)throw Error('PAYMENT_MODALITY_NOT_ENABLED');if(!/^[A-Za-z0-9_-]{16,128}$/.test(key))throw Error('INVALID_IDEMPOTENCY_KEY');
       return sql.begin(async tx=>{
         const row=await own(tx,userId,addressId),s=row.request_data?.annualService;
         if(row.status!=='ACTIVE'||!row.publication_receipt||row.request_data?.migration||s?.policy!==ANNUAL_POLICY||!s.endsAt||!annualPlans.includes(s.plan)||s.plan!==row.request_data.plan)throw Error('INVALID_PAYMENT_REQUEST');
         const operation=createHash('sha256').update('renew:'+config.environment+':'+userId+':'+addressId+':'+key).digest('hex');
-        const existing=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='YAPPY' AND operation_key=$1",[operation]);
+        const existing=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider=$2 AND operation_key=$1",[operation,paypal?'PAYPAL':'YAPPY']);
         if(existing.length)return {required:true,order:existing[0]};
         // At most one explicitly requested renewal per service period. A second
         // browser/key must reuse/reconcile the original intent, never create a charge.
         if(s.pendingRenewalOrderId||s.renewalForEnd===s.endsAt)throw Error('PAYMENT_ALREADY_EXISTS');
-        const orders=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,$5,$6,$7) RETURNING *",[userId,addressId,paymentAmount(s.plan),s.plan,config.environment,randomBytes(7).toString('hex'),operation]);
+        const orders=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,$8,$4,$5,$6,$7) RETURNING *",[userId,addressId,paymentAmount(s.plan),s.plan,config.environment,randomBytes(7).toString('hex'),operation,paypal?'PAYPAL':'YAPPY']);
         await tx.unsafe("INSERT INTO ad507.commercial_payment_terms(order_id,address_id,payment_environment,purpose,cycle,quote) VALUES($1::uuid,$2::uuid,$3,'RENEWAL',$4,$5::jsonb)",[orders[0].id,addressId,config.environment,s.endsAt,tx.json(commercialQuote(s.plan,'RENEWAL'))]);
         await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService}',$2::jsonb) WHERE id=$1::uuid",[addressId,tx.json({...s,pendingRenewalOrderId:orders[0].id,renewalForEnd:s.endsAt})]);
         await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id) VALUES($1::uuid,'USER','MANUAL_RENEWAL_PREPARED','ORDER',$2)",[userId,orders[0].id]);

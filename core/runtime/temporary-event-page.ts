@@ -49,13 +49,13 @@ export function renderTemporaryEventPage(event:PublishedEvent):string {
  </main><script>${temporaryEventCarouselScript}</script><script>${temporaryEventVisualScript}</script><script>document.querySelector(".qr-open")?.addEventListener("click",()=>document.querySelector(".qr-modal")?.showModal());document.querySelector(".qr-close")?.addEventListener("click",()=>document.querySelector(".qr-modal")?.close());document.querySelector(".qr-modal")?.addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});</script></body></html>`);
 }
 
-/** Autoplay ends after one cycle; touch/manual interaction stops the timer. */
+/** Original five-second loop; pause while the viewer is open and resume on close. */
 export const temporaryEventCarouselScript=`(()=>{
  const stage=document.querySelector('.photo-stage'),strip=stage?.querySelector('.photos'),next=stage?.querySelector('.photo-next');if(!strip)return;
  const images=[...strip.querySelectorAll('img')],bars=[...stage.querySelectorAll('.photo-progress span')],counter=stage.querySelector('.photo-counter');let index=0;
  const show=(i)=>{index=(i+images.length)%images.length;strip.scrollTo({left:index*strip.clientWidth,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});bars.forEach((b,n)=>b.setAttribute('aria-current',String(n===index)));counter.textContent=(index+1)+' / '+images.length;stage.classList.remove('is-changing');void stage.offsetWidth;stage.classList.add('is-changing')};
- const reduced=matchMedia('(prefers-reduced-motion: reduce)');let timer=null;const stop=()=>{if(timer!==null){clearInterval(timer);timer=null}};const start=()=>{stop();if(images.length<2||reduced.matches||document.hidden)return;timer=setInterval(()=>show(index+1),5000)};
- stage.addEventListener('ad507:gallery-open',stop);
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');let timer=null,viewerOpen=false;const stop=()=>{if(timer!==null){clearInterval(timer);timer=null}};const start=()=>{stop();if(images.length<2||reduced.matches||document.hidden||viewerOpen)return;timer=setInterval(()=>show(index+1),5000)};
+ stage.addEventListener('ad507:gallery-open',()=>{viewerOpen=true;stop()});stage.addEventListener('ad507:gallery-close',()=>{viewerOpen=false;start()});
  stage.addEventListener('pointerdown',stop,{passive:true});stage.addEventListener('focusin',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start()});reduced.addEventListener?.('change',()=>{if(reduced.matches)stop();else start()});start();
  stage.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){e.preventDefault();stop();show(index+1)}if(e.key==='ArrowLeft'){e.preventDefault();stop();show(index-1)}});
  let startX=null;strip.addEventListener('touchstart',e=>{startX=e.touches[0]?.clientX??null},{passive:true});strip.addEventListener('touchend',e=>{if(startX===null)return;const dx=(e.changedTouches[0]?.clientX??startX)-startX;startX=null;if(Math.abs(dx)>45){stop();show(index+(dx<0?1:-1))}},{passive:true});

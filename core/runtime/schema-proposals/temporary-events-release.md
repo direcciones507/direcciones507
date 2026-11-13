@@ -1,6 +1,6 @@
-# Dirección Temporal — release gate
+# Dirección Temporal — release gate (archivo de lanzamiento inicial)
 
-Price: USD 7.99; 1–30 calendar dates. No permanent codes or directory/sitemap entries.
+Historical initial price: USD 7.99; 1–30 calendar dates. Current new quotes: USD 12.99 for 1–30 days and USD 19.99 for 31–60 days; apply temporary-events-price-tiers.sql with the verified backup runner before deployment. No permanent codes or directory/sitemap entries.
 Default-off flags: `AD507_TEMPORARY_EVENTS_ENABLED` and `AD507_TEMPORARY_PAYMENTS_ENABLED`.
 
 ## Identified target (read-only inspection, 2026-11-11)

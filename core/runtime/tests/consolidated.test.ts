@@ -725,6 +725,15 @@ test('payment preparation reuses orders: immutable amount, ownership, late IPN a
     expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='PAID_REQUEST_READY_FOR_REVIEW'",[address]))[0].n).toBe(0);
     expect((await repo.quote(clientId,address)).orderId).toBe(a.order.id);
     expect((await db.unsafe("SELECT count(*)::int AS n FROM ad507.audit_log WHERE entity_id=$1 AND action='YAPPY_PAYMENT_CONFIRMED'",[a.order.id]))[0].n).toBe(2);
+    const legacyAddress=await make('BUSINESS_PREMIUM');
+    const legacyOrder=await repo.prepare(clientId,legacyAddress,'previous-price-key-0001');
+    await db.unsafe('UPDATE ad507.orders SET amount_cents=1999 WHERE id=$1',[legacyOrder.order.id]);
+    expect((await repo.quote(clientId,legacyAddress)).amountCents).toBe(1999);
+    expect((await repo.prepare(clientId,legacyAddress,'previous-price-key-0001')).order.amount_cents).toBe(1999);
+    await repo.registerProviderOrder(legacyOrder.order.id,'legacy-price-reference');
+    await repo.confirm(signed(legacyOrder.order.provider_order_id,'E'));
+    expect((await repo.read(clientId,legacyOrder.order.id)).amount_cents).toBe(1999);
+    await requireConfirmedPayment(db,(await db.unsafe('SELECT * FROM ad507.addresses WHERE id=$1',[legacyAddress]))[0],'test');
     const free=await make('BUSINESS_FREE');
     await expect(repo.prepare(clientId,free,'payment-free-key-0001')).rejects.toThrow('INVALID_PAYMENT_REQUEST');
     await expect(repo.quote(clientId,free)).rejects.toThrow('INVALID_PAYMENT_REQUEST');

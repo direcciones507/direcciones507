@@ -20,7 +20,7 @@ test('public contact requires explicit consent',()=>{
 });
 test('invalid dates, durations, coordinates and timezone are rejected',()=>{
  assert.throws(()=>validateTemporaryEventDraft({...base,startsOn:'2026-02-30'}));
- assert.throws(()=>validateTemporaryEventDraft({...base,endsOn:'2026-12-11'}));
+ assert.throws(()=>validateTemporaryEventDraft({...base,endsOn:'2027-01-10'}));
  assert.throws(()=>validateTemporaryEventDraft({...base,latitude:91}));
  assert.throws(()=>validateTemporaryEventDraft({...base,timezone:'Not/A_Zone'}));
  assert.equal(temporaryEventDuration('2026-11-01','2026-11-30'),30);
@@ -49,4 +49,14 @@ test('blank coordinates are absent rather than pointing to zero-zero',()=>{
  assert.equal(draft.latitude,null);
  assert.equal(draft.longitude,null);
  assert.throws(()=>validateTemporaryEventDraft({...base,latitude:'',longitude:-80.9}),/COORDINATES/);
+});
+
+test('inclusive duration and tier prices cover month/year/leap boundaries',async()=>{
+ const {temporaryEventQuote}=await import('./temporary-event-lifecycle');
+ for(const [a,b,n,c] of [['2026-12-31','2026-12-31',1,1299],['2026-12-15','2027-01-13',30,1299],['2026-12-15','2027-01-14',31,1999],['2028-02-01','2028-03-31',60,1999]] as const){
+  assert.deepEqual(temporaryEventQuote(a,b),{days:n,amountCents:c,currency:'USD'});
+  assert.equal(validateTemporaryEventDraft({...base,startsOn:a,endsOn:b}).endsOn,b);
+ }
+ assert.throws(()=>temporaryEventQuote('2028-02-01','2028-04-01'),/DURATION/);
+ assert.throws(()=>temporaryEventQuote('2026-02-29','2026-03-01'),/DATE/);
 });

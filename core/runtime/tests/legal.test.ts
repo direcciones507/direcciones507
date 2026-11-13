@@ -46,3 +46,5 @@ test('registration boundary prevents missing acceptance before authentication; l
  expect((await handleAccountLegal(request({legalAcceptance:{accepted:true,version:LEGAL_VERSION}}),{} as any,auth))?.status).toBe(200);expect(authCalls).toBe(1);
  for(const path of ['/auth/google/login','/auth/google/callback','/v1/auth/email/login'])expect(await handleAccountLegal(new Request('https://direcciones.lat'+path),{} as any,auth)).toBeNull();
 });
+
+test('previous commercial policy remains immutable after price publication',async()=>{const archived=await import('../legal-content-1.0-20261017.json');const response=handleLegalRoutes(new Request('https://direcciones.lat/legal/1.0-20261017/commercial'))!;const html=await response.text();expect(html).toContain('Versión 1.0-20261017');expect(html).not.toContain('Tarifas de referencia para nuevas contrataciones');expect(archived.default.find(d=>d.key==='commercial')?.sha256).toBe('50cdff00323ff2c0c4b91c5e19210fdeac23c84c06fc53a4467ee9d69da63fa9');});

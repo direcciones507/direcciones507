@@ -49,6 +49,14 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   await page.clock.runFor(5000);expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
   const draftUrl=server.url+'panel/evento/nuevo?draft='+(await sql.unsafe('SELECT id FROM ad507.temporary_events'))[0].id;
   await page.goto(draftUrl);await page.waitForFunction(()=>document.querySelector<HTMLInputElement>('[name=title]')?.value==='Fiesta de Santiago');
+  await page.waitForFunction(()=>document.getElementById('event-quote')?.textContent?.includes('USD 12.99'));
+  await page.locator('[name=startsOn]').fill('2030-12-15');await page.locator('[name=endsOn]').fill('2031-02-12');
+  await page.getByRole('button',{name:'Guardar borrador'}).click();
+  await page.waitForFunction(()=>document.getElementById('event-quote')?.textContent==='60 días · USD 19.99');
+  expect((await sql.unsafe('SELECT price_cents FROM ad507.temporary_events'))[0].price_cents).toBe(1999);
+  await page.locator('[name=endsOn]').fill('2031-02-13');await page.getByRole('button',{name:'Guardar borrador'}).click();
+  expect(await page.locator('#temporary-event-error').textContent()).toBe('Selecciona una duración de 1 a 60 días.');
+  expect((await sql.unsafe('SELECT ends_on::text FROM ad507.temporary_events'))[0].ends_on).toBe('2031-02-12');
   for(const width of [360,768,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)}
   const reduced=await browser.newPage({viewport:{width:393,height:851},reducedMotion:'reduce'});await reduced.clock.install();await reduced.goto(server.url+preview!.slice(1));await reduced.clock.fastForward(20000);expect(await reduced.locator('.photo-counter').textContent()).toBe('1 / 3');
   // Published layout and expired state use the same renderer; test both widths.

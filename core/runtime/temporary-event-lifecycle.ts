@@ -12,11 +12,11 @@ function assertDate(date:string):void {
 function assertZone(zone:string):void {
  try{new Intl.DateTimeFormat('en-US',{timeZone:zone}).format()}catch{throw Error('INVALID_EVENT_TIMEZONE')}
 }
-/** Valid for 1 through 30 calendar dates, inclusive. */
+/** Valid for 1 through 60 calendar dates, inclusive. */
 export function temporaryEventDuration(startsOn:string,endsOn:string):number {
  assertDate(startsOn);assertDate(endsOn);
  const days=(Date.parse(endsOn+'T00:00:00Z')-Date.parse(startsOn+'T00:00:00Z'))/86400000+1;
- if(days<1||days>30)throw Error('EVENT_DURATION_OUT_OF_RANGE');
+ if(days<1||days>60)throw Error('EVENT_DURATION_OUT_OF_RANGE');
  return days;
 }
 /**
@@ -48,4 +48,10 @@ export function canPublishTemporaryEvent(args:{
 export function publicEventStatus(status:TemporaryEventState,endsOn:string,timezone:string,now:Date):'ACTIVE'|'EXPIRED'|'UNPUBLISHED' {
  if(status!=='ACTIVE')return status==='EXPIRED'?'EXPIRED':'UNPUBLISHED';
  return eventIsExpired(endsOn,timezone,now)?'EXPIRED':'ACTIVE';
+}
+
+/** Price for a new quote; stored previous orders keep their original amount. */
+export function temporaryEventQuote(startsOn:string,endsOn:string){
+ const days=temporaryEventDuration(startsOn,endsOn);
+ return {days,amountCents:days<=30?1299:1999,currency:'USD' as const};
 }

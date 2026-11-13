@@ -1,7 +1,7 @@
 const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const root=process.cwd(),out=path.join(root,'legal-browser-evidence');fs.mkdirSync(out,{recursive:true});
-const version='1.0-20261017',results=[];
+const version=JSON.parse(fs.readFileSync(path.join(root,'core/runtime/legal-content.json'),'utf8'))[0].version,results=[];
 const fixtures=path.join(root,'.legal-browser-fixtures');
 (async()=>{
  const browser=await chromium.launch({headless:true});

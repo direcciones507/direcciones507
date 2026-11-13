@@ -61,15 +61,23 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   await sql.unsafe("INSERT INTO ad507.temporary_event_orders(event_id,provider_order_id,environment,provider_reference) VALUES($1,'legacy799','production','old-reference')",[legacy.id]);
   const oldEvent=await sql.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1',[legacy.id]);
   const oldOrder=await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[legacy.id]);
-  expect(oldEvent[0].price_cents).toBe(799);expect(oldOrder[0].amount_cents).toBe(799);
+  await sql.unsafe('UPDATE ad507.temporary_events SET price_cents=799 WHERE id=$1',[legacy.id]);oldEvent[0].price_cents=799;expect(oldEvent[0].price_cents).toBe(799);expect(oldOrder[0].amount_cents).toBe(799);
   await sql.unsafe(readFileSync(new URL('./schema-proposals/temporary-events-price-1299.sql',import.meta.url),'utf8'));
   expect(JSON.stringify(await sql.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1',[legacy.id]))).toBe(JSON.stringify(oldEvent));
   expect(JSON.stringify(await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[legacy.id]))).toBe(JSON.stringify(oldOrder));
+  await sql.unsafe(readFileSync(new URL('./schema-proposals/temporary-events-price-tiers.sql',import.meta.url),'utf8'));
   const rejectedProvider=createYappyProvider(config,(async()=>{throw Error('PROVIDER_MUST_NOT_BE_CALLED')}) as unknown as typeof fetch);
   await expect(createTemporaryEventPayment(sql,config,rejectedProvider,legacy.id).initialize(owner,id,'60000000')).rejects.toThrow('EVENT_NOT_PAYABLE');
   await sql.unsafe("UPDATE ad507.temporary_events SET country_code='CR' WHERE id=$1",[id]);
   await expect(payment.initialize(owner,id,'60000000')).rejects.toThrow('EVENT_NOT_PAYABLE');expect(providerCalls).toBe(0);
   await sql.unsafe("UPDATE ad507.temporary_events SET country_code='PA' WHERE id=$1",[id]);
+  const extended=await repository.createDraft(owner,{...eventFixture,startsOn:'2030-12-15',endsOn:'2031-02-12'});
+  expect((await repository.getOwned(owner,extended.id))?.price_cents).toBe(1999);
+  await repository.savePhoto(owner,extended.id,1,'temporary-events/extended.webp',1);
+  let sentAmount='';const extendedProvider=createYappyProvider(config,(async(url:any,opts:any)=>{if(String(url).endsWith('/validate/merchant'))return Response.json({body:{token:'fixture',epochTime:123}});sentAmount=JSON.parse(opts.body).total;return Response.json({body:{transactionId:'extended-tx',token:'fixture',documentName:'fixture'}})}) as typeof fetch);
+  const extendedPayment=createTemporaryEventPayment(sql,config,extendedProvider);await extendedPayment.initialize(owner,extended.id,'60000000');expect(sentAmount).toBe('19.99');
+  const eo=(await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[extended.id]))[0];expect(eo.amount_cents).toBe(1999);expect((await repository.getOwned(owner,extended.id))?.price_cents).toBe(eo.amount_cents);
+  const eq=new URLSearchParams({orderId:eo.provider_order_id,status:'E',domain:config.domain});eq.set('hash',createHmac('sha256','test-secret').update(eo.provider_order_id+'E'+config.domain).digest('hex'));await extendedPayment.confirm(eq);expect((await repository.getPublic(extended.slug))?.status).toBe('ACTIVE');
   // Failed/cancelled authentic receipts never publish; replay is harmless.
   const isolatedProvider=createYappyProvider(config,(async(url:any)=>Response.json(String(url).endsWith('/validate/merchant')?{body:{token:'fixture',epochTime:123}}:{body:{transactionId:'fixture',token:'fixture',documentName:'fixture'}})) as typeof fetch);
   const isolatedPayment=createTemporaryEventPayment(sql,config,isolatedProvider);

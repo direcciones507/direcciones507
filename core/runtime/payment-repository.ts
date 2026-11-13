@@ -2,7 +2,7 @@ import { assertCountryCommerce } from './country-configuration';
 import type { createPayPalSandboxProvider } from './paypal-provider';
 import type { Sql } from 'postgres';
 import { createHash, randomBytes } from 'node:crypto';
-import { paymentAmount, verifyYappyIPN, validateYappyConfiguration, type YappyConfiguration } from './payment-policy';
+import { acceptedOrderAmounts,validStoredOrderAmount,paymentAmount, verifyYappyIPN, validateYappyConfiguration, type YappyConfiguration } from './payment-policy';
 import {isPayableClientRequest} from './paid-activation-policy';
 
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
@@ -31,7 +31,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         if(amount===0)return {required:false,amountCents:0};
         const operation=createHash('sha256').update('paypal:test:'+userId+':'+addressId+':'+key).digest('hex');
         const previous=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='PAYPAL' AND operation_key=$1",[operation]);
-        if(previous.length){if(previous[0].payment_plan!==plan||previous[0].amount_cents!==amount)throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:previous[0]};}
+        if(previous.length){if(previous[0].payment_plan!==plan||!validStoredOrderAmount(plan,previous[0].amount_cents))throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:previous[0]};}
         const active=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment='test'",[addressId]);
         if(active.length)throw Error('PAYMENT_ALREADY_EXISTS');
         const rows=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,'PAYPAL',$4,'test',$5,$6) RETURNING *",[userId,addressId,amount,plan,randomBytes(7).toString('hex'),operation]);
@@ -46,7 +46,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         if(!orders.length)throw Error('PAYMENT_NOT_FOUND');await own(tx,userId,orders[0].address_id);
         const locked=await tx.unsafe("SELECT * FROM ad507.orders WHERE id=$1::uuid FOR UPDATE",[orderId]);const p=locked[0];
         if(p.status!=='PENDING'||p.provider_reference)throw Error('PAYMENT_ALREADY_INITIALIZED');
-        if(p.amount_cents!==paymentAmount(p.payment_plan)||p.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
+        if(!validStoredOrderAmount(p.payment_plan,p.amount_cents)||p.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
         await tx.unsafe("UPDATE ad507.orders SET provider_reference='INITIALIZING:'||id::text,updated_at=now() WHERE id=$1::uuid",[orderId]);return p;
       });
       // Keep the committed initialization marker on uncertain failures; never replace the intent.
@@ -62,7 +62,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
       requirePayPal();if(!uuid.test(orderId)||!uuid.test(userId))throw Error('PAYMENT_NOT_FOUND');
       const rows=await sql.unsafe("SELECT * FROM ad507.orders WHERE id=$1::uuid AND user_id=$2::uuid AND provider='PAYPAL' AND payment_environment='test'",[orderId,userId]);
       if(!rows.length)throw Error('PAYMENT_NOT_FOUND');const p=rows[0];await own(sql,userId,p.address_id);
-      if(p.amount_cents!==paymentAmount(p.payment_plan)||p.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
+      if(!validStoredOrderAmount(p.payment_plan,p.amount_cents)||p.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
       const proof=await provider.confirmedCapture({id:p.id,amountCents:p.amount_cents,currency:'USD',provider_reference:p.provider_reference},capture);
       const confirmation=await sql.begin(async tx=>{
         await own(tx,userId,p.address_id);
@@ -91,7 +91,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     },
     async quote(userId:string,addressId:string) {
       requireYappy();
-      return sql.begin(async tx=>{const row=await own(tx,userId,addressId);if(!isPayableClientRequest(row))throw Error('INVALID_PAYMENT_REQUEST');const plan=row.request_data.plan;const orders=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND user_id=$2::uuid AND provider='YAPPY' AND payment_environment=$3 ORDER BY created_at DESC LIMIT 1",[addressId,userId,config.environment]);return {addressId,code:row.code,plan,amountCents:paymentAmount(plan),currency:'USD',orderId:orders[0]?.id??null};});
+      return sql.begin(async tx=>{const row=await own(tx,userId,addressId);if(!isPayableClientRequest(row))throw Error('INVALID_PAYMENT_REQUEST');const plan=row.request_data.plan;const orders=await tx.unsafe("SELECT id,amount_cents,payment_plan FROM ad507.orders WHERE address_id=$1::uuid AND user_id=$2::uuid AND provider='YAPPY' AND payment_environment=$3 ORDER BY created_at DESC LIMIT 1",[addressId,userId,config.environment]);return {addressId,code:row.code,plan,amountCents:orders.length&&orders[0].payment_plan===plan&&validStoredOrderAmount(plan,orders[0].amount_cents)?orders[0].amount_cents:paymentAmount(plan),currency:'USD',orderId:orders[0]?.id??null};});
     },
     // Backend adapter hook only; never expose this method directly to a client.
     async registerProviderOrder(orderId:string,reference:string) {
@@ -109,7 +109,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         const plan=row.request_data.plan,amount=paymentAmount(plan);
         const operation=createHash('sha256').update(config.environment+':'+userId+':'+addressId+':'+key).digest('hex');
         const existing=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='YAPPY' AND operation_key=$1",[operation]);
-        if(existing.length){const p=existing[0];if(p.payment_plan!==plan||p.amount_cents!==amount)throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:p};}
+        if(existing.length){const p=existing[0];if(p.payment_plan!==plan||!validStoredOrderAmount(plan,p.amount_cents))throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:p};}
         // Do not replace rejected/expired intents automatically: late signed
         // execution can still settle the original order. Reconcile before retry.
         const active=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment=$2",[addressId,config.environment]);
@@ -142,7 +142,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         const row=rows[0];if(!row)throw Error('PAYMENT_NOT_FOUND');
         // Confirm only provider-registered intents. Timeouts remain pending for reconciliation.
         if(!row.provider_reference||row.provider_reference.startsWith('INITIALIZING:'))throw Error('PAYMENT_PROVIDER_REFERENCE_REQUIRED');
-        if(row.amount_cents!==paymentAmount(row.payment_plan)||row.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
+        if(!validStoredOrderAmount(row.payment_plan,row.amount_cents)||row.currency!=='USD')throw Error('PAYMENT_AMOUNT_CHANGED');
         if(row.status==='REFUNDED'||row.status==='PAID'||row.status===proof.status)return {id:row.id,status:row.status,unchanged:true,addressId:row.address_id};
         if(row.status!=='PENDING'&&proof.status!=='PAID')return {id:row.id,status:row.status,unchanged:true,addressId:row.address_id};
         await tx.unsafe("UPDATE ad507.orders SET status=$2,confirmed_at=CASE WHEN $2='PAID' THEN now() ELSE confirmed_at END,updated_at=now() WHERE id=$1::uuid",[row.id,proof.status]);
@@ -165,6 +165,6 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
 export async function requireConfirmedPayment(tx:any,row:any,environment:'test'|'production') {
   if(row.request_data?.migration||row.address_type==='PLACE')return;
   const plan=row.request_data?.plan,amount=paymentAmount(plan);if(amount===0)return;
-  const paid=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment=$2 AND payment_plan=$3 AND amount_cents=$4 AND currency='USD' AND status='PAID' AND confirmed_at IS NOT NULL LIMIT 1",[row.id,environment,plan,amount]);
+  const paid=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment=$2 AND payment_plan=$3 AND amount_cents=ANY($4::integer[]) AND currency='USD' AND status='PAID' AND confirmed_at IS NOT NULL LIMIT 1",[row.id,environment,plan,acceptedOrderAmounts(plan)]);
   if(!paid.length)throw Error('PAYMENT_CONFIRMATION_REQUIRED');
 }

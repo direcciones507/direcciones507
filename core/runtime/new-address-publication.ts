@@ -1,3 +1,4 @@
+import {PLACE_AD_PRICE_CENTS,PLACE_AD_DURATION_DAYS} from './payment-policy';
 import {continuousGallery} from './continuous-gallery';
 import {publicCardPresentation} from './public-card-presentation';
 import {assertCodeAvailable,addressPublicUrl,publicCode,personalizedCode} from './custom-public-code';
@@ -170,7 +171,7 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       .place-ad-preview .place-ad-price{font-size:20px;font-weight:700;color:#fff}
       .place-ad-preview .place-ad-coming{display:inline-block;margin-top:12px;padding:10px 22px;border-radius:12px;background:#263b56;color:#fff;font-weight:700}
     </style></head>`);
-    template=template.replace('<section id="commercialDescription"',`<aside class="place-ad-preview" aria-label="Publicidad próximamente"><strong>Anuncia tu negocio aquí</strong><p>Publicidad en este Lugar</p><p class="place-ad-price">$14.99 por 30 días</p><span class="place-ad-coming">Próximamente</span></aside><section id="commercialDescription"`);
+    template=template.replace('<section id="commercialDescription"',`<aside class="place-ad-preview" aria-label="Publicidad próximamente"><strong>Anuncia tu negocio aquí</strong><p>Publicidad en este Lugar</p><p class="place-ad-price">$${(PLACE_AD_PRICE_CENTS/100).toFixed(2)} por ${PLACE_AD_DURATION_DAYS} días</p><span class="place-ad-coming">Próximamente</span></aside><section id="commercialDescription"`);
   }
   // Place only: compact visible actions and navigation without empty grid cells.
   if(!record.extras.historical && record.type==='PLACE'){

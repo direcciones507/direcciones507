@@ -40,3 +40,5 @@ test('payment routes are disabled without touching auth/DB/provider; scripts par
   for(const path of ['/v1/payments/yappy/ipn','/v1/user/requests/11111111-1111-4111-8111-111111111111/payment'])expect((await handlePaymentRoutes(new Request('https://example.test'+path),context))?.status).toBe(503);
   for(const html of [paymentPage('11111111-1111-4111-8111-111111111111','test'),userPanelHtml])for(const script of html.matchAll(/<script>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
 });
+
+test('old Core quotes remain legitimate and unapproved amounts stay rejected',async()=>{const {validStoredOrderAmount}=await import('../payment-policy');for(const [p,c,old] of [['RESIDENTIAL',1499,1299],['BUSINESS_PREMIUM',2999,1999],['BUSINESS_PREMIUM_PRO',4999,3999]] as const){expect(validStoredOrderAmount(p,c)).toBe(true);expect(validStoredOrderAmount(p,old)).toBe(true);expect(validStoredOrderAmount(p,1)).toBe(false);} });

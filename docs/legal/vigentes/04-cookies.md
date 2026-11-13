@@ -1,7 +1,7 @@
 Política de Cookies y Almacenamiento Local
 Direcciones 507/LATAM
 
-Versión 1.1-20261113 · Vigencia: a partir de su publicación autorizada
+Versión 1.2-20261113 · Vigencia: a partir de su publicación autorizada
 
 1. Qué son estas tecnologías
 Las cookies son pequeños archivos que un sitio guarda en su navegador o dispositivo. El almacenamiento local (por

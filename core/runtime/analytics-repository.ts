@@ -1,3 +1,4 @@
+import {serviceExpired,effectiveServicePlan} from './annual-service';
 import {readRequestBody} from './request-routes';
 import type {Sql} from 'postgres';
 import {createHash} from 'node:crypto';
@@ -10,8 +11,9 @@ const codeRe=/^AD\d{2,3}-[A-Z0-9_-]+$/;
 /** Same event store as historical analytics; no migration or bootstrap at runtime. */
 export function createAnalyticsRepository(sql:Sql){
  async function address(code:string,owner?:string){
-  const rows=await sql.unsafe(`SELECT a.id,a.code,a.address_type AS "addressType",a.status,a.source,to_jsonb(a)->>'publication_receipt' AS receipt,CASE WHEN a.address_type='PLACE' AND p.code IS NULL THEN 'PLACE' ELSE p.code END AS "planCode",to_jsonb(a)->'request_data'->>'workflow' AS workflow FROM ad507.addresses a LEFT JOIN ad507.plans p ON p.id=a.plan_id WHERE a.code=$1 AND a.status='ACTIVE' AND a.address_type IN ('BUSINESS','PLACE') ${owner?'AND EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=$2::uuid)':''}`,owner?[code,owner]:[code]);
-  return rows.length===1&&canOfferAnalytics(rows[0])?rows[0]:null;
+  const rows=await sql.unsafe(`SELECT to_jsonb(a)->'request_data' AS "serviceData",a.id,a.code,a.address_type AS "addressType",a.status,a.source,to_jsonb(a)->>'publication_receipt' AS receipt,CASE WHEN a.address_type='PLACE' AND p.code IS NULL THEN 'PLACE' ELSE p.code END AS "planCode",to_jsonb(a)->'request_data'->>'workflow' AS workflow FROM ad507.addresses a LEFT JOIN ad507.plans p ON p.id=a.plan_id WHERE a.code=$1 AND a.status='ACTIVE' AND a.address_type IN ('BUSINESS','PLACE') ${owner?'AND EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=$2::uuid)':''}`,owner?[code,owner]:[code]);
+  if(rows[0])rows[0].planCode=effectiveServicePlan(rows[0].serviceData,rows[0].planCode);
+  return rows.length===1&&!serviceExpired(rows[0].serviceData)&&canOfferAnalytics(rows[0])?rows[0]:null;
  }
  return {
  async summary(owner:string,code:string,requestedDays=30){

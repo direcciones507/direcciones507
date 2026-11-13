@@ -1,3 +1,4 @@
+import {activateAnnualService,effectiveServicePlan,serviceExpired} from './annual-service';
 import {CODE_NAMESPACE_LOCK,personalizedCode,assertCodeAvailable,verifyHistoricalCustomCode,addressPublicUrl,publicCode} from './custom-public-code';
 import {isAutomaticPaidPlan,automaticPaidStateAllowed,isLegacyUnpaidPaidRequest} from './paid-activation-policy';
 import { assertCountryPublication, freeCountryPublicationAllowed, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
@@ -159,7 +160,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       }
       const {publicationReceipt,...record}=rows[0];
       const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?addressPublicUrl({code:record.code,source:'USER_REQUEST',country_code:record.countryCode,request_data:record.extras}):null;
-      return {...record,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
+      return {...record,commercialService:record.extras?.annualService?{effectivePlan:effectiveServicePlan(record.extras,record.extras.plan),expired:serviceExpired(record.extras),endsAt:record.extras.annualService.endsAt}:null,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
     },
     async transfer(actorId:string,addressId:string,expectedOwner:string,targetId:string) {
       if(![actorId,addressId,expectedOwner,targetId].every(id=>uuid.test(id)))throw Error('INVALID_REQUEST');
@@ -266,6 +267,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
           if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
           await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,request_data=jsonb_set(request_data,'{workflow}',to_jsonb('PUBLISHED'::text)),updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
+          await activateAnnualService(tx,row.id,options.paymentEnvironment??'production');
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}
         return {id:row.id,code,status:'ACTIVE',receipt:published.receipt};

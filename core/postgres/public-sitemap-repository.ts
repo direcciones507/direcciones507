@@ -20,6 +20,8 @@ export async function getPublicSitemapAddresses(
     FROM ad507.addresses
     WHERE status = 'ACTIVE'
       AND address_type IN ('BUSINESS', 'PLACE')
+      AND (COALESCE(to_jsonb(addresses)->'request_data'->'annualService'->>'policy','') <> 'annual-manual-20261113' OR to_jsonb(addresses)->'request_data'->'migration' IS NOT NULL OR (COALESCE(to_jsonb(addresses)->'request_data'->'annualService'->>'paymentHold','false')<>'true' AND (to_jsonb(addresses)->'request_data'->'annualService'->>'endsAt')::timestamptz > now() AND (to_jsonb(addresses)->'request_data'->'annualService'->>'mode'<>'INSTALLMENTS' OR to_jsonb(addresses)->'request_data'->'annualService'->>'fullyPaid'='true')))
+
     ORDER BY code ASC
     LIMIT ${safeLimit}
   `;

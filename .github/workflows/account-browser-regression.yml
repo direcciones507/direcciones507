@@ -29,3 +29,8 @@ jobs:
       - run: node core/runtime/tests/account-browser-regression.mjs
         env:
           PLAYWRIGHT_MODULE: /tmp/ad507-browser/node_modules/playwright
+
+      - run: bun core/runtime/scripts/commercial-browser-fixtures.ts
+      - run: node core/runtime/tests/commercial-browser-regression.mjs
+        env:
+          PLAYWRIGHT_MODULE: /tmp/ad507-browser/node_modules/playwright

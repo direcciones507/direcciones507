@@ -2,7 +2,7 @@ Política Comercial
 
 Direcciones 507/LATAM
 
-Versión 1.1-20261113 · Vigencia: a partir de su publicación autorizada
+Versión 1.2-20261113 · Vigencia: a partir de su publicación autorizada
 
 1. Alcance
 Esta política regula los planes gratuitos, promocionales y de pago de Direcciones 507/LATAM (la
@@ -99,6 +99,14 @@ vencido se le informarán en ese aviso.
 voluntaria del usuario y, cuando corresponda, autorización expresa del pago.
 
 9.4. Al vencer un plan pagado se suspenden únicamente sus beneficios de pago. El código personalizado con nombre, la URL y el QR se conservan indefinidamente y no se convierten a numéricos ni se reasignan. Premium y Premium Pro conservan la dirección básica conforme a las reglas de privacidad y seguridad. Las residenciales siguen privadas. La permanencia del identificador no limita los derechos de retirada o eliminación de datos ni impide medidas justificadas de seguridad.
+
+9.5. Para nuevas contrataciones: Residencial US$14.99 por 12 meses (nuevas ventas ocultas); Premium US$29.99 por 12 meses; Premium Pro US$49.99 por 12 meses. La vigencia empieza en la activación pagada y la renovación es manual. La renovación anticipada añade un año desde el vencimiento vigente; si ya venció, desde el nuevo pago confirmado. No altera códigos ni enlaces.
+
+9.6. Modalidades opcionales aprobadas: Premium en dos cuotas de US$16.50 (total US$33.00) y Premium Pro en dos cuotas de US$27.50 (total US$55.00). La membresía conserva una vigencia anual desde la primera activación, independiente de la modalidad. La segunda cuota vence a los 30 días, con 5 días de gracia; puede adelantarse y nunca se cobra automáticamente. Mientras el pago sea parcial no se habilita indexación comercial. Si no se completa, los beneficios Premium duran hasta seis meses desde la activación y luego permanece la ficha básica; en Premium Pro, tras la gracia se conservan beneficios Premium hasta el vencimiento anual. Una segunda cuota tardía regulariza los beneficios por el tiempo restante del año original, sin extenderlo. Al finalizar la vigencia queda la ficha básica y se conservan código, URL y QR; las residenciales permanecen privadas. Estas condiciones no se aplican retrospectivamente a órdenes ni contratos anteriores.
+
+9.7. Publicidad en Lugar: US$14.99 por 30 días o US$161.89 por 365 días, pago único y revisión ADMIN antes de publicación. La vigencia publicitaria comienza con la aprobación y publicación, no mientras espera revisión. El vencimiento retira solamente el anuncio, no la ficha del Lugar. La pantalla de compra informa si el medio de pago aún no está habilitado; no se simulan cobros ni publicaciones.
+
+9.8. Dirección Temporal: un pago único de US$12.99 por 1–30 días o US$19.99 por 31–60 días. Su expiración sigue su régimen específico y no conserva una ficha permanente. Ninguna modalidad temporal se convierte en membresía anual.
 
 10. Cancelación
 10.1. Puede cancelar su plan o cerrar su cuenta en cualquier momento, por el mismo medio por el que contrató o

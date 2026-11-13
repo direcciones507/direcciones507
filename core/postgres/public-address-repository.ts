@@ -1,3 +1,4 @@
+import {effectiveServicePlan} from '../runtime/annual-service';
 import { COUNTRIES } from '../runtime/country-configuration';
 export type SqlExecutor = <T = Record<string, unknown>>(
   strings: TemplateStringsArray,
@@ -41,6 +42,7 @@ type AddressRow = {
   hours: string | null;
   plan_code: string | null;
   plan_name: string | null;
+  service_data?: any;
 };
 
 type CapabilityRow = { capability: string; value_json: unknown };
@@ -87,6 +89,7 @@ export async function getPublicAddressByCode(
 
   const rows = await sql<AddressRow>`
     SELECT
+      to_jsonb(a)->'request_data' AS service_data,
       a.code,
       a.address_type,
       a.name,
@@ -111,6 +114,8 @@ export async function getPublicAddressByCode(
   const row = rows[0];
   if (!row) return null;
 
+  const effective=effectiveServicePlan(row.service_data,row.plan_code);
+  if(effective!==row.plan_code){const plans=await sql<{code:string;name:string}>`SELECT code,name FROM ad507.plans WHERE code=${effective} AND status='ACTIVE'`;row.plan_code=plans[0]?.code??null;row.plan_name=plans[0]?.name??null;row.description=null;row.commercial_description=null;}
   const capabilities = row.plan_code
     ? await sql<CapabilityRow>`
         SELECT pc.capability, pc.value_json
@@ -161,7 +166,7 @@ export async function getPublicAddressByCode(
     hours: row.hours,
     plan: row.plan_code && row.plan_name ? { code: row.plan_code, name: row.plan_name } : null,
     capabilities: capabilityMap,
-    media: media.map((item) => ({
+    media: media.filter(item=>!row.service_data?.annualService||row.service_data?.migration||row.plan_code!=='BUSINESS_FREE'||item.media_type==='LOGO').map((item) => ({
       type: item.media_type,
       storageKey: item.storage_key,
       url: item.url,

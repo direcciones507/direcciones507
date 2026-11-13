@@ -38,7 +38,7 @@ try{
   });
   await payPage.goto('https://direcciones.lat/panel/payments/'+id);
   await payPage.locator('#checkout').waitFor({state:'visible'});
-  assert.equal(await payPage.locator('#quote').textContent(),'Importe: $49.99');
+  assert.equal(await payPage.locator('#quote').textContent(),'Pago anual: $49.99 USD · Vigencia 12 meses · Sin cobro automático');
   assert.equal(await payPage.locator('btn-yappy').count(),1);
   assert.equal(await payPage.locator('.back-link').getAttribute('href'),'/panel');
   const backStyle=await payPage.locator('.back-link').evaluate(link=>({

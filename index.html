@@ -727,12 +727,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 #plan507Details.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:planMotionRise .65s both!important}
 @media(prefers-reduced-motion:reduce){#plan507Details.plan-motion-active,#plan507Details.plan-motion-active::before,#plan507Details.plan-motion-active :is(h2,h3,#plan507Price,#latamPlanDetailsPrice),#plan507Details.plan-motion-active :is(#plan507Features,#latamPlanDetailsFeatures) li{animation:none!important}}
 
-/* Clearly visible 3D motion emblem, isolated to the plan detail dialog. */
-#plan507Details{position:fixed!important;padding-top:102px!important;perspective:900px}
-#plan507Details::before{content:""!important;display:block!important;position:absolute!important;top:0!important;left:0!important;right:0!important;height:4px!important;margin:0!important;background:linear-gradient(90deg,#182944,#b6a07b,#e8ddc8,#182944)!important;background-size:260% 100%!important;animation:planMotionSweep 2.6s linear infinite!important;pointer-events:none}
-#plan507Details::after{content:""!important;display:block!important;position:absolute!important;top:20px!important;left:calc(50% - 32px)!important;width:64px!important;height:54px!important;border-radius:8px!important;border:2px solid #a99a81!important;background:linear-gradient(145deg,#e5e4e0 0%,#9ea6ae 48%,#34475e 100%)!important;box-shadow:0 7px 20px #17283d38,inset 0 0 0 5px #ffffff50!important;transform-style:preserve-3d!important;animation:planMotionFlip 3.8s ease-in-out infinite!important;pointer-events:none!important}
-@keyframes planMotionFlip{0%,100%{transform:rotateY(-32deg) rotateZ(-4deg) translateY(0)}50%{transform:rotateY(32deg) rotateZ(4deg) translateY(-4px)}}
-@media(prefers-reduced-motion:reduce){#plan507Details::before,#plan507Details::after{animation:none!important;transform:none!important}}
+
 </style>
 
 
@@ -1923,7 +1918,15 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
     document.getElementById("btnOcultarQR").onclick = () => { document.getElementById("printCardWrap").style.display = "none"; };
     document.getElementById("btnImprimirQR").onclick = () => {
       const w = window.open("", "_blank");
-      w.document.write(`<html><head><title>Imprimir QR</title></head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
+      w.document.write(`<html><head><title>Imprimir QR</title><style id="plan507-final-dialog-style">
+/* Authoritative 507 dialog styling after all homepage styles. */
+dialog#plan507Details{background:#f7f4ec!important;color:#182944!important;border:1px solid #a89b84!important;border-radius:12px!important;padding:clamp(22px,4vw,34px)!important;width:min(570px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 28px)!important}
+dialog#plan507Details #plan507Title,dialog#plan507Details #plan507Price{color:#182944!important}
+dialog#plan507Details #plan507Features li{background:#fffdf8!important;border:1px solid #d4cabb!important;border-left:3px solid #a58d60!important;color:#273953!important;border-radius:5px!important;padding:15px 16px!important}
+dialog#plan507Details #plan507Continue{background:#182944!important;color:#f7f4ec!important;border-radius:5px!important}
+dialog#plan507Details #plan507Close{background:#e7e0d4!important;color:#182944!important;border-radius:5px!important}
+</style>
+</head><body>${document.getElementById("printCard").outerHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
       w.document.close();
     };
     const lightboxOverlay=document.getElementById('lightboxOverlay');if(lightboxOverlay)lightboxOverlay.onclick = function(){ this.classList.remove('show'); };

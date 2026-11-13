@@ -1,7 +1,7 @@
 Política de Privacidad
 Direcciones 507/LATAM
 
-Versión 1.0-20261017 · Vigencia: a partir de su publicación autorizada
+Versión 1.1-20261113 · Vigencia: a partir de su publicación autorizada
 
 1. Responsable del tratamiento
 El responsable del tratamiento de sus datos personales es Jacinto Salazar Cossio, titular del establecimiento

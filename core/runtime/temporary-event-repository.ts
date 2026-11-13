@@ -7,7 +7,7 @@
 import {randomBytes} from 'node:crypto';
 import type {Sql} from 'postgres';
 import {validateTemporaryEventDraft,eventSlug,type TemporaryEventDraft} from './temporary-event-draft';
-import {canPublishTemporaryEvent,publicEventStatus} from './temporary-event-lifecycle';
+import {canPublishTemporaryEvent,publicEventStatus,temporaryEventQuote} from './temporary-event-lifecycle';
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const requireUuid=(id:string)=>{if(!uuid.test(id))throw Error('INVALID_ID')};
 export const dbDate=(value:unknown):string=>{
@@ -28,13 +28,13 @@ export function createTemporaryEventRepository(sql:Sql){
      const rows=await sql.unsafe(`INSERT INTO ad507.temporary_events
      (owner_user_id,slug,title,description,responsible_name,responsible_email,responsible_phone,
      public_contact_name,public_contact_phone,public_contact_consent,country_code,region,municipality,locality,
-     reference,latitude,longitude,starts_on,ends_on,event_timezone,hours_description,status)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,'DRAFT')
+     reference,latitude,longitude,starts_on,ends_on,event_timezone,hours_description,status,price_cents)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,'DRAFT',$22)
      RETURNING id,slug,status`,[
       ownerId,slug,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,
       x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,
       x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,
-      x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours]);
+      x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours,temporaryEventQuote(x.startsOn,x.endsOn).amountCents]);
      return rows[0] as unknown as {id:string;slug:string;status:'DRAFT'};
     }catch(error){
      if((error as {code?:string}).code==='23505')continue;
@@ -61,8 +61,8 @@ export function createTemporaryEventRepository(sql:Sql){
    requireUuid(ownerId);requireUuid(eventId);const x=validateTemporaryEventDraft(input);
    const rows=await sql.unsafe(`UPDATE ad507.temporary_events SET title=$3,description=$4,responsible_name=$5,responsible_email=$6,responsible_phone=$7,
     public_contact_name=$8,public_contact_phone=$9,public_contact_consent=$10,country_code=$11,region=$12,municipality=$13,locality=$14,
-    reference=$15,latitude=$16,longitude=$17,starts_on=$18,ends_on=$19,event_timezone=$20,hours_description=$21,updated_at=now()
-    WHERE id=$1 AND owner_user_id=$2 AND status='DRAFT' RETURNING id,slug,status`,[eventId,ownerId,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours]);
+    reference=$15,latitude=$16,longitude=$17,starts_on=$18,ends_on=$19,event_timezone=$20,hours_description=$21,price_cents=$22,updated_at=now()
+    WHERE id=$1 AND owner_user_id=$2 AND status='DRAFT' RETURNING id,slug,status`,[eventId,ownerId,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours,temporaryEventQuote(x.startsOn,x.endsOn).amountCents]);
    if(!rows.length)throw Error('EVENT_NOT_EDITABLE');return rows[0];
   },
   async getOwned(ownerId:string,eventId:string){

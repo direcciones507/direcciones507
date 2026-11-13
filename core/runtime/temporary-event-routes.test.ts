@@ -63,7 +63,7 @@ test('draft never activates payment from browser request',async()=>{
  body:JSON.stringify(payload)});
  const response=await handleTemporaryEventRoutes(req,{...ctx,sql:fakeSql});
  assert.equal(response?.status,201);
- assert.match(statement,/,'DRAFT'\)/);
+ assert.match(statement,/,'DRAFT',\$22\)/);
  assert.doesNotMatch(statement,/payment_confirmed_at/);
 });
 

@@ -35,8 +35,10 @@ async function command(args:string[],env:Record<string,string|undefined>){
  if(code!==0){const reason=err.split('\n').find(x=>/ERROR:|error:/.test(x))?.replace(/"[^"]*"|'[^']*'/g,'[redacted]').slice(0,220);throw Error('TOOL_FAILED_'+args[0]+': '+(reason||'exit '+code))}return out;
 }
 export async function runRelease(env:Record<string,string|undefined>){
- if(env.RAILWAY_PROJECT_ID!=='2b6d4e6c-e1d4-471d-a77d-c9bdb711650d'||env.RAILWAY_ENVIRONMENT_ID!=='909fdec4-8930-4405-ae53-6e8fb0d3f901'||!['temporary-events-225','temporary-price-1299'].includes(env.AD507_RELEASE_AUTHORIZED||''))throw Error('WRONG_RELEASE_TARGET');
- const priceRelease=env.AD507_RELEASE_AUTHORIZED==='temporary-price-1299';
+ if(env.RAILWAY_PROJECT_ID!=='2b6d4e6c-e1d4-471d-a77d-c9bdb711650d'||env.RAILWAY_ENVIRONMENT_ID!=='909fdec4-8930-4405-ae53-6e8fb0d3f901'||!['temporary-events-225','temporary-price-1299','temporary-price-tiers'].includes(env.AD507_RELEASE_AUTHORIZED||''))throw Error('WRONG_RELEASE_TARGET');
+ const priceRelease=['temporary-price-1299','temporary-price-tiers'].includes(env.AD507_RELEASE_AUTHORIZED||'');
+ const tierRelease=env.AD507_RELEASE_AUTHORIZED==='temporary-price-tiers';
+ const priceVersion=tierRelease?'temporary-events-price-tiers':'temporary-events-price-1299';
  if(priceRelease&&!['price-backup','price-apply'].includes(env.AD507_RELEASE_MODE||''))throw Error('INVALID_PRICE_RELEASE_MODE');
  const target=new URL(env.DATABASE_URL||'');if(!target.hostname.endsWith('.railway.internal')||decodeURIComponent(target.pathname.slice(1))!=='railway')throw Error('DATABASE_IDENTITY_NOT_VERIFIED');
  if(!/^[a-f0-9]{40}$/.test(env.AD507_RELEASE_COMMIT||''))throw Error('INVALID_RELEASE_COMMIT');
@@ -90,15 +92,15 @@ export async function runRelease(env:Record<string,string|undefined>){
    const merchant=await response.json() as any;
    if(!response.ok||typeof merchant.body?.token!=='string'||!merchant.body.token||!Number.isFinite(Number(merchant.body.epochTime)))throw Error('YAPPY_MERCHANT_VALIDATION_FAILED');
    report.yappy={environment:config.environment,domain:config.domain,merchantFingerprint:sha(config.merchantId).slice(0,12),validated:true,chargeCreated:false};log('YAPPY_MERCHANT_VERIFIED',report.yappy);
-   const migration=await readFile(new URL('../schema-proposals/temporary-events-price-1299.sql',import.meta.url),'utf8');
+   const migration=await readFile(new URL('../schema-proposals/'+priceVersion+'.sql',import.meta.url),'utf8');
    await sql.begin('isolation level repeatable read',async tx=>{
     const tables=baseline.filter(x=>!(x.schema==='ad507'&&x.name==='schema_migrations')).map(({schema,name})=>({schema,name}));
     const before=await inventory(tx,tables);
-    const ledger=await tx.unsafe("SELECT checksum_sha256 FROM ad507.schema_migrations WHERE version='temporary-events-price-1299'");
+    const ledger=await tx.unsafe("SELECT checksum_sha256 FROM ad507.schema_migrations WHERE version=$1",[priceVersion]);
     if(ledger.length&&ledger[0].checksum_sha256!==sha(migration))throw Error('PRICE_MIGRATION_CHECKSUM_CHANGED');
     await tx.unsafe(migration.replace(/\bBEGIN;/,'').replace(/COMMIT;\s*$/,''));
     const after=await inventory(tx,tables);if(JSON.stringify(before)!==JSON.stringify(after))throw Error('EXISTING_DATA_CHANGED_ROLLBACK');
-    await tx.unsafe("INSERT INTO ad507.schema_migrations(version,checksum_sha256,description,applied_by,metadata) VALUES('temporary-events-price-1299',$1,'Temporary 1299 defaults; retain original orders',current_user,$2::jsonb) ON CONFLICT(version) DO NOTHING",[sha(migration),JSON.stringify({commit:env.AD507_RELEASE_COMMIT,backup:report.backup.key})]);
+    await tx.unsafe("INSERT INTO ad507.schema_migrations(version,checksum_sha256,description,applied_by,metadata) VALUES($3,$1,'Temporary price defaults and tiers; retain original orders',current_user,$2::jsonb) ON CONFLICT(version) DO NOTHING",[sha(migration),JSON.stringify({commit:env.AD507_RELEASE_COMMIT,backup:report.backup.key}),priceVersion]);
     report.existingRowsUnchanged=true;
     report.priceDefaultsAfter=await tx.unsafe("SELECT table_name,column_name,column_default FROM information_schema.columns WHERE table_schema='ad507' AND ((table_name='temporary_events' AND column_name='price_cents') OR (table_name='temporary_event_orders' AND column_name='amount_cents')) ORDER BY table_name");
     if(report.priceDefaultsAfter.length!==2||report.priceDefaultsAfter.some((x:any)=>x.column_default!=='1299'))throw Error('PRICE_DEFAULTS_NOT_UPDATED');

@@ -2,7 +2,7 @@ Política Comercial
 
 Direcciones 507/LATAM
 
-Versión 1.0-20261017 · Vigencia: a partir de su publicación autorizada
+Versión 1.1-20261113 · Vigencia: a partir de su publicación autorizada
 
 1. Alcance
 Esta política regula los planes gratuitos, promocionales y de pago de Direcciones 507/LATAM (la

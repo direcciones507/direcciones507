@@ -47,3 +47,12 @@ export function verifyYappyIPN(query:URLSearchParams,config:YappyConfiguration):
   if(!timingSafeEqual(signature,Buffer.from(hash,'hex')))throw Error('INVALID_PAYMENT_SIGNATURE');
   return {orderId,status:status==='E'?'PAID':status==='C'?'CANCELLED':'FAILED',providerStatus:status as VerifiedPayment['providerStatus']};
 }
+
+// Previous Core orders retain their original server-approved quote.
+export function acceptedOrderAmounts(plan:string):number[]{
+ const current=paymentAmount(plan);const previous:Record<string,number[]>={RESIDENTIAL:[1299],BUSINESS_PREMIUM:[1999],BUSINESS_PREMIUM_PRO:[3999]};
+ return [...new Set([current,...(previous[plan]??[])])];
+}
+export function validStoredOrderAmount(plan:string,amount:number){return Number.isSafeInteger(amount)&&acceptedOrderAmounts(plan).includes(amount);}
+export const PLACE_AD_PRICE_CENTS=1499;
+export const PLACE_AD_DURATION_DAYS=30;

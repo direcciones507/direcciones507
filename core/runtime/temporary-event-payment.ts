@@ -4,7 +4,7 @@ import type {Sql} from 'postgres';
 import {verifyYappyIPN,type YappyConfiguration} from './payment-policy';
 import type {createYappyProvider} from './yappy-provider';
 import {dbDate} from './temporary-event-repository';
-import {eventIsExpired} from './temporary-event-lifecycle';
+import {temporaryEventQuote,eventIsExpired} from './temporary-event-lifecycle';
 export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,provider:ReturnType<typeof createYappyProvider>,trialEventId?:string){
  return {
   async initialize(userId:string,eventId:string,alias:string){
@@ -18,7 +18,7 @@ export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,pr
     const media=await tx.unsafe('SELECT slot FROM ad507.temporary_event_media WHERE event_id=$1',[eventId]);
     if(!media.some(x=>x.slot===1)||media.length>3)throw Error('PRIMARY_PHOTO_REQUIRED');
     const rows=await tx.unsafe(`INSERT INTO ad507.temporary_event_orders(event_id,provider_order_id,environment,provider_reference,amount_cents)
-      VALUES($1,$2,$3,'INITIALIZING',1299) RETURNING *`,[eventId,randomBytes(7).toString('hex'),config.environment]);
+      VALUES($1,$2,$3,'INITIALIZING',$4) RETURNING *`,[eventId,randomBytes(7).toString('hex'),config.environment,temporaryEventQuote(dbDate(e.starts_on),dbDate(e.ends_on)).amountCents]);
     await tx.unsafe("UPDATE ad507.temporary_events SET status='AWAITING_PAYMENT',payment_order_id=$2,updated_at=now() WHERE id=$1",[eventId,rows[0].id]);
     return rows[0];
    });
@@ -34,7 +34,7 @@ export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,pr
     const p=rows[0];if(!p)throw Error('PAYMENT_NOT_FOUND');
     if(trialEventId&&p.event_id!==trialEventId)throw Error('INVALID_PAYMENT_ORDER');
     // V2 signs order/status/domain, not amount: bind receipt to the immutable server quote.
-    if(![799,1299].includes(p.amount_cents)||p.currency!=='USD'||p.environment!==config.environment||!p.provider_reference||p.provider_reference==='INITIALIZING')throw Error('INVALID_PAYMENT_ORDER');
+    if(![799,1299,1999].includes(p.amount_cents)||p.currency!=='USD'||p.environment!==config.environment||!p.provider_reference||p.provider_reference==='INITIALIZING')throw Error('INVALID_PAYMENT_ORDER');
     if(p.status==='PAID')return {ok:true,unchanged:true};
     if(proof.status!=='PAID'){
      await tx.unsafe('UPDATE ad507.temporary_event_orders SET status=$2 WHERE id=$1',[p.id,proof.status]);

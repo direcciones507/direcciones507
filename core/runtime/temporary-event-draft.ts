@@ -37,7 +37,7 @@ export function validateTemporaryEventDraft(input:unknown):TemporaryEventDraft {
  if(!/^[A-Z]{2}$/.test(draft.countryCode)||!draft.province||!draft.district||!draft.corregimiento)throw Error('INVALID_EVENT_LOCATION');
  if(!validDate(draft.startsOn)||!validDate(draft.endsOn))throw Error('INVALID_EVENT_DATES');
  const days=(Date.parse(draft.endsOn+'T00:00:00Z')-Date.parse(draft.startsOn+'T00:00:00Z'))/86400000+1;
- if(days<1||days>30)throw Error('EVENT_DURATION_OUT_OF_RANGE');
+ if(days<1||days>60)throw Error('EVENT_DURATION_OUT_OF_RANGE');
  try{new Intl.DateTimeFormat('en',{timeZone:draft.timezone}).format()}catch{throw Error('INVALID_EVENT_TIMEZONE')}
  const lat=draft.latitude,lon=draft.longitude;
  if((lat===null)!==(lon===null)||lat!==null&&(!Number.isFinite(lat)||lat< -90||lat>90)||lon!==null&&(!Number.isFinite(lon)||lon< -180||lon>180))throw Error('INVALID_EVENT_COORDINATES');

@@ -68,3 +68,12 @@ test('draft never activates payment from browser request',async()=>{
 });
 
 test('event form sends signed-out visitors to the existing account login',async()=>{const r=await handleTemporaryEventRoutes(new Request('https://direcciones.lat/panel/evento/nuevo'),{...ctx,auth:{currentUser:async()=>null}});assert.equal(r?.status,302);assert.equal(r?.headers.get('location'),'/panel');});
+
+test('cross-site homepage navigation can open only the authenticated GET form',async()=>{
+ const headers={'sec-fetch-site':'cross-site','sec-fetch-mode':'navigate'};
+ const form=new Request('https://direcciones.lat/panel/evento/nuevo',{headers});
+ assert.equal((await handleTemporaryEventRoutes(form,ctx))?.status,200);
+ assert.equal((await handleTemporaryEventRoutes(form,{...ctx,auth:{currentUser:async()=>null}}))?.status,302);
+ assert.equal((await handleTemporaryEventRoutes(new Request('https://direcciones.lat/v1/user/temporary-events',{headers}),ctx))?.status,403);
+ assert.equal((await handleTemporaryEventRoutes(new Request('https://direcciones.lat/panel/evento/nuevo',{method:'POST',headers}),ctx))?.status,405);
+});

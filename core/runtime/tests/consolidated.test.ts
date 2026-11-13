@@ -1334,7 +1334,13 @@ test('new annual contracts: signed initial payment, explicit renewal, expiry and
  const {createRequestRepository}=await import('../request-repository');const {createPaymentRepository}=await import('../payment-repository');
  const {ANNUAL_POLICY,annualEnd,serviceExpired}=await import('../annual-service');const {createHmac}=await import('node:crypto');
  const {getPublicAddressByCode}=await import('../../postgres/public-address-repository');
- await sql.unsafe(readFileSync(new URL('../schema-proposals/commercial-service-terms.sql',import.meta.url),'utf8'));
+ const migration=readFileSync(new URL('../schema-proposals/commercial-service-terms.sql',import.meta.url),'utf8');
+ // Validate the old test/sandbox schema and roll back, then reproduce the
+ // inspected production schema where the one-order-ever index is absent.
+ await sql.unsafe(migration.replace(/COMMIT;\s*$/,'ROLLBACK;'));
+ expect((await sql.unsafe("SELECT to_regclass('ad507.commercial_payment_terms')::text AS terms"))[0].terms).toBeNull();
+ await sql.unsafe('DROP INDEX ad507.core_payment_address_environment_uidx');
+ await sql.unsafe(migration);
  const stamp=crypto.randomUUID(),owner=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[owner,'annual-'+stamp+'@example.test']);await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
  const code='AD507-N'+String(80000000+Math.floor(Math.random()*10000000));
  const canonical={historicalRegistryVerified:true as const,reserve:async()=>code,publish:async()=>({confirmed:true as const,receipt:'annual-'+stamp})};
@@ -1385,7 +1391,11 @@ test('installments: authentic partial activation, due date, second-order dedupli
   const request=await requests.submit(owner,'installment-'+plan+stamp,{type:'BUSINESS',plan,name:plan+stamp,reference:'Synthetic only',latitude:8.41+(plan==='BUSINESS_PREMIUM'?0:.01),longitude:-80.1},[{role:'logo',mime:'image/png',bytes:png}]);
   const initial=await repo.prepare(owner,request.id,'installment-first-'+stamp,'INSTALLMENTS');expect(initial.order.amount_cents).toBe(plan==='BUSINESS_PREMIUM'?1650:2750);
   const proof=(order:any,status='E')=>new URLSearchParams({orderId:order.provider_order_id,status,domain:origin,hash:createHmac('sha256','installment-fixture').update(order.provider_order_id+status+origin).digest('hex')});
-  await repo.registerProviderOrder(initial.order.id,'installment-first-'+plan+stamp);await repo.confirm(proof(initial.order));
+  await repo.registerProviderOrder(initial.order.id,'installment-first-'+plan+stamp);
+  await sql.unsafe('UPDATE ad507.orders SET amount_cents=$2 WHERE id=$1::uuid',[initial.order.id,initial.order.amount_cents+1]);
+  await expect(repo.confirm(proof(initial.order))).rejects.toThrow('PAYMENT_AMOUNT_CHANGED');
+  await sql.unsafe('UPDATE ad507.orders SET amount_cents=$2 WHERE id=$1::uuid',[initial.order.id,initial.order.amount_cents]);
+  await repo.confirm(proof(initial.order));
   const first=await requests.read(owner,request.id);expect(first.status).toBe('ACTIVE');const service=(first as any).extras.annualService;expect(service.fullyPaid).toBe(false);expect(Date.parse(service.secondDueAt)-Date.parse(service.startsAt)).toBe(30*86400000);
   const second=await repo.prepareSecond(owner,request.id,'installment-second-'+stamp);expect(second.order.amount_cents).toBe(initial.order.amount_cents);
   const other=await repo.prepareSecond(owner,request.id,'another-second-'+stamp);expect(other.order.id).toBe(second.order.id);

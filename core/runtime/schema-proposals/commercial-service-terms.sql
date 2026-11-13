@@ -15,7 +15,16 @@ CREATE TABLE ad507.commercial_payment_terms (
 -- The prior one-order-ever index prevents renewals and a second installment.
 -- Replace it with a deferred guard that preserves the old initial-order invariant
 -- and allows only purpose-bound, separately deduplicated commercial intents.
-DROP INDEX ad507.core_payment_address_environment_uidx;
+DROP INDEX IF EXISTS ad507.core_payment_address_environment_uidx;
+-- Some production installs have only the Yappy schema. Preserve the existing
+-- sandbox-only PayPal boundary while preparing its deduplication constraints.
+DO $$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='ad507.orders'::regclass AND conname='core_paypal_order_binding_check') THEN
+  ALTER TABLE ad507.orders ADD CONSTRAINT core_paypal_order_binding_check CHECK(provider IS DISTINCT FROM 'PAYPAL' OR (user_id IS NOT NULL AND address_id IS NOT NULL AND payment_plan IS NOT NULL AND payment_environment IS NOT NULL AND payment_environment='test' AND provider_order_id IS NOT NULL AND operation_key IS NOT NULL AND amount_cents>0 AND currency='USD'));
+ END IF;
+END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS core_paypal_operation_uidx ON ad507.orders(operation_key) WHERE provider='PAYPAL';
+CREATE UNIQUE INDEX IF NOT EXISTS core_paypal_reference_uidx ON ad507.orders(payment_environment,provider_reference) WHERE provider='PAYPAL' AND provider_reference IS NOT NULL;
 CREATE INDEX core_payment_address_environment_lookup ON ad507.orders(address_id,payment_environment);
 CREATE FUNCTION ad507.guard_commercial_order_intent() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE n integer;

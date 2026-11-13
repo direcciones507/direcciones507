@@ -5,18 +5,20 @@ import {verifyYappyIPN,type YappyConfiguration} from './payment-policy';
 import type {createYappyProvider} from './yappy-provider';
 import {dbDate} from './temporary-event-repository';
 import {eventIsExpired} from './temporary-event-lifecycle';
-export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,provider:ReturnType<typeof createYappyProvider>){
+export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,provider:ReturnType<typeof createYappyProvider>,trialEventId?:string){
  return {
   async initialize(userId:string,eventId:string,alias:string){
+   if(trialEventId&&eventId!==trialEventId)throw Error('EVENT_NOT_PAYABLE');
    if(typeof alias!=='string'||!/^6\d{7}$/.test(alias))throw Error('INVALID_YAPPY_ALIAS');
    const order=await sql.begin(async tx=>{
     const events=await tx.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2 FOR UPDATE',[eventId,userId]);
     const e=events[0];if(!e)throw Error('EVENT_NOT_FOUND');
+    if(e.country_code!=='PA')throw Error('EVENT_NOT_PAYABLE');
     if(e.status!=='DRAFT'||eventIsExpired(dbDate(e.ends_on),e.event_timezone,new Date()))throw Error('EVENT_NOT_PAYABLE');
     const media=await tx.unsafe('SELECT slot FROM ad507.temporary_event_media WHERE event_id=$1',[eventId]);
     if(!media.some(x=>x.slot===1)||media.length>3)throw Error('PRIMARY_PHOTO_REQUIRED');
-    const rows=await tx.unsafe(`INSERT INTO ad507.temporary_event_orders(event_id,provider_order_id,environment,provider_reference)
-      VALUES($1,$2,$3,'INITIALIZING') RETURNING *`,[eventId,randomBytes(7).toString('hex'),config.environment]);
+    const rows=await tx.unsafe(`INSERT INTO ad507.temporary_event_orders(event_id,provider_order_id,environment,provider_reference,amount_cents)
+      VALUES($1,$2,$3,'INITIALIZING',1299) RETURNING *`,[eventId,randomBytes(7).toString('hex'),config.environment]);
     await tx.unsafe("UPDATE ad507.temporary_events SET status='AWAITING_PAYMENT',payment_order_id=$2,updated_at=now() WHERE id=$1",[eventId,rows[0].id]);
     return rows[0];
    });

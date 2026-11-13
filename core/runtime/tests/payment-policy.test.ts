@@ -9,7 +9,7 @@ function notification(status:string='E'){
 test('server prices use integer cents and unknown or inherited keys fail closed',()=>{
   expect(['RESIDENTIAL','BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RENEWAL','CORPORATE_PRO'].map(paymentAmount)).toEqual([1499,0,2999,4999,1499,4999]);
   for(const plan of ['PLACE','toString','__proto__','premium'])expect(()=>paymentAmount(plan)).toThrow('INVALID_PAYMENT_PLAN');
-  expect(money(2999)).toBe('29.99';expect(()=>money(1.99)).toThrow();expect(YAPPY_PAYMENTS_ENABLED).toBe(false);
+  expect(money(2999)).toBe('29.99');expect(()=>money(1.99)).toThrow();expect(YAPPY_PAYMENTS_ENABLED).toBe(false);
 });
 test('official IPN states authenticate the exact merchant domain and reject browser success',()=>{
   for(const [status,expected]of [['E','PAID'],['R','FAILED'],['X','FAILED'],['C','CANCELLED']])expect(verifyYappyIPN(notification(status),config).status).toBe(expected);

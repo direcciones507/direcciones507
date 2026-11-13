@@ -10,6 +10,7 @@ import {createTemporaryEventMedia} from '../temporary-event-media';
 import {optimizeRequestImage} from '../image-processing';
 import {prepareTemporaryEvents} from './prepare-temporary-events';
 import sharp from 'sharp';
+import {yappyConfiguration} from '../payment-policy';
 const sha=(bytes:Uint8Array|string)=>createHash('sha256').update(bytes).digest('hex');
 export function sealBackup(bytes:Uint8Array,secret:string){
  if(!/^[a-f0-9]{64}$/.test(secret))throw Error('INVALID_BACKUP_KEY');
@@ -34,7 +35,9 @@ async function command(args:string[],env:Record<string,string|undefined>){
  if(code!==0){const reason=err.split('\n').find(x=>/ERROR:|error:/.test(x))?.replace(/"[^"]*"|'[^']*'/g,'[redacted]').slice(0,220);throw Error('TOOL_FAILED_'+args[0]+': '+(reason||'exit '+code))}return out;
 }
 export async function runRelease(env:Record<string,string|undefined>){
- if(env.RAILWAY_PROJECT_ID!=='2b6d4e6c-e1d4-471d-a77d-c9bdb711650d'||env.RAILWAY_ENVIRONMENT_ID!=='909fdec4-8930-4405-ae53-6e8fb0d3f901'||env.AD507_RELEASE_AUTHORIZED!=='temporary-events-225')throw Error('WRONG_RELEASE_TARGET');
+ if(env.RAILWAY_PROJECT_ID!=='2b6d4e6c-e1d4-471d-a77d-c9bdb711650d'||env.RAILWAY_ENVIRONMENT_ID!=='909fdec4-8930-4405-ae53-6e8fb0d3f901'||!['temporary-events-225','temporary-price-1299'].includes(env.AD507_RELEASE_AUTHORIZED||''))throw Error('WRONG_RELEASE_TARGET');
+ const priceRelease=env.AD507_RELEASE_AUTHORIZED==='temporary-price-1299';
+ if(priceRelease&&!['price-backup','price-apply'].includes(env.AD507_RELEASE_MODE||''))throw Error('INVALID_PRICE_RELEASE_MODE');
  const target=new URL(env.DATABASE_URL||'');if(!target.hostname.endsWith('.railway.internal')||decodeURIComponent(target.pathname.slice(1))!=='railway')throw Error('DATABASE_IDENTITY_NOT_VERIFIED');
  if(!/^[a-f0-9]{40}$/.test(env.AD507_RELEASE_COMMIT||''))throw Error('INVALID_RELEASE_COMMIT');
  const settings=r2Settings(env);if(!settings)throw Error('R2_NOT_VERIFIED');
@@ -52,7 +55,7 @@ export async function runRelease(env:Record<string,string|undefined>){
   const identity=(await sql.unsafe('SELECT current_database() AS database,current_user AS username,version() AS version'))[0];
   if(identity.database!=='railway')throw Error('WRONG_DATABASE');
   const foundation=await sql.unsafe("SELECT data_type FROM information_schema.columns WHERE table_schema='ad507' AND table_name='users' AND column_name='id'");if(foundation[0]?.data_type!=='uuid')throw Error('AUTH_FOUNDATION_REQUIRED');
-  const existing=await sql.unsafe("SELECT tablename FROM pg_tables WHERE schemaname='ad507' AND tablename IN ('temporary_events','temporary_event_media','temporary_event_orders')");if(existing.length)throw Error('EVENT_SCHEMA_ALREADY_PRESENT_REVIEW_REQUIRED');
+  const existing=await sql.unsafe("SELECT tablename FROM pg_tables WHERE schemaname='ad507' AND tablename IN ('temporary_events','temporary_event_media','temporary_event_orders')");if(priceRelease?existing.length!==3:existing.length!==0)throw Error('EVENT_SCHEMA_NOT_EXPECTED');
   log('IDENTIFIED',{database:identity.database,postgresVersion:String(identity.version).split(' on ')[0]});
   const file=join(work,'database.dump');let baseline:any[]=[];
   await sql.begin('isolation level repeatable read read only',async tx=>{
@@ -76,6 +79,32 @@ export async function runRelease(env:Record<string,string|undefined>){
   local=postgres(localUrl.href,{max:1,connection:{timezone:'UTC'},onnotice:()=>{}});
   const restoredInventory=await inventory(local);if(JSON.stringify(restoredInventory)!==JSON.stringify(baseline))throw Error('RESTORED_DATA_INVENTORY_MISMATCH');
   report.restoreVerified=true;report.originalTables=baseline.length;report.originalRows=baseline.reduce((n,t)=>n+Number(t.rows),0);log('RESTORE_VERIFIED',{tables:report.originalTables,rows:report.originalRows});
+  if(priceRelease){
+   const defaults=await sql.unsafe("SELECT table_name,column_name,column_default FROM information_schema.columns WHERE table_schema='ad507' AND ((table_name='temporary_events' AND column_name='price_cents') OR (table_name='temporary_event_orders' AND column_name='amount_cents')) ORDER BY table_name");
+   report.priceDefaultsBefore=defaults;
+   const checkpoint=await persist('verified-price-backup-report.json',Buffer.from(JSON.stringify(report)));report.preMigrationReport=checkpoint.key;
+   if(env.AD507_RELEASE_MODE==='price-backup'){log('PRICE_BACKUP_COMPLETE',report);return report;}
+   const config=yappyConfiguration({...env,AD507_YAPPY_IPN_URL:env.AD507_TEMPORARY_YAPPY_IPN_URL});
+   if(!config||config.environment!=='production'||config.ipnUrl!=='https://direcciones.lat/v1/payments/temporary-events/yappy/ipn')throw Error('YAPPY_PRODUCTION_CONFIGURATION_REQUIRED');
+   const response=await fetch('https://apipagosbg.bgeneral.cloud/payments/validate/merchant',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({merchantId:config.merchantId,urlDomain:config.domain}),redirect:'error',signal:AbortSignal.timeout(15000)});
+   const merchant=await response.json() as any;
+   if(!response.ok||typeof merchant.body?.token!=='string'||!merchant.body.token||!Number.isFinite(Number(merchant.body.epochTime)))throw Error('YAPPY_MERCHANT_VALIDATION_FAILED');
+   report.yappy={environment:config.environment,domain:config.domain,merchantFingerprint:sha(config.merchantId).slice(0,12),validated:true,chargeCreated:false};log('YAPPY_MERCHANT_VERIFIED',report.yappy);
+   const migration=await readFile(new URL('../schema-proposals/temporary-events-price-1299.sql',import.meta.url),'utf8');
+   await sql.begin('isolation level repeatable read',async tx=>{
+    const tables=baseline.filter(x=>!(x.schema==='ad507'&&x.name==='schema_migrations')).map(({schema,name})=>({schema,name}));
+    const before=await inventory(tx,tables);
+    const ledger=await tx.unsafe("SELECT checksum_sha256 FROM ad507.schema_migrations WHERE version='temporary-events-price-1299'");
+    if(ledger.length&&ledger[0].checksum_sha256!==sha(migration))throw Error('PRICE_MIGRATION_CHECKSUM_CHANGED');
+    await tx.unsafe(migration.replace(/\bBEGIN;/,'').replace(/COMMIT;\s*$/,''));
+    const after=await inventory(tx,tables);if(JSON.stringify(before)!==JSON.stringify(after))throw Error('EXISTING_DATA_CHANGED_ROLLBACK');
+    await tx.unsafe("INSERT INTO ad507.schema_migrations(version,checksum_sha256,description,applied_by,metadata) VALUES('temporary-events-price-1299',$1,'Temporary 1299 defaults; retain original orders',current_user,$2::jsonb) ON CONFLICT(version) DO NOTHING",[sha(migration),JSON.stringify({commit:env.AD507_RELEASE_COMMIT,backup:report.backup.key})]);
+    report.existingRowsUnchanged=true;
+    report.priceDefaultsAfter=await tx.unsafe("SELECT table_name,column_name,column_default FROM information_schema.columns WHERE table_schema='ad507' AND ((table_name='temporary_events' AND column_name='price_cents') OR (table_name='temporary_event_orders' AND column_name='amount_cents')) ORDER BY table_name");
+    if(report.priceDefaultsAfter.length!==2||report.priceDefaultsAfter.some((x:any)=>x.column_default!=='1299'))throw Error('PRICE_DEFAULTS_NOT_UPDATED');
+   });
+   report.migrationApplied=true;report.completedAt=new Date().toISOString();await persist('price-completed-report.json',Buffer.from(JSON.stringify(report)));log('PRICE_MIGRATION_VERIFIED',report);return report;
+  }
   // Real image roundtrip through the unchanged event adapter before any live DDL.
   const media=createTemporaryEventMedia(settings),fixture=await sharp({create:{width:16,height:16,channels:3,background:'#1760ce'}}).png().toBuffer(),id=crypto.randomUUID();
   const uploaded=await media.upload(id,fixture,'image/png'),read=await media.read(uploaded.key),expected=await optimizeRequestImage(fixture,'image/png');if(sha(read)!==sha(expected.bytes))throw Error('EVENT_R2_ROUNDTRIP_MISMATCH');

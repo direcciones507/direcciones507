@@ -4,8 +4,12 @@
 BEGIN;
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
+SELECT pg_advisory_xact_lock(hashtext('ad507-temporary-price-1299'));
 DO $$
 BEGIN
+ IF current_database()<>'railway' AND current_database() NOT LIKE 'temporary_%' THEN
+  RAISE EXCEPTION 'WRONG_DATABASE';
+ END IF;
  IF to_regclass('ad507.temporary_events') IS NULL
     OR to_regclass('ad507.temporary_event_orders') IS NULL THEN
   RAISE EXCEPTION 'TEMPORARY_EVENT_TABLES_REQUIRED';

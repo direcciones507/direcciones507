@@ -36,7 +36,7 @@ const paymentConfig = yappyConfiguration(process.env);
 const yappyEnabled = yappyPaymentsEnabled(process.env) && commercialWorkflowEnabled;
 const paymentProvider = yappyEnabled && paymentConfig ? createYappyProvider(paymentConfig) : null;
 const eventPaymentConfig=temporaryYappyConfiguration(process.env);
-const temporaryPayment=eventPaymentConfig?createTemporaryEventPayment(sql,eventPaymentConfig,createYappyProvider(eventPaymentConfig)):null;
+const temporaryPayment=eventPaymentConfig?createTemporaryEventPayment(sql,eventPaymentConfig,createYappyProvider(eventPaymentConfig),process.env.AD507_TEMPORARY_YAPPY_EVENT_ID):null;
 const requestRepository = createRequestRepository(sql, { r2: requestR2, canonical: commercialWorkflowEnabled ? createNewAddressPublication(sql,{namespaceExclusive}) : null,
   // Publication eligibility is independent of provider activation. Free requests
   // need no order; paid plans must remain pending until a real payment exists.

@@ -54,6 +54,35 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   const preview=await handleTemporaryEventRoutes(request(base+'/preview'),ctx);expect(preview?.status).toBe(200);const previewHtml=await preview!.text();expect(previewHtml).toContain('Vista previa privada');expect(previewHtml).not.toContain('PRIVATE_');expect(previewHtml).toContain('Descargar QR');expect(previewHtml).toContain('únicamente después de un pago confirmado');expect(previewHtml).not.toContain('Compartir por WhatsApp');
   const proxyPreview=await handleTemporaryEventRoutes(new Request('http://direcciones.lat'+base+'/preview',{headers:{'x-forwarded-proto':'https'}}),ctx);const proxyHtml=await proxyPreview!.text();expect(proxyHtml).toContain('https://direcciones.lat'+base+'/preview?photo=1');expect(proxyHtml).not.toContain('src="http://direcciones.lat');
   expect((await handleTemporaryEventRoutes(request(base,'PUT',{...eventFixture,title:'Fiesta editada'}),ctx))?.status).toBe(200);
+
+  // Exercise the manual default migration against existing 799-cent rows.
+  await sql.unsafe('ALTER TABLE ad507.temporary_events DROP CONSTRAINT temporary_events_price_cents_check; ALTER TABLE ad507.temporary_events ADD CONSTRAINT temporary_events_price_cents_check CHECK(price_cents IN (799,1299)); ALTER TABLE ad507.temporary_events ALTER COLUMN price_cents SET DEFAULT 799; ALTER TABLE ad507.temporary_event_orders DROP CONSTRAINT temporary_event_orders_amount_cents_check; ALTER TABLE ad507.temporary_event_orders ADD CONSTRAINT temporary_event_orders_amount_cents_check CHECK(amount_cents IN (799,1299)); ALTER TABLE ad507.temporary_event_orders ALTER COLUMN amount_cents SET DEFAULT 799');
+  const legacy=await repository.createDraft(owner,{...eventFixture,title:'Legacy amount fixture'});
+  await sql.unsafe("INSERT INTO ad507.temporary_event_orders(event_id,provider_order_id,environment,provider_reference) VALUES($1,'legacy799','production','old-reference')",[legacy.id]);
+  const oldEvent=await sql.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1',[legacy.id]);
+  const oldOrder=await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[legacy.id]);
+  expect(oldEvent[0].price_cents).toBe(799);expect(oldOrder[0].amount_cents).toBe(799);
+  await sql.unsafe(readFileSync(new URL('./schema-proposals/temporary-events-price-1299.sql',import.meta.url),'utf8'));
+  expect(JSON.stringify(await sql.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1',[legacy.id]))).toBe(JSON.stringify(oldEvent));
+  expect(JSON.stringify(await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[legacy.id]))).toBe(JSON.stringify(oldOrder));
+  const rejectedProvider=createYappyProvider(config,(async()=>{throw Error('PROVIDER_MUST_NOT_BE_CALLED')}) as unknown as typeof fetch);
+  await expect(createTemporaryEventPayment(sql,config,rejectedProvider,legacy.id).initialize(owner,id,'60000000')).rejects.toThrow('EVENT_NOT_PAYABLE');
+  await sql.unsafe("UPDATE ad507.temporary_events SET country_code='CR' WHERE id=$1",[id]);
+  await expect(payment.initialize(owner,id,'60000000')).rejects.toThrow('EVENT_NOT_PAYABLE');expect(providerCalls).toBe(0);
+  await sql.unsafe("UPDATE ad507.temporary_events SET country_code='PA' WHERE id=$1",[id]);
+  // Failed/cancelled authentic receipts never publish; replay is harmless.
+  const isolatedProvider=createYappyProvider(config,(async(url:any)=>Response.json(String(url).endsWith('/validate/merchant')?{body:{token:'fixture',epochTime:123}}:{body:{transactionId:'fixture',token:'fixture',documentName:'fixture'}})) as typeof fetch);
+  const isolatedPayment=createTemporaryEventPayment(sql,config,isolatedProvider);
+  for(const status of ['R','C','X']){
+   const failed=await repository.createDraft(owner,{...eventFixture,title:'Unpaid fixture '+status});
+   await repository.savePhoto(owner,failed.id,1,'temporary-events/fixture.webp',1);
+   await isolatedPayment.initialize(owner,failed.id,'60000000');
+   const o=(await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[failed.id]))[0];expect(o.amount_cents).toBe(1299);
+   const receipt=new URLSearchParams({orderId:o.provider_order_id,status,domain:config.domain});receipt.set('hash',createHmac('sha256','test-secret').update(o.provider_order_id+status+config.domain).digest('hex'));
+   await isolatedPayment.confirm(receipt);await isolatedPayment.confirm(receipt);
+   expect((await repository.getOwned(owner,failed.id))?.status).toBe('AWAITING_PAYMENT');expect(await repository.getPublic(failed.slug)).toBeNull();
+  }
+
   expect((await handleTemporaryEventRoutes(request(base+'/payment','POST',{alias:'60000000'}),ctx))?.status).toBe(200);expect(providerCalls).toBe(2);
   await expect(payment.initialize(owner,id,'60000000')).rejects.toThrow('EVENT_NOT_PAYABLE');expect(providerCalls).toBe(2);
   const order=(await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[id]))[0];

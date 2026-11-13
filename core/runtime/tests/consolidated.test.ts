@@ -1298,7 +1298,7 @@ test('isolated paid confirmation: idempotent IPN, private unpaid drafts, automat
  await expect(repository.publish(adminId,risky.id)).rejects.toThrow('APPROVAL_REQUIRED');
  await repository.review(adminId,risky.id,'APPROVED');expect((await repository.publish(adminId,risky.id)).status).toBe('ACTIVE');expect(publications).toBe(2);
  const residential=await repository.submit(owner,'auto-home-'+stamp,{...base,type:'RESIDENTIAL',plan:'RESIDENTIAL',name:'Private '+stamp},[]);
- await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at,operation_key) VALUES($1::uuid,$2::uuid,1299,'YAPPY','RESIDENTIAL','test',$3,'PAID',now(),gen_random_uuid()::text)",[owner,residential.id,'H'+stamp.replaceAll('-','').slice(0,12)]);
+ await sql.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,status,confirmed_at,operation_key) VALUES($1::uuid,$2::uuid,1499,'YAPPY','RESIDENTIAL','test',$3,'PAID',now(),gen_random_uuid()::text)",[owner,residential.id,'H'+stamp.replaceAll('-','').slice(0,12)]);
  await expect(repository.activatePaid(residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');const home=await repository.read(owner,residential.id);expect(home.status).toBe('DRAFT');expect(home.publicUrl).toBeNull();expect(publications).toBe(2);
 });
 

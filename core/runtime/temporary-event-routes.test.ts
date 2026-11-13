@@ -31,7 +31,7 @@ test('authenticated form is available without a DB write',async()=>{
  assert.equal(response?.status,200);
  const html=await response!.text();
  assert.match(html,/Guardar borrador/);
- assert.match(html,/US\$7\.99/);
+ assert.match(html,/US\$12\.99/);
  assert.match(html,/temporary-event-draft/);
 });
 

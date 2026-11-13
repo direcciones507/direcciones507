@@ -1,8 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // Server-owned prices. Reconcile against the commercial authority before launch.
-export const PAYMENT_PRICES = Object.freeze({ RESIDENTIAL:1299, BUSINESS_FREE:0,
-  BUSINESS_PREMIUM:1999, BUSINESS_PREMIUM_PRO:3999, RENEWAL:1299, CORPORATE_PRO:3999 });
+export const PAYMENT_PRICES = Object.freeze({ RESIDENTIAL:1499, BUSINESS_FREE:0,
+  BUSINESS_PREMIUM:2999, BUSINESS_PREMIUM_PRO:4999, RENEWAL:1499, CORPORATE_PRO:4999 });
 export type PaymentPlan = keyof typeof PAYMENT_PRICES;
 export function paymentAmount(plan: string): number {
   if (!Object.hasOwn(PAYMENT_PRICES, plan)) throw Error('INVALID_PAYMENT_PLAN');

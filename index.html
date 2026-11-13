@@ -1086,7 +1086,7 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
  document.querySelectorAll('[data-507-plan]').forEach(button=>button.addEventListener('click',()=>{
  const card=button.closest('.plan-pricing-card');
  title.textContent=card.querySelector('h4').textContent;
- dialog.classList.toggle('premium-pro-selected',button.dataset['507Plan']==='PREMIUM_PRO');
+ dialog.classList.toggle('premium-pro-selected',button.dataset['507Plan']==='BUSINESS_PREMIUM_PRO');
  price.textContent=card.querySelector('.plan-numeric-val').textContent;
  list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\s*/, '');item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';

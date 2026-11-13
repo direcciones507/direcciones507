@@ -44,7 +44,9 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
  }
  if(form&&req.method!=='GET'||draft&&!['GET','POST'].includes(req.method))return json(405,'METHOD_NOT_ALLOWED');
  const origin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin;
- if(req.headers.get('sec-fetch-site')==='cross-site'||(req.headers.has('origin')&&req.headers.get('origin')!==origin))return json(403,'ORIGIN_DENIED');
+ // The form is an authenticated, read-only GET document reached from the Panama homepage.
+ // Keep cross-origin restrictions on every JSON/owner endpoint and all mutations.
+ if(!form&&(req.headers.get('sec-fetch-site')==='cross-site'||(req.headers.has('origin')&&req.headers.get('origin')!==origin)))return json(403,'ORIGIN_DENIED');
  if(((draft||owned)&&!['GET','HEAD'].includes(req.method))&&(req.headers.get('origin')!==origin||(!url.pathname.endsWith('/photos')&&req.headers.get('content-type')?.split(';')[0]!=='application/json')||req.headers.get('x-requested-with')!=='XMLHttpRequest'))return json(403,'REQUEST_DENIED');
  try{
   const user=await ctx.auth.currentUser(req);

@@ -36,7 +36,7 @@ export function renderTemporaryEventPage(event:PublishedEvent):string {
  ${active&&photos[0]?'<meta property="og:image" content="'+escapeHtml(photos[0])+'">':''}
  <meta property="og:url" content="${escapeHtml(url)}"><meta property="og:type" content="website">
  <style>${temporaryEventDesign}</style></head>
- <body><main><header class="event-hero"><div class="event-top"><div class="event-eyebrow">Direcciones LATAM · Dirección Temporal</div><span class="event-live">${active?'Vigente':'Finalizado'}</span></div><h1>${title}</h1><div class="event-rule" aria-hidden="true"></div><p class="hero-sub">${escapeHtml(data.description)}</p></header>
+ <body><main><header class="event-hero"><div class="event-top"><div class="event-eyebrow">Direcciones LATAM · Dirección Temporal</div><span class="event-live">${event.preview?'Borrador':active?'Vigente':'Finalizado'}</span></div><h1>${title}</h1><div class="event-rule" aria-hidden="true"></div><p class="hero-sub">${escapeHtml(data.description)}</p></header>
  ${event.preview?'<p class="status">Vista previa privada · Aún sin publicar</p>':''}
  ${active?'':'<p class="status">Este evento ha finalizado.</p>'}
  ${active&&photos.length?'<h2 class="section-title">Momentos del evento</h2>':''}

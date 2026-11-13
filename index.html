@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 50420)
+Total output lines: 2728
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1022,8 +1025,127 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 .home-info-layout .ad507-info-reveal{opacity:0;translate:0 20px}
 .home-info-layout .ad507-info-reveal.ad507-info-visible{opacity:1;translate:0 0}
 @media(hover:hover){.home-info-layout :is(.home-about-card,.home-info-link,.home-info-coverage):hover{transform:translateY(-3px);filter:none;box-shadow:0 16px 32px #050e213d!important;border-color:#b2c7e4!important}}
-@media(max-width:700px){.home-info-layout{grid-template-columns:1fr;gap:14px;margin-top:28px}.home-info-layout .home-info-links{gap:14px;grid-template-rows:none}.home-info-layout :is(.home-info-link,.home-info-coverage){min-height:100px;padding:20px 18px}.home-info-layout .home-about-card p{text-align:left;line-height:1.7}}
-@media(prefers-reduced-motion:reduce){#mainGlobalHeroView .main-hero-title .ad507-wave-char{animation:none!important;color:#f5f1e8!important;-webkit-text-fill-color:#f5f1e8!important}.home-info-layout .ad507-info-reveal{opacity:1;translate:none}.home-info-layout :is(.home-about-card,.home-info-link,.home-info-coverage){transition:none!important;transform:none!important}}
+@media(max-width:700px){.home-info-layout{grid-template-columns:1fr;gap:14px;margin-top:28px}.home-info-layout .home-info-links{gap:14px;grid-template-rows:none}.home-info-layout :is(.home-info-link,.home-info-coverage){min-height:100px;padding:20px 18px}.home-info-layout .home-about-card p{text-align:left;line…420 tokens truncated…{position:relative;margin:0;padding:13px 14px 13px 42px;border:1px solid #e0e9f4;border-radius:13px;background:white;color:#23405e;font-weight:600;line-height:1.5}
+#plan507Features li::before{content:"✓";position:absolute;left:14px;top:12px;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:#e0f5e9;color:#147447;font-weight:900}
+#plan507FreeTerms{padding:12px 14px;border-left:3px solid #79a9dc;background:#edf4fd;border-radius:0 10px 10px 0;font-size:13px}
+#plan507Details .plan507-detail-actions{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;margin-top:22px}
+#plan507Details .plan507-detail-actions button{min-height:50px;border-radius:13px;padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer}
+#plan507Close{background:#e7edf5;color:#254663;border:1px solid #c8d6e6}
+#plan507Continue{background:linear-gradient(135deg,#1878e8,#064fae);color:#fff;box-shadow:0 8px 20px #0866d144}
+#plan507Details .plan507-detail-actions button:focus-visible{outline:3px solid #7cb9ff;outline-offset:3px}
+@media(max-width:440px){#plan507Details .plan507-detail-actions{grid-template-columns:1fr}}
+
+
+/* Matching elongated detail window: only the modal, never the outer plan cards. */
+#plan507Details{width:min(570px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 28px)!important;padding:clamp(22px,4vw,34px)!important;border:1px solid #a89b84!important;border-radius:12px!important;background:#f7f4ec!important;color:#182944!important;box-shadow:0 30px 90px #0008!important;color-scheme:light}
+#plan507Details::backdrop{background:rgba(4,15,29,.7);backdrop-filter:blur(3px)}
+#plan507Details #plan507Title{color:#182944!important;font-family:Inter,system-ui,sans-serif!important;font-weight:850!important;letter-spacing:-.035em}
+#plan507Price{color:#182944!important;background:transparent!important;border:0!important;padding:0!important;border-radius:0!important;font-size:clamp(27px,4vw,35px)!important}
+#plan507Features{list-style:none!important;padding:0!important;display:grid;gap:10px}
+#plan507Features li{margin:0!important;padding:12px!important;background:#fffdf8!important;border:1px solid #d4cabb!important;border-left:3px solid #a58d60!important;border-radius:5px!important;color:#273953!important;line-height:1.55!important}
+#plan507Details p{color:#536173!important}
+#plan507Details .plan507-detail-actions{display:grid!important;grid-template-columns:1fr 1.5fr!important;gap:10px!important}
+#plan507Close,#plan507Continue{border-radius:5px!important;box-shadow:none!important;font-family:Inter,system-ui,sans-serif!important}
+#plan507Close{background:#e7e0d4!important;color:#182944!important;border:1px solid #c8bca9!important}
+#plan507Continue{background:#182944!important;color:#f7f4ec!important}
+@media(max-width:440px){#plan507Details .plan507-detail-actions{grid-template-columns:1fr!important}}
+
+
+/* Motion Graphics Pro: scoped exclusively to the plan details window. */
+#plan507Details{isolation:isolate;overflow-x:hidden;animation:planMotionEntrance .42s cubic-bezier(.2,.75,.25,1) both}
+#plan507Details::before{content:"";display:block;height:3px;margin:-8px 0 24px;background:linear-gradient(90deg,transparent,#9a8666,#182944,#9a8666,transparent);background-size:220% 100%;animation:planMotionSweep 5s linear infinite;pointer-events:none}
+#plan507Details :is(h2,h3){animation:planMotionRise .5s .08s both}
+#plan507Details :is(#plan507Price,#plan507Price){animation:planMotionRise .5s .16s both}
+#plan507Details :is(#plan507Features,#plan507Features) li{animation:planMotionRise .45s both}
+#plan507Details :is(#plan507Features,#plan507Features) li:nth-child(1){animation-delay:.12s}
+#plan507Details :is(#plan507Features,#plan507Features) li:nth-child(2){animation-delay:.18s}
+#plan507Details :is(#plan507Features,#plan507Features) li:nth-child(3){animation-delay:.24s}
+#plan507Details :is(#plan507Features,#plan507Features) li:nth-child(4){animation-delay:.30s}
+#plan507Details :is(#plan507Features,#plan507Features) li:nth-child(n+5){animation-delay:.36s}
+#plan507Details :is(button,a):focus-visible{outline:3px solid #8d795a!important;outline-offset:3px}
+@keyframes planMotionSweep{from{background-position:220% 0}to{background-position:-220% 0}}
+@keyframes planMotionEntrance{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes planMotionRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){#plan507Details,#plan507Details::before,#plan507Details :is(h2,h3,#plan507Price,#plan507Price),#plan507Details :is(#plan507Features,#plan507Features) li{animation:none!important}}
+
+
+/* Plan dialog visual repair: clean benefit rows, stronger but restrained motion. */
+#plan507Details :is(#plan507Features,#plan507Features) li{position:relative!important;padding:15px 16px!important;overflow-wrap:break-word!important;word-break:normal!important;hyphens:auto;min-height:50px;box-sizing:border-box}
+#plan507Details :is(#plan507Features,#plan507Features) li::before{content:none!important;display:none!important}
+#plan507Details :is(#plan507Features,#plan507Features) li::marker{content:""}
+#plan507Details.plan-motion-active::before{animation:planMotionSweep 2.4s linear infinite!important;height:4px!important;background:linear-gradient(90deg,#a58d60 0%,#e6d4b1 16%,#182944 36%,#a58d60 60%,#e6d4b1 80%,#a58d60 100%)!important;background-size:220% 100%!important}
+#plan507Details.plan-motion-active{animation:planMotionEntrance .7s cubic-bezier(.18,.8,.2,1) both!important}
+#plan507Details.plan-motion-active :is(h2,h3){animation:planMotionRise .7s .08s both!important}
+#plan507Details.plan-motion-active :is(#plan507Price,#plan507Price){animation:planMotionRise .7s .18s both!important}
+#plan507Details.plan-motion-active :is(#plan507Features,#plan507Features) li{animation:planMotionRise .65s both!important}
+@media(prefers-reduced-motion:reduce){#plan507Details.plan-motion-active,#plan507Details.plan-motion-active::before,#plan507Details.plan-motion-active :is(h2,h3,#plan507Price,#plan507Price),#plan507Details.plan-motion-active :is(#plan507Features,#plan507Features) li{animation:none!important}}
+
+
+/* Owner-supplied premium card reference: staggered slide-in, no spinning emblem. */
+#plan507Details[open].plan-motion-active{animation:premiumCardEnter .55s cubic-bezier(.175,.885,.32,1.15) both!important}
+#plan507Details.plan-motion-active :is(#plan507Features,#plan507Features) li{
+ opacity:0;transform:translateX(-18px);
+ animation:premiumFeatureEnter .5s ease forwards!important;
+ animation-delay:calc(.12s + (var(--premium-step,0) * .11s))!important;
+ transition:background-color .25s ease,box-shadow .25s ease,transform .25s ease!important;
+}
+#plan507Details :is(#plan507Features,#plan507Features) li:hover{
+ background:#fcfbfa!important;box-shadow:0 4px 12px #152b4515!important;
+ border-left-color:#c4a87c!important;
+}
+@keyframes premiumCardEnter{from{opacity:0;transform:translateY(30px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes premiumFeatureEnter{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){
+ #plan507Details[open].plan-motion-active,#plan507Details.plan-motion-active :is(#plan507Features,#plan507Features) li{animation:none!important;opacity:1!important;transform:none!important}
+}
+
+
+/* Premium motion reference: original plan dialog, no demo overlay or fake payment. */
+dialog#plan507Details[open]{
+ background:linear-gradient(#f8f6f0,#f8f6f0) padding-box,conic-gradient(from var(--premium-angle,0deg),#bca47b,#eee4d0,#273a56,#bca47b) border-box!important;
+ border:2px solid transparent!important;
+ box-shadow:0 25px 55px #0006,0 0 42px #c4a87c26!important;
+ animation:premiumBorderGlow 5s ease-in-out infinite alternate!important;
+}
+dialog#plan507Details[open].plan-motion-active{animation:premiumBorderGlow 5s ease-in-out infinite alternate,premiumCardEnter .55s cubic-bezier(.175,.885,.32,1.15) both!important}
+dialog#plan507Details #plan507Title{
+ background:linear-gradient(90deg,#1e293b,#b08d57,#1e293b)!important;
+ background-size:220% auto!important;
+ -webkit-background-clip:text!important;background-clip:text!important;
+ -webkit-text-fill-color:transparent!important;
+ animation:premiumTitleShine 3.5s linear infinite!important;
+}
+dialog#plan507Details.premium-pro-selected #plan507Title::after{
+ content:" 👑";-webkit-text-fill-color:initial!important;
+ background:none!important;display:inline-block;font-size:.78em;
+ animation:premiumCrownFloat 2.2s ease-in-out infinite!important;
+}
+dialog#plan507Details #plan507Continue{
+ position:relative!important;overflow:hidden!important;
+ background:linear-gradient(135deg,#1e293b,#334155)!important;
+ color:#e6cfaa!important;border:1px solid #a48c65!important;
+ animation:premiumButtonPulse 2.4s ease-in-out infinite!important;
+ transition:transform .25s ease,background .25s ease!important;
+}
+dialog#plan507Details #plan507Continue::after{
+ content:"";position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(105deg,transparent 30%,#ffffff36 50%,transparent 70%);
+ transform:translateX(-120%);animation:premiumButtonShine 3.5s ease-in-out infinite;
+}
+dialog#plan507Details #plan507Continue:hover{background:linear-gradient(135deg,#c4a87c,#b08d57)!important;color:#1e293b!important;transform:translateY(-2px)!important;animation:none!important}
+dialog#plan507Details :is(#plan507Features,#plan507Features) li{transition:background-color .3s ease,box-shadow .3s ease!important}
+dialog#plan507Details :is(#plan507Features,#plan507Features) li:hover{background:#fcfbfa!important;box-shadow:0 4px 12px #1e293b14!important}
+@keyframes premiumTitleShine{to{background-position:220% center}}
+@keyframes premiumCrownFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes premiumBorderGlow{from{box-shadow:0 25px 55px #0006,0 0 10px #c4a87c16}to{box-shadow:0 25px 55px #0006,0 0 32px #c4a87c66}}
+@keyframes premiumButtonPulse{0%,100%{box-shadow:0 0 0 0 #c4a87c66}65%{box-shadow:0 0 0 9px #c4a87c00}}
+@keyframes premiumButtonShine{0%,30%{transform:translateX(-120%)}75%,100%{transform:translateX(120%)}}
+@media(prefers-reduced-motion:reduce){dialog#plan507Details[open],dialog#plan507Details #plan507Title,dialog#plan507Details #plan507Continue,dialog#plan507Details #plan507Continue::after,dialog#plan507Details.premium-pro-selected #plan507Title::after{animation:none!important}}
+
+#plan507Details #plan507Title{font-size:clamp(26px,5vw,34px)!important;margin:0 0 12px!important}
+#plan507Details #plan507Features li{font-weight:600!important}
+#plan507Details .plan507-detail-actions :is(button,a){box-sizing:border-box;min-height:50px;padding:12px 16px!important;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
 </style>
 </head>
 <body>
@@ -1245,7 +1367,7 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 <dialog id="plan507Details" aria-labelledby="plan507Title" style="position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(560px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:min(88dvh,780px);overflow:auto;border:1px solid #2c6684;border-radius:22px;padding:clamp(20px,4vw,30px);background:linear-gradient(155deg,#112b48,#071626);color:white;box-shadow:0 30px 85px #000b">
 <h3 id="plan507Title" style="font-size:27px;margin:0 0 10px;color:white"></h3><p id="plan507Price" style="font-size:25px;font-weight:900;color:#4ee0f5;margin:0 0 18px"></p><ul id="plan507Features" style="list-style:none;padding:0;display:grid;gap:10px"></ul>
 <p id="plan507FreeTerms" hidden style="font-size:14px;color:#eaf5ff;line-height:1.55;padding:13px 15px;border:1px solid #48799c;border-radius:12px;background:#173c5b"><strong>Promoción Negocio Gratis hasta el 9 de noviembre de 2026.</strong> Solicita tu dirección digital de negocio sin costo hasta el 9 de noviembre de 2026. Las solicitudes requieren revisión y aprobación del administrador. Las direcciones aprobadas estarán gratuitas hasta el 30 de diciembre de 2026, independientemente de su fecha de aprobación. El 31 de diciembre de 2026 se desactivarán automáticamente si no han sido renovadas mediante un plan vigente y pago confirmado. No hay descuentos ni cobros automáticos.</p><p style="font-size:12px;color:#b8d1e3;line-height:1.6">Solicitud sujeta a las condiciones y revisión aplicables. Los planes de pago no generan un cobro al consultar los detalles.</p>
-<p id="plan507ReviewNotice" hidden style="color:#fff;font-size:15px">La revisión administrativa puede tardar hasta 48 horas después del envío. La activación no es automática y la solicitud puede ser rechazada.</p><div style="display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:20px"><button type="button" id="plan507Close" style="border:1px solid #57718c;border-radius:12px;padding:14px;background:#1c3853;color:white;font-weight:800">Regresar</button><a id="plan507Continue" href="https://direcciones.lat/?country=PA" style="border-radius:12px;padding:14px;background:linear-gradient(135deg,#08b6d2,#1768e7);color:white;font-weight:800;text-decoration:none;text-align:center">Continuar con mi dirección</a></div>
+<p id="plan507ReviewNotice" hidden style="color:#fff;font-size:15px">La revisión administrativa puede tardar hasta 48 horas después del envío. La activación no es automática y la solicitud puede ser rechazada.</p><div class="plan507-detail-actions" style="display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-top:20px"><button type="button" id="plan507Close" style="border:1px solid #57718c;border-radius:12px;padding:14px;background:#1c3853;color:white;font-weight:800">Regresar</button><a id="plan507Continue" href="https://direcciones.lat/?country=PA" style="border-radius:12px;padding:14px;background:linear-gradient(135deg,#08b6d2,#1768e7);color:white;font-weight:800;text-decoration:none;text-align:center">Continuar con mi dirección</a></div>
 </dialog>
 <script>
 (function(){
@@ -1255,12 +1377,16 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
  const card=button.closest('.plan-pricing-card');
  title.textContent=card.querySelector('h4').textContent;
  price.textContent=card.querySelector('.plan-numeric-val').textContent;
- list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent='✓ '+li.textContent.trim();item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
+ list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\s*/, '');item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';
  document.getElementById('plan507ReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(button.dataset['507Plan']);
  dialog.scrollTop=0;
  next.href='https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
- dialog.showModal();dialog.scrollTop=0;
+ dialog.classList.toggle('premium-pro-selected',button.dataset['507Plan']==='BUSINESS_PREMIUM_PRO');
+ dialog.classList.remove('plan-motion-active');
+ void dialog.offsetWidth;
+ list.querySelectorAll('li').forEach((li,i)=>li.style.setProperty('--premium-step',String(Math.min(i,12))));
+ dialog.showModal();dialog.classList.add('plan-motion-active');dialog.scrollTop=0;
  }));
  document.getElementById('plan507Close').onclick=()=>dialog.close();
 })();

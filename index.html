@@ -744,6 +744,60 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 @media(max-width:960px){#mainGlobalHeroView .hero-grid-layout{grid-template-columns:1fr!important;padding:40px 24px 52px;gap:32px!important}#mainGlobalHeroView .hero-grid-layout>div:first-child{max-width:650px!important;margin-inline:auto!important}#mainGlobalHeroView .planes-grid-layout{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:560px){#mainGlobalHeroView .hero-grid-layout{padding:32px 20px 40px;border-radius:0 0 28px 28px}#mainGlobalHeroView .main-hero-title{font-size:clamp(36px,10vw,52px)!important}#mainGlobalHeroView .main-hero-desc{font-size:16px!important}#mainGlobalHeroView .ad507-original-phone{width:225px}#mainGlobalHeroView .free-address-card{margin-top:32px!important;padding:24px!important}#mainGlobalHeroView .planes-grid-layout{grid-template-columns:1fr!important}#mainGlobalHeroView .plans-title{font-size:30px!important}}
 @media(prefers-reduced-motion:reduce){#mainGlobalHeroView *,#mainGlobalHeroView *:before,#mainGlobalHeroView *:after{animation:none!important;transition:none!important}#mainGlobalHeroView .ad507-visual-reveal{opacity:1!important;translate:none!important}}
+
+/* Plan cards only: museum-inspired visual refinement. No markup, actions or prices. */
+#mainGlobalHeroView .plan-pricing-card{
+ display:flex;flex-direction:column;align-items:stretch;
+ gap:12px;padding:28px 24px!important;
+ border-radius:24px!important;
+ border:1px solid rgba(20,40,75,.16)!important;
+ box-shadow:0 12px 34px rgba(20,40,75,.10)!important;
+ overflow:visible;
+ transition:transform .35s ease,box-shadow .35s ease,border-color .35s ease!important;
+}
+#mainGlobalHeroView .plan-pricing-card.popular{
+ border-color:rgba(143,176,234,.75)!important;
+ box-shadow:0 16px 40px rgba(20,40,75,.22)!important;
+}
+#mainGlobalHeroView .plan-pricing-card .plan-507-top{
+ display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;
+}
+#mainGlobalHeroView .plan-pricing-card h4{
+ font-family:Inter,system-ui,sans-serif;font-weight:850!important;
+ font-size:clamp(19px,2vw,23px)!important;letter-spacing:-.035em;line-height:1.2;
+ margin:4px 0 0!important;
+}
+#mainGlobalHeroView .plan-pricing-card .plan-numeric-val{
+ font-family:Inter,system-ui,sans-serif;
+ font-size:clamp(28px,3vw,39px)!important;letter-spacing:-.045em;
+ line-height:1.12;margin:4px 0!important;
+}
+#mainGlobalHeroView .plan-pricing-card .plan-507-summary{
+ font-size:14px!important;line-height:1.65!important;
+ margin:0 0 8px!important;overflow-wrap:anywhere;
+}
+#mainGlobalHeroView .plan-pricing-card .btn-plan-action-trigger{
+ margin-top:auto!important;min-height:48px!important;
+ display:flex!important;align-items:center;justify-content:center;
+ padding:12px 16px!important;font-weight:800!important;
+}
+#mainGlobalHeroView .plan-pricing-card > p:last-child{
+ font-size:12px!important;line-height:1.55!important;margin:0!important;
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ #mainGlobalHeroView .plan-pricing-card:hover{
+  transform:translateY(-5px)!important;
+  box-shadow:0 20px 45px rgba(20,40,75,.17)!important;
+  border-color:rgba(31,111,255,.4)!important;
+ }
+}
+@media(max-width:700px){
+ #mainGlobalHeroView .plan-pricing-card{padding:22px 18px!important;border-radius:20px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #mainGlobalHeroView .plan-pricing-card{transition:none!important;transform:none!important}
+}
+
 </style>
 
 <style id="ad507-hero-3d-style">

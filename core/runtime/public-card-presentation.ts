@@ -3,6 +3,17 @@ export const publicCardMotionStyle = `
 body.public-card-motion{background:radial-gradient(ellipse at 12% 0,#1d3866 0,transparent 48%),#0e1d38;color:#f5f1e8}
 body.public-card-motion .card{background:#14284b;border:1px solid #8fb0ea40;box-shadow:0 24px 70px #040c204d;animation:pcm-arrive .65s cubic-bezier(.22,1,.36,1) both;transition:transform .75s cubic-bezier(.22,1,.36,1);transform-origin:50% 180px}
 @keyframes pcm-arrive{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
+/* Decorative light stays behind the identity content and never captures taps. */
+body.public-card-motion .card{box-shadow:0 24px 70px #040c204d,0 0 0 1px #adc5e51a,0 0 28px #527eb51f}
+body.public-card-motion .card .identity-block::before,body.public-card-motion .card .identity-block::after{content:"";position:absolute;pointer-events:none;z-index:-1;left:12%;top:12%;width:78%;height:70%;border-radius:50%;border:1.5px solid #b9cee8a6;border-left-color:#527eb580;border-bottom-color:#527eb54d;box-shadow:0 0 12px #8daedb38,inset 0 0 10px #b9cee824;transform:perspective(900px) rotateX(35deg) rotateZ(-14deg);animation:pcm-orbit 16s ease-in-out infinite}
+body.public-card-motion .card .identity-block::after{left:16%;top:19%;width:70%;height:60%;opacity:.55;animation-direction:reverse;animation-duration:21s;border-top-color:#e2eaf3c9;border-right-color:#527eb538}
+@keyframes pcm-orbit{0%,100%{transform:perspective(900px) rotateX(35deg) rotateY(-12deg) rotateZ(-14deg);opacity:.65}50%{transform:perspective(900px) rotateX(56deg) rotateY(14deg) rotateZ(16deg);opacity:.95}}
+body.public-card-motion .card #logoNegocio{animation:pcm-photo-light 7s ease-in-out infinite}
+@keyframes pcm-photo-light{0%,100%{box-shadow:0 12px 26px #030b2040,0 0 0 1px #b9cee84d,0 0 12px #527eb533}50%{box-shadow:0 16px 30px #030b2059,0 0 0 1px #d9e4f2a6,0 0 22px #8daedb59}}
+body.public-card-motion .card :is(.nav-box,.btn-social-quad,.btn-action-triple,.accordion-item,.footer-social-center a,button){position:relative;overflow:hidden;isolation:isolate}
+body.public-card-motion .card :is(.nav-box,.btn-social-quad,.btn-action-triple,.accordion-item,.footer-social-center a,button)::after{content:"";position:absolute;pointer-events:none;inset:0 auto 0 -65%;width:45%;background:linear-gradient(105deg,transparent,#d9e4f200 12%,#d9e4f240 48%,#ffffff70 53%,#b9cee824 62%,transparent 86%);transform:translateX(0) skewX(-18deg);animation:pcm-silver-sweep 8s ease-in-out infinite;animation-delay:var(--pcm-shine-delay,0s);opacity:0}
+@keyframes pcm-silver-sweep{0%,8%{transform:translateX(0) skewX(-18deg);opacity:0}12%{opacity:.8}30%{transform:translateX(400%) skewX(-18deg);opacity:0}100%{transform:translateX(400%) skewX(-18deg);opacity:0}}
+@media(max-width:640px){body.public-card-motion .card .identity-block::before{left:22%;top:-12%;width:74%;height:112%}body.public-card-motion .card .identity-block::after{left:26%;top:0;width:66%;height:90%}}
 body.public-card-motion .card .code-header{background:#14284b!important;border-bottom:1px solid #8fb0ea24}
 body.public-card-motion .card .identity-block{background:linear-gradient(135deg,#14284b,#0e1d38)!important;color:#f5f1e8}
 body.public-card-motion .card :is(.brand-title-text,.footer-title-main){color:#f5f1e8!important}
@@ -41,11 +52,13 @@ body.public-card-motion .pcm-reveal{opacity:0;translate:0 14px;transition:opacit
 body.public-card-motion .pcm-reveal.pcm-visible{opacity:1;translate:0 0}
 @media(hover:hover) and (pointer:fine) and (min-width:1000px){body.public-card-motion .card{transform:perspective(1600px) rotateX(var(--pcm-x,0deg)) rotateY(var(--pcm-y,0deg))}body.public-card-motion .card :is(.btn-action-triple,.nav-box,.btn-social-quad):hover{transform:translateY(-2px);box-shadow:0 10px 22px #030b2040}body.public-card-motion .card .negocio-galeria img:hover{scale:1.015;box-shadow:0 12px 26px #030b204d}}
 @media(prefers-reduced-motion:reduce){body.public-card-motion .card,body.public-card-motion #lightboxOverlay.show .lightbox-img{animation:none!important;transform:none!important;translate:none!important}body.public-card-motion .pcm-reveal{opacity:1;translate:none!important}body.public-card-motion .card :is(a,button,img,.accordion-item){transition:none!important;scale:1!important;transform:none!important}}
+@media(prefers-reduced-motion:reduce){body.public-card-motion .card .identity-block::before,body.public-card-motion .card .identity-block::after,body.public-card-motion .card #logoNegocio,body.public-card-motion .card :is(.nav-box,.btn-social-quad,.btn-action-triple,.accordion-item,.footer-social-center a,button)::after{animation:none!important}body.public-card-motion .card :is(.nav-box,.btn-social-quad,.btn-action-triple,.accordion-item,.footer-social-center a,button)::after{opacity:0!important}}
 `;
 
 export const publicCardMotionScript = `(function(){
  function start(){
   var card=document.querySelector('body.public-card-motion .card');if(!card)return;
+  card.querySelectorAll('.nav-box,.btn-social-quad,.btn-action-triple,.accordion-item,.footer-social-center a,button').forEach(function(button,index){button.style.setProperty('--pcm-shine-delay',((index%8)*.24).toFixed(2)+'s');});
   var reduce=matchMedia('(prefers-reduced-motion:reduce)'),fine=matchMedia('(hover:hover) and (pointer:fine) and (min-width:1000px)');
   var frame=0,x=0,y=0;
   function reset(){if(frame)cancelAnimationFrame(frame);frame=0;card.style.removeProperty('--pcm-x');card.style.removeProperty('--pcm-y');}

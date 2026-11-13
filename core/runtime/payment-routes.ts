@@ -1,3 +1,4 @@
+import {requireLegalAcceptance} from './legal';
 import type {createGeneralAuth} from './general-auth';
 import type {createPaymentRepository} from './payment-repository';
 import type {createYappyProvider} from './yappy-provider';
@@ -7,7 +8,7 @@ type Context={enabled:boolean;auth:Pick<ReturnType<typeof createGeneralAuth>,'cu
 const rates=new Map<string,{at:number;count:number}>();
 export async function handlePaymentRoutes(req:Request,context:Context):Promise<Response|null> {
   const url=new URL(req.url),ipn=url.pathname==='/v1/payments/yappy/ipn';
-  const quote=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/payment$/);
+  const quote=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/(payment|renewal|installment|advertising)$/);
   const status=url.pathname.match(/^\/v1\/user\/payments\/([a-f0-9-]{36})$/);
   if(!ipn&&!quote&&!status)return null;
   const respond=(code:number,value:unknown)=>Response.json(value,{status:code,headers:{'cache-control':'no-store','referrer-policy':'no-referrer','x-content-type-options':'nosniff'}});
@@ -29,13 +30,17 @@ export async function handlePaymentRoutes(req:Request,context:Context):Promise<R
     const now=Date.now();for(const [key,item]of rates)if(now-item.at>60000)rates.delete(key);
     const item=rates.get(user.id);if(item&&++item.count>20||!item&&rates.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)rates.set(user.id,{at:now,count:1});
     if(status)return respond(200,{ok:true,payment:await context.repository.read(user.id,status[1])});
-    if(req.method==='GET')return respond(200,{ok:true,quote:await context.repository.quote(user.id,quote![1])});
+    if(quote![2]==='advertising'&&req.method==='GET')return respond(200,{ok:true,quote:await context.repository.quoteAdvertising(user.id,quote![1],url.searchParams.get('mode')||'PLACE_AD_30')});
+    if(quote![2]==='installment'&&req.method==='GET')return respond(200,{ok:true,quote:await context.repository.quoteSecond(user.id,quote![1])});
+    if(req.method==='GET')return respond(200,{ok:true,quote:await (quote![2]==='renewal'?context.repository.quoteRenewal(user.id,quote![1]):context.repository.quote(user.id,quote![1],url.searchParams.get('mode')||'ANNUAL'))});
     if(!req.headers.get('content-type')?.startsWith('application/json'))throw Error('INVALID_PAYMENT_REQUEST');
     const body=JSON.parse((await readRequestBody(req,1024)).toString('utf8'));
-    if(!body||typeof body.alias!=='string'||Object.keys(body).some(key=>key!=='alias')||!/^6[0-9]{7}$/.test(body.alias))throw Error('INVALID_PAYMENT_REQUEST');
-    const intent=await context.repository.prepare(user.id,quote![1],req.headers.get('idempotency-key')??'');
+    if(!body||typeof body.alias!=='string'||Object.keys(body).some(key=>!['alias','mode','advertising','legalAcceptance'].includes(key))||body.mode!==undefined&&!['ANNUAL','INSTALLMENTS','PLACE_AD_30','PLACE_AD_365'].includes(body.mode)||!/^6[0-9]{7}$/.test(body.alias))throw Error('INVALID_PAYMENT_REQUEST');
+    const acceptance=requireLegalAcceptance(body);
+    const intent=await (quote![2]==='advertising'?context.repository.prepareAdvertising(user.id,quote![1],req.headers.get('idempotency-key')??'',body.mode||'PLACE_AD_30',body.advertising):quote![2]==='installment'?context.repository.prepareSecond(user.id,quote![1],req.headers.get('idempotency-key')??''):quote![2]==='renewal'?context.repository.prepareRenewal(user.id,quote![1],req.headers.get('idempotency-key')??''):context.repository.prepare(user.id,quote![1],req.headers.get('idempotency-key')??'',body.mode||'ANNUAL'));
     if(!intent.required)return respond(200,{ok:true,required:false,amountCents:0});
-    publicOrderId=intent.order.id;
+    publicOrderId=String(intent.order.id);
+    await context.repository.acceptPurchase(user.id,publicOrderId,acceptance);
     if(intent.order.provider_reference||intent.order.status!=='PENDING')return respond(409,{ok:false,error:'PAYMENT_ALREADY_INITIALIZED',orderId:intent.order.id});
     // Claim before network I/O: a second POST must not send another provider order.
     // On an uncertain failure keep the intent for reconciliation, never replace it.

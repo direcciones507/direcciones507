@@ -28,6 +28,18 @@ async function openUserRequest(id,editing=false){
       const pay=document.createElement('a');pay.className='btn';pay.href='/panel/payments/'+id;pay.textContent='Ir al pago';pay.style.cssText='display:flex;width:fit-content;max-width:100%;align-items:center;justify-content:center;clear:both;margin:16px 0 12px;padding:12px 18px;font-weight:750';content.append(pay);
       const note=document.createElement('p');note.className='muted';note.textContent='El pago se confirma únicamente cuando Yappy lo notifica al sistema. No se activará la dirección antes de esa confirmación.';content.append(note);
     }
+    if(r.type==='PLACE'&&r.status==='ACTIVE'&&!r.extras?.migration&&r.countryCode==='PA'){
+      const ad=document.createElement('a');ad.className='btn';ad.href='/panel/payments/'+id+'?advertising=1';ad.textContent='Publicidad: $14.99 / 30 días o $161.89 / 365 días';content.append(ad);
+      add('Estado de publicidad',r.extras?.adService?.status||'Sin contratar');if(r.extras?.adService?.endsAt)add('Publicidad vigente hasta',new Date(r.extras.adService.endsAt).toLocaleString('es-PA'));
+    }
+    const service=r.extras?.annualService;
+    if(!r.extras?.migration&&service?.policy==='annual-manual-20261113'&&service.endsAt){
+      add('Vigencia anual hasta',new Date(service.endsAt).toLocaleString('es-PA'));add('Servicios comerciales',r.commercialService?.expired?'Beneficios vencidos · ficha pública básica conservada':r.commercialService?.effectivePlan==='BUSINESS_FREE'?'Ficha básica · pago parcial pendiente':'Plan efectivo: '+(r.commercialService?.effectivePlan||service.plan));add('Renovación','Manual. Sin cobros automáticos.');
+      if(r.status==='ACTIVE'&&r.countryCode==='PA'){
+        if(service.mode==='INSTALLMENTS'&&!service.fullyPaid&&Date.parse(service.endsAt)>Date.now()){const second=document.createElement('a');second.className='btn';second.href='/panel/payments/'+id+'?installment=2';second.textContent='Revisar segunda cuota';content.append(second);add('Segunda cuota vence',service.secondDueAt?new Date(service.secondDueAt).toLocaleString('es-PA'):'Pendiente');}
+        const renew=document.createElement('a');renew.className='btn';renew.href='/panel/payments/'+id+'?renewal=1';renew.textContent='Revisar renovación anual';content.append(renew);
+      }
+    }
     const editButton=mountAddressEditor(content,r,false,async()=>{await load();await openUserRequest(id)});if(editing&&editButton)editButton.click();
     title.focus({preventScroll:true});
   }catch{if(version===requestDetailVersion)content.textContent='No se pudo cargar la solicitud. Cierra el detalle e intenta nuevamente.'}

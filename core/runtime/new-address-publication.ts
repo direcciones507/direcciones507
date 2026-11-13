@@ -1,3 +1,4 @@
+import {effectiveServicePlan} from './annual-service';
 import {PLACE_AD_PRICE_CENTS,PLACE_AD_DURATION_DAYS} from './payment-policy';
 import {continuousGallery} from './continuous-gallery';
 import {publicCardPresentation} from './public-card-presentation';
@@ -82,9 +83,11 @@ export async function newPublicAddress(sql:Sql,code:string,origin:string) {
   if(!rows[0].request_data?.migration)assertCountryPublication(rows[0].country_code??rows[0].request_data?.countryCode??'PA',rows[0].address_type,rows[0].request_data?.plan);
   const media=await sql.unsafe("SELECT id::text,media_type,url FROM ad507.address_media WHERE address_id=$1::uuid AND upload_status='READY' ORDER BY position,id",[rows[0].id]);
   const mediaOrigin=new URL(proposedCountryUrl(rows[0].request_data?.countryCode??'PA',record.code)).origin;
-  const urls=media.map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
+  const urls=media.filter((m:any)=>!rows[0].request_data?.annualService||rows[0].request_data?.migration||['PLACE','BUSINESS_PREMIUM_PRO'].includes(record.plan?.code??record.type)||m.media_type==='LOGO').map((m:any)=>({type:m.media_type,url:m.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+m.id}));
   const historical=rows[0].request_data?.migration;if(historical)record.socials=await sql.unsafe('SELECT platform,url FROM ad507.address_socials WHERE address_id=$1::uuid ORDER BY platform',[rows[0].id]);
-  return {...record,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:addressPublicUrl({...rows[0],code:record.code,source:'USER_REQUEST'}),media:urls,publication:await getPublicationMetadataByCode(sql as any,internalCode),extras:{publicCode:publicCode({...rows[0],code:record.code,source:'USER_REQUEST'}),historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:rows[0].request_data?.postalCode??null}};
+  const ad=rows[0].request_data?.adService,adPhoto=ad?.mediaId?media.find((m:any)=>m.id===ad.mediaId):null;
+  const advertising=record.type==='PLACE'&&!historical&&ad?.status==='APPROVED'&&Date.parse(ad.endsAt)>Date.now()&&adPhoto?{title:ad.title,text:ad.text,link:ad.link,imageUrl:adPhoto.url??mediaOrigin+'/v1/addresses/'+record.code+'/media/'+adPhoto.id}:null;
+  return {...record,advertising,...(!['PLACE'].includes(record.type)&&record.plan?.code!=='BUSINESS_PREMIUM_PRO'?{description:null,commercialDescription:null}:{}),url:addressPublicUrl({...rows[0],code:record.code,source:'USER_REQUEST'}),media:urls,publication:await getPublicationMetadataByCode(sql as any,internalCode),extras:{publicCode:publicCode({...rows[0],code:record.code,source:'USER_REQUEST'}),historical:!!historical,countryCode:rows[0].request_data?.countryCode??'PA',postalCode:record.plan?.code==='BUSINESS_FREE'?null:rows[0].request_data?.postalCode??null}};
 }
 export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typeof newPublicAddress>>>) {
   const social=Object.fromEntries(record.socials.map(s=>[s.platform.toLowerCase(),s.url]));
@@ -171,7 +174,9 @@ export function renderNewPublicAddress(record:NonNullable<Awaited<ReturnType<typ
       .place-ad-preview .place-ad-price{font-size:20px;font-weight:700;color:#fff}
       .place-ad-preview .place-ad-coming{display:inline-block;margin-top:12px;padding:10px 22px;border-radius:12px;background:#263b56;color:#fff;font-weight:700}
     </style></head>`);
-    template=template.replace('<section id="commercialDescription"',`<aside class="place-ad-preview" aria-label="Publicidad próximamente"><strong>Anuncia tu negocio aquí</strong><p>Publicidad en este Lugar</p><p class="place-ad-price">$${(PLACE_AD_PRICE_CENTS/100).toFixed(2)} por ${PLACE_AD_DURATION_DAYS} días</p><span class="place-ad-coming">Próximamente</span></aside><section id="commercialDescription"`);
+    const adEscape=(value:string)=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const banner=record.advertising?`<aside class="place-ad-preview" aria-label="Publicidad comercial"><a href="${adEscape(record.advertising.link)}" target="_blank" rel="sponsored noopener noreferrer"><img src="${adEscape(record.advertising.imageUrl)}" alt="${adEscape(record.advertising.title)}" style="display:block;width:100%;max-height:240px;object-fit:contain;border-radius:12px"><strong>${adEscape(record.advertising.title)}</strong><p>${adEscape(record.advertising.text)}</p></a></aside>`:`<aside class="place-ad-preview" aria-label="Publicidad próximamente"><strong>Anuncia tu negocio aquí</strong><p>Publicidad en este Lugar</p><p class="place-ad-price">$${(PLACE_AD_PRICE_CENTS/100).toFixed(2)} por ${PLACE_AD_DURATION_DAYS} días · $161.89 por 365 días</p><span class="place-ad-coming">Próximamente</span></aside>`;
+    template=template.replace('<section id="commercialDescription"',banner+'<section id="commercialDescription"');
   }
   // Place only: compact visible actions and navigation without empty grid cells.
   if(!record.extras.historical && record.type==='PLACE'){
@@ -629,7 +634,7 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
       if(!context.r2)return new Response(null,{status:503});
       try{const rows=await sql.unsafe("SELECT a.id::text,a.request_data,a.country_code,a.address_type,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
       if(!rows.length)return new Response(null,{status:404});
-      const row=rows[0];
+      const row=rows[0];if(row.request_data?.annualService&&!row.request_data?.migration&&row.address_type==='BUSINESS'&&effectiveServicePlan(row.request_data,row.request_data?.plan)!=='BUSINESS_PREMIUM_PRO'&&row.media_type!=='LOGO')return new Response(null,{status:403,headers:{'cache-control':'no-store'}});
       // Keep private media closed for countries whose commercial publication is disabled.
       if(!row.request_data?.migration)assertCountryPublication(row.country_code??row.request_data?.countryCode??'PA',row.address_type,row.request_data?.plan);
         const storage=createR2Storage(context.r2,{fetch:context.fetch,registerIntent:async()=>{throw Error('PUBLIC_MEDIA_READ_ONLY');},authorize:async scope=>{

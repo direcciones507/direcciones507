@@ -1,7 +1,7 @@
 Términos y Condiciones de Uso
 Direcciones 507/LATAM
 
-Versión 1.1-20261113 · Vigencia: a partir de su publicación autorizada
+Versión 1.2-20261113 · Vigencia: a partir de su publicación autorizada
 
 1. Quiénes somos y qué regulan estos términos
 Direcciones507 es una plataforma digital que opera desde Panamá y que permite crear direcciones digitales con códigos

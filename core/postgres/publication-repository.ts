@@ -1,3 +1,4 @@
+import {serviceExpired,ANNUAL_POLICY} from '../runtime/annual-service';
 import { normalizeAd507Code, type SqlExecutor } from "./public-address-repository";
 
 export type PublicationMetadata = {
@@ -11,6 +12,7 @@ type PublicationRow = {
   code: string;
   updated_at: string | Date;
   public_indexing: unknown;
+  service_data?:any;
 };
 
 /**
@@ -27,6 +29,7 @@ export async function getPublicationMetadataByCode(
 
   const rows = await sql<PublicationRow>`
     SELECT
+      to_jsonb(a)->'request_data' AS service_data,
       a.code,
       a.updated_at,
       COALESCE(pc.value_json, 'false'::jsonb) AS public_indexing
@@ -51,7 +54,7 @@ export async function getPublicationMetadataByCode(
   return {
     code: row.code,
     canonicalPath: `/${row.code}/`,
-    indexable: row.public_indexing === true,
+    indexable: row.public_indexing === true&&!serviceExpired(row.service_data)&&!(row.service_data?.annualService?.policy===ANNUAL_POLICY&&row.service_data.annualService.mode==='INSTALLMENTS'&&!row.service_data.annualService.fullyPaid),
     updatedAt,
   };
 }

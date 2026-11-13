@@ -1,3 +1,5 @@
+> Actualización posterior del propietario, 2026-11-13: las fichas permanentes conservan acceso público básico al vencer los servicios. Las cuotas y la publicidad anual de US$161.89 están aprobadas. Las temporales conservan expiración específica. No migrar históricos durante este cierre. Las instrucciones anteriores que contradigan estas reglas quedan sustituidas; se conservan debajo para trazabilidad.
+
 # Direcciones507 / Direcciones LATAM — Política de servicio, vencimiento, códigos y SEO
 Fecha de aprobación comercial: 2026-11-13
 Estado: REGLAS APROBADAS POR PROPIETARIO; IMPLEMENTACIÓN Y PRUEBAS PENDIENTES

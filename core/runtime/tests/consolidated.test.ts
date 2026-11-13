@@ -1329,3 +1329,92 @@ test('real PostgreSQL: OWNER can retire an uncoded payment-pending request witho
     await sql.unsafe("DELETE FROM ad507.addresses WHERE id=$1::uuid",[id]);
   }
 });
+
+test('new annual contracts: signed initial payment, explicit renewal, expiry and duplicate notification without touching prior contracts',async()=>{
+ const {createRequestRepository}=await import('../request-repository');const {createPaymentRepository}=await import('../payment-repository');
+ const {ANNUAL_POLICY,annualEnd,serviceExpired}=await import('../annual-service');const {createHmac}=await import('node:crypto');
+ const {getPublicAddressByCode}=await import('../../postgres/public-address-repository');
+ await sql.unsafe(readFileSync(new URL('../schema-proposals/commercial-service-terms.sql',import.meta.url),'utf8'));
+ const stamp=crypto.randomUUID(),owner=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[owner,'annual-'+stamp+'@example.test']);await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
+ const code='AD507-N'+String(80000000+Math.floor(Math.random()*10000000));
+ const canonical={historicalRegistryVerified:true as const,reserve:async()=>code,publish:async()=>({confirmed:true as const,receipt:'annual-'+stamp})};
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
+ const repository=createRequestRepository(sql,{canonical,r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
+ const png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
+ const first=await repository.submit(owner,'annual-'+stamp,{type:'BUSINESS',plan:'BUSINESS_PREMIUM',name:'Annual '+stamp,reference:'Synthetic',latitude:8.123,longitude:-80.123},[{role:'logo',mime:'image/png',bytes:png}]);
+ const id=first.id;
+ const config={environment:'test' as const,merchantId:'annual',domain:origin,ipnUrl:origin+'/ipn',secret:Buffer.from('annual-fixture.secret').toString('base64')};
+ const repo=createPaymentRepository(sql,config,{commercialEnabled:true,onVerifiedPayment:id=>repository.activatePaid(id)});
+ const initial=await repo.prepare(owner,id,'annual-initial-'+stamp);expect(initial.order.amount_cents).toBe(2999);
+ await repo.registerProviderOrder(initial.order.id,'initial-'+stamp);
+ const proof=(order:any,status='E')=>new URLSearchParams({orderId:order.provider_order_id,status,domain:origin,hash:createHmac('sha256','annual-fixture').update(order.provider_order_id+status+origin).digest('hex')});
+ // Invalid browser/forged confirmation cannot activate a term.
+ const forged=proof(initial.order);forged.set('hash','0'.repeat(64));await expect(repo.confirm(forged)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');
+ let row=(await sql.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[id]))[0];expect(row.request_data.annualService.startsAt).toBeNull();
+ await repo.confirm(proof(initial.order));
+ row=(await sql.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[id]))[0];expect(row.status).toBe('ACTIVE');const service=row.request_data.annualService;
+ expect(service.policy).toBe(ANNUAL_POLICY);expect(service.endsAt).toBe(annualEnd(service.startsAt));
+ await repo.confirm(proof(initial.order));expect((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService).toEqual(service);
+ const renewal=await repo.prepareRenewal(owner,id,'annual-renew-'+stamp);expect(renewal.order.amount_cents).toBe(2999);
+ expect((await repo.prepareRenewal(owner,id,'annual-renew-'+stamp)).order.id).toBe(renewal.order.id);
+ await expect(repo.prepareRenewal(owner,id,'different-renew-'+stamp)).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+ await repo.registerProviderOrder(renewal.order.id,'renewal-'+stamp);await repo.confirm(proof(renewal.order,'C'));
+ expect((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService.endsAt).toBe(service.endsAt);
+ // A late authentic execution settles the SAME intent; never generate a replacement.
+ await repo.confirm(proof(renewal.order));const renewed=(await sql.unsafe('SELECT * FROM ad507.addresses WHERE id=$1::uuid',[id]))[0];
+ expect(renewed.code).toBe(code);expect(renewed.request_data.annualService.endsAt).toBe(annualEnd(service.endsAt));
+ await repo.confirm(proof(renewal.order));expect((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService).toEqual(renewed.request_data.annualService);
+ await sql.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService,endsAt}','\"2020-01-01T00:00:00.000Z\"') WHERE id=$1::uuid",[id]);
+ expect(serviceExpired((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data)).toBe(true);
+ expect((await getPublicAddressByCode(sql as any,code))?.plan?.code).toBe('BUSINESS_FREE');
+ await sql.unsafe("UPDATE ad507.addresses SET request_data=request_data-'annualService' WHERE id=$1::uuid",[id]);
+ expect(await getPublicAddressByCode(sql as any,code)).not.toBeNull();
+ const audit=await sql.unsafe("SELECT action FROM ad507.audit_log WHERE entity_id=$1 AND action IN ('ANNUAL_SERVICE_ACTIVATED','ANNUAL_SERVICE_RENEWED')",[id]);expect(audit).toHaveLength(2);
+});
+
+test('installments: authentic partial activation, due date, second-order deduplication and immutable anniversary',async()=>{
+ const {createRequestRepository}=await import('../request-repository'),{createPaymentRepository}=await import('../payment-repository'),{createHmac}=await import('node:crypto');
+ const stamp=crypto.randomUUID(),owner=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[owner,'installments-'+stamp+'@example.test']);await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
+ const canonical={historicalRegistryVerified:true as const,reserve:async()=> 'AD507-N'+String(80000000+Math.floor(Math.random()*10000000)),publish:async()=>({confirmed:true as const,receipt:'installments-'+stamp})};
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
+ const requests=createRequestRepository(sql,{canonical,r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
+ const png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
+ const config={environment:'test' as const,merchantId:'installments',domain:origin,ipnUrl:origin+'/ipn',secret:Buffer.from('installment-fixture.secret').toString('base64')};
+ const repo=createPaymentRepository(sql,config,{commercialEnabled:true,onVerifiedPayment:id=>requests.activatePaid(id)});
+ for(const plan of ['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
+  const request=await requests.submit(owner,'installment-'+plan+stamp,{type:'BUSINESS',plan,name:plan+stamp,reference:'Synthetic only',latitude:8.41+(plan==='BUSINESS_PREMIUM'?0:.01),longitude:-80.1},[{role:'logo',mime:'image/png',bytes:png}]);
+  const initial=await repo.prepare(owner,request.id,'installment-first-'+stamp,'INSTALLMENTS');expect(initial.order.amount_cents).toBe(plan==='BUSINESS_PREMIUM'?1650:2750);
+  const proof=(order:any,status='E')=>new URLSearchParams({orderId:order.provider_order_id,status,domain:origin,hash:createHmac('sha256','installment-fixture').update(order.provider_order_id+status+origin).digest('hex')});
+  await repo.registerProviderOrder(initial.order.id,'installment-first-'+plan+stamp);await repo.confirm(proof(initial.order));
+  const first=await requests.read(owner,request.id);expect(first.status).toBe('ACTIVE');const service=(first as any).extras.annualService;expect(service.fullyPaid).toBe(false);expect(Date.parse(service.secondDueAt)-Date.parse(service.startsAt)).toBe(30*86400000);
+  const second=await repo.prepareSecond(owner,request.id,'installment-second-'+stamp);expect(second.order.amount_cents).toBe(initial.order.amount_cents);
+  const other=await repo.prepareSecond(owner,request.id,'another-second-'+stamp);expect(other.order.id).toBe(second.order.id);
+  await repo.registerProviderOrder(second.order.id,'installment-second-'+plan+stamp);await repo.confirm(proof(second.order));await repo.confirm(proof(second.order));
+  const after=(await requests.read(owner,request.id) as any).extras.annualService;expect(after.fullyPaid).toBe(true);expect(after.endsAt).toBe(service.endsAt);
+  expect((await sql.unsafe("SELECT count(*)::int AS n FROM ad507.orders WHERE address_id=$1::uuid",[request.id]))[0].n).toBe(2);
+ }
+});
+
+test('place advertising: approved durations, disabled gateway, authentic payment, ADMIN review, expiry and preserved public Place',async()=>{
+ const {createRequestRepository}=await import('../request-repository'),{createPaymentRepository}=await import('../payment-repository'),{createAdvertisingRepository}=await import('../place-advertising'),{newPublicAddress,renderNewPublicAddress}=await import('../new-address-publication'),{createHmac}=await import('node:crypto');
+ const stamp=crypto.randomUUID(),owner=crypto.randomUUID();await sql.unsafe("INSERT INTO ad507.users(id,email) VALUES($1::uuid,$2)",[owner,'advertising-'+stamp+'@example.test']);await sql.unsafe("INSERT INTO ad507.user_roles(user_id,role) VALUES($1::uuid,'CLIENT')",[owner]);
+ const canonical={historicalRegistryVerified:true as const,reserve:async()=> 'AD507-N'+String(80000000+Math.floor(Math.random()*10000000)),publish:async()=>({confirmed:true as const,receipt:'advertising-'+stamp})};
+ const r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const},png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
+ const requests=createRequestRepository(sql,{canonical,r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
+ const request=await requests.submit(owner,'advertising-'+stamp,{type:'PLACE',plan:'PLACE',name:'Place '+stamp,description:'Synthetic public Place',reference:'Synthetic',latitude:8.7,longitude:-80.7},[{role:'photo',mime:'image/png',bytes:png}]);await requests.review(adminId,request.id,'APPROVED');await requests.publish(adminId,request.id);
+ const record=await requests.read(owner,request.id) as any,mediaId=record.media[0].id,content={title:'Business <safe>',text:'Synthetic advertisement',link:'https://example.test/',mediaId};
+ const disabled=createAdvertisingRepository(sql,'test');expect((await disabled.quote(owner,request.id,'PLACE_AD_365')).amountCents).toBe(16189);await expect(disabled.prepare(owner,request.id,'disabled-ads-'+stamp,'PLACE_AD_30',content)).rejects.toThrow('PAYMENT_MODALITY_NOT_ENABLED');
+ const ads=createAdvertisingRepository(sql,'test',true),config={environment:'test' as const,merchantId:'ads',domain:origin,ipnUrl:origin+'/ipn',secret:Buffer.from('ads-fixture.secret').toString('base64')},payments=createPaymentRepository(sql,config,{commercialEnabled:true,placeAdvertisingEnabled:true});
+ for(const [mode,amount,days]of [['PLACE_AD_30',1499,30],['PLACE_AD_365',16189,365]] as const){
+  const intent=await ads.prepare(owner,request.id,'ads-'+mode+stamp,mode,content);expect(intent.order.amount_cents).toBe(amount);expect((await ads.prepare(owner,request.id,'ads-'+mode+stamp,mode,content)).order.id).toBe(intent.order.id);
+  await expect(ads.review(adminId,request.id,'APPROVED')).rejects.toThrow('INVALID_PAYMENT_STATE');
+  await payments.registerProviderOrder(intent.order.id,'ads-reference-'+mode+stamp);
+  const proof=new URLSearchParams({orderId:intent.order.provider_order_id,status:'E',domain:origin,hash:createHmac('sha256','ads-fixture').update(intent.order.provider_order_id+'E'+origin).digest('hex')});
+  await payments.confirm(proof);await payments.confirm(proof);expect((await ads.pending(adminId)).some((r:any)=>r.id===request.id)).toBe(true);
+  await expect(ads.review(owner,request.id,'APPROVED')).rejects.toThrow('FORBIDDEN');await ads.review(adminId,request.id,'APPROVED');await ads.review(adminId,request.id,'APPROVED');
+  const ad=(await requests.read(owner,request.id) as any).extras.adService;expect(Date.parse(ad.endsAt)-Date.parse(ad.startsAt)).toBe(days*86400000);
+  const publicCard=await newPublicAddress(sql,record.code,origin);expect(publicCard?.advertising?.title).toBe(content.title);expect(renderNewPublicAddress(publicCard!)).toContain('Business &lt;safe&gt;');
+  await sql.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{adService,endsAt}','\"2020-01-01T00:00:00Z\"') WHERE id=$1::uuid",[request.id]);
+  const expired=await newPublicAddress(sql,record.code,origin);expect(expired).not.toBeNull();expect(expired?.advertising).toBeNull();
+ }
+});

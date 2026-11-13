@@ -698,7 +698,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .temporary-event-form .event-map .leaflet-container{width:100%;height:100%}.temporary-event-form .event-map .leaflet-tile{max-width:none!important;max-height:none!important}</style><section class="temporary-event-form" aria-labelledby="temporary-heading">
  <nav id="event-drafts" aria-label="Mis eventos"></nav><h2 id="temporary-heading">Crear Dirección Temporal</h2>
- <p>Publica una fiesta o evento por US$7.99, durante 1 a 30 días. El evento no se publica hasta confirmar el pago.</p>
+ <p>Publica una fiesta o evento por US$12.99, durante 1 a 30 días. El evento no se publica hasta confirmar el pago.</p>
  <form id="temporary-event-draft" data-action="${action}" novalidate>
  <fieldset aria-label="Información del evento"><div class="event-field-grid"><h3 class="event-section-heading">Información del evento</h3>
  <label>Nombre del evento <input name="title" required minlength="3" maxlength="160" autocomplete="off"></label>

@@ -19,7 +19,7 @@ export function createTemporaryEventPayment(sql:Sql,config:YappyConfiguration,pr
     if(!media.some(x=>x.slot===1)||media.length>3)throw Error('PRIMARY_PHOTO_REQUIRED');
     const rows=await tx.unsafe(`INSERT INTO ad507.temporary_event_orders(event_id,provider_order_id,environment,provider_reference,amount_cents)
       VALUES($1,$2,$3,'INITIALIZING',$4) RETURNING *`,[eventId,randomBytes(7).toString('hex'),config.environment,temporaryEventQuote(dbDate(e.starts_on),dbDate(e.ends_on)).amountCents]);
-    await tx.unsafe("UPDATE ad507.temporary_events SET status='AWAITING_PAYMENT',payment_order_id=$2,updated_at=now() WHERE id=$1",[eventId,rows[0].id]);
+    await tx.unsafe("UPDATE ad507.temporary_events SET status='AWAITING_PAYMENT',payment_order_id=$2,price_cents=$3,updated_at=now() WHERE id=$1",[eventId,rows[0].id,rows[0].amount_cents]);
     return rows[0];
    });
    // A committed intent survives ambiguous timeouts; never create another charge on retry.

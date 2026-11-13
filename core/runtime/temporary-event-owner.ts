@@ -12,7 +12,15 @@ export async function eventOwnerRoute(req:Request,sql:Sql,userId:string,services
  const fail=(status:number,error:string)=>Response.json({ok:false,error},{status,headers:{'cache-control':'no-store'}});
  const event=await repository.getOwned(userId,id);if(!event)return fail(404,'EVENT_NOT_FOUND');
  const readJson=async()=>{const text=await req.text();if(text.length>24000)throw Error('INVALID_PAYLOAD_SIZE');return JSON.parse(text)};
- if(!action&&req.method==='GET')return Response.json({ok:true,quote:temporaryEventQuote(dbDate(event.starts_on),dbDate(event.ends_on)),event:{...event,starts_on:dbDate(event.starts_on),ends_on:dbDate(event.ends_on)}},{headers:{'cache-control':'no-store'}});
+ if(!action&&req.method==='GET'){
+  const quote=temporaryEventQuote(dbDate(event.starts_on),dbDate(event.ends_on));
+  if(event.payment_order_id){
+   const orders=await sql.unsafe('SELECT amount_cents,currency FROM ad507.temporary_event_orders WHERE id=$1 AND event_id=$2',[event.payment_order_id,id]);
+   if(!orders[0]||orders[0].currency!=='USD'||![799,1299,1999].includes(orders[0].amount_cents))return fail(503,'INVALID_PAYMENT_ORDER');
+   quote.amountCents=orders[0].amount_cents;
+  }
+  return Response.json({ok:true,quote,event:{...event,starts_on:dbDate(event.starts_on),ends_on:dbDate(event.ends_on)}},{headers:{'cache-control':'no-store'}});
+ }
  if(!action&&req.method==='PUT')return Response.json({ok:true,...await repository.updateDraft(userId,id,await readJson())});
  if(action==='photos'&&req.method==='POST'){
   if(event.status!=='DRAFT')return fail(409,'EVENT_NOT_EDITABLE');

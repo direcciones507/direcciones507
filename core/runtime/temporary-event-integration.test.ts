@@ -76,7 +76,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   await repository.savePhoto(owner,extended.id,1,'temporary-events/extended.webp',1);
   let sentAmount='';const extendedProvider=createYappyProvider(config,(async(url:any,opts:any)=>{if(String(url).endsWith('/validate/merchant'))return Response.json({body:{token:'fixture',epochTime:123}});sentAmount=JSON.parse(opts.body).total;return Response.json({body:{transactionId:'extended-tx',token:'fixture',documentName:'fixture'}})}) as typeof fetch);
   const extendedPayment=createTemporaryEventPayment(sql,config,extendedProvider);await extendedPayment.initialize(owner,extended.id,'60000000');expect(sentAmount).toBe('19.99');
-  const eo=(await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[extended.id]))[0];expect(eo.amount_cents).toBe(1999);
+  const eo=(await sql.unsafe('SELECT * FROM ad507.temporary_event_orders WHERE event_id=$1',[extended.id]))[0];expect(eo.amount_cents).toBe(1999);expect((await repository.getOwned(owner,extended.id))?.price_cents).toBe(eo.amount_cents);
   const eq=new URLSearchParams({orderId:eo.provider_order_id,status:'E',domain:config.domain});eq.set('hash',createHmac('sha256','test-secret').update(eo.provider_order_id+'E'+config.domain).digest('hex'));await extendedPayment.confirm(eq);expect((await repository.getPublic(extended.slug))?.status).toBe('ACTIVE');
   // Failed/cancelled authentic receipts never publish; replay is harmless.
   const isolatedProvider=createYappyProvider(config,(async(url:any)=>Response.json(String(url).endsWith('/validate/merchant')?{body:{token:'fixture',epochTime:123}}:{body:{transactionId:'fixture',token:'fixture',documentName:'fixture'}})) as typeof fetch);

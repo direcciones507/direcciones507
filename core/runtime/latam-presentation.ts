@@ -310,13 +310,13 @@ body.latam:has(#commercialWelcome) .latam-header{background:#0E1D38;border-botto
 #commercialWelcome .latam-benefit-grid article{position:relative;isolation:isolate;background:#fff;border-color:#14284b24;box-shadow:0 10px 40px #14284b0f;transition:box-shadow .3s ease,translate .65s cubic-bezier(.22,1,.36,1),opacity .65s ease}
 #commercialWelcome .latam-benefit-grid article::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;background:conic-gradient(from var(--ad507-angle),transparent 0,#1D3866 14%,transparent 32%,#8FB0EA 56%,transparent 78%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ad507-border 8s linear infinite;opacity:.7}
 #commercialWelcome .latam-benefit-grid article:nth-child(2)::before{animation-delay:-2s}#commercialWelcome .latam-benefit-grid article:nth-child(3)::before{animation-delay:-4s}
-#commercialWelcome .latam-benefit-grid h3{color:#14284B}
+#commercialWelcome .latam-benefit-grid h3{color:#14284B!important}
 #commercialWelcome .latam-benefit-grid p{color:#5B6578}
 #commercialWelcome .latam-benefit-grid .latam-benefit-icon{background:#14284B;color:#F5F1E8}
 #commercialWelcome .latam-benefit-grid .latam-benefit-icon .symbol{color:#F5F1E8}
 /* Commercial cards retain their existing dimensions, markup and Motion. Color finish only. */
 #commercialWelcome .latam-plan-grid .latam-plan-card{background:#fff;border-color:#14284b24;box-shadow:0 10px 40px #14284b0f;color:#1B2335}
-#commercialWelcome .latam-plan-grid .latam-plan-card :is(h3,.latam-plan-price,.latam-plan-action>span){color:#14284B}
+#commercialWelcome .latam-plan-grid .latam-plan-card :is(h3,.latam-plan-price,.latam-plan-action>span){color:#14284B!important}
 #commercialWelcome .latam-plan-grid .latam-plan-card p{color:#5B6578!important}
 #commercialWelcome .latam-plan-grid .latam-plan-card .latam-plan-icon{background:#14284B;color:#F5F1E8}
 #commercialWelcome .latam-plan-grid .latam-plan-label{background:#F5F1E8;color:#1D3866;border-color:#14284b24}

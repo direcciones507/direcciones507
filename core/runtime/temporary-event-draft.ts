@@ -4,7 +4,7 @@
  * No payment or publication is triggered by this module.
  */
 export type TemporaryEventDraft = {
- title:string;description:string;responsibleName:string;responsibleEmail:string;responsiblePhone:string;
+ palette?:'APPROVED';title:string;description:string;responsibleName:string;responsibleEmail:string;responsiblePhone:string;
  countryCode:string;province:string;district:string;corregimiento:string;reference:string;
  startsOn:string;endsOn:string;timezone:string;hours:string;
  latitude?:number|null;longitude?:number|null;
@@ -21,7 +21,8 @@ function validDate(value:string):boolean {
 export function validateTemporaryEventDraft(input:unknown):TemporaryEventDraft {
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('INVALID_EVENT_DRAFT');
  const x=input as Record<string,unknown>;
- const draft:TemporaryEventDraft={
+ if(x.palette!==undefined&&x.palette!=='APPROVED')throw Error('UNAPPROVED_EVENT_PALETTE');
+ const draft:TemporaryEventDraft={palette:'APPROVED',
   title:clean(x.title,160),description:clean(x.description,5000),
   responsibleName:clean(x.responsibleName,160),responsibleEmail:clean(x.responsibleEmail,254),
   responsiblePhone:clean(x.responsiblePhone,40),countryCode:clean(x.countryCode,2).toUpperCase(),

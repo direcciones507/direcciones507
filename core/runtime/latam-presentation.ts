@@ -5,6 +5,7 @@ import {readFileSync} from 'node:fs';
 /** Presentation only: the existing panel, country policy and Natalie remain authoritative. */
 export function latamPresentation(html:string){
  const legacy=readFileSync(new URL('../../index.html',import.meta.url),'utf8');
+ const temporaryFeatures=Array.from((legacy.match(/<h4>Dirección Temporal<\/h4>[\s\S]*?<ul class="plan-perks-list" hidden>([\s\S]*?)<\/ul>/)?.[1]??'').matchAll(/<li>(.*?)<\/li>/g),m=>m[1]);
  const start=legacy.indexOf('<div id="modalPoliticas"'),end=legacy.indexOf('<button id="natalieLauncher"',start);
  if(start<0||end<0)throw Error('EXISTING_LEGAL_NOTICE_REQUIRED');
  const notice=legacy.slice(start,end).replace('onclick="cerrarPoliticas()"','data-legal-close');
@@ -651,6 +652,7 @@ const hero=document.getElementById('latamArt');
 hero.src='https://raw.githubusercontent.com/direcciones507/direcciones507/feat/admin-ui-20261006/direcciones-latam-mapa-sin-cuadro-azul.png';
 document.getElementById('latamCreate').onclick=e=>prepareLatamRequest(e,'BUSINESS','');
 const latamPlanCatalog={
+ TEMPORARY_ADDRESS:{title:'Dirección Temporal',price:'US$12.99 (1–30 días) · US$19.99 (31–60 días)',features:${JSON.stringify(temporaryFeatures)}},
  PLACE:{title:'Lugar Gratis',price:'Gratis',features:['Comparte ubicaciones de interés con una dirección digital fácil de encontrar','Ideal para iglesias, parques, cascadas, ríos, playas y atractivos turísticos','No se admiten comercios ni establecimientos comerciales; deben solicitar un plan de negocio','Agrega nombre, ubicación, referencia y fotografía del lugar','Comparte el lugar mediante enlace y herramientas de navegación','Disponible en los ocho países iniciales; todas las solicitudes están sujetas a revisión y aprobación']},
  RESIDENTIAL:{title:'Residencial',price:'US$14.99 / año',features:['Dirección digital para tu hogar','Código digital y acceso mediante enlace o QR','Ubicación y referencia para compartir','Acceso residencial privado según sus controles de seguridad']},
  BUSINESS_FREE:{title:'Negocio Gratis',price:'US$0',features:['Dirección digital de negocio y código QR','Logo, horario, contacto y referencia','Navegación para llegar al negocio','Solicitudes gratuitas hasta el 9 de noviembre de 2026; sujetas a aprobación ADMIN. Servicio gratuito hasta el 30 de diciembre de 2026, con desactivación el 31 de diciembre si no se renueva','Sin descripción breve ni código personalizado incluido']},
@@ -671,6 +673,7 @@ function showLatamPlanDetails(e,type,plan){
  document.getElementById('latamPlanDetailsCountry').textContent='País seleccionado: '+country.options[country.selectedIndex].textContent;
  document.getElementById('latamPlanDetailsFeatures').replaceChildren(...item.features.map(feature=>{const li=document.createElement('li');li.textContent=feature;return li;}));
  document.getElementById('latamPlanDetailsTerms').textContent=detailsKey==='BUSINESS_FREE'?'Promoción Negocio Gratis en Panamá y Costa Rica: solicita hasta el 9 de noviembre de 2026. Cada solicitud requiere revisión y aprobación del administrador. El servicio gratuito de las direcciones aprobadas termina el 30 de diciembre de 2026, sin importar cuándo se aprobaron. Las no renovadas se desactivan automáticamente el 31 de diciembre de 2026. Para continuar, se requiere contratar un plan vigente y confirmar el pago. Sin descuentos ni cobros automáticos. Consultar o solicitar el plan gratuito no genera cobro.':'La disponibilidad, promociones, vigencia, renovación y medios de pago se confirman antes de contratar. La preparación no realiza ningún cobro. Las solicitudes y publicaciones internacionales siguen sujetas a habilitación por país.';
+ document.getElementById('latamPlanDetailsContinue').disabled=detailsKey==='TEMPORARY_ADDRESS'&&(country.value!=='PA'||!${JSON.stringify(process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true')});
  document.getElementById('latamPlanReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(detailsKey);
  latamPlanDialog.classList.remove('plan-motion-active');
  void latamPlanDialog.offsetWidth;
@@ -682,11 +685,12 @@ latamPlanDialog.addEventListener('click',event=>{if(event.target!==latamPlanDial
 document.getElementById('latamPlanDetailsContinue').onclick=()=>{
  if(!latamSelectedPlan)return;
  const {type,plan}=latamSelectedPlan;
+ if(plan==='TEMPORARY_ADDRESS'){if(document.getElementById('commercialCountry').value==='PA'&&${JSON.stringify(process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true')}){latamPlanDialog.close();location.assign('/panel/evento/nuevo');}return;}
  latamPlanDialog.close();
  prepareLatamRequest({preventDefault(){}},type,plan);
 };
 
-document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>{if(a.dataset.latamPlan==='TEMPORARY_ADDRESS')return;if(!e.target.closest('.plan-legal'))showLatamPlanDetails(e,a.dataset.latamType,a.dataset.latamPlan)});
+document.querySelectorAll('[data-latam-type]').forEach(a=>a.onclick=e=>{if(!e.target.closest('.plan-legal'))showLatamPlanDetails(e,a.dataset.latamType,a.dataset.latamPlan)});
 const selected507Plan=new URLSearchParams(window.location.search).get('selectedPlan');
 if(selected507Plan){
  const selectedCard=Array.from(document.querySelectorAll('[data-latam-type]')).find(a=>selected507Plan==='RESIDENTIAL'?a.dataset.latamType==='RESIDENTIAL':selected507Plan==='PLACE'?a.dataset.latamType==='PLACE':a.dataset.latamPlan===selected507Plan);

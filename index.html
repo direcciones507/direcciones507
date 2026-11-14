@@ -1003,12 +1003,12 @@ button:disabled, [aria-disabled="true"] { cursor: not-allowed; }
 #mainAppHeader .brand-meta h1{color:#f5f1e8!important}
 #mainAppHeader .brand-meta>span{display:block;color:#b8c8df!important;font-size:11px!important;line-height:1.45;letter-spacing:.01em!important;text-transform:none!important;margin-top:5px;white-space:normal!important}
 #mainAppHeader .nav-menu a{color:#ced9e9;font-size:13px;letter-spacing:0;text-transform:none;min-height:44px;display:flex;align-items:center}
-#mainAppHeader .nav-menu a:is(:hover,.active){color:#f5f1e8;background:#8fb0ea12;border-radius:10px}
+#mainAppHeader .nav-menu a:is(:hover,.active){color:#f5f1e8}#mainAppHeader .nav-menu a:not(#lnkInicio):is(:hover,.active){background:#8fb0ea12;border-radius:10px}
 #mainAppHeader .header-menu-toggle{background:#1d3866;color:#f5f1e8;border-color:#8fb0ea50;border-radius:12px}
 #mainAppHeader .header-account-actions .btn-nav-login{color:#f5f1e8!important;border-color:#8fb0ea66!important;border-radius:14px!important}
 #mainAppHeader .header-account-actions .btn-nav-register{background:#f5f1e8!important;color:#14284b!important;border-color:#f5f1e8!important;border-radius:14px!important}
 @media(min-width:1180px){#mainAppHeader .nav-wrap{gap:16px}#mainAppHeader .nav-menu{gap:14px}#mainAppHeader .header-account-actions{gap:8px}#mainAppHeader .header-account-actions a{padding:11px 14px}}
-@media(max-width:1179px){#mainAppHeader .nav-wrap{gap:12px}#mainAppHeader .nav-menu{gap:8px}#mainAppHeader .menu-open #headerNavigation{margin-top:2px}#mainAppHeader .nav-menu a{justify-content:center;border:1px solid #8fb0ea30;border-radius:12px;background:#1d386655}#mainAppHeader .header-account-actions{gap:10px}}
+@media(max-width:1179px){#mainAppHeader .nav-wrap{gap:12px}#mainAppHeader .nav-menu{gap:8px}#mainAppHeader .menu-open #headerNavigation{margin-top:2px}#mainAppHeader .nav-menu a{justify-content:center}#mainAppHeader .nav-menu a:not(#lnkInicio){border:1px solid #8fb0ea30;border-radius:12px;background:#1d386655}#mainAppHeader .header-account-actions{gap:10px}}
 @media(max-width:560px){#mainAppHeader{padding:10px!important}#mainAppHeader .nav-wrap{padding:14px 12px;gap:12px;border-radius:18px}#mainAppHeader .brand-meta>span{font-size:10px!important}#mainAppHeader .brand-group{gap:8px}#mainAppHeader .header-account-actions a{min-height:44px}}
 /* Original lower information content; no copy, link, metrics or route changes. */
 .home-info-layout{max-width:1080px;margin:40px auto 28px;gap:18px;padding-inline:20px;align-items:stretch}
@@ -1406,6 +1406,12 @@ dialog#plan507Details :is(#plan507Features,#plan507Features) li:hover{background
  dialog.showModal();dialog.classList.add('plan-motion-active');dialog.scrollTop=0;
  }));
  document.getElementById('plan507Close').onclick=()=>dialog.close();
+ // Reuse LATAM's native dialog backdrop hit test; clicks inside stay open.
+ dialog.addEventListener('click',function closePlan507OnBackdrop(event){
+  if(event.target!==dialog)return;
+  const r=dialog.getBoundingClientRect();
+  if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();
+ });
 })();
 </script>
 

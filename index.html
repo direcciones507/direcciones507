@@ -937,7 +937,7 @@ dialog#plan507Details #plan507Close{background:#e7e0d4!important;color:#182944!i
       <button type="button" id="headerMenuToggle" class="header-menu-toggle" aria-controls="headerNavigation" aria-expanded="false" onclick="const expanded=this.getAttribute('aria-expanded')!=='true';this.setAttribute('aria-expanded',String(expanded));this.closest('.nav-wrap').classList.toggle('menu-open',expanded)">Menú</button>
       <nav id="headerNavigation" aria-label="Navegación principal" onclick="if(event.target.closest('a')){const wrap=this.closest('.nav-wrap');wrap.classList.remove('menu-open');document.getElementById('headerMenuToggle').setAttribute('aria-expanded','false')}">
         <ul class="nav-menu">
-          <li><a onclick="irInicio()" id="lnkInicio" class="active">Inicio</a></li>
+          <li style="background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important"><a onclick="irInicio()" id="lnkInicio" class="active" style="background:none!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important">Inicio</a></li>
           <li><a onclick="toggleSeccion('secNosotros')" id="lnkNosotros">Quiénes somos</a></li>
           <li><a onclick="toggleSeccion('secFuncionamiento')" id="lnkFuncionamiento">Cómo funciona</a></li>
           <li><a onclick="toggleSeccion('secContacto')" id="lnkContacto">Contacto</a></li>

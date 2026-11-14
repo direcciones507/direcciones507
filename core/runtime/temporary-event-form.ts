@@ -713,7 +713,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
  <label>Provincia <input name="province" required maxlength="120"></label>
  <label>Distrito <input name="district" required maxlength="120"></label>
  <label>Corregimiento <input name="corregimiento" required maxlength="120"></label>
- <label>Referencia <input name="reference" maxlength="300"></label>
+ <label>Referencia <input name="reference" maxlength="300"></label><label>Paleta <select name="palette"><option value="APPROVED">Diseño aprobado</option></select></label>
  <div class="event-map-group"><strong>Ubicación exacta del evento</strong><p class="event-map-note">Marca el punto exacto en el mapa o usa tu ubicación.</p><div id="event-location-map" class="event-map" role="region" aria-label="Mapa para seleccionar ubicación exacta"></div><div class="event-coordinates"><label>Latitud <input name="latitude" type="number" step="any" min="-90" max="90"></label><label>Longitud <input name="longitude" type="number" step="any" min="-180" max="180"></label><button type="button" id="event-geolocation">Usar mi ubicación</button></div><p id="event-map-status" class="event-map-note" role="status">Haz clic en el mapa para colocar el marcador.</p></div>
  </div></fieldset>
  <fieldset aria-label="Responsable (información privada)"><div class="event-field-grid"><h3 class="event-section-heading">Responsable (información privada)</h3>

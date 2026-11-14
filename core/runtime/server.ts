@@ -1,3 +1,4 @@
+import {expireTemporaryEvents} from './temporary-event-ledger';
 import {createAdvertisingRepository} from './place-advertising';
 import {temporaryYappyConfiguration} from './temporary-event-configuration';
 import {createTemporaryEventMedia} from './temporary-event-media';
@@ -29,6 +30,11 @@ import {handleTemporaryEventRoutes} from './temporary-event-routes';
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 2, connect_timeout: 5, idle_timeout: 30, max_lifetime: 1800, connection:{statement_timeout:'15000',lock_timeout:'5000'}, application_name: 'ad507-core-general-auth' });
 const auth = createGeneralAuth(sql, process.env);
+if(process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true'){
+ let expiring=false;
+ const expire=async()=>{if(expiring)return;expiring=true;try{await expireTemporaryEvents(sql);}catch{console.error('TEMPORARY_EVENT_EXPIRATION_RETRY_PENDING');}finally{expiring=false}};
+ setInterval(expire,60000).unref();void expire();
+}
 const requestR2 = r2Settings(process.env);
 const temporaryMedia=requestR2?createTemporaryEventMedia(requestR2):null;
 const commercialWorkflowEnabled = REQUEST_WORKFLOW_ENABLED && process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';

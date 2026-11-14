@@ -11,7 +11,7 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
  const url=new URL(req.url);
  const form=url.pathname==='/panel/evento/nuevo';
  const draft=url.pathname==='/v1/user/temporary-events';
- const owned=/^\/v1\/user\/temporary-events\/[a-f0-9-]{36}(?:\/(preview|photos|payment))?$/.test(url.pathname);
+ const owned=/^\/v1\/user\/temporary-events\/[a-f0-9-]{36}(?:\/(preview|photos|payment|refund))?$/.test(url.pathname);
  const ipn=url.pathname==='/v1/payments/temporary-events/yappy/ipn';
  const match=url.pathname.match(/^\/evento\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/(qr\.png|foto\/[123]))?$/);
  if(!form&&!draft&&!match&&!owned&&!ipn)return null;

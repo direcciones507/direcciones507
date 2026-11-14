@@ -1138,16 +1138,18 @@ dialog#plan507Details #plan507Close{background:#e7e0d4!important;color:#182944!i
 (function(){
  const dialog=document.getElementById('plan507Details');
  const title=document.getElementById('plan507Title'),price=document.getElementById('plan507Price'),list=document.getElementById('plan507Features'),next=document.getElementById('plan507Continue');
- document.querySelectorAll('[data-507-plan]').forEach(button=>button.addEventListener('click',()=>{
+ document.querySelectorAll('[data-507-plan],[data-plan-display="TEMPORARY_ADDRESS"] .btn-plan-action-trigger').forEach(button=>button.addEventListener('click',event=>{
+ event.preventDefault();
+ const temporary=button.closest('[data-plan-display="TEMPORARY_ADDRESS"]')!==null;
  const card=button.closest('.plan-pricing-card');
  title.textContent=card.querySelector('h4').textContent;
  dialog.classList.toggle('premium-pro-selected',button.dataset['507Plan']==='BUSINESS_PREMIUM_PRO');
- price.textContent=card.querySelector('.plan-numeric-val').textContent;
+ price.textContent=card.querySelector(temporary?'.plan-507-summary':'.plan-numeric-val').textContent;
  list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\s*/, '');item.style.cssText='padding:14px 16px;border:1px solid #d4cabb;border-left:3px solid #c4a87c;border-radius:6px;background:#fff;color:#1e293b;line-height:1.55';return item;}));
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';
  document.getElementById('plan507ReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(button.dataset['507Plan']);
  dialog.scrollTop=0;
- next.href='https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
+ next.href=temporary?button.href:'https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+encodeURIComponent(button.dataset['507Plan']);
  dialog.classList.remove('plan-motion-active');
  void dialog.offsetWidth;
  list.querySelectorAll('li').forEach((li,i)=>li.style.setProperty('--premium-step',String(Math.min(i,12))));

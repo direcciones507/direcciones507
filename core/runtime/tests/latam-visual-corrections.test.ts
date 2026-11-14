@@ -14,7 +14,7 @@ test('C02/C03/C08 reuse OAuth and preserve session and error nodes',()=>{
  for(const script of page.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))expect(()=>new Function(script[1])).not.toThrow();
 });
 test('C04/C06/C07 retain country support and request types without another Natalie control',()=>{
- const page=html();expect(page).toContain('id="latamCountryState" hidden');expect(page).toContain('id="commercialCountry"');expect(page).toContain('id="countryCode"');expect(page).toContain('Más países');
+ const page=html();expect(page).toContain('id="latamCountryState" hidden');expect(page).toContain('id="commercialCountry"');expect(page).toContain('id="countryCode"');expect(page.match(/data-commercial-country=/g)?.length).toBe(8);expect(page).not.toContain('<summary>Más países</summary>');
  expect([...page.matchAll(/class="latam-plan-card"[^>]*>[\s\S]*?<h3>(.*?)<\/h3>/g)].map(m=>m[1])).toEqual(['Lugar Gratis','Dirección Temporal','Premium','Premium Pro']);
  expect(page).not.toContain('id="latamHelp"');expect(page).toContain('id="latamHelpLink"');expect(page.match(/id="natalieLauncher"/g)?.length).toBe(1);
 });

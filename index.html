@@ -1166,13 +1166,17 @@ dialog#plan507Details #plan507Close{background:#e7e0d4!important;color:#182944!i
   window.setTimeout(finish,300);
  }
  document.getElementById('plan507Close').onclick=closePlanDetails;
- // Capture backdrop taps at document level: dialog pseudo-elements and mobile
- // hit-testing can prevent a click listener on the dialog from receiving them.
- document.addEventListener('pointerdown',event=>{
+ // Native modal backdrop is hit-tested as the dialog itself in Chromium.
+ // Check coordinates against the visible dialog rectangle on both targets.
+ function dismissOutside(event){
   if(!dialog.open||closing)return;
   const r=dialog.getBoundingClientRect();
-  if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closePlanDetails();
- },true);
+  const outside=event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom;
+  if(outside){event.preventDefault();closePlanDetails();}
+ }
+ dialog.addEventListener('pointerdown',dismissOutside);
+ dialog.addEventListener('click',dismissOutside);
+ document.addEventListener('pointerdown',dismissOutside,true);
  dialog.addEventListener('cancel',event=>{event.preventDefault();closePlanDetails();});
 })();
 </script>

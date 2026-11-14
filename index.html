@@ -700,9 +700,9 @@ body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",san
 @media(max-width:440px){#plan507Details > div:last-child{grid-template-columns:1fr!important}}
 
 /* Reverse the existing plan detail entrance when dismissing the backdrop. */
-#plan507Details.plan-motion-closing{animation:plan507Dismiss .3s cubic-bezier(.4,0,.8,.4) both!important;pointer-events:none}
+dialog#plan507Details[open].plan-motion-closing{animation:plan507Dismiss .3s cubic-bezier(.4,0,.8,.4) both!important;pointer-events:none}
 @keyframes plan507Dismiss{to{opacity:0;transform:translateY(12px) scale(.97)}}
-@media(prefers-reduced-motion:reduce){#plan507Details.plan-motion-closing{animation:none!important}}
+@media(prefers-reduced-motion:reduce){dialog#plan507Details[open].plan-motion-closing{animation:none!important}}
 /* Motion Graphics Pro: scoped exclusively to the plan details window. */
 #plan507Details{isolation:isolate;overflow-x:hidden;animation:planMotionEntrance .42s cubic-bezier(.2,.75,.25,1) both}
 #plan507Details::before{content:"";display:block;height:3px;margin:-8px 0 24px;background:linear-gradient(90deg,transparent,#9a8666,#182944,#9a8666,transparent);background-size:220% 100%;animation:planMotionSweep 5s linear infinite;pointer-events:none}

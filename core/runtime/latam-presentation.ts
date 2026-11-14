@@ -283,7 +283,7 @@ body.latam .latam-footer-social svg{display:block;flex-shrink:0}
 @keyframes ad507-orbit{to{transform:rotateZ(336deg) rotateX(52deg) rotateY(10deg)}}
 @property --ad507-angle{syntax:"<angle>";inherits:false;initial-value:0deg}
 @keyframes ad507-border{to{--ad507-angle:360deg}}
-#commercialWelcome .latam-art{box-sizing:border-box;border:1px solid transparent;background:linear-gradient(#132b48,#132b48) padding-box,conic-gradient(from var(--ad507-angle),transparent 0 65%,#a6b6ca55 76%,#eef5ffcc 82%,#a6b6ca55 88%,transparent 96%) border-box;animation:ad507-border 14s linear infinite}
+/* Original image presentation retained; reflection is painted above it by the existing hero. */
 #commercialWelcome .latam-country-grid{width:100%;max-width:none;grid-template-columns:repeat(8,minmax(0,1fr));gap:12px}
 #commercialWelcome .latam-country-grid a{min-width:0;overflow-wrap:anywhere;animation:ad507-enter .8s cubic-bezier(.22,1,.36,1) backwards;animation-delay:calc(var(--country-entry,0)*60ms)}
 #commercialWelcome .latam-country-grid a:nth-child(2){--country-entry:1}#commercialWelcome .latam-country-grid a:nth-child(3){--country-entry:2}#commercialWelcome .latam-country-grid a:nth-child(4){--country-entry:3}#commercialWelcome .latam-country-grid a:nth-child(5){--country-entry:4}#commercialWelcome .latam-country-grid a:nth-child(6){--country-entry:5}#commercialWelcome .latam-country-grid a:nth-child(7){--country-entry:6}#commercialWelcome .latam-country-grid a:nth-child(8){--country-entry:7}
@@ -292,6 +292,60 @@ body.latam .latam-footer-social svg{display:block;flex-shrink:0}
 @media(max-width:1099px){#commercialWelcome .latam-country-grid{grid-template-columns:repeat(4,minmax(0,1fr))}#commercialWelcome .ad507-title-orbit{inset:-24% 0}}
 @media(max-width:620px){#commercialWelcome .latam-country-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#commercialWelcome .ad507-title-orbit{inset:-18% -2%}#commercialWelcome .ad507-title-orbit::before{border-width:1px;opacity:.75}}
 @media(prefers-reduced-motion:reduce){#commercialWelcome .ad507-title-orbit::before,#commercialWelcome .latam-art,#commercialWelcome .latam-country-grid a{animation:none!important}}
+
+/* LATAM homepage finish: 507 navy, paper and silver. No layout or commercial behavior changes. */
+body.latam:has(#commercialWelcome){background:#F5F1E8;color:#1B2335}
+body.latam:has(#commercialWelcome) .latam-header{background:#0E1D38;border-bottom-color:#8fb0ea38}
+#commercialWelcome .latam-hero{background:#14284B;position:relative}
+#commercialWelcome .latam-copy h1,#commercialWelcome .latam-copy h1 span{color:#F5F1E8}
+#commercialWelcome .latam-copy>p{color:#c9d6e7}
+/* A surface reflection aligned to the unchanged image box; no frame or image wrapper. */
+#commercialWelcome .latam-hero::after{content:"";position:absolute;left:var(--latam-image-left,0px);top:var(--latam-image-top,0px);width:var(--latam-image-width,0px);height:var(--latam-image-height,0px);border-radius:18px;pointer-events:none;z-index:1;background:linear-gradient(105deg,transparent 36%,#dbe6f510 45%,#eef5ff38 50%,#dbe6f510 55%,transparent 64%);background-size:240% 100%;animation:planMotionSweep 10s ease-in-out infinite;mix-blend-mode:screen}
+#commercialWelcome :is(.latam-country-label,.latam-benefits h2,.latam-info>h2){color:#14284B}
+#commercialWelcome .latam-country-grid a{background:#fff;color:#14284B;border-color:#14284b24;box-shadow:0 10px 28px #14284b0f}
+#commercialWelcome .latam-country-grid a small{color:#5B6578}
+#commercialWelcome .latam-country-grid a[aria-current=true]{background:#14284B;color:#F5F1E8;outline-color:#8FB0EA}
+#commercialWelcome .latam-country-grid a[aria-current=true] small{color:#c9d6e7}
+#commercialWelcome :is(#commercialIdentity,#commercialAvailability,.latam-availability){color:#40546b;border-color:#14284b24}
+#commercialWelcome .latam-benefit-grid article{position:relative;isolation:isolate;background:#fff;border-color:#14284b24;box-shadow:0 10px 40px #14284b0f;transition:box-shadow .3s ease,translate .65s cubic-bezier(.22,1,.36,1),opacity .65s ease}
+#commercialWelcome .latam-benefit-grid article::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:2px;pointer-events:none;background:conic-gradient(from var(--ad507-angle),transparent 0,#1D3866 14%,transparent 32%,#8FB0EA 56%,transparent 78%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ad507-border 8s linear infinite;opacity:.7}
+#commercialWelcome .latam-benefit-grid article:nth-child(2)::before{animation-delay:-2s}#commercialWelcome .latam-benefit-grid article:nth-child(3)::before{animation-delay:-4s}
+#commercialWelcome .latam-benefit-grid h3{color:#14284B}
+#commercialWelcome .latam-benefit-grid p{color:#5B6578}
+#commercialWelcome .latam-benefit-grid .latam-benefit-icon{background:#14284B;color:#F5F1E8}
+#commercialWelcome .latam-benefit-grid .latam-benefit-icon .symbol{color:#F5F1E8}
+/* Commercial cards retain their existing dimensions, markup and Motion. Color finish only. */
+#commercialWelcome .latam-plan-grid .latam-plan-card{background:#fff;border-color:#14284b24;box-shadow:0 10px 40px #14284b0f;color:#1B2335}
+#commercialWelcome .latam-plan-grid .latam-plan-card :is(h3,.latam-plan-price,.latam-plan-action>span){color:#14284B}
+#commercialWelcome .latam-plan-grid .latam-plan-card p{color:#5B6578!important}
+#commercialWelcome .latam-plan-grid .latam-plan-card .latam-plan-icon{background:#14284B;color:#F5F1E8}
+#commercialWelcome .latam-plan-grid .latam-plan-label{background:#F5F1E8;color:#1D3866;border-color:#14284b24}
+#commercialWelcome .latam-plan-grid [data-latam-plan="BUSINESS_PREMIUM"]{background:#14284B;color:#F5F1E8}
+#commercialWelcome .latam-plan-grid [data-latam-plan="BUSINESS_PREMIUM"] :is(h3,p,.latam-plan-price,.latam-plan-action>span){color:#F5F1E8!important}
+#commercialWelcome .latam-help-strip{background:#14284B;border-color:#8fb0ea55;box-shadow:0 10px 28px #050e2126}
+#commercialWelcome .latam-help-strip :is(h2,p,strong){color:#F5F1E8}
+#commercialWelcome .latam-help-icon{background:#8fb0ea20;color:#bdd1ed}
+body.latam:has(#commercialWelcome) .latam-footer{background:#0E1D38;border-color:#8fb0ea38;color:#c9d6e7}
+body.latam:has(#commercialWelcome) .latam-footer :is(a,strong,.latam-footer-logo){color:#F5F1E8}
+body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary){position:relative;isolation:isolate;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease,background-color .3s ease!important}
+body.latam:has(#commercialWelcome) :is(.latam-account a.button,.latam-cta){background:#F5F1E8!important;color:#14284B!important;box-shadow:0 5px 16px #050e2126}
+body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary)::after,#commercialWelcome .latam-plan-action>span::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 30%,#ffffff36 50%,transparent 70%);transform:translateX(-120%);animation:premiumButtonShine 5s ease-in-out infinite}
+#commercialWelcome .latam-plan-action>span{position:relative;overflow:hidden;isolation:isolate}
+#commercialWelcome .ad507-visual-reveal,body.latam:has(#commercialWelcome) .latam-footer-inner.ad507-visual-reveal{opacity:0;translate:0 24px;transition:opacity .8s cubic-bezier(.22,1,.36,1),translate .8s cubic-bezier(.22,1,.36,1)}
+#commercialWelcome .ad507-visual-reveal.ad507-visible,body.latam:has(#commercialWelcome) .latam-footer-inner.ad507-visible{opacity:1;translate:0 0}
+@media(hover:hover) and (pointer:fine){
+ #commercialWelcome .latam-country-grid a:hover{background:#e8eef6!important;border-color:#8FB0EA!important;box-shadow:0 14px 28px #14284b26!important;color:#14284B!important;filter:none}
+ #commercialWelcome .latam-country-grid a:hover small{color:#40546b}
+ #commercialWelcome .latam-benefit-grid article:hover{translate:0 -3px;box-shadow:0 14px 36px #14284b26}
+ body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary):hover{transform:translateY(-2px)!important;box-shadow:0 8px 22px #8fb0ea26}
+}
+@media(prefers-reduced-motion:reduce){
+ #commercialWelcome .latam-hero::after{animation:none;opacity:0}
+ #commercialWelcome .latam-benefit-grid article::before,body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary)::after,#commercialWelcome .latam-plan-action>span::after{animation:none!important;opacity:0}
+ #commercialWelcome :is(.ad507-visual-reveal,.latam-benefit-grid article),body.latam:has(#commercialWelcome) .latam-footer-inner.ad507-visual-reveal{opacity:1;translate:none;transition:none!important}
+ body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary),body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary):hover{transition:none!important;transform:none!important}
+ #commercialWelcome .latam-country-grid a:hover,#commercialWelcome .latam-benefit-grid article:hover{transform:none!important;translate:none!important;transition:none!important}
+}
 `;
  const sessionScript = `
 let latamSessionState='loading',latamCanPrepare=false;
@@ -718,6 +772,7 @@ document.getElementById('latamRequestDialog').addEventListener('close',()=>docum
 document.getElementById('latamRequestClose').onclick=()=>document.getElementById('latamRequestDialog').close();
 document.getElementById('latamHelpLink').onclick=()=>document.getElementById('natalieLauncher').click();
 (${bindLatamOverlays.toString()})();
+(${bindLatamHomeMotion.toString()})();
 markCountry();
 </script>`);
 
@@ -743,4 +798,16 @@ export function bindLatamOverlays(){
  document.querySelectorAll('[data-latam-legal]').forEach(button=>button.addEventListener('click',()=>{const key=button.getAttribute('data-latam-legal');if(['terms','privacy','commercial','cookies'].includes(key))location.assign('/legal/'+key);}));
  legal?.addEventListener('pointerdown',event=>{if(event.target===legal)hide();});
  document.addEventListener('keydown',event=>{if(event.key==='Escape')hide();});
+}
+
+/** Homepage decoration only; image geometry and all commercial handlers remain untouched. */
+function bindLatamHomeMotion(){
+ const home=document.getElementById('commercialWelcome'),hero=home?.querySelector('.latam-hero') as HTMLElement|null,image=home?.querySelector('.latam-art') as HTMLImageElement|null;
+ if(!home||!hero||!image)return;
+ const alignReflection=()=>{const box=image.getBoundingClientRect(),parent=hero.getBoundingClientRect();for(const [key,value]of Object.entries({left:box.left-parent.left,top:box.top-parent.top,width:box.width,height:box.height}))hero.style.setProperty('--latam-image-'+key,value+'px');};
+ alignReflection();image.addEventListener('load',alignReflection);window.addEventListener('resize',alignReflection);
+ if('ResizeObserver'in window){const size=new ResizeObserver(alignReflection);size.observe(hero);size.observe(image);}
+ if(!('IntersectionObserver'in window)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const reveal=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){entry.target.classList.add('ad507-visible');reveal.unobserve(entry.target);}},{threshold:.08,rootMargin:'0px 0px 60px 0px'});
+ document.querySelectorAll('#commercialWelcome .latam-benefit-grid article,#commercialWelcome .latam-help-strip,body.latam .latam-footer-inner').forEach(element=>{element.classList.add('ad507-visual-reveal');reveal.observe(element);});
 }

@@ -1154,30 +1154,13 @@ dialog#plan507Details #plan507Close{background:#e7e0d4!important;color:#182944!i
  list.querySelectorAll('li').forEach((li,i)=>li.style.setProperty('--premium-step',String(Math.min(i,12))));
  dialog.showModal();dialog.classList.add('plan-motion-active');dialog.scrollTop=0;
  }));
- // Close with the same reverse motion whether using Regresar or tapping the backdrop.
- let closing=false;
- function closePlanDetails(){
-  if(closing||!dialog.open)return;
-  closing=true;
-  const finish=()=>{dialog.close();dialog.classList.remove('plan-motion-closing');closing=false;};
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return;}
-  dialog.classList.remove('plan-motion-active');
-  dialog.classList.add('plan-motion-closing');
-  window.setTimeout(finish,300);
- }
- document.getElementById('plan507Close').onclick=closePlanDetails;
- // Native modal backdrop is hit-tested as the dialog itself in Chromium.
- // Check coordinates against the visible dialog rectangle on both targets.
- function dismissOutside(event){
-  if(!dialog.open||closing)return;
+ // Same native-dialog dismissal used by Direcciones LATAM.
+ document.getElementById('plan507Close').onclick=()=>dialog.close();
+ dialog.addEventListener('click',event=>{
+  if(event.target!==dialog)return;
   const r=dialog.getBoundingClientRect();
-  const outside=event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom;
-  if(outside){event.preventDefault();closePlanDetails();}
- }
- dialog.addEventListener('pointerdown',dismissOutside);
- dialog.addEventListener('click',dismissOutside);
- document.addEventListener('pointerdown',dismissOutside,true);
- dialog.addEventListener('cancel',event=>{event.preventDefault();closePlanDetails();});
+  if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();
+ });
 })();
 </script>
 

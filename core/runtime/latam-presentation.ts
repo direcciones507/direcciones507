@@ -343,7 +343,8 @@ body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu s
  #commercialWelcome .latam-hero::after{animation:none;opacity:0}
  #commercialWelcome .latam-benefit-grid article::before,body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary)::after,#commercialWelcome .latam-plan-action>span::after{animation:none!important;opacity:0}
  #commercialWelcome :is(.ad507-visual-reveal,.latam-benefit-grid article),body.latam:has(#commercialWelcome) .latam-footer-inner.ad507-visual-reveal{opacity:1;translate:none;transition:none!important}
- body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary){transition:none!important;transform:none!important}
+ body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary),body.latam:has(#commercialWelcome) :is(.latam-account a,.latam-cta,.latam-menu summary):hover{transition:none!important;transform:none!important}
+ #commercialWelcome .latam-country-grid a:hover,#commercialWelcome .latam-benefit-grid article:hover{transform:none!important;translate:none!important;transition:none!important}
 }
 `;
  const sessionScript = `

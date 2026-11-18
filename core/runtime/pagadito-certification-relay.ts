@@ -26,6 +26,9 @@ export function createPagaditoCertificationRelay(sql:Sql,env:Env){
   const body=JSON.stringify({operation,plan:q.plan,mode:input.mode,amountCents:q.amountCents,browserInfo:input.browserInfo});
   const r=await fetch(endpoint,{method:'POST',redirect:'error',headers:{'content-type':'application/json','x-certification-signature':sign(secret,body)},body,signal:AbortSignal.timeout(27000)});
   const data=await r.json();
+  if(r.status===409)throw Error('CERTIFICATION_ALREADY_SUBMITTED');
+  if(r.status===404||r.status===503)throw Error('CERTIFICATION_SERVICE_UNAVAILABLE');
+  if(r.status===400)throw Error('CERTIFICATION_INVALID_REQUEST');
   if(!r.ok||data.result?.state!=='VERIFIED')throw Error('CERTIFICATION_UNCONFIRMED');
   return data.result as {orderId:string;amountCents:number;currency:'USD';authorization:string;state:'VERIFIED'};
  };

@@ -32,7 +32,8 @@ export function createPagaditoCertificationRelay(sql:Sql,env:Env){
 }
 
 export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:Env):Promise<Response|null>{
- if(new URL(req.url).pathname!=='/v1/internal/pagadito/certification')return null;
+ const pathname=new URL(req.url).pathname;
+ if(pathname!=='/v1/internal/pagadito/certification'&&pathname!=='/v1/internal/pagadito/certification/status')return null;
  const secret=env.AD507_PAGADITO_RELAY_SECRET;
  if(!secret||secret.length<48||env.AD507_PAGADITO_ISOLATED_DB!=='true'||env.AD507_PAGADITO_CERTIFICATION_ENABLED!=='true'||env.AD507_PAGADITO_ENVIRONMENT!=='sandbox')return json(404,{error:'DISABLED'});
  if(req.method!=='POST')return json(405,{error:'METHOD_NOT_ALLOWED'});
@@ -40,6 +41,12 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
  if(!/^[a-f0-9]{64}$/.test(signature))return json(403,{error:'FORBIDDEN'});
  const body=await req.text();
  if(body.length>8192||!timingSafeEqual(Buffer.from(signature),Buffer.from(sign(secret,body))))return json(403,{error:'FORBIDDEN'});
+ if(pathname.endsWith('/status')){
+  const value=JSON.parse(body);
+  if(typeof value.operation!=='string'||! /^[a-f0-9]{64}$/.test(value.operation))return json(400,{error:'INVALID_REFERENCE'});
+  const rows=await sql.unsafe('SELECT order_id::text,state,"authorization" FROM ad507.pagadito_certification_relay WHERE operation=$1',[value.operation]);
+  const row=rows[0];return json(200,{state:row?.state||'NOT_FOUND',orderId:row?.order_id||null,authorization:row?.authorization||null});
+ }
  const client=createPagaditoSandboxClient(env);
  if(!client)return json(503,{error:'DISABLED'});
  const value=JSON.parse(body);

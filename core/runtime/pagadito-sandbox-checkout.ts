@@ -14,7 +14,7 @@ export function createSandboxCheckout(sql:Sql,client:ReturnType<typeof createPag
   try{
    const verified=await executeSandboxFirstPayment(client,order,input.card,input.browserInfo);
    await sql.begin(async tx=>{
-    const saved=await tx.unsafe("UPDATE ad507.pagadito_sandbox_attempts SET state='VERIFIED',authorization=$2,updated_at=now() WHERE order_id=$1::uuid AND state='SUBMITTING' RETURNING order_id",[order.id,verified.authorization]);
+    const saved=await tx.unsafe("UPDATE ad507.pagadito_sandbox_attempts SET state='VERIFIED',\"authorization\"=$2,updated_at=now() WHERE order_id=$1::uuid AND state='SUBMITTING' RETURNING order_id",[order.id,verified.authorization]);
     if(saved.length!==1)throw Error('PAGADITO_ATTEMPT_STATE_CHANGED');
    });
    // Sandbox certification only: never activate a real address or mark a production order paid.

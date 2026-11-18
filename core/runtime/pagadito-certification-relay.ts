@@ -21,8 +21,9 @@ export function createPagaditoCertificationRelay(sql:Sql,env:Env){
   const q=await createPagaditoSandboxOrderBridge(sql).quote(input.userId,input.addressId,input.mode);
   if(!q.available)throw Error('CERTIFICATION_ALREADY_EXISTS');
   const operation=sign(secret,'certification:'+input.addressId+':'+input.mode);
-  // Send only sandbox fixture data and an opaque order key; no production customer details.
-  const body=JSON.stringify({operation,plan:q.plan,mode:input.mode,amountCents:q.amountCents,card:input.card,browserInfo:input.browserInfo});
+  if(input.card.number!=='4111111111111111'||input.card.expirationDate!=='01/2030'||input.card.cvv!=='123')throw Error('SANDBOX_TEST_CARD_REQUIRED');
+  // Send the quote and required browser metadata, not customer or card details.
+  const body=JSON.stringify({operation,plan:q.plan,mode:input.mode,amountCents:q.amountCents,browserInfo:input.browserInfo});
   const r=await fetch(endpoint,{method:'POST',redirect:'error',headers:{'content-type':'application/json','x-certification-signature':sign(secret,body)},body,signal:AbortSignal.timeout(27000)});
   const data=await r.json();
   if(!r.ok||data.result?.state!=='VERIFIED')throw Error('CERTIFICATION_UNCONFIRMED');
@@ -56,7 +57,7 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
   return json(409,{error:'CERTIFICATION_ALREADY_SUBMITTED'});
  }
  try{
-  const verified=await executeSandboxFirstPayment(client,{id,provider:'PAGADITO',payment_environment:'test',status:'PENDING',amount_cents:quote.amountCents,currency:'USD',payment_plan:value.plan},value.card,value.browserInfo);
+  const verified=await executeSandboxFirstPayment(client,{id,provider:'PAGADITO',payment_environment:'test',status:'PENDING',amount_cents:quote.amountCents,currency:'USD',payment_plan:value.plan},{number:'4111111111111111',expirationDate:'01/2030',cvv:'123',cardHolderName:'Sandbox Test',firstName:'Sandbox',lastName:'Test',email:'sandbox@example.invalid',billingAddress:{city:'Panama',state:'Panama',zip:'',countryId:'507',line1:'Sandbox',phone:'60000000'}},value.browserInfo);
   await sql.unsafe("UPDATE ad507.pagadito_certification_relay SET state='VERIFIED',authorization=$2 WHERE operation=$1",[value.operation,verified.authorization]);
   return json(200,{result:{orderId:id,amountCents:quote.amountCents,currency:'USD',authorization:verified.authorization,state:'VERIFIED'}});
  }catch{

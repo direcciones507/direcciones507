@@ -11,9 +11,9 @@ const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export function pagaditoTransactionFromOrder(order:{
   id:string;provider:string;payment_environment:string;status:string;
   amount_cents:number;currency:string;payment_plan:string;
-}):PagaditoTransaction {
+},environment:'sandbox'|'production'='sandbox'):PagaditoTransaction {
   if(!uuid.test(order.id)||order.provider!=='PAGADITO'||
-     order.payment_environment!=='test'||order.status!=='PENDING'||
+     order.payment_environment!==(environment==='sandbox'?'test':'production')||order.status!=='PENDING'||
      order.currency!=='USD'||!Number.isSafeInteger(order.amount_cents)||
      order.amount_cents<=0)throw Error('INVALID_PAGADITO_ORDER');
   // Quotes may have different amounts for installments, renewals and ads.

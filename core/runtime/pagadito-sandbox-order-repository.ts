@@ -8,12 +8,13 @@ const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 const idempotency=/^[A-Za-z0-9_-]{16,128}$/;
 
 /**
- * Server-side order creation for Pagadito Sandbox.
+ * Server-side order creation for Pagadito, environment-isolated.
  * NOT registered as an HTTP route. The proposed database constraints must be
  * reviewed/applied before this adapter is enabled.
  * No card data, provider API call or address activation happens here.
  */
-export function createPagaditoSandboxOrderRepository(sql:Sql) {
+export function createPagaditoOrderRepository(sql:Sql,environment:'sandbox'|'production'='sandbox') {
+  const paymentEnvironment=environment==='sandbox'?'test':'production';
   return Object.freeze({
     async prepare(userId:string,addressId:string,key:string,mode='ANNUAL') {
       if(!uuid.test(userId)||!uuid.test(addressId))throw Error('PAYMENT_NOT_FOUND');
@@ -31,7 +32,7 @@ export function createPagaditoSandboxOrderRepository(sql:Sql) {
         const plan=address.request_data?.plan;
         const quote=commercialQuote(plan,mode);
         if(quote.amountCents<=0)throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
-        const operation=createHash('sha256').update('pagadito:test:'+userId+':'+addressId+':'+key).digest('hex');
+        const operation=createHash('sha256').update('pagadito:'+paymentEnvironment+':'+userId+':'+addressId+':'+key).digest('hex');
         const existing=await tx.unsafe(
           "SELECT * FROM ad507.orders WHERE provider='PAGADITO' AND operation_key=$1",
           [operation]
@@ -40,19 +41,19 @@ export function createPagaditoSandboxOrderRepository(sql:Sql) {
           const previous=existing[0];
           if(previous.user_id!==userId||previous.address_id!==addressId||
              previous.payment_plan!==plan||previous.amount_cents!==quote.amountCents||
-             previous.payment_environment!=='test')throw Error('PAYMENT_AMOUNT_CHANGED');
+             previous.payment_environment!==paymentEnvironment)throw Error('PAYMENT_AMOUNT_CHANGED');
           return {required:true,order:previous,reused:true};
         }
         // Includes other payment providers, failed orders and uncertain timeouts.
         // A late settlement must never result in a duplicate payment.
         const other=await tx.unsafe(
-          "SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment='test' LIMIT 1",
-          [addressId]
+          "SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment=$2 LIMIT 1",
+          [addressId,paymentEnvironment]
         );
         if(other.length)throw Error('PAYMENT_ALREADY_EXISTS');
         const inserted=await tx.unsafe(
-          "INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,'PAGADITO',$4,'test',$5,$6) RETURNING *",
-          [userId,addressId,quote.amountCents,plan,randomBytes(7).toString('hex'),operation]
+          "INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,'PAGADITO',$4,$5,$6,$7) RETURNING *",
+          [userId,addressId,quote.amountCents,plan,paymentEnvironment,randomBytes(7).toString('hex'),operation]
         );
         await tx.unsafe(
           "INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id) VALUES($1::uuid,'USER','PAGADITO_SANDBOX_ORDER_PREPARED','ORDER',$2)",
@@ -62,4 +63,9 @@ export function createPagaditoSandboxOrderRepository(sql:Sql) {
       });
     }
   });
+}
+
+/** Backwards-compatible sandbox adapter for staged callers. */
+export function createPagaditoSandboxOrderRepository(sql:Sql){
+  return createPagaditoOrderRepository(sql,'sandbox');
 }

@@ -21,7 +21,9 @@ export async function handlePagaditoSandboxQuote(req:Request,context:Context):Pr
   if(!match)return null;
   if(req.method!=='GET')return json(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
   if(!context.enabled)return json(503,{ok:false,error:'PAGADITO_SANDBOX_DISABLED'});
-  if(req.headers.get('sec-fetch-site')==='cross-site')return json(403,{ok:false,error:'ORIGIN_DENIED'});
+  const allowedOrigins=new Set(['https://direcciones507.com','https://www.direcciones507.com','https://direcciones.lat','https://www.direcciones.lat']);
+  const origin=req.headers.get('origin');
+  if(req.headers.get('sec-fetch-site')==='cross-site'||origin&&!allowedOrigins.has(origin))return json(403,{ok:false,error:'ORIGIN_DENIED'});
   const user=await context.auth.currentUser(req);
   if(!user)return json(401,{ok:false,error:'UNAUTHENTICATED'});
   if(!user.roles.some(role=>role==='CLIENT'||role==='ADMIN'))

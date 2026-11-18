@@ -1,4 +1,4 @@
--- REVIEW ONLY. Pagadito Sandbox support for existing Core order ledger.
+-- REVIEW ONLY. Pagadito sandbox and production support for existing Core order ledger.
 -- Apply through the reviewed migration process only after validating all
 -- existing order constraints and test data. NEVER run at application startup.
 BEGIN;
@@ -26,7 +26,7 @@ ALTER TABLE ad507.orders
  ADD CONSTRAINT core_pagadito_order_binding_check
  CHECK (provider IS DISTINCT FROM 'PAGADITO' OR (
    user_id IS NOT NULL AND address_id IS NOT NULL
-   AND payment_plan IS NOT NULL AND payment_environment='test'
+   AND payment_plan IS NOT NULL AND payment_environment IN ('test','production')
    AND operation_key IS NOT NULL AND amount_cents>0 AND currency='USD'
  ));
 CREATE UNIQUE INDEX core_pagadito_operation_uidx

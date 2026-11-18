@@ -41,13 +41,26 @@ export function createPagaditoRestClient(config: PagaditoConfig) {
   const auth = 'Basic ' + Buffer.from(config.uid + ':' + config.wsk, 'utf8').toString('base64');
 
   async function post<T>(endpoint: 'payment' | 'refund' | 'customer', payload: unknown): Promise<T> {
-    const response = await fetch(base + '/' + endpoint + '/', {
-      method: 'POST',
-      redirect: 'error',
-      headers: { Authorization: auth, 'Content-Type': 'application/json;charset=UTF-8', Accept: 'application/json' },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(20000)
-    });
+    if(config.environment==='sandbox')console.info('Pagadito Sandbox transport start',{endpoint});
+    let response:Response;
+    try{
+      response = await fetch(base + '/' + endpoint + '/', {
+        method: 'POST',
+        redirect: 'error',
+        headers: { Authorization: auth, 'Content-Type': 'application/json;charset=UTF-8', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(20000)
+      });
+    }catch(error){
+      if(config.environment==='sandbox'){
+        const e=error as {name?:string;code?:string;message?:string};
+        const code=typeof e?.code==='string'&&/^[A-Z0-9_]{1,64}$/.test(e.code)?e.code:'UNKNOWN';
+        const message=String(e?.message||'');
+        const category=/redirect/i.test(message)?'REDIRECT':/certificate|tls|ssl/i.test(message)?'TLS':/dns|resolve|hostname/i.test(message)?'DNS':/timeout|timed out/i.test(message)?'TIMEOUT':/connect/i.test(message)?'CONNECT':'OTHER';
+        console.warn('Pagadito Sandbox transport failed',{endpoint,code,category});
+      }
+      throw error;
+    }
     const parsed = await response.json().catch(() => null);
     if (config.environment === 'sandbox') {
       const code = typeof parsed?.response_code === 'string' && /^PG[0-9]{3}-[0-9]{2}$/.test(parsed.response_code) ? parsed.response_code : 'UNAVAILABLE';

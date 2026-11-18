@@ -4,6 +4,7 @@ import {createPagaditoSandboxClient} from './pagadito-sandbox-configuration';
 import {createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 import {executeSandboxFirstPayment,type SandboxCard} from './pagadito-sandbox-first-payment';
 import {commercialQuote} from './commercial-policy';
+import {PagaditoApiError} from './pagadito-rest-client';
 
 const endpoint='https://direcciones507-pagadito-sandbox.up.railway.app/v1/internal/pagadito/certification';
 const sign=(secret:string,body:string)=>createHmac('sha256',secret).update(body).digest('hex');
@@ -51,6 +52,7 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
  if(!client)return json(503,{error:'DISABLED'});
  const value=JSON.parse(body);
  if(!/^[a-f0-9]{64}$/.test(value.operation)||!['ANNUAL','INSTALLMENTS'].includes(value.mode)||!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE'].includes(value.plan))return json(400,{error:'INVALID_QUOTE'});
+ if(typeof value.browserInfo?.deviceFingerprintID!=='string'||!/^\d{1,40}$/.test(value.browserInfo.deviceFingerprintID))return json(400,{error:'FINGERPRINT_INVALID'});
  const quote=commercialQuote(value.plan,value.mode);
  if(quote.amountCents!==value.amountCents||quote.amountCents<=0)return json(400,{error:'INVALID_QUOTE'});
  // This ledger exists exclusively in the already configured isolated database.
@@ -69,7 +71,8 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
   return json(200,{result:{orderId:id,amountCents:quote.amountCents,currency:'USD',authorization:verified.authorization,state:'VERIFIED'}});
  }catch(error){
   console.warn('Pagadito certification failure', {orderId:id,category:error instanceof Error?error.name:'UnknownError'});
-  await sql.unsafe("UPDATE ad507.pagadito_certification_relay SET state='UNCERTAIN' WHERE operation=$1",[value.operation]);
-  return json(502,{error:'CERTIFICATION_UNCONFIRMED'});
+  const rejected=error instanceof PagaditoApiError&&[400,401].includes(error.status);
+  await sql.unsafe("UPDATE ad507.pagadito_certification_relay SET state=$2 WHERE operation=$1",[value.operation,rejected?'REJECTED':'UNCERTAIN']);
+  return json(rejected?422:502,{error:rejected?'CERTIFICATION_REJECTED':'CERTIFICATION_UNCONFIRMED',orderId:id});
  }
 }

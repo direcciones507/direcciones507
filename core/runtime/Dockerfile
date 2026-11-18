@@ -3,6 +3,7 @@ WORKDIR /app/core/runtime
 COPY core/runtime/package.json core/runtime/bun.lock ./
 RUN bun install --frozen-lockfile --production
 COPY core/runtime/ ./
+RUN bun test pagadito-sandbox-first-payment.test.ts
 COPY core/postgres/ ../postgres/
 COPY ad507.template.html /app/ad507.template.html
 COPY index.html /app/index.html

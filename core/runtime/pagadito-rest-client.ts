@@ -48,8 +48,14 @@ export function createPagaditoRestClient(config: PagaditoConfig) {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(20000)
     });
+    const parsed = await response.json().catch(() => null);
+    if (config.environment === 'sandbox') {
+      const code = typeof parsed?.response_code === 'string' && /^PG[0-9]{3}-[0-9]{2}$/.test(parsed.response_code) ? parsed.response_code : 'UNAVAILABLE';
+      console.info('Pagadito Sandbox response', { endpoint, httpStatus: response.status, responseCode: code });
+    }
     if (!response.ok) throw new PagaditoApiError(response.status);
-    return await response.json() as T;
+    if (parsed === null) throw new Error('PAGADITO_INVALID_JSON');
+    return parsed as T;
   }
   return Object.freeze({
     environment: config.environment,

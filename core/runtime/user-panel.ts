@@ -162,6 +162,18 @@ body.latam-account-panel #addressSection .address-card .address-actions>*{min-wi
 body.latam-account-panel #addressSection .address-card .address-actions :is(button,a){width:100%;min-width:0;min-height:46px;padding:10px 8px}
 body.latam-account-panel #addressSection .address-card .address-request-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 body.latam-account-panel #addressSection .address-card .address-request-pair>button{width:100%;min-width:0;min-height:48px;padding:9px 5px;font-size:13px;white-space:normal}
+
+/* Compact analytics on narrow phones: content determines height. */
+body.latam-account-panel #addressSection .address-card .address-analytics{flex:0 0 auto;min-height:0;height:auto;margin:0;padding:0}
+body.latam-account-panel #addressSection .address-card .analytics-summary{display:block;min-height:0;height:auto;padding:12px 13px 10px;margin:4px 0 0;line-height:1.35}
+body.latam-account-panel #addressSection .address-card .analytics-summary .analytics-period{margin:0 0 7px}
+body.latam-account-panel #addressSection .address-card .analytics-metrics{gap:8px 14px}
+body.latam-account-panel #addressSection .address-card .analytics-metrics p{margin:0}
+body.latam-account-panel #addressSection .address-card .analytics-summary h5{margin:9px 0 5px}
+body.latam-account-panel #addressSection .address-card .analytics-summary .analytics-actions{gap:5px 12px}
+body.latam-account-panel #addressSection .address-card .analytics-summary small{color:#415770!important;opacity:1;margin:7px 0 0;line-height:1.35}
+body.latam-account-panel #addressSection .address-card .analytics-summary .analytics-advanced{margin-top:8px;padding-top:7px}
+body.latam-account-panel #addressSection .address-card .analytics-summary .analytics-advanced summary{min-height:38px;padding:6px 0}
 }
 `+'</style></head>');
 }

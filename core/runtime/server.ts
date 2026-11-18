@@ -1,3 +1,4 @@
+import {pagaditoSandboxPage} from './pagadito-sandbox-ui';
 import {expireTemporaryEvents} from './temporary-event-ledger';
 import {createAdvertisingRepository} from './place-advertising';
 import {temporaryYappyConfiguration} from './temporary-event-configuration';
@@ -84,6 +85,14 @@ startLegacyCore(async req => {
     return new Response(result.body,{status:result.status,headers:result.headers});
   }
   if(sharedCommercialRoot(req,process.env)){const nonce=crypto.randomUUID().replaceAll('-','');return new Response(commercialEntryHtml(url.hostname==='direcciones.lat',url).replaceAll('<script>','<script nonce="'+nonce+'">'),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':url.hostname==='direcciones.lat'&&url.pathname==='/'?'index, follow':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-"+nonce+"'; base-uri 'none'; frame-ancestors 'none'; connect-src 'self' https://ad507-core-production.up.railway.app https://*.google-analytics.com https://*.analytics.google.com; object-src 'none'"}});}
+  const sandboxPageId=url.pathname.match(/^\/panel\/pagadito\/sandbox\/([a-f0-9-]{36})$/);
+  if(sandboxPageId&&req.method==='GET'){
+    if(process.env.AD507_PAGADITO_CERTIFICATION_ENABLED!=='true'||process.env.AD507_PAGADITO_ISOLATED_DB!=='true'||process.env.AD507_PAGADITO_ENVIRONMENT!=='sandbox'||process.env.AD507_PAGADITO_ENABLED!=='true')return new Response('Sandbox no disponible',{status:404});
+    const user=await auth.currentUser(req);
+    if(!user?.roles.some(role=>role==='CLIENT'||role==='ADMIN'))return new Response('Acceso requerido',{status:403});
+    try{await createPagaditoSandboxOrderBridge(sql).quote(user.id,sandboxPageId[1]);}catch{return new Response('Solicitud no disponible',{status:404});}
+    return new Response(pagaditoSandboxPage(sandboxPageId[1]),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','referrer-policy':'no-referrer','x-robots-tag':'noindex','x-content-type-options':'nosniff'}});
+  }
   const paymentPageId=url.pathname.match(/^\/panel\/payments\/([a-f0-9-]{36})$/);
   if(paymentPageId&&req.method==='GET'){
     if(!yappyEnabled||!paymentConfig||!paymentRepository)return new Response('Pago no habilitado',{status:503,headers:{'cache-control':'no-store'}});

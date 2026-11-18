@@ -27,6 +27,9 @@ import { createYappyProvider } from './yappy-provider';
 import { handlePaymentRoutes } from './payment-routes';
 import { paymentPage } from './payment-ui';
 import {handleTemporaryEventRoutes} from './temporary-event-routes';
+import {handleSandboxCheckout} from './pagadito-sandbox-checkout-route';
+import {createSandboxCheckout} from './pagadito-sandbox-checkout';
+import {createPagaditoSandboxClient} from './pagadito-sandbox-configuration';
 import {handlePagaditoSandboxQuote} from './pagadito-sandbox-routes';
 import {createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 
@@ -105,6 +108,12 @@ startLegacyCore(async req => {
   // and cannot create orders or initiate card transactions.
   const pagaditoQuoteResponse=await handlePagaditoSandboxQuote(req,{enabled:process.env.AD507_PAGADITO_QUOTE_PREVIEW_ENABLED==='true',auth,bridge:createPagaditoSandboxOrderBridge(sql)});
   if(pagaditoQuoteResponse)return pagaditoQuoteResponse;
+  if(url.pathname.startsWith('/v1/user/pagadito/sandbox/')&&url.pathname.endsWith('/checkout')){
+    const enabled=process.env.AD507_PAGADITO_CERTIFICATION_ENABLED==='true'&&process.env.AD507_PAGADITO_ISOLATED_DB==='true';
+    const client=enabled?createPagaditoSandboxClient(process.env):null;
+    const response=await handleSandboxCheckout(req,{enabled,auth,checkout:client?createSandboxCheckout(sql,client):null,origin:process.env.AD507_PAGADITO_CERTIFICATION_ORIGIN||'',testCards:['4111111111111111'],customerIp:req.headers.get('x-real-ip')});
+    if(response)return response;
+  }
   const paymentResponse=await handlePaymentRoutes(req,{enabled:yappyEnabled,auth,repository:paymentRepository,provider:paymentProvider});
   if(paymentResponse)return paymentResponse;
   if(req.method==='GET'&&url.pathname==='/admin/create')return new Response(adminCreationHtml(),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex'}});

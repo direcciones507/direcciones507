@@ -1,7 +1,7 @@
 import {commercialQuote} from './commercial-policy';
 import type {PagaditoTransaction} from './pagadito-rest-client';
 
-const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 
 /**
  * Build Pagadito's payment transaction ONLY from a persisted server-owned

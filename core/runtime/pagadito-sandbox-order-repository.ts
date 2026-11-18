@@ -31,7 +31,7 @@ export function createPagaditoOrderRepository(sql:Sql,environment:'sandbox'|'pro
         if(address.request_data?.migration||!isPayableClientRequest(address))throw Error('INVALID_PAYMENT_REQUEST');
         const plan=address.request_data?.plan;
         const quote=commercialQuote(plan,mode);
-        if(quote.amountCents<=0)throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
+        if(quote.amountCents<=0||plan==='RESIDENTIAL')throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
         const operation=createHash('sha256').update('pagadito:'+paymentEnvironment+':'+userId+':'+addressId+':'+key).digest('hex');
         const existing=await tx.unsafe(
           "SELECT * FROM ad507.orders WHERE provider='PAGADITO' AND operation_key=$1",
@@ -39,7 +39,7 @@ export function createPagaditoOrderRepository(sql:Sql,environment:'sandbox'|'pro
         );
         if(existing.length){
           const previous=existing[0];
-          if(previous.user_id!==userId||previous.address_id!==addressId||
+          if(String(previous.user_id)!==userId||String(previous.address_id)!==addressId||
              previous.payment_plan!==plan||previous.amount_cents!==quote.amountCents||
              previous.payment_environment!==paymentEnvironment)throw Error('PAYMENT_AMOUNT_CHANGED');
           return {required:true,order:previous,reused:true};

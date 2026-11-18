@@ -143,6 +143,26 @@ body.latam-account-panel #requestForm #preview.review-card .review-meta .badge{b
  body.latam-account-panel .address-card .address-actions>*{grid-column:1/-1}
  body.latam-account-panel #requestForm #preview.review-card{padding:16px}
 }
+
+/* Phone-only LATAM owner address card layout; no markup or behavior changes. */
+@media(max-width:620px){
+body.latam-account-panel main{padding-left:8px;padding-right:8px}
+body.latam-account-panel #addressSection.card{background:transparent;border:0;box-shadow:none;border-radius:0;padding:0;margin:18px 0 22px;overflow:visible}
+body.latam-account-panel #addressSection>h2{margin:0 6px 8px;font-size:clamp(23px,6vw,29px);line-height:1.18}
+body.latam-account-panel #addressSection>p.muted{margin:0 6px 16px;line-height:1.4}
+body.latam-account-panel #addressSection .address-grid{width:100%;min-width:0;gap:12px}
+body.latam-account-panel #addressSection .address-card{width:100%;min-width:0;padding:14px 12px;gap:8px;border-radius:17px}
+body.latam-account-panel #addressSection .address-card .address-top{flex-wrap:nowrap;gap:7px;justify-content:space-between}
+body.latam-account-panel #addressSection .address-card .address-status{margin-left:auto;flex-shrink:0}
+body.latam-account-panel #addressSection .address-card .address-name{margin:4px 0 0;font-size:clamp(20px,5.4vw,25px);line-height:1.18}
+body.latam-account-panel #addressSection .address-card .address-plan{margin:0;font-size:14px;line-height:1.3}
+body.latam-account-panel #addressSection .address-card .address-code-row{margin:0;padding:4px 0}
+body.latam-account-panel #addressSection .address-card .address-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;width:100%}
+body.latam-account-panel #addressSection .address-card .address-actions>*{min-width:0;width:100%;grid-column:1/-1}
+body.latam-account-panel #addressSection .address-card .address-actions :is(button,a){width:100%;min-width:0;min-height:46px;padding:10px 8px}
+body.latam-account-panel #addressSection .address-card .address-request-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body.latam-account-panel #addressSection .address-card .address-request-pair>button{width:100%;min-width:0;min-height:48px;padding:9px 5px;font-size:13px;white-space:normal}
+}
 `+'</style></head>');
 }
 export const userPanelHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Direcciones507 | Mi panel</title><link rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-180.png"><style>

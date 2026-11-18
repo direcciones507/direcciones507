@@ -8,8 +8,8 @@ import { createPagaditoRestClient } from './pagadito-rest-client';
 export function pagaditoSandboxConfiguration(env: Record<string, string | undefined>) {
   if (env.AD507_PAGADITO_ENABLED !== 'true') return null;
   if (env.AD507_PAGADITO_ENVIRONMENT !== 'sandbox') return null;
-  const uid = env.AD507_PAGADITO_UID?.trim();
-  const wsk = env.AD507_PAGADITO_WSK?.trim();
+  const uid = (env.AD507_PAGADITO_SANDBOX_UID ?? env.AD507_PAGADITO_UID)?.trim();
+  const wsk = (env.AD507_PAGADITO_SANDBOX_WSK ?? env.AD507_PAGADITO_WSK)?.trim();
   if (!uid || !wsk || uid.length > 512 || wsk.length > 2048)
     throw new Error('INVALID_PAGADITO_SANDBOX_CONFIGURATION');
   return { environment: 'sandbox' as const, uid, wsk };

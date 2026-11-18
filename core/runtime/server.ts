@@ -64,6 +64,16 @@ if(process.env.AD507_PAGADITO_ISOLATED_DB==='true'&&process.env.AD507_PAGADITO_E
   try{
    const response=await fetch('https://sandbox-api.pagadito.com/v1/customer/',{method:'HEAD',redirect:'manual',signal:AbortSignal.timeout(10000)});
    console.info('Pagadito Sandbox connectivity',{httpStatus:response.status,redirect:response.status>=300&&response.status<400});
+   // Validate the actual authenticated transport using an intentionally incomplete
+   // request. No card, transaction, amount, or customer data is submitted.
+   const client=createPagaditoSandboxClient(process.env);
+   if(client?.environment==='sandbox'){
+    try{await client.createCustomer({});console.info('Pagadito Sandbox validation probe returned a response');}
+    catch(error){
+     const status=(error as {status?:number})?.status;
+     console.info('Pagadito Sandbox validation probe completed',{httpStatus:typeof status==='number'?status:null});
+    }
+   }
   }catch(error){
    const e=error as {code?:string;message?:string};
    const code=typeof e?.code==='string'&&/^[A-Z0-9_]{1,64}$/.test(e.code)?e.code:'UNKNOWN';

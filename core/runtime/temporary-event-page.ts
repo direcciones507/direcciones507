@@ -1,6 +1,7 @@
 import {continuousGallery} from './continuous-gallery';
 import {temporaryEventDesign,temporaryEventVisualScript} from './temporary-event-design';
 /** Public and owner-preview event presentation; policy and publication stay in existing services. */
+/** QR poster release: branded PNG and print-only layout; payment rules unchanged. */
 import type {TemporaryEventDraft} from './temporary-event-draft';
 import {publicTemporaryEvent} from './temporary-event-draft';
 import {publicEventStatus} from './temporary-event-lifecycle';

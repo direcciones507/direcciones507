@@ -22,7 +22,14 @@ export async function handleSandboxCheckout(req:Request,context:{enabled:boolean
   if(data.legalAcceptance?.accepted!==true)return json(400,{error:'LEGAL_ACCEPTANCE_REQUIRED'});
   const c=data.card;
   if(!c||typeof c.number!=='string'||!context.testCards.includes(c.number)||!/^\d{3,4}$/.test(c.cvv))return json(400,{error:'SANDBOX_TEST_CARD_REQUIRED'});
+  if(typeof data.deviceFingerprintID!=='string'||!/^\d{1,40}$/.test(data.deviceFingerprintID))return json(400,{error:'FINGERPRINT_INVALID'});
   const result=await context.checkout({userId:user.id,addressId:match[1],key:data.key,mode:data.mode,card:c,browserInfo:{deviceFingerprintID:data.deviceFingerprintID,customerIp:context.customerIp}});
   return json(200,{ok:true,result});
- }catch{return json(400,{error:'SANDBOX_CHECKOUT_UNCONFIRMED'});}
+ }catch(error){
+  const code=error instanceof Error?error.message:'';
+  if(code==='CERTIFICATION_ALREADY_SUBMITTED'||code==='PAGADITO_ATTEMPT_ALREADY_EXISTS')return json(409,{error:'CERTIFICATION_ALREADY_SUBMITTED'});
+  if(code==='CERTIFICATION_SERVICE_UNAVAILABLE')return json(503,{error:code});
+  if(code==='CERTIFICATION_INVALID_REQUEST')return json(400,{error:code});
+  return json(502,{error:'SANDBOX_CHECKOUT_UNCONFIRMED'});
+ }
 }

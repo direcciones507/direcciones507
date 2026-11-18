@@ -1,4 +1,5 @@
 import {pagaditoSandboxPage} from './pagadito-sandbox-ui';
+import {pagaditoRelayEnabled,createPagaditoCertificationRelay,handlePagaditoCertificationRelay} from './pagadito-certification-relay';
 import {expireTemporaryEvents} from './temporary-event-ledger';
 import {createAdvertisingRepository} from './place-advertising';
 import {temporaryYappyConfiguration} from './temporary-event-configuration';
@@ -85,9 +86,11 @@ startLegacyCore(async req => {
     return new Response(result.body,{status:result.status,headers:result.headers});
   }
   if(sharedCommercialRoot(req,process.env)){const nonce=crypto.randomUUID().replaceAll('-','');return new Response(commercialEntryHtml(url.hostname==='direcciones.lat',url).replaceAll('<script>','<script nonce="'+nonce+'">'),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':url.hostname==='direcciones.lat'&&url.pathname==='/'?'index, follow':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-"+nonce+"'; base-uri 'none'; frame-ancestors 'none'; connect-src 'self' https://ad507-core-production.up.railway.app https://*.google-analytics.com https://*.analytics.google.com; object-src 'none'"}});}
+  const certificationRelay=await handlePagaditoCertificationRelay(req,sql,process.env);if(certificationRelay)return certificationRelay;
+  const relayEnabled=pagaditoRelayEnabled(process.env)&&['direcciones.lat','direcciones507.com','www.direcciones.lat','www.direcciones507.com'].includes(url.hostname);
   const sandboxPageId=url.pathname.match(/^\/panel\/pagadito\/sandbox\/([a-f0-9-]{36})$/);
   if(sandboxPageId&&req.method==='GET'){
-    if(process.env.AD507_PAGADITO_CERTIFICATION_ENABLED!=='true'||process.env.AD507_PAGADITO_ISOLATED_DB!=='true'||process.env.AD507_PAGADITO_ENVIRONMENT!=='sandbox'||process.env.AD507_PAGADITO_ENABLED!=='true')return new Response('Sandbox no disponible',{status:404});
+    if(!relayEnabled&&(process.env.AD507_PAGADITO_CERTIFICATION_ENABLED!=='true'||process.env.AD507_PAGADITO_ISOLATED_DB!=='true'||process.env.AD507_PAGADITO_ENVIRONMENT!=='sandbox'||process.env.AD507_PAGADITO_ENABLED!=='true'))return new Response('Sandbox no disponible',{status:404});
     const user=await auth.currentUser(req);
     if(!user?.roles.some(role=>role==='CLIENT'||role==='ADMIN'))return new Response('Acceso requerido',{status:403});
     try{await createPagaditoSandboxOrderBridge(sql).quote(user.id,sandboxPageId[1]);}catch{return new Response('Solicitud no disponible',{status:404});}
@@ -98,7 +101,7 @@ startLegacyCore(async req => {
     if(!yappyEnabled||!paymentConfig||!paymentRepository)return new Response('Pago no habilitado',{status:503,headers:{'cache-control':'no-store'}});
     const user=await auth.currentUser(req);if(!user)return new Response(null,{status:302,headers:{location:'/auth/google/login','cache-control':'no-store'}});
     try{if(url.searchParams.get('advertising')==='1')await paymentRepository.quoteAdvertising(user.id,paymentPageId[1],url.searchParams.get('mode')||'PLACE_AD_30');else if(url.searchParams.get('installment')==='2')await paymentRepository.quoteSecond(user.id,paymentPageId[1]);else if(url.searchParams.get('renewal')==='1')await paymentRepository.quoteRenewal(user.id,paymentPageId[1]);else await paymentRepository.quote(user.id,paymentPageId[1]);}catch(error){const reason=error instanceof Error?error.message:'';const unavailable=['PAYMENT_NOT_FOUND','INVALID_PAYMENT_REQUEST','INVALID_PAYMENT_PLAN'].includes(reason);return new Response(unavailable?'Solicitud no disponible. Regresa a Mi cuenta para consultar tus solicitudes.':'No se pudo verificar la solicitud de pago. Intenta de nuevo desde Mi cuenta.',{status:unavailable?404:503,headers:{'content-type':'text/plain; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});}
-    const pagaditoSandbox=process.env.AD507_PAGADITO_CERTIFICATION_ENABLED==='true'&&process.env.AD507_PAGADITO_ISOLATED_DB==='true'&&process.env.AD507_PAGADITO_ENVIRONMENT==='sandbox'&&process.env.AD507_PAGADITO_ENABLED==='true'&&process.env.AD507_PAGADITO_QUOTE_PREVIEW_ENABLED==='true'&&user.roles.some(role=>role==='CLIENT'||role==='ADMIN')&&!['advertising','installment','renewal'].some(key=>url.searchParams.has(key));
+    const pagaditoSandbox=(relayEnabled||(process.env.AD507_PAGADITO_CERTIFICATION_ENABLED==='true'&&process.env.AD507_PAGADITO_ISOLATED_DB==='true'&&process.env.AD507_PAGADITO_ENVIRONMENT==='sandbox'&&process.env.AD507_PAGADITO_ENABLED==='true'))&&process.env.AD507_PAGADITO_QUOTE_PREVIEW_ENABLED==='true'&&user.roles.some(role=>role==='CLIENT'||role==='ADMIN')&&!['advertising','installment','renewal'].some(key=>url.searchParams.has(key));
     return new Response(paymentPage(paymentPageId[1],paymentConfig.environment,pagaditoSandbox),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','referrer-policy':'no-referrer','x-robots-tag':'noindex','x-content-type-options':'nosniff'}});
   }
   const adReview=url.pathname.match(/^\/v1\/admin\/advertising(?:\/([a-f0-9-]{36}))?$/);
@@ -121,7 +124,8 @@ startLegacyCore(async req => {
   if(url.pathname.startsWith('/v1/user/pagadito/sandbox/')&&url.pathname.endsWith('/checkout')){
     const enabled=process.env.AD507_PAGADITO_CERTIFICATION_ENABLED==='true'&&process.env.AD507_PAGADITO_ISOLATED_DB==='true';
     const client=enabled?createPagaditoSandboxClient(process.env):null;
-    const response=await handleSandboxCheckout(req,{enabled,auth,checkout:client?createSandboxCheckout(sql,client):null,origin:process.env.AD507_PAGADITO_CERTIFICATION_ORIGIN||'',testCards:['4111111111111111'],customerIp:req.headers.get('x-real-ip')});
+    const certificationAuth=relayEnabled?{currentUser:async(request:Request)=>{const user=await auth.currentUser(request);return user?.email.toLowerCase()===process.env.AD507_PAGADITO_TEST_EMAIL?.toLowerCase()?user:null;}}:auth;
+    const response=await handleSandboxCheckout(req,{enabled:enabled||relayEnabled,auth:certificationAuth,checkout:relayEnabled?createPagaditoCertificationRelay(sql,process.env):client?createSandboxCheckout(sql,client):null,origin:relayEnabled?'https://'+url.hostname:process.env.AD507_PAGADITO_CERTIFICATION_ORIGIN||'',testCards:['4111111111111111'],customerIp:req.headers.get('x-real-ip')||req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||null});
     if(response)return response;
   }
   const paymentResponse=await handlePaymentRoutes(req,{enabled:yappyEnabled,auth,repository:paymentRepository,provider:paymentProvider});

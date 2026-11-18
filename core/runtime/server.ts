@@ -1,5 +1,5 @@
 import {pagaditoSandboxPage} from './pagadito-sandbox-ui';
-import {pagaditoRelayEnabled,createPagaditoCertificationRelay,handlePagaditoCertificationRelay} from './pagadito-certification-relay';
+import {pagaditoRelayEnabled,createPagaditoCertificationRelay,handlePagaditoCertificationRelay,lookupPagaditoCertification} from './pagadito-certification-relay';
 import {expireTemporaryEvents} from './temporary-event-ledger';
 import {createAdvertisingRepository} from './place-advertising';
 import {temporaryYappyConfiguration} from './temporary-event-configuration';
@@ -88,6 +88,17 @@ startLegacyCore(async req => {
   if(sharedCommercialRoot(req,process.env)){const nonce=crypto.randomUUID().replaceAll('-','');return new Response(commercialEntryHtml(url.hostname==='direcciones.lat',url).replaceAll('<script>','<script nonce="'+nonce+'">'),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':url.hostname==='direcciones.lat'&&url.pathname==='/'?'index, follow':'noindex, nofollow','content-security-policy':"default-src 'self'; img-src 'self' https: blob:; style-src 'unsafe-inline'; script-src 'nonce-"+nonce+"'; base-uri 'none'; frame-ancestors 'none'; connect-src 'self' https://ad507-core-production.up.railway.app https://*.google-analytics.com https://*.analytics.google.com; object-src 'none'"}});}
   const certificationRelay=await handlePagaditoCertificationRelay(req,sql,process.env);if(certificationRelay)return certificationRelay;
   const relayEnabled=pagaditoRelayEnabled(process.env)&&['direcciones.lat','direcciones507.com','www.direcciones.lat','www.direcciones507.com'].includes(url.hostname);
+  const certificationStatusId=url.pathname.match(/^\/v1\/user\/pagadito\/sandbox\/requests\/([a-f0-9-]{36})\/status$/);
+  if(certificationStatusId&&req.method==='GET'){
+    const user=await auth.currentUser(req);
+    if(!relayEnabled||!user||user.email.toLowerCase()!==process.env.AD507_PAGADITO_TEST_EMAIL?.toLowerCase())return Response.json({error:'FORBIDDEN'},{status:403,headers:{'cache-control':'no-store'}});
+    const mode=url.searchParams.get('mode')||'ANNUAL';
+    if(!['ANNUAL','INSTALLMENTS'].includes(mode))return Response.json({error:'INVALID_MODE'},{status:400});
+    try{
+      const result=await lookupPagaditoCertification(sql,process.env,user.id,certificationStatusId[1],mode);
+      return Response.json(result,{headers:{'cache-control':'no-store'}});
+    }catch{return Response.json({error:'CERTIFICATION_STATUS_UNAVAILABLE'},{status:503,headers:{'cache-control':'no-store'}});}
+  }
   const sandboxPageId=url.pathname.match(/^\/panel\/pagadito\/sandbox\/([a-f0-9-]{36})$/);
   if(sandboxPageId&&req.method==='GET'){
     if(!relayEnabled&&(process.env.AD507_PAGADITO_CERTIFICATION_ENABLED!=='true'||process.env.AD507_PAGADITO_ISOLATED_DB!=='true'||process.env.AD507_PAGADITO_ENVIRONMENT!=='sandbox'||process.env.AD507_PAGADITO_ENABLED!=='true'))return new Response('Sandbox no disponible',{status:404});

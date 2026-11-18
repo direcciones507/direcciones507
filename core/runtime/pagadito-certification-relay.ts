@@ -57,8 +57,20 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
  if(quote.amountCents!==value.amountCents||quote.amountCents<=0)return json(400,{error:'INVALID_QUOTE'});
  // This ledger exists exclusively in the already configured isolated database.
  await sql.unsafe('CREATE TABLE IF NOT EXISTS ad507.pagadito_certification_relay (operation text PRIMARY KEY, order_id uuid NOT NULL UNIQUE, state text NOT NULL, "authorization" text)');
+ // Record the outcome and reference of earlier attempts before reserving a new one.
+ await sql.unsafe("CREATE TABLE IF NOT EXISTS ad507.pagadito_certification_history (order_id uuid PRIMARY KEY, operation text NOT NULL, outcome text NOT NULL, evidence text NOT NULL, recorded_at timestamptz NOT NULL DEFAULT now())");
  const id=crypto.randomUUID();
- const reserved=await sql.unsafe("INSERT INTO ad507.pagadito_certification_relay(operation,order_id,state) VALUES($1,$2::uuid,'SUBMITTING') ON CONFLICT DO NOTHING RETURNING order_id",[value.operation,id]);
+ const reserved=await sql.begin(async tx=>{
+  const existing=await tx.unsafe('SELECT order_id::text AS order_id,state,"authorization" FROM ad507.pagadito_certification_relay WHERE operation=$1 FOR UPDATE',[value.operation]);
+  const prior=existing[0];
+  if(!prior)return tx.unsafe("INSERT INTO ad507.pagadito_certification_relay(operation,order_id,state) VALUES($1,$2::uuid,'SUBMITTING') ON CONFLICT DO NOTHING RETURNING order_id",[value.operation,id]);
+  // Only definite provider rejections or the exact Sandbox reference manually
+  // reconciled by the merchant after checking the provider report may be retried.
+  const manuallyReconciled=prior.state==='UNCERTAIN'&&!prior.authorization&&prior.order_id===env.AD507_PAGADITO_RECONCILED_ORDER_ID;
+  if(prior.state!=='REJECTED'&&!manuallyReconciled)return [];
+  await tx.unsafe("INSERT INTO ad507.pagadito_certification_history(order_id,operation,outcome,evidence) VALUES($1::uuid,$2,$3,$4) ON CONFLICT DO NOTHING",[prior.order_id,value.operation,manuallyReconciled?'RECONCILED_NO_PAYMENT':prior.state,manuallyReconciled?'Merchant checked Pagadito Sandbox report; no payment found':'Definitive provider validation rejection']);
+  return tx.unsafe("UPDATE ad507.pagadito_certification_relay SET order_id=$2::uuid,state='SUBMITTING' WHERE operation=$1 AND order_id=$3::uuid AND \"authorization\" IS NULL RETURNING order_id",[value.operation,id,prior.order_id]);
+ });
  if(!reserved.length){
   const rows=await sql.unsafe('SELECT order_id::text,state,"authorization" FROM ad507.pagadito_certification_relay WHERE operation=$1',[value.operation]);
   const previous=rows[0];

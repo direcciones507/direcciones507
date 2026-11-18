@@ -15,7 +15,7 @@ export function createPagaditoSandboxOrderBridge(sql:Sql) {
       if(!uuid.test(userId)||!uuid.test(addressId))throw Error('PAYMENT_NOT_FOUND');
       return sql.begin(async tx=>{
         const rows=await tx.unsafe(
-          "SELECT a.id,a.code,a.status,a.source,a.request_data,a.country_code FROM ad507.addresses a JOIN ad507.address_ownership o ON o.address_id=a.id JOIN ad507.users u ON u.id=o.user_id WHERE a.id=$1::uuid AND o.user_id=$2::uuid AND o.ownership_role='OWNER' AND u.status='ACTIVE' AND a.source='USER_REQUEST' FOR SHARE OF a",
+          "SELECT a.* FROM ad507.addresses a JOIN ad507.address_ownership o ON o.address_id=a.id JOIN ad507.users u ON u.id=o.user_id WHERE a.id=$1::uuid AND o.user_id=$2::uuid AND o.ownership_role='OWNER' AND u.status='ACTIVE' AND a.source='USER_REQUEST' FOR SHARE OF a",
           [addressId,userId]
         );
         if(!rows.length)throw Error('PAYMENT_NOT_FOUND');
@@ -26,9 +26,10 @@ export function createPagaditoSandboxOrderBridge(sql:Sql) {
         const plan=address.request_data?.plan;
         const quote=commercialQuote(plan,mode);
         if(quote.amountCents<=0)throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
+        if(plan==='RESIDENTIAL')throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
         // An existing Yappy/PayPal order may settle later: never create a competing charge.
         const existing=await tx.unsafe(
-          "SELECT id,provider,status,payment_environment FROM ad507.orders WHERE address_id=$1::uuid ORDER BY created_at DESC LIMIT 1",
+          "SELECT id,provider,status,payment_environment FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment='test' ORDER BY created_at DESC LIMIT 1",
           [addressId]
         );
         return {

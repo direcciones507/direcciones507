@@ -27,6 +27,8 @@ import { createYappyProvider } from './yappy-provider';
 import { handlePaymentRoutes } from './payment-routes';
 import { paymentPage } from './payment-ui';
 import {handleTemporaryEventRoutes} from './temporary-event-routes';
+import {handlePagaditoSandboxQuote} from './pagadito-sandbox-routes';
+import {createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 2, connect_timeout: 5, idle_timeout: 30, max_lifetime: 1800, connection:{statement_timeout:'15000',lock_timeout:'5000'}, application_name: 'ad507-core-general-auth' });
 const auth = createGeneralAuth(sql, process.env);
@@ -99,6 +101,10 @@ startLegacyCore(async req => {
       return json(200,{ok:true,advertising:await ads.review(user.id,adReview[1],body.decision)});
     }catch{return json(409,{ok:false,error:'ADVERTISING_REVIEW_FAILED'});}
   }
+  // Read-only Pagadito preview. Disabled by default; does not require credentials
+  // and cannot create orders or initiate card transactions.
+  const pagaditoQuoteResponse=await handlePagaditoSandboxQuote(req,{enabled:process.env.AD507_PAGADITO_QUOTE_PREVIEW_ENABLED==='true',auth,bridge:createPagaditoSandboxOrderBridge(sql)});
+  if(pagaditoQuoteResponse)return pagaditoQuoteResponse;
   const paymentResponse=await handlePaymentRoutes(req,{enabled:yappyEnabled,auth,repository:paymentRepository,provider:paymentProvider});
   if(paymentResponse)return paymentResponse;
   if(req.method==='GET'&&url.pathname==='/admin/create')return new Response(adminCreationHtml(),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex'}});

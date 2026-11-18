@@ -41,9 +41,10 @@ export function createPagaditoRestClient(config: PagaditoConfig) {
   const auth = 'Basic ' + Buffer.from(config.uid + ':' + config.wsk, 'utf8').toString('base64');
 
   async function post<T>(endpoint: 'payment' | 'refund' | 'customer', payload: unknown): Promise<T> {
-    const response = await fetch(base + '/' + endpoint, {
+    const response = await fetch(base + '/' + endpoint + '/', {
       method: 'POST',
-      headers: { Authorization: auth, 'Content-Type': 'application/json', Accept: 'application/json' },
+      redirect: 'error',
+      headers: { Authorization: auth, 'Content-Type': 'application/json;charset=UTF-8', Accept: 'application/json' },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(20000)
     });

@@ -65,3 +65,16 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
   return json(502,{error:'CERTIFICATION_UNCONFIRMED'});
  }
 }
+
+/** Read-only reconciliation of a prior Sandbox attempt. Does not submit payment. */
+export async function lookupPagaditoCertification(sql:Sql,env:Env,userId:string,addressId:string,mode:string){
+ const secret=env.AD507_PAGADITO_RELAY_SECRET;
+ if(!pagaditoRelayEnabled(env)||!secret)throw Error('CERTIFICATION_DISABLED');
+ await createPagaditoSandboxOrderBridge(sql).quote(userId,addressId,mode);
+ const operation=sign(secret,'certification:'+addressId+':'+mode);
+ const body=JSON.stringify({operation});
+ const response=await fetch(endpoint+'/status',{method:'POST',redirect:'error',headers:{'content-type':'application/json','x-certification-signature':sign(secret,body)},body,signal:AbortSignal.timeout(10000)});
+ if(!response.ok)throw Error('CERTIFICATION_STATUS_UNAVAILABLE');
+ const result=await response.json();
+ return {state:result.state,orderId:result.orderId,authorization:result.authorization};
+}

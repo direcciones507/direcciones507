@@ -17,3 +17,6 @@ Radar canonical public hostname: `radar.direcciones.lat`, replacing the previous
 ## Approved visual release requirements
 
 Use navy, silver and restrained blue, no neon or purple. Cinematic 3D entrance and smooth scroll storytelling with GSAP ScrollTrigger, selective Three.js/WebGL, parallax, animated map pins, cards and transitions. MapLibre remains the interactive map engine. Preserve fast access to map, mobile performance, reduced-motion fallback, keyboard accessibility and static fallback if WebGL fails. Motion must not block map search, login or reporting. Validate these before release.
+
+## Shared account entry (owner-approved)
+Reuse the existing Direcciones507/LATAM login card and its actual shared rendering, styles, animations, Google/email registration, verification and password recovery. No separate Radar login design or identity database. Preserve the originating Radar action and validated local return destination through authentication, without exposing credentials or accepting arbitrary external return URLs. Host-bound cookies remain isolated; account identity is shared. Verify the three entry points visually, on mobile and desktop, and test return-to-action before release.

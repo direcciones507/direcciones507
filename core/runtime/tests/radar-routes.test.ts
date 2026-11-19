@@ -21,3 +21,20 @@ test("report uses server identity, ignores spoofed owner",async()=>{
  const r=await createRadarRoutes(repo,user,allowed,true)(post());
  expect(r?.status).toBe(201);expect(writes.at(-1)).toEqual([id,"citizen","available","community"]);
 });
+
+const submission=(body:unknown)=>new Request(origin+"/v1/radar/establishments",{method:"POST",headers:{origin},body:JSON.stringify(body)});
+const draft={name:"Shop",category:"retail",country:"PA",latitude:8,longitude:-80};
+test("registration requires login",async()=>{
+ expect((await createRadarRoutes(repo,anon,allowed,true)(submission(draft)))?.status).toBe(403);
+});
+test("registration binds authenticated identity and moderation status",async()=>{
+ const storage:RadarRepository={...repo,register:async(d,account)=>{expect(d).toEqual(draft);expect(account).toBe("citizen");return id}};
+ const r=await createRadarRoutes(storage,user,allowed,true)(submission({...draft,published:true,accountRef:"other"}));
+ expect(r?.status).toBe(201);expect(await r?.json()).toEqual({id,status:"pending"});
+});
+test("invalid and duplicate submissions",async()=>{
+ const storage:RadarRepository={...repo,register:async()=>null};
+ const handler=createRadarRoutes(storage,user,allowed,true);
+ expect((await handler(submission({...draft,latitude:99})))?.status).toBe(400);
+ expect((await handler(submission(draft)))?.status).toBe(409);
+});

@@ -34,6 +34,7 @@ body.public-card-motion .card .white-sheet .accordion-item .accordion-label{colo
 body.public-card-motion .card .white-sheet .accordion-item .accordion-value{color:#f5f1e8!important}
 body.public-card-motion .card .white-sheet :is(.accordion-icon-left,.accordion-arrow-right){background:#8fb0ea14!important;border-color:#8fb0ea38!important;color:#a9c4ed!important}
 body.public-card-motion .card .white-sheet .accordion-icon-left i{color:#a9c4ed!important}
+body.public-card-motion .card .white-sheet :is(#btnHorario,#btnQR) .accordion-icon-left i{color:#eef4fc!important}
 body.public-card-motion .card .white-sheet .qr-box{background:#14284b!important;border-color:#8fb0ea38!important;color:#f5f1e8!important;border-radius:16px}
 body.public-card-motion .card .white-sheet .qr-box h3{color:#d3e0f2!important}
 body.public-card-motion .card .white-sheet .qr-box img{background:#fff!important}

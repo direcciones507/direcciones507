@@ -3,16 +3,16 @@ import {spawn} from 'node:child_process';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'@playwright/test');
-const server=spawn(process.execPath,['core/runtime/radar/scripts/preview.mjs'],{env:{...process.env,PORT:'4183'},stdio:'inherit'});
+const server=spawn(process.execPath,['core/runtime/radar/scripts/preview.mjs'],{env:{...process.env,PORT:'4183',RADAR_TEST_FIXTURES:'1'},stdio:'inherit'});
 const origin='http://127.0.0.1:4183';let browser;
 const assert=(condition,message)=>{if(!condition)throw Error(message);};
 try{
  for(let i=0;i<50;i++){try{if((await fetch(origin)).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
- browser=await chromium.launch({headless:true,args:['--disable-webgl']});
+ browser=await chromium.launch({headless:true,...(process.env.RADAR_BROWSER_EXECUTABLE?{executablePath:process.env.RADAR_BROWSER_EXECUTABLE}:{}),args:['--disable-webgl']});
  await mkdir('/tmp/radar-review',{recursive:true});const report=[];
  for(const [name,width,height,motion] of [['desktop',1440,1000,'no-preference'],['tablet',820,1180,'no-preference'],['mobile',390,844,'reduce'],['small-mobile',320,740,'reduce']]){
   const context=await browser.newContext({viewport:{width,height},reducedMotion:motion}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='6');
+  await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal overflow '+name);
   await page.screenshot({path:`/tmp/radar-review/${name}-hero.png`});
   await page.getByRole('link',{name:'Explorar Radar',exact:true}).click();await page.locator('.leaflet-container').waitFor();
@@ -20,12 +20,32 @@ try{
   await page.screenshot({path:`/tmp/radar-review/${name}-map.png`});
   await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
   await page.locator('#searchInput').fill('Café');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');
-  await page.locator('#searchInput').fill('');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='6');
+  await page.locator('#searchInput').fill('');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
   await page.getByRole('button',{name:'Filtros',exact:true}).click();await page.locator('#category').selectOption('cafe');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');await page.locator('#category').selectOption('');
-  await page.locator('#activity').selectOption('queue');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');await page.locator('#activity').selectOption('');
+  await page.locator('#activity').selectOption('queue');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');await page.locator('#activity').selectOption('');
   await page.locator('#country').selectOption('CR');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');
-  await page.locator('#country').selectOption('PA');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='6');
-  await page.getByRole('button',{name:'Agregar establecimiento',exact:true}).click();await page.locator('#accountDialog').waitFor();
+  await page.locator('#country').selectOption('PA');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
+  // Every visible priority pin is clickable; normal pins reveal with a small map zoom.
+  await page.locator('#filtersButton').click();
+  await page.locator('.raster-pin').first().waitFor();
+  assert(await page.locator('.raster-pin.pin-normal').count()===0,'Normal visible before zoom '+name);
+  assert(await page.locator('.raster-pin.pin-live').count()===1,'Live missing '+name);
+  const pulse=await page.locator('.raster-pin.pin-live').evaluate(e=>getComputedStyle(e,'::after').animationName);
+  assert(motion==='reduce'?pulse==='none':pulse==='livePulse','Incorrect live pulse '+name);
+  for(const pin of await page.locator('.raster-pin').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
+  await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
+  await page.locator('.raster-pin.pin-normal').first().waitFor();
+  for(const pin of await page.locator('.raster-pin.pin-normal').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
+  const before=await page.locator('#searchInput').inputValue();
+  await page.locator('#howButton').click();await page.locator('#howDialog').waitFor();
+  await page.screenshot({path:`/tmp/radar-review/${name}-help.png`});
+  await page.mouse.click(2,2);await page.locator('#howDialog').waitFor({state:'hidden'});
+  assert(await page.locator('#searchInput').inputValue()===before,'Help reset search '+name);
+  assert(await page.locator('.raster-pin.pin-normal').count()>0,'Help reset zoom '+name);
+  assert(await page.locator('main>.how,main>.closing').count()===0,'Promotional containers remain');
+  assert(await page.locator('#featuredGroups .featured-category').count()===2,'Featured categories missing');
+  assert(await page.locator('#featuredGroups .featured-card').count()===2,'Featured-only rows broken');
+  await page.getByRole('button',{name:'Agregar establecimiento' ,exact:true}).click();await page.locator('#accountDialog').waitFor();
   await page.frameLocator('#accountFrame').getByText('Vista previa visual',{exact:true}).waitFor();
   assert(await page.frameLocator('#accountFrame').locator('body').innerText().then(t=>t.includes('no solicita credenciales')),'Preview must not collect credentials');
   await page.locator('#accountDialog [data-close]').click();

@@ -1,5 +1,5 @@
 // Loaded only when WebGL is unavailable. Same public GeoJSON and map actions; no second Radar engine.
-const palette={available:'#7acfb5',queue:'#ddc278',full:'#e3a17e',incident:'#df929c',unknown:'#a7bdd7'};
+const palette={normal:'#9daf9f',featured:'#d7bc7a',live:'#d66e6c'};
 export async function rasterMap({container,tiles,bounds,onMove,onSelect,onPick,onError,reduced}){
  const css=document.createElement('link');css.rel='stylesheet';css.href='/radar/ui/vendor/leaflet.css';document.head.append(css);
  await new Promise((resolve,reject)=>{if(window.L)return resolve();const s=document.createElement('script');s.src='/radar/ui/vendor/leaflet.js';s.onload=resolve;s.onerror=reject;document.head.append(s);});
@@ -11,9 +11,9 @@ export async function rasterMap({container,tiles,bounds,onMove,onSelect,onPick,o
  function draw(){cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{pins.clearLayers();const b=map.getBounds(),visible=features.filter(f=>b.contains([f.geometry.coordinates[1],f.geometry.coordinates[0]]));
  // Geographic grid groups keep the 2D fallback inexpensive at country zoom.
  const groups=new Map(),zoom=map.getZoom(),cell=zoom<14?55:0;
- for(const f of visible){const [lng,lat]=f.geometry.coordinates,p=map.project([lat,lng],zoom);const key=cell?`${Math.floor(p.x/cell)},${Math.floor(p.y/cell)}`:f.id;const group=groups.get(key)||[];group.push(f);groups.set(key,group);}
+ for(const f of visible){const [lng,lat]=f.geometry.coordinates,p=map.project([lat,lng],zoom);const key=cell&&f.properties.pin==='normal'?`${Math.floor(p.x/cell)},${Math.floor(p.y/cell)}`:f.id;const group=groups.get(key)||[];group.push(f);groups.set(key,group);}
  for(const group of groups.values()){const f=group[0],coords=[f.geometry.coordinates[1],f.geometry.coordinates[0]];if(group.length>1){const button=document.createElement('button');button.className='raster-cluster';button.textContent=String(group.length);button.setAttribute('aria-label',`Ampliar grupo de ${group.length} establecimientos`);const marker=L.marker(coords,{icon:L.divIcon({html:button,className:'raster-pin-host',iconSize:[44,44],iconAnchor:[22,22]}),keyboard:false}).addTo(pins);button.onclick=e=>{e.stopPropagation();map.setView(coords,map.getZoom()+2);};continue;}
- const button=document.createElement('button');button.className='raster-pin';button.style.setProperty('--pin-color',palette[f.properties.activity]||palette.unknown);button.setAttribute('aria-label',f.properties.name);button.title=f.properties.name;button.append(document.createElement('span'));button.onclick=e=>{e.stopPropagation();onSelect(f);};L.marker(coords,{icon:L.divIcon({html:button,className:'raster-pin-host',iconSize:[38,50],iconAnchor:[19,48]}),keyboard:false}).addTo(pins);}
+ const button=document.createElement('button');button.className='raster-pin pin-'+f.properties.pin;button.dataset.id=f.id;button.style.setProperty('--pin-color',palette[f.properties.pin]||palette.normal);button.setAttribute('aria-label',f.properties.name);button.title=f.properties.name;button.append(document.createElement('span'));button.onclick=e=>{e.stopPropagation();onSelect(f);};L.marker(coords,{icon:L.divIcon({html:button,className:'raster-pin-host',iconSize:[38,50],iconAnchor:[19,48]}),keyboard:false}).addTo(pins);}
  });}
  map.on('moveend',()=>{draw();onMove();});map.on('click',e=>onPick(e.latlng.lng,e.latlng.lat));
  const resize=new ResizeObserver(()=>map.invalidateSize());resize.observe(container);

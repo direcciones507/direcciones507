@@ -1,4 +1,5 @@
-import {activateAnnualService,effectiveServicePlan,serviceExpired} from './annual-service';
+import {addressBillingExempt} from './admin-billing-policy';
+import {activateAnnualService,effectiveServicePlan,serviceExpired,ANNUAL_POLICY,annualPlans,annualEnd} from './annual-service';
 import {CODE_NAMESPACE_LOCK,personalizedCode,assertCodeAvailable,verifyHistoricalCustomCode,addressPublicUrl,publicCode} from './custom-public-code';
 import {isAutomaticPaidPlan,automaticPaidStateAllowed,isLegacyUnpaidPaidRequest} from './paid-activation-policy';
 import { assertCountryPublication, freeCountryPublicationAllowed, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
@@ -129,7 +130,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         if(files.length){const storage=createRequestMediaStorage(sql,actorId,options.r2!,options.fetch);for(const file of [...preparedFiles].sort((a,b)=>a.role==='logo'?-1:b.role==='logo'?1:0))await storage.storeOptimized({...file,ownerId:actorId,addressId:request.id,countryCode:data.countryCode});}
         return await sql.begin(async tx=>{
           if(admin){const roles=await tx.unsafe("SELECT u.id FROM ad507.users u JOIN ad507.user_roles r ON r.user_id=u.id WHERE u.id=$1::uuid AND u.status='ACTIVE' AND r.role IN ('ADMIN','COMMERCIAL') LIMIT 1",[actorId]);if(!roles.length)throw Error('FORBIDDEN');}else await actor(tx,actorId,'CLIENT');const row=await owned(tx,actorId,request.id);
-          const paid=options.paidWorkflow&&isAutomaticPaidPlan(row);
+          const paid=options.paidWorkflow&&isAutomaticPaidPlan(row)&&!await addressBillingExempt(tx,row,actorId);
           if(row.status==='DRAFT'&&row.request_data?.workflow!=='PAYMENT_PENDING'){await complete(tx,row);if(paid){await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{workflow}','\"PAYMENT_PENDING\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id]);row.request_data.workflow='PAYMENT_PENDING';}else await tx.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',updated_at=now() WHERE id=$1::uuid",[row.id]);await audit(tx,actorId,paid?'PAID_REQUEST_PREPARED':'REQUEST_SUBMITTED',row.id,admin);if(!admin&&row.request_data.legalAcceptance)await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata) VALUES($1::uuid,'USER','LEGAL_ACCEPTED','ADDRESS',$2,$3::jsonb)",[actorId,row.id,tx.json(row.request_data.legalAcceptance)]);}
           return {id:row.id,status:row.status==='DRAFT'&&!paid?'PENDING_REVIEW':row.status,...(paid?{workflow:'PAYMENT_PENDING'}:{}),code:row.code,review:row.review_decision};
         });
@@ -160,7 +161,8 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       }
       const {publicationReceipt,...record}=rows[0];
       const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?addressPublicUrl({code:record.code,source:'USER_REQUEST',country_code:record.countryCode,request_data:record.extras}):null;
-      return {...record,commercialService:record.extras?.annualService?{effectivePlan:effectiveServicePlan(record.extras,record.extras.plan),expired:serviceExpired(record.extras),endsAt:record.extras.annualService.endsAt}:null,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&['BUSINESS','PLACE'].includes(record.type)&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
+      const billingExempt=await addressBillingExempt(sql,{id:addressId,request_data:record.extras},actorId);
+      return {...record,billingExempt,canPublish:billingExempt&&isAutomaticPaidPlan({type:record.type,request_data:record.extras})&&['DRAFT','PENDING_REVIEW'].includes(record.status),commercialService:record.extras?.annualService?{effectivePlan:effectiveServicePlan(record.extras,record.extras.plan),expired:serviceExpired(record.extras),endsAt:record.extras.annualService.endsAt}:null,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&(['BUSINESS','PLACE'].includes(record.type)||billingExempt&&record.type==='RESIDENTIAL')&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
     },
     async transfer(actorId:string,addressId:string,expectedOwner:string,targetId:string) {
       if(![actorId,addressId,expectedOwner,targetId].every(id=>uuid.test(id)))throw Error('INVALID_REQUEST');
@@ -229,6 +231,13 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
         if(!row)throw Error('REQUEST_NOT_FOUND');
         if(!row.request_data?.migration)assertCountryPublication(row.country_code??row.request_data?.countryCode??'PA',row.address_type,row.request_data?.plan);
         if(row.status==='ACTIVE'&&row.publication_receipt)return {id:row.id,code:row.code,status:'ACTIVE',receipt:row.publication_receipt};
+        const billingExempt=!automatic&&await addressBillingExempt(session,row,actorId);
+        if(billingExempt&&isAutomaticPaidPlan(row)&&['DRAFT','PENDING_REVIEW'].includes(row.status)){
+          await complete(session,row);
+          await session.unsafe("UPDATE ad507.addresses SET status='PENDING_REVIEW',review_decision='APPROVED',reviewed_by=$2::uuid,request_data=jsonb_set(request_data,'{workflow}','\"ADMIN_READY\"'::jsonb),updated_at=now() WHERE id=$1::uuid",[row.id,actorId]);
+          row.status='PENDING_REVIEW';row.review_decision='APPROVED';row.request_data.workflow='ADMIN_READY';
+        }
+
         if(automatic){
           if(row.request_data?.workflow==='SECURITY_REVIEW'&&row.review_decision!=='APPROVED')return {id:row.id,status:row.status,workflow:'SECURITY_REVIEW',code:row.code};
           if(!automaticPaidStateAllowed(row))throw Error('INVALID_PAID_ACTIVATION_STATE');
@@ -240,11 +249,11 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
             return {id:row.id,status:'PENDING_REVIEW',workflow:'SECURITY_REVIEW',code:row.code};
           }
         }else{
-          if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&!row.request_data?.createdByAdmin&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data?.workflow))throw Error('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
+          if(options.paidWorkflow&&isAutomaticPaidPlan(row)&&!billingExempt&&!row.request_data?.createdByAdmin&&!['SECURITY_REVIEW','PAYMENT_CONFIRMED'].includes(row.request_data?.workflow))throw Error('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
           if((row.status!=='PENDING_REVIEW'&&!(row.status==='SUSPENDED'&&row.request_data?.migration))||row.review_decision!=='APPROVED')throw Error('APPROVAL_REQUIRED');
         }
         await complete(session,row);
-        if(options.paymentEnvironment)await requireConfirmedPayment(session,row,options.paymentEnvironment);
+        if(options.paymentEnvironment&&!billingExempt)await requireConfirmedPayment(session,row,options.paymentEnvironment);
         if(row.request_data?.migration){await historicalIntegrity(session,row);await verifyHistoricalCodePresent(row.code,options.fetch);await verifyMigrationBridge(row,options.fetch);const proof=await verifyHistoricalPhotos(row.legacy_payload,options.fetch);if(snapshotHash(proof)!==snapshotHash(row.request_data.migration.photoProof))throw Error('HISTORICAL_MEDIA_UNVERIFIED');}
         if(!row.request_data?.migration&&!row.request_data.publicCode&&row.request_data.namedCode){
           const custom=personalizedCode(row.request_data.plan,row.request_data.namedCode);
@@ -264,10 +273,16 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
           if(!automatic)await actor(tx,actorId,'ADMIN');
           const current=await tx.unsafe("SELECT * FROM ad507.addresses WHERE id=$1::uuid FOR UPDATE",[row.id]);
           if(automatic?!automaticPaidStateAllowed(current[0]):!['PENDING_REVIEW',...(row.request_data?.migration?['SUSPENDED']:[])].includes(current[0]?.status)||current[0]?.review_decision!=='APPROVED')throw Error('PUBLICATION_STATE_CONFLICT');
+          if(billingExempt&&!await addressBillingExempt(tx,current[0],actorId))throw Error('FORBIDDEN');
           if(row.request_data?.migration)await historicalIntegrity(tx,current[0]);
-          if(options.paymentEnvironment)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
+          if(options.paymentEnvironment&&!billingExempt)await requireConfirmedPayment(tx,current[0],options.paymentEnvironment);
           await tx.unsafe("UPDATE ad507.addresses SET status='ACTIVE',publication_receipt=$2,request_data=jsonb_set(request_data,'{workflow}',to_jsonb('PUBLISHED'::text)),updated_at=now() WHERE id=$1::uuid",[row.id,published.receipt]);if(automatic)await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id) VALUES('SYSTEM','PAID_REQUEST_ACTIVATED','ADDRESS',$1)",[row.id]);else await audit(tx,actorId,'REQUEST_PUBLISHED',row.id,true);
-          await activateAnnualService(tx,row.id,options.paymentEnvironment??'production');
+          if(billingExempt&&annualPlans.includes(row.request_data.plan)){
+            const startsAt=row.request_data.annualService?.startsAt||new Date().toISOString();
+            const terms={policy:ANNUAL_POLICY,plan:row.request_data.plan,mode:'ADMIN_EXEMPT',authorizedBy:actorId,startsAt,endsAt:row.request_data.annualService?.endsAt||annualEnd(startsAt)};
+            await tx.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService}',$2::jsonb) WHERE id=$1::uuid",[row.id,tx.json(terms)]);
+            await audit(tx,actorId,'ADMIN_SERVICE_AUTHORIZED',row.id,true);
+          }else await activateAnnualService(tx,row.id,options.paymentEnvironment??'production');
           await session.unsafe('COMMIT');
         } catch(error){await session.unsafe('ROLLBACK');throw error;}
         return {id:row.id,code,status:'ACTIVE',receipt:published.receipt};

@@ -12,4 +12,22 @@ export const activityLabels={available:'Disponible',queue:'Con fila',full:'Lleno
 export const categoryLabel=c=>({shop:'Comercio',restaurant:'Restaurante',cafe:'Cafetería',health:'Salud',services:'Servicios',hotel:'Alojamiento',other:'Otra'})[c]||String(c||'Establecimiento');
 export function normalizeBounds(input){let [w,s,e,n]=input;const wrap=x=>((x+180)%360+360)%360-180;if(e-w>=359.9){w=-180;e=180;}else{w=wrap(w);e=wrap(e);}return [w,Math.max(-85,s),e,Math.min(85,n)];}
 export function safeAddress(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&['direcciones507.com','www.direcciones507.com','direcciones.lat','www.direcciones.lat'].includes(u.hostname)?u.href:null;}catch{return null;}}
-export function freshProperties(input={},now=Date.now()){const p={...input};if(!Object.hasOwn(activityLabels,p.activity)||!Number.isFinite(Number(p.reportedAt))||!p.reportedAt||now-Number(p.reportedAt)>=1800000||Number(p.reportedAt)>now){p.activity='unknown';p.reportedAt=null;p.source=null;}return p;}
+export function freshProperties(input={},now=Date.now()){
+ const p={...input};
+ if(!Object.hasOwn(activityLabels,p.activity)||!Number.isFinite(Number(p.reportedAt))||!p.reportedAt||now-Number(p.reportedAt)>=1800000||Number(p.reportedAt)>now){p.activity='unknown';p.reportedAt=null;p.source=null;}
+ const active=t=>Number.isFinite(Number(t))&&Number(t)>now;
+ p.isFeatured=active(p.featuredUntil);
+ p.pin=active(p.liveUntil)?'live':p.isFeatured?'featured':'normal';
+ return p;
+}
+export const normalZoomStep=.6;
+export function mapFeatures(rows,zoom,revealZoom){return rows.filter(f=>f.properties.pin!=='normal'||zoom>=revealZoom);}
+export function priorityFeatures(rows){return rows.filter(f=>f.properties.pin==='live'||f.properties.pin==='featured');}
+export function featuredGroups(rows){const groups=new Map();for(const f of rows){if(!f.properties.isFeatured)continue;const key=f.properties.category;const group=groups.get(key)||[];group.push(f);groups.set(key,group);}return groups;}
+export function searchContext(text,country){
+ const clean=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ const aliases={cafe:'cafe',cafes:'cafe',cafeteria:'cafe',cafeterias:'cafe',restaurante:'restaurant',restaurantes:'restaurant',hotel:'hotel',hoteles:'hotel',comercio:'shop',comercios:'shop',servicio:'services',servicios:'services'};
+ let query=text.trim(),view=null;
+ for(const candidate of countries[country]?.views||[]){const suffix=' en '+candidate.name;if(clean(query).endsWith(clean(suffix))){query=query.slice(0,query.length-suffix.length).trim();view=candidate;break;}}
+ return {query:aliases[clean(query)]||query,view};
+}

@@ -1,3 +1,4 @@
+import {adminBillingExempt} from './admin-billing-policy';
 import QRCode from 'qrcode';
 import {eventOwnerRoute,type EventServices} from './temporary-event-owner';
 /** Authenticated draft and public event endpoints. Disabled until migration is applied. */
@@ -11,7 +12,7 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
  const url=new URL(req.url);
  const form=url.pathname==='/panel/evento/nuevo';
  const draft=url.pathname==='/v1/user/temporary-events';
- const owned=/^\/v1\/user\/temporary-events\/[a-f0-9-]{36}(?:\/(preview|photos|payment|refund))?$/.test(url.pathname);
+ const owned=/^\/v1\/user\/temporary-events\/[a-f0-9-]{36}(?:\/(preview|photos|payment|refund|publish))?$/.test(url.pathname);
  const ipn=url.pathname==='/v1/payments/temporary-events/yappy/ipn';
  const match=url.pathname.match(/^\/evento\/([a-z0-9]+(?:-[a-z0-9]+)*)(?:\/(qr\.png|foto\/[123]))?$/);
  if(!form&&!draft&&!match&&!owned&&!ipn)return null;
@@ -38,7 +39,7 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
     if(!photo||!ctx.media)return json(404,'PHOTO_NOT_FOUND');
     return new Response(req.method==='HEAD'?null:await ctx.media.read(photo.object_key),{headers:{'content-type':'image/webp','cache-control':'no-store','x-content-type-options':'nosniff','x-robots-tag':'noindex, nofollow'}});
    }
-   const html=renderTemporaryEventPage({draft:data,slug:event.slug,status:event.status,paymentConfirmedAt:'VERIFIED',photos:photos.map(x=>base+'/foto/'+x.slot),qrPngDataUrl:await QRCode.toDataURL(base,{width:640,margin:4})});
+   const html=renderTemporaryEventPage({draft:data,slug:event.slug,status:event.status,paymentConfirmedAt:event.paymentConfirmedAt,adminPublishedAt:event.adminPublishedAt,photos:photos.map(x=>base+'/foto/'+x.slot),qrPngDataUrl:await QRCode.toDataURL(base,{width:640,margin:4})});
    return new Response(req.method==='HEAD'?null:html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; img-src 'self' https: data:; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}});
   }catch{return json(503,'EVENT_UNAVAILABLE')}
  }
@@ -52,18 +53,19 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
   const user=await ctx.auth.currentUser(req);
   if(!user){if(form)return new Response(null,{status:302,headers:{location:'/panel','cache-control':'no-store'}});return json(401,'UNAUTHENTICATED');}
   if(!user.roles.some(r=>r==='CLIENT'||r==='ADMIN'))return json(403,'FORBIDDEN');
+  const adminExempt=user.roles.includes('ADMIN')&&await adminBillingExempt(ctx.sql,user.id);
   if(draft&&req.method==='GET'){const events=await ctx.sql.unsafe('SELECT id,slug,title,status,created_at FROM ad507.temporary_events WHERE owner_user_id=$1 ORDER BY created_at DESC LIMIT 100',[user.id]);return Response.json({ok:true,events},{headers:{'cache-control':'no-store'}})}
-  if(owned)return await eventOwnerRoute(req,ctx.sql,user.id,ctx);
+  if(owned)return await eventOwnerRoute(req,ctx.sql,user.id,{...ctx,adminExempt});
   if(form){
    // The official Yappy component signs in with a custom token and follows its
    // transaction in Firestore. Keep these exact origins confined to event checkout.
-   const paymentConnections=ctx.payment?' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com':'';
-   const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-192.png"><meta name="robots" content="noindex">'+(ctx.payment?'<script type="module" src="https://bt-cdn.yappy.cloud/v1/cdn/web-component-btn-yappy.js"></script>':'')+'</head><body>'+renderTemporaryEventDraftForm('/v1/user/temporary-events',!!ctx.payment)+'<script>'+temporaryEventDraftClientScript+'</script></body></html>';
+   const paymentConnections=ctx.payment&&!adminExempt?' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com':'';
+   const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-192.png"><meta name="robots" content="noindex">'+(ctx.payment&&!adminExempt?'<script type="module" src="https://bt-cdn.yappy.cloud/v1/cdn/web-component-btn-yappy.js"></script>':'')+'</head><body>'+renderTemporaryEventDraftForm('/v1/user/temporary-events',!!ctx.payment&&!adminExempt,adminExempt)+'<script>'+temporaryEventDraftClientScript+'</script></body></html>';
    return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex','content-security-policy':"default-src 'self'; script-src 'unsafe-inline' https://bt-cdn.yappy.cloud https://unpkg.com https://cdn.jsdelivr.net; connect-src 'self' https://*.yappy.cloud https://*.bgeneral.cloud"+paymentConnections+" https://tile.openstreetmap.org; img-src 'self' data: https:; style-src 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"}});
   }
   const body=await req.text();if(body.length>24000)return json(413,'PAYLOAD_TOO_LARGE');
   let input:unknown;try{input=JSON.parse(body)}catch{return json(400,'INVALID_JSON')}
   try{return Response.json({ok:true,...await repository.createDraft(user.id,input)},{status:201,headers:{'cache-control':'no-store'}})}
   catch(e){if(e instanceof Error&&/^(INVALID_|EVENT_DURATION_|PUBLIC_CONTACT_)/.test(e.message))return json(400,e.message);throw e}
- }catch(e){const m=e instanceof Error?e.message:'';if(/^(INVALID_|EVENT_DURATION_|PUBLIC_CONTACT_|PRIMARY_PHOTO_)/.test(m))return json(400,m);if(['EVENT_NOT_EDITABLE','EVENT_NOT_PAYABLE'].includes(m))return json(409,m);return json(503,'EVENT_UNAVAILABLE')}
+ }catch(e){const m=e instanceof Error?e.message:'';if(m==='FORBIDDEN')return json(403,m);if(/^(INVALID_|EVENT_DURATION_|PUBLIC_CONTACT_|PRIMARY_PHOTO_)/.test(m))return json(400,m);if(['EVENT_NOT_EDITABLE','EVENT_NOT_PAYABLE','EVENT_NOT_PUBLISHABLE'].includes(m))return json(409,m);return json(503,'EVENT_UNAVAILABLE')}
 }

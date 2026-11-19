@@ -6,26 +6,28 @@ import {createTemporaryEventRepository,dbDate} from './temporary-event-repositor
 import {renderTemporaryEventPage} from './temporary-event-page';
 import type {createTemporaryEventMedia} from './temporary-event-media';
 import type {createTemporaryEventPayment} from './temporary-event-payment';
-export type EventServices={media?:ReturnType<typeof createTemporaryEventMedia>|null;payment?:ReturnType<typeof createTemporaryEventPayment>|null};
+export type EventServices={media?:ReturnType<typeof createTemporaryEventMedia>|null;payment?:ReturnType<typeof createTemporaryEventPayment>|null;adminExempt?:boolean};
 export async function eventOwnerRoute(req:Request,sql:Sql,userId:string,services:EventServices):Promise<Response>{
- const url=new URL(req.url),origin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin,match=url.pathname.match(/^\/v1\/user\/temporary-events\/([a-f0-9-]{36})(?:\/(preview|photos|payment|refund))?$/)!;
+ const url=new URL(req.url),origin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin,match=url.pathname.match(/^\/v1\/user\/temporary-events\/([a-f0-9-]{36})(?:\/(preview|photos|payment|refund|publish))?$/)!;
  const [,id,action]=match,repository=createTemporaryEventRepository(sql);
  const fail=(status:number,error:string)=>Response.json({ok:false,error},{status,headers:{'cache-control':'no-store'}});
  const event=await repository.getOwned(userId,id);if(!event)return fail(404,'EVENT_NOT_FOUND');
  const readJson=async()=>{const text=await req.text();if(text.length>24000)throw Error('INVALID_PAYLOAD_SIZE');return JSON.parse(text)};
+ if(action==='publish'&&req.method==='POST')return Response.json({ok:true,event:await repository.publishAdmin(userId,id)});
+ if(services.adminExempt&&['payment','refund'].includes(action))return fail(409,'ADMIN_PAYMENT_EXEMPT');
  if(!action&&req.method==='GET'){
   const quote=temporaryEventQuote(dbDate(event.starts_on),dbDate(event.ends_on));
-  if(event.payment_order_id){
+  if(event.payment_order_id&&!services.adminExempt){
    const orders=await sql.unsafe('SELECT amount_cents,currency FROM ad507.temporary_event_orders WHERE id=$1 AND event_id=$2',[event.payment_order_id,id]);
    if(!orders[0]||orders[0].currency!=='USD'||![799,1299,1999].includes(orders[0].amount_cents))return fail(503,'INVALID_PAYMENT_ORDER');
    quote.amountCents=orders[0].amount_cents;
   }
-  const notifications=event.payment_order_id?await sql.unsafe("SELECT metadata,created_at FROM ad507.audit_log WHERE entity_type='TEMPORARY_EVENT_ORDER' AND entity_id=$1 AND action='TEMPORARY_EVENT_NOTIFICATION' ORDER BY id",[event.payment_order_id]):[];
-  return Response.json({ok:true,quote,notifications,event:{...event,starts_on:dbDate(event.starts_on),ends_on:dbDate(event.ends_on)}},{headers:{'cache-control':'no-store'}});
+  const notifications=event.payment_order_id&&!services.adminExempt?await sql.unsafe("SELECT metadata,created_at FROM ad507.audit_log WHERE entity_type='TEMPORARY_EVENT_ORDER' AND entity_id=$1 AND action='TEMPORARY_EVENT_NOTIFICATION' ORDER BY id",[event.payment_order_id]):[];
+  return Response.json({ok:true,billingExempt:!!services.adminExempt,quote:services.adminExempt?null:quote,notifications,event:{...event,starts_on:dbDate(event.starts_on),ends_on:dbDate(event.ends_on)}},{headers:{'cache-control':'no-store'}});
  }
  if(!action&&req.method==='PUT')return Response.json({ok:true,...await repository.updateDraft(userId,id,await readJson())});
  if(action==='photos'&&req.method==='POST'){
-  if(event.status!=='DRAFT')return fail(409,'EVENT_NOT_EDITABLE');
+  if(event.status!=='DRAFT'&&!(services.adminExempt&&event.status==='ACTIVE'))return fail(409,'EVENT_NOT_EDITABLE');
   if(!services.media)return fail(503,'R2_NOT_CONFIGURED');
   const reader=req.body?.getReader();if(!reader)return fail(400,'INVALID_IMAGE');
   let size=0;const parts:Uint8Array[]=[];

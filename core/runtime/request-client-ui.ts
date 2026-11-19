@@ -17,29 +17,30 @@ async function openUserRequest(id,editing=false){
     content.replaceChildren();const title=document.createElement('h2');title.textContent=r.name;title.tabIndex=-1;content.append(title);
     const labels={ACTIVE:'Activa',PENDING_REVIEW:'En revisión',DRAFT:'Borrador',SUSPENDED:'Suspendida',DISABLED:'Desactivada',ARCHIVED:'Archivada'};
     const add=(label,value)=>{if(value===undefined||value===null||value==='')return;const p=document.createElement('p'),b=document.createElement('strong');b.textContent=label+': ';p.append(b,document.createTextNode(String(value)));p.style.overflowWrap='anywhere';content.append(p)};
-    add('Tipo',({PLACE:'Lugar',BUSINESS:'Negocio',RESIDENTIAL:'Residencial'})[r.type]||r.type);add('Estado',r.status==='ACTIVE'?'Activa':r.extras?.workflow==='PAYMENT_CONFIRMED'?'Pago confirmado, publicación pendiente':r.extras?.workflow==='PAYMENT_PENDING'?'Pendiente de pago':r.status==='PENDING_REVIEW'&&(!r.extras?.plan||['BUSINESS_FREE','PLACE'].includes(r.extras.plan))?'En revisión · Plazo de hasta 48 horas':labels[r.status]||r.status);
+    add('Tipo',({PLACE:'Lugar',BUSINESS:'Negocio',RESIDENTIAL:'Residencial'})[r.type]||r.type);add('Estado',r.billingExempt&&r.status==='DRAFT'?'Borrador administrativo':r.status==='ACTIVE'?'Activa':r.extras?.workflow==='PAYMENT_CONFIRMED'?'Pago confirmado, publicación pendiente':r.extras?.workflow==='PAYMENT_PENDING'?'Pendiente de pago':r.status==='PENDING_REVIEW'&&(!r.extras?.plan||['BUSINESS_FREE','PLACE'].includes(r.extras.plan))?'En revisión · Plazo de hasta 48 horas':labels[r.status]||r.status);
     add('Código',r.publicCode||r.code);add('Nombre de código personalizado',r.extras?.namedCode);if(r.type==='PLACE'||r.extras?.plan==='BUSINESS_PREMIUM_PRO')add('Descripción',r.description);add('Referencia',r.reference);add('Ubicación',r.latitude+', '+r.longitude);
     add('País',countrySettings[r.countryCode||'PA']?.name||r.countryCode);add('Zona',Object.values(r.extras?.territory||{}).filter(Boolean).join(' · '));
     add('Teléfono',r.phone);add('Teléfono fijo',r.landlinePhone);add('Correo',r.extras?.email);add('Horario',r.hours);add('Descripción comercial',r.commercialDescription);
     for(const m of r.media||[]){if(m.status!=='READY')continue;const img=document.createElement('img');img.alt=m.type==='LOGO'?'Logo enviado':'Fotografía enviada';img.loading='lazy';img.style.cssText='display:block;max-width:100%;max-height:360px;object-fit:contain;margin:14px 0';img.src='/v1/user/requests/'+id+'/media/'+m.id;content.append(img)}
     if(r.latitude!=null&&r.longitude!=null){const link=document.createElement('a');link.textContent='Ver ubicación en Google Maps';link.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.latitude+','+r.longitude);link.target='_blank';link.rel='noopener';content.append(link)}
 
-    if((r.extras?.workflow==='PAYMENT_PENDING'||(r.status==='PENDING_REVIEW'&&!r.review&&(!r.extras?.workflow||r.extras.workflow==='PAYMENT_PENDING')))&&r.countryCode==='PA'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RESIDENTIAL'].includes(r.extras?.plan)){
+    if(!r.billingExempt&&(r.extras?.workflow==='PAYMENT_PENDING'||(r.status==='PENDING_REVIEW'&&!r.review&&(!r.extras?.workflow||r.extras.workflow==='PAYMENT_PENDING')))&&r.countryCode==='PA'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RESIDENTIAL'].includes(r.extras?.plan)){
       const pay=document.createElement('a');pay.className='btn';pay.href='/panel/payments/'+id;pay.textContent='Ir al pago';pay.style.cssText='display:flex;width:fit-content;max-width:100%;align-items:center;justify-content:center;clear:both;margin:16px 0 12px;padding:12px 18px;font-weight:750';content.append(pay);
       const note=document.createElement('p');note.className='muted';note.textContent='El pago se confirma únicamente cuando Yappy lo notifica al sistema. No se activará la dirección antes de esa confirmación.';content.append(note);
     }
-    if(r.type==='PLACE'&&r.status==='ACTIVE'&&!r.extras?.migration&&r.countryCode==='PA'){
+    if(!r.billingExempt&&r.type==='PLACE'&&r.status==='ACTIVE'&&!r.extras?.migration&&r.countryCode==='PA'){
       const ad=document.createElement('a');ad.className='btn';ad.href='/panel/payments/'+id+'?advertising=1';ad.textContent='Publicidad: $14.99 / 30 días o $161.89 / 365 días';content.append(ad);
       add('Estado de publicidad',r.extras?.adService?.status||'Sin contratar');if(r.extras?.adService?.endsAt)add('Publicidad vigente hasta',new Date(r.extras.adService.endsAt).toLocaleString('es-PA'));
     }
     const service=r.extras?.annualService;
     if(!r.extras?.migration&&service?.policy==='annual-manual-20261113'&&service.endsAt){
       add('Vigencia anual hasta',new Date(service.endsAt).toLocaleString('es-PA'));add('Servicios comerciales',r.commercialService?.expired?'Beneficios vencidos · ficha pública básica conservada':r.commercialService?.effectivePlan==='BUSINESS_FREE'?'Ficha básica · beneficios comerciales inactivos':'Plan efectivo: '+(r.commercialService?.effectivePlan||service.plan));add('Renovación','Manual. Sin cobros automáticos.');
-      if(r.status==='ACTIVE'&&r.countryCode==='PA'){
+      if(!r.billingExempt&&r.status==='ACTIVE'&&r.countryCode==='PA'){
         if(service.mode==='INSTALLMENTS'&&!service.fullyPaid&&Date.parse(service.endsAt)>Date.now()){const second=document.createElement('a');second.className='btn';second.href='/panel/payments/'+id+'?installment=2';second.textContent='Revisar segunda cuota';content.append(second);add('Segunda cuota vence',service.secondDueAt?new Date(service.secondDueAt).toLocaleString('es-PA'):'Pendiente');}
         if(service.mode!=='INSTALLMENTS'||service.fullyPaid||Date.parse(service.endsAt)<=Date.now()){const renew=document.createElement('a');renew.className='btn';renew.href='/panel/payments/'+id+'?renewal=1';renew.textContent='Revisar renovación anual';content.append(renew);}
       }
     }
+    if(r.canPublish){const publish=document.createElement('button');publish.type='button';publish.className='btn';publish.textContent='Publicar gratuitamente';publish.onclick=async()=>{publish.disabled=true;try{const response=await fetch('/v1/admin/requests/'+id+'/publish',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:'{}'});if(!response.ok)throw Error();await load();await openUserRequest(id);}catch{publish.disabled=false;publish.textContent='Reintentar publicación';}};content.append(publish);}
     const editButton=mountAddressEditor(content,r,false,async()=>{await load();await openUserRequest(id)});if(editing&&editButton)editButton.click();
     title.focus({preventScroll:true});
   }catch{if(version===requestDetailVersion)content.textContent='No se pudo cargar la solicitud. Cierra el detalle e intenta nuevamente.'}

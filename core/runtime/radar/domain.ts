@@ -13,6 +13,6 @@ export function currentActivity(reports: readonly Report[], now: number, ttl = d
   return reports.filter(r => Number.isFinite(r.createdAt) && r.createdAt <= now && now-r.createdAt < ttl)
     .sort((a,b) => b.createdAt-a.createdAt || Number(b.source==="verified_owner")-Number(a.source==="verified_owner"))[0] ?? null;
 }
-export function visiblePin(campaign: {kind: Exclude<Pin,"normal">; startsAt: number; endsAt: number} | null, now: number, commercialEnabled = defaults.commercialEnabled): Pin {
+export function visiblePin(campaign: {kind: Exclude<Pin,"normal">; startsAt: number; endsAt: number} | null, now: number, commercialEnabled:boolean = defaults.commercialEnabled): Pin {
   return commercialEnabled && campaign && campaign.startsAt <= now && now < campaign.endsAt ? campaign.kind : "normal";
 }

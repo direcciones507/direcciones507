@@ -1,0 +1,20 @@
+name: Radar validation
+on:
+  push:
+    branches: ["feature/radar-en-vivo"]
+  pull_request:
+    paths: ["core/runtime/radar/**", "core/runtime/tests/radar-*.test.ts", ".github/workflows/radar-validation.yml"]
+permissions:
+  contents: read
+jobs:
+  radar-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+      - name: Run Radar unit tests
+        working-directory: core/runtime
+        run: bun test tests/radar-domain.test.ts tests/radar-public-map.test.ts

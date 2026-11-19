@@ -1,3 +1,4 @@
+import {createRadarAbuseChecks} from "./abuse";
 import {createRadarRoutes} from "./routes";
 import {createRadarRepository} from "./repository";
 import {createModerationRoutes} from "./moderation";
@@ -9,7 +10,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const enabled=env.RADAR_ENABLED==="true";
  const origins=new Set([radarOrigin]);
  const ownershipEnabled=enabled&&env.RADAR_OWNERSHIP_ENABLED==="true";
- const api=createRadarRoutes(createRadarRepository(db,ownershipEnabled),auth,origins,enabled);
+ const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled);
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{

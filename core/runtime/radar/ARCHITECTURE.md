@@ -9,3 +9,7 @@ Radar es un módulo de Direcciones, no una plataforma independiente. Tres domini
 - MapLibre GL JS como motor previsto; validar proveedor de teselas, licencia y rendimiento. GSAP/ScrollTrigger y Three.js selectivo para presentación; respetar movimiento reducido.
 - Cobros deshabilitados por defecto; precios configurables pendientes de recuperar y verificar contra acuerdos definitivos.
 - Mantener rama aislada. No migraciones en producción, merge ni despliegue sin aprobación. Revisar divergencia con main antes de integrar.
+
+## Approved domain decision
+
+Radar canonical public hostname: `radar.direcciones.lat`, replacing the previously proposed Direcciones507-based Radar hostname. Keep `direcciones507.com` and `direcciones.lat` unchanged. Use the shared CORE, database and existing accounts. DNS (Cloudflare), Railway custom domain/TLS, exact allowed origins, Google OAuth callbacks and secure cross-domain session/return flows must be verified before public release. Configuration explicitly deferred until later; no DNS or production changes authorized by this decision. Continue infrastructure development in the feature branch.

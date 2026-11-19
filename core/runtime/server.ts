@@ -1,3 +1,4 @@
+import {handleAdminBillingGuard} from './admin-billing-policy';
 import {pagaditoSandboxPage} from './pagadito-sandbox-ui';
 import {pagaditoRelayEnabled,createPagaditoCertificationRelay,handlePagaditoCertificationRelay,lookupPagaditoCertification} from './pagadito-certification-relay';
 import {expireTemporaryEvents} from './temporary-event-ledger';
@@ -64,6 +65,7 @@ startLegacyCore(async req => {
   const legalResponse=handleLegalRoutes(req);if(legalResponse)return legalResponse;
   const accountLegal=await handleAccountLegal(req,sql,auth);if(accountLegal)return accountLegal;
   const url = new URL(req.url);
+  const adminBillingResponse=await handleAdminBillingGuard(req,sql,auth);if(adminBillingResponse)return adminBillingResponse;
   // Panamá uses the LATAM account panel, not a second session or identity.
   // Only redirect account entry paths; preserve historical AD507 pages and assets.
   if(req.method==='GET' && ['direcciones507.com','cuenta.direcciones507.com'].includes(url.hostname) && ['/panel','/panel/','/mi-cuenta','/crear-cuenta'].includes(url.pathname)){

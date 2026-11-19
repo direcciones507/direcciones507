@@ -1,3 +1,4 @@
+import {addressBillingExempt} from './admin-billing-policy';
 import {CODE_NAMESPACE_LOCK,personalizedCode,assertCodeAvailable,verifyHistoricalCustomCode,addressPublicUrl} from './custom-public-code';
 import type { Sql } from 'postgres';
 import { validateRequestDraft, type RequestFile } from './request-validation';
@@ -9,11 +10,11 @@ export function createAddressEditing(sql:Sql,options:{r2:R2Settings|null;fetch?:
     if(!uuid.test(id)||!uuid.test(actorId))throw Error('REQUEST_NOT_FOUND');
     const rows=await tx.unsafe(`SELECT a.*,a.updated_at::text AS version FROM ad507.addresses a
       JOIN ad507.users u ON u.id=$1::uuid AND u.status='ACTIVE'
-      WHERE a.id=$2::uuid AND a.source='USER_REQUEST' AND a.address_type IN ('BUSINESS','PLACE')
+      WHERE a.id=$2::uuid AND a.source='USER_REQUEST' AND a.address_type IN ('BUSINESS','PLACE','RESIDENTIAL')
       AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL
       AND (${admin?`EXISTS(SELECT 1 FROM ad507.user_roles r WHERE r.user_id=u.id AND r.role='ADMIN')`:
       `EXISTS(SELECT 1 FROM ad507.address_ownership o WHERE o.address_id=a.id AND o.user_id=u.id AND o.ownership_role='OWNER') AND EXISTS(SELECT 1 FROM ad507.user_roles r WHERE r.user_id=u.id AND r.role IN ('CLIENT','ADMIN'))`}) ${lock?'FOR UPDATE OF a':''}`,[actorId,id]);
-    if(!rows.length)throw Error('REQUEST_NOT_FOUND');
+    if(!rows.length||rows[0].address_type==='RESIDENTIAL'&&!await addressBillingExempt(tx,rows[0],actorId))throw Error('REQUEST_NOT_FOUND');
     // Imported Pages records require the separate, explicit migration procedure.
     if(rows[0].request_data?.migration)throw Error('HISTORICAL_EDIT_NOT_ENABLED');
     return rows[0];

@@ -1,3 +1,4 @@
+import {adminBillingExempt} from './admin-billing-policy';
 /**
  * PostgreSQL persistence for Dirección Temporal.
  * Development only: requires reviewed migration and route/auth wiring.
@@ -7,7 +8,7 @@
 import {randomBytes} from 'node:crypto';
 import type {Sql} from 'postgres';
 import {validateTemporaryEventDraft,eventSlug,type TemporaryEventDraft} from './temporary-event-draft';
-import {canPublishTemporaryEvent,publicEventStatus,temporaryEventQuote} from './temporary-event-lifecycle';
+import {canPublishTemporaryEvent,publicEventStatus,temporaryEventQuote,temporaryEventDuration,eventIsExpired} from './temporary-event-lifecycle';
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const requireUuid=(id:string)=>{if(!uuid.test(id))throw Error('INVALID_ID')};
 export const dbDate=(value:unknown):string=>{
@@ -43,6 +44,21 @@ export function createTemporaryEventRepository(sql:Sql){
    }
    throw Error('EVENT_SLUG_COLLISION');
   },
+  async publishAdmin(ownerId:string,eventId:string,now=new Date()){
+   requireUuid(ownerId);requireUuid(eventId);
+   return sql.begin(async tx=>{
+    if(!await adminBillingExempt(tx,ownerId))throw Error('FORBIDDEN');
+    const rows=await tx.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2 FOR UPDATE',[eventId,ownerId]);const e=rows[0];if(!e)throw Error('EVENT_NOT_FOUND');
+    if(e.status==='ACTIVE')return {id:e.id,slug:e.slug,status:e.status};
+    if(!['DRAFT','AWAITING_PAYMENT'].includes(e.status))throw Error('EVENT_NOT_EDITABLE');
+    temporaryEventDuration(dbDate(e.starts_on),dbDate(e.ends_on));if(eventIsExpired(dbDate(e.ends_on),e.event_timezone,now))throw Error('EVENT_NOT_PUBLISHABLE');
+    const photos=await tx.unsafe('SELECT slot FROM ad507.temporary_event_media WHERE event_id=$1',[eventId]);
+    if(photos.length<1||photos.length>3||!photos.some(p=>p.slot===1))throw Error('PRIMARY_PHOTO_REQUIRED');
+    await tx.unsafe("UPDATE ad507.temporary_events SET status='ACTIVE',admin_published_by=$2::uuid,admin_published_at=now(),updated_at=now() WHERE id=$1",[eventId,ownerId]);
+    await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id) VALUES($1::uuid,'ADMIN','ADMIN_TEMPORARY_PUBLISHED','TEMPORARY_EVENT',$2)",[ownerId,eventId]);
+    return {id:e.id,slug:e.slug,status:'ACTIVE'};
+   });
+  },
   async photos(eventId:string){
    requireUuid(eventId);
    return sql.unsafe('SELECT slot,object_key FROM ad507.temporary_event_media WHERE event_id=$1 ORDER BY slot',[eventId]);
@@ -51,7 +67,8 @@ export function createTemporaryEventRepository(sql:Sql){
    requireUuid(ownerId);requireUuid(eventId);
    if(!Number.isInteger(slot)||slot<1||slot>3)throw Error('INVALID_PHOTO_SLOT');
    return sql.begin(async tx=>{
-    const rows=await tx.unsafe("SELECT id FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2 AND status='DRAFT' FOR UPDATE",[eventId,ownerId]);
+    const rows=await tx.unsafe("SELECT id,status,to_jsonb(e)->>'admin_published_by' AS admin_published_by FROM ad507.temporary_events e WHERE id=$1 AND owner_user_id=$2 AND status IN ('DRAFT','ACTIVE') FOR UPDATE",[eventId,ownerId]);
+    if(rows[0]?.status==='ACTIVE'&&!await adminBillingExempt(tx,ownerId))throw Error('FORBIDDEN');
     if(!rows.length)throw Error('EVENT_NOT_EDITABLE');
     await tx.unsafe(`INSERT INTO ad507.temporary_event_media(event_id,slot,object_key,mime_type,byte_size) VALUES($1,$2,$3,'image/webp',$4)
      ON CONFLICT(event_id,slot) DO UPDATE SET object_key=excluded.object_key,byte_size=excluded.byte_size`,[eventId,slot,key,size]);
@@ -59,10 +76,13 @@ export function createTemporaryEventRepository(sql:Sql){
   },
   async updateDraft(ownerId:string,eventId:string,input:unknown){
    requireUuid(ownerId);requireUuid(eventId);const x=validateTemporaryEventDraft(input);
+   const existing=await sql.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2',[eventId,ownerId]);const live=existing[0];
+   const adminEdit=live?.status==='ACTIVE'&&await adminBillingExempt(sql,ownerId);
+   if(adminEdit&&(x.startsOn!==dbDate(live.starts_on)||x.endsOn!==dbDate(live.ends_on)||x.timezone!==live.event_timezone))throw Error('EVENT_NOT_EDITABLE');
    const rows=await sql.unsafe(`UPDATE ad507.temporary_events SET title=$3,description=$4,responsible_name=$5,responsible_email=$6,responsible_phone=$7,
     public_contact_name=$8,public_contact_phone=$9,public_contact_consent=$10,country_code=$11,region=$12,municipality=$13,locality=$14,
     reference=$15,latitude=$16,longitude=$17,starts_on=$18,ends_on=$19,event_timezone=$20,hours_description=$21,price_cents=$22,updated_at=now()
-    WHERE id=$1 AND owner_user_id=$2 AND status='DRAFT' RETURNING id,slug,status`,[eventId,ownerId,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours,temporaryEventQuote(x.startsOn,x.endsOn).amountCents]);
+    WHERE id=$1 AND owner_user_id=$2 AND (status='DRAFT' OR $23::boolean AND status='ACTIVE') RETURNING id,slug,status`,[eventId,ownerId,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours,temporaryEventQuote(x.startsOn,x.endsOn).amountCents,adminEdit]);
    if(!rows.length)throw Error('EVENT_NOT_EDITABLE');return rows[0];
   },
   async getOwned(ownerId:string,eventId:string){
@@ -74,11 +94,11 @@ export function createTemporaryEventRepository(sql:Sql){
    if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return null;
    const rows=await sql.unsafe(`SELECT id,slug,title,description,public_contact_name,public_contact_phone,
      public_contact_consent,country_code,region,municipality,locality,reference,latitude,longitude,
-     starts_on,ends_on,event_timezone,hours_description,status,payment_confirmed_at
-     FROM ad507.temporary_events WHERE slug=$1`,[slug]);
+     starts_on,ends_on,event_timezone,hours_description,status,payment_confirmed_at,to_jsonb(e)->>'admin_published_at' AS admin_published_at
+     FROM ad507.temporary_events e WHERE slug=$1`,[slug]);
    const x=rows[0] as any;if(!x)return null;
    const state=publicEventStatus(x.status,dbDate(x.ends_on),x.event_timezone,now);
-   if(state==='UNPUBLISHED'||!x.payment_confirmed_at)return null;
+   if(state==='UNPUBLISHED'||!x.payment_confirmed_at&&!x.admin_published_at)return null;
    // Never return responsible_name/email/phone.
    return {id:x.id,slug:x.slug,title:x.title,description:x.description,
     publicContactName:x.public_contact_consent?x.public_contact_name:null,
@@ -86,7 +106,7 @@ export function createTemporaryEventRepository(sql:Sql){
     countryCode:x.country_code,province:x.region,district:x.municipality,corregimiento:x.locality,
     reference:x.reference,latitude:x.latitude==null?null:Number(x.latitude),longitude:x.longitude==null?null:Number(x.longitude),
     startsOn:dbDate(x.starts_on),endsOn:dbDate(x.ends_on),timezone:x.event_timezone,hours:x.hours_description,
-    status:state};
+    status:state,paymentConfirmedAt:x.payment_confirmed_at,adminPublishedAt:x.admin_published_at};
   },
   /**
    * Called only after a trusted payment adapter independently verifies and persists

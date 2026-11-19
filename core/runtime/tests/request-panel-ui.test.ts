@@ -62,6 +62,6 @@ test('request submission is routed to the authenticated repository before the ac
   expect(panel).not.toContain("if (url.pathname === '/v1/user/requests')");
   expect(panel).toContain("fetch('/v1/user/requests'");
   expect(routes).toContain("submit=url.pathname==='/v1/user/requests'||adminCreate");
-  expect(routes).toContain("context.repository[adminCreate?'createAdmin':'submit']");
+  expect(routes).toContain("context.repository[adminCreate||exempt?'createAdmin':'submit']");
   expect(routes).toContain("if(!context.enabled)return respond(503");
 });

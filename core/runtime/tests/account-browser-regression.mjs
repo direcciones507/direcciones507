@@ -124,7 +124,8 @@ try{
     assert.equal(await page.locator('#requestForm').isVisible(),false);
     await page.getByRole('button',{name:'Cerrar detalle'}).click();
     await page.locator('#toggleNewRequest').click();await page.locator('#business').click();await page.locator('#requestForm').waitFor({state:'visible'});
-    for(const code of plans.map(p=>p.code)){await page.locator('#plan').selectOption(code);assert.equal(await page.locator('#namedCodeField').isVisible(),code!=='BUSINESS_FREE');}
+    assert.equal(await page.locator('#plan option[value=BUSINESS_FREE]').count(),0);
+    for(const code of plans.map(p=>p.code).filter(code=>code!=='BUSINESS_FREE')){await page.locator('#plan').selectOption(code);assert.equal(await page.locator('#namedCodeField').isVisible(),code!=='BUSINESS_FREE');}
    }else{
     await page.locator('#login').waitFor({state:'visible'});
     assert.equal(await page.locator('#panel').isVisible(),false);
@@ -139,5 +140,50 @@ try{
    assert.deepEqual(errors,[]);passed++;await context.close();
   }
  }
- console.log('PASS: generated JavaScript, 9 account browser scenarios + 3 visual Yappy fixtures, mobile/tablet/desktop, 200/401/503, contrast, detail, plans and Google return context');
+ // Re-enter an expired/rejected/cancelled purchase on both first-party hosts.
+ // Provider CDN and HTTP responses are synthetic; no financial traffic occurs.
+ for(const host of ['direcciones507.com','direcciones.lat']){
+  const context=await browser.newContext({viewport:{width:820,height:1180}}),page=await context.newPage();page.setDefaultTimeout(7000);
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const order='22222222-2222-4222-8222-222222222222';let current='PENDING',retryAllowed=false,posts=0,statusReads=0;
+  await page.route('**/*',async route=>{
+   const url=new URL(route.request().url()),path=url.pathname;
+   if(url.hostname==='bt-cdn.yappy.cloud')return route.fulfill({contentType:'application/javascript',body:"customElements.define('btn-yappy',class extends HTMLElement{eventPayment(){window.providerDisplays=(window.providerDisplays||0)+1;}});"});
+   if(path==='/panel/payments/'+id)return route.fulfill({contentType:'text/html',body:fixtures.payment.html});
+   if(path==='/v1/user/payments/'+order){statusReads++;return route.fulfill({json:{payment:{status:current,retryAllowed}}});}
+   if(path==='/v1/user/requests/'+id+'/payment'){
+    if(route.request().method()==='POST'){posts++;assert.equal(current==='FAILED'||current==='CANCELLED',true);current='PENDING';retryAllowed=false;return route.fulfill({json:{orderId:order,amountCents:4999,button:{transactionId:'fake',token:'fake',documentName:'fake'}}});}
+    return route.fulfill({json:{quote:{amountCents:4999,orderId:order}}});
+   }
+   if(path==='/panel')return route.fulfill({contentType:'text/html',body:fixtures.pa.html});
+   if(path==='/admin/create')return route.fulfill({contentType:'text/html',body:fixtures.admin.html});
+   if(path==='/v1/user/panel')return route.fulfill({json:{user:{email:'test@example.invalid'},addresses:[],orders:[],plans,actions:{prepareRequest:true,submitRequest:true}}});
+   return route.fulfill({status:404,body:''});
+  });
+  await page.goto('https://'+host+'/panel?country=PA&selectedPlan=BUSINESS_PREMIUM');
+  await page.locator('#requestForm').waitFor({state:'visible'});
+  if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible())await page.getByRole('button',{name:'Rechazar',exact:true}).click();
+  assert.equal(await page.locator('#plan').inputValue(),'BUSINESS_PREMIUM');
+  assert.deepEqual(await page.locator('#plan option').evaluateAll(options=>options.map(o=>o.value)),['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']);
+  await page.locator('#plan').selectOption('BUSINESS_PREMIUM_PRO');
+  await page.locator('#place').click();assert.equal(await page.locator('#coverField').isVisible(),true);
+  for(const status of ['FAILED','FAILED','CANCELLED']){
+   current='PENDING';retryAllowed=false;
+   await page.goto('https://'+host+'/panel/payments/'+id+'?order='+order);
+   await page.locator('#message').filter({hasText:'Pago pendiente'}).waitFor();assert.equal(await page.locator('#checkout').isVisible(),false);
+   current=status;retryAllowed=true;
+   await page.locator('#refresh').click();await page.locator('#checkout').waitFor({state:'visible'});
+   await page.locator('#alias').fill('60000000');await page.locator('#purchaseTerms').check();
+   await page.reload();await page.locator('#checkout').waitFor({state:'visible'});assert.equal(await page.locator('#alias').inputValue(),'60000000');
+   await page.locator('#purchaseTerms').check();const beforeReads=statusReads,beforePosts=posts;
+   await page.locator('btn-yappy').dispatchEvent('eventClick');await page.waitForFunction(()=>window.providerDisplays===1);
+   assert.equal(posts,beforePosts+1);assert.ok(statusReads>beforeReads);
+   await page.locator('btn-yappy').dispatchEvent('eventClick');await page.locator('#checkout').waitFor({state:'hidden'});assert.equal(posts,beforePosts+1);
+   current='PAID';retryAllowed=false;await page.locator('#refresh').click();await page.locator('#message').filter({hasText:'Pago confirmado'}).waitFor();assert.equal(await page.locator('#checkout').isVisible(),false);
+  }
+  await page.goto('https://'+host+'/admin/create');
+  await page.locator('#plan option[value=BUSINESS_FREE]').waitFor({state:'attached'});
+  assert.deepEqual(errors,[]);await context.close();
+ }
+ console.log('PASS: generated JavaScript, 9 account browser scenarios + 3 visual Yappy fixtures, mobile/tablet/desktop, 200/401/503, contrast, detail, plans and Google return context; terminal Yappy retries and preserved Lugar on both production hosts');
 }finally{await browser.close();}

@@ -49,8 +49,8 @@ export function createTemporaryEventRepository(sql:Sql){
    return sql.begin(async tx=>{
     if(!await adminBillingExempt(tx,ownerId))throw Error('FORBIDDEN');
     const rows=await tx.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2 FOR UPDATE',[eventId,ownerId]);const e=rows[0];if(!e)throw Error('EVENT_NOT_FOUND');
-    if(e.status==='ACTIVE'&&e.admin_published_by===ownerId)return {id:e.id,slug:e.slug,status:e.status};
-    if(e.status!=='DRAFT'||e.payment_order_id)throw Error('EVENT_NOT_EDITABLE');
+    if(e.status==='ACTIVE')return {id:e.id,slug:e.slug,status:e.status};
+    if(!['DRAFT','AWAITING_PAYMENT'].includes(e.status))throw Error('EVENT_NOT_EDITABLE');
     temporaryEventDuration(dbDate(e.starts_on),dbDate(e.ends_on));if(eventIsExpired(dbDate(e.ends_on),e.event_timezone,now))throw Error('EVENT_NOT_PUBLISHABLE');
     const photos=await tx.unsafe('SELECT slot FROM ad507.temporary_event_media WHERE event_id=$1',[eventId]);
     if(photos.length<1||photos.length>3||!photos.some(p=>p.slot===1))throw Error('PRIMARY_PHOTO_REQUIRED');
@@ -67,7 +67,7 @@ export function createTemporaryEventRepository(sql:Sql){
    requireUuid(ownerId);requireUuid(eventId);
    if(!Number.isInteger(slot)||slot<1||slot>3)throw Error('INVALID_PHOTO_SLOT');
    return sql.begin(async tx=>{
-    const rows=await tx.unsafe("SELECT id,status,to_jsonb(e)->>'admin_published_by' AS admin_published_by FROM ad507.temporary_events e WHERE id=$1 AND owner_user_id=$2 AND (status='DRAFT' OR status='ACTIVE' AND to_jsonb(e)->>'admin_published_by'=$2::text) FOR UPDATE",[eventId,ownerId]);
+    const rows=await tx.unsafe("SELECT id,status,to_jsonb(e)->>'admin_published_by' AS admin_published_by FROM ad507.temporary_events e WHERE id=$1 AND owner_user_id=$2 AND status IN ('DRAFT','ACTIVE') FOR UPDATE",[eventId,ownerId]);
     if(rows[0]?.status==='ACTIVE'&&!await adminBillingExempt(tx,ownerId))throw Error('FORBIDDEN');
     if(!rows.length)throw Error('EVENT_NOT_EDITABLE');
     await tx.unsafe(`INSERT INTO ad507.temporary_event_media(event_id,slot,object_key,mime_type,byte_size) VALUES($1,$2,$3,'image/webp',$4)
@@ -77,12 +77,12 @@ export function createTemporaryEventRepository(sql:Sql){
   async updateDraft(ownerId:string,eventId:string,input:unknown){
    requireUuid(ownerId);requireUuid(eventId);const x=validateTemporaryEventDraft(input);
    const existing=await sql.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2',[eventId,ownerId]);const live=existing[0];
-   const adminEdit=live?.status==='ACTIVE'&&live.admin_published_by===ownerId&&await adminBillingExempt(sql,ownerId);
+   const adminEdit=live?.status==='ACTIVE'&&await adminBillingExempt(sql,ownerId);
    if(adminEdit&&(x.startsOn!==dbDate(live.starts_on)||x.endsOn!==dbDate(live.ends_on)||x.timezone!==live.event_timezone))throw Error('EVENT_NOT_EDITABLE');
    const rows=await sql.unsafe(`UPDATE ad507.temporary_events SET title=$3,description=$4,responsible_name=$5,responsible_email=$6,responsible_phone=$7,
     public_contact_name=$8,public_contact_phone=$9,public_contact_consent=$10,country_code=$11,region=$12,municipality=$13,locality=$14,
     reference=$15,latitude=$16,longitude=$17,starts_on=$18,ends_on=$19,event_timezone=$20,hours_description=$21,price_cents=$22,updated_at=now()
-    WHERE id=$1 AND owner_user_id=$2 AND (status='DRAFT' OR $23::boolean AND status='ACTIVE' AND to_jsonb(temporary_events)->>'admin_published_by'=$2::text) RETURNING id,slug,status`,[eventId,ownerId,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours,temporaryEventQuote(x.startsOn,x.endsOn).amountCents,adminEdit]);
+    WHERE id=$1 AND owner_user_id=$2 AND (status='DRAFT' OR $23::boolean AND status='ACTIVE') RETURNING id,slug,status`,[eventId,ownerId,x.title,x.description,x.responsibleName,x.responsibleEmail,x.responsiblePhone,x.publicContactConsent?x.publicContactName:null,x.publicContactConsent?x.publicContactPhone:null,x.publicContactConsent,x.countryCode,x.province,x.district,x.corregimiento,x.reference,x.latitude,x.longitude,x.startsOn,x.endsOn,x.timezone,x.hours,temporaryEventQuote(x.startsOn,x.endsOn).amountCents,adminEdit]);
    if(!rows.length)throw Error('EVENT_NOT_EDITABLE');return rows[0];
   },
   async getOwned(ownerId:string,eventId:string){

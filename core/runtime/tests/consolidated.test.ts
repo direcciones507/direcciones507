@@ -1546,6 +1546,11 @@ test('courtesy Temporal has separate ADMIN authorization, preserves expiry and n
  await repo.updateDraft(adminId,event.id,{...input,title:input.title+' edited'});await expect(repo.updateDraft(adminId,event.id,{...input,endsOn:'2030-01-03'})).rejects.toThrow('EVENT_NOT_EDITABLE');
  const ordinary=await repo.createDraft(clientId,{...input,title:'Ordinary '+crypto.randomUUID(),admin_published_by:clientId,admin_published_at:new Date().toISOString()});
  expect(await repo.getPublic(ordinary.slug)).toBeNull();await expect(repo.publishAdmin(clientId,ordinary.id)).rejects.toThrow('FORBIDDEN');
+ const pending=await repo.createDraft(adminId,{...input,title:'Existing pending admin '+crypto.randomUUID()});await repo.savePhoto(adminId,pending.id,1,'temporary-events/isolated/old.webp',100);
+ const oldOrder=(await sql.unsafe("INSERT INTO ad507.temporary_event_orders(event_id,provider_order_id,environment) VALUES($1,$2,'test') RETURNING id",[pending.id,'OLD'+crypto.randomUUID().replaceAll('-','').slice(0,10)]))[0];
+ await sql.unsafe("UPDATE ad507.temporary_events SET status='AWAITING_PAYMENT',payment_order_id=$2 WHERE id=$1",[pending.id,oldOrder.id]);
+ await repo.publishAdmin(adminId,pending.id);const recovered=await repo.getOwned(adminId,pending.id);expect(recovered.status).toBe('ACTIVE');expect(recovered.payment_confirmed_at).toBeNull();expect(recovered.payment_order_id).toBe(oldOrder.id);
+ expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.temporary_event_orders WHERE event_id=$1',[pending.id]))[0].n).toBe(1);
  const {renderTemporaryEventDraftForm,temporaryEventDraftClientScript}=await import('../temporary-event-form');const form=renderTemporaryEventDraftForm('/v1/user/temporary-events',true,true);
  expect(form).toContain('id="event-publish"');expect(form).not.toContain('<btn-yappy');expect(form).not.toContain('Celular Yappy');expect(form).not.toContain('US$12.99');expect(()=>new Function(temporaryEventDraftClientScript)).not.toThrow();
 });

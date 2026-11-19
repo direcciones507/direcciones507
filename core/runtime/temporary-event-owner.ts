@@ -27,7 +27,7 @@ export async function eventOwnerRoute(req:Request,sql:Sql,userId:string,services
  }
  if(!action&&req.method==='PUT')return Response.json({ok:true,...await repository.updateDraft(userId,id,await readJson())});
  if(action==='photos'&&req.method==='POST'){
-  if(event.status!=='DRAFT'&&!(services.adminExempt&&event.status==='ACTIVE'&&event.admin_published_by===userId))return fail(409,'EVENT_NOT_EDITABLE');
+  if(event.status!=='DRAFT'&&!(services.adminExempt&&event.status==='ACTIVE'))return fail(409,'EVENT_NOT_EDITABLE');
   if(!services.media)return fail(503,'R2_NOT_CONFIGURED');
   const reader=req.body?.getReader();if(!reader)return fail(400,'INVALID_IMAGE');
   let size=0;const parts:Uint8Array[]=[];

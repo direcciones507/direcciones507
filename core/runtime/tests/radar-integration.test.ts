@@ -20,3 +20,14 @@ test("enabled Radar handles public map and unknown routes",async()=>{
  expect(await result?.json()).toEqual({type:"FeatureCollection",features:[]});
  expect((await handler(req(radarOrigin,"/v1/radar/missing")))?.status).toBe(404);
 });
+
+test("ownership activation is independent and requires explicit flag",async()=>{
+ const account="00000000-0000-4000-8000-000000000001";
+ const id="00000000-0000-4000-8000-000000000002";
+ const admin={currentUser:async()=>({id:account,email:"admin@example.test",displayName:"Admin",roles:["ADMIN"]})};
+ const request=()=>new Request(radarOrigin+"/v1/radar/admin/moderation",{method:"POST",headers:{origin:radarOrigin,"content-type":"application/json"},body:JSON.stringify({action:"verify_owner",id,accountRef:account,evidenceReviewed:true})});
+ const disabled=createRadarIntegration(db,admin,{RADAR_ENABLED:"true"});
+ expect((await disabled(request()))?.status).toBe(503);
+ const enabled=createRadarIntegration({unsafe:async()=>[{establishment_id:id}]},admin,{RADAR_ENABLED:"true",RADAR_OWNERSHIP_ENABLED:"true"});
+ expect((await enabled(request()))?.status).toBe(200);
+});

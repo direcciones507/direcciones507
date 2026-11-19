@@ -18,3 +18,34 @@ jobs:
       - name: Run Radar unit tests
         working-directory: core/runtime
         run: bun test tests/radar-domain.test.ts tests/radar-public-map.test.ts
+  radar-postgres:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate schema and constraints
+        run: |
+          docker run --name radar-db -d -e POSTGRES_PASSWORD=test-only postgres:18.1
+          for i in $(seq 1 30); do
+            if docker exec radar-db pg_isready -U postgres; then break; fi
+            sleep 1
+          done
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/schema.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
+          VALUES ('test-account','Test','shop','PA',8,-80);
+          INSERT INTO radar.activity_reports(establishment_id,account_ref,state)
+          SELECT id,'test-account','available' FROM radar.establishments;
+          DO $$
+          BEGIN
+            IF (SELECT count(*) FROM radar.establishments WHERE NOT published) <> 1 THEN
+              RAISE EXCEPTION 'Unexpected publication default';
+            END IF;
+            BEGIN
+              INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
+              VALUES ('test','Invalid','shop','PA',99,-80);
+              RAISE EXCEPTION 'Invalid coordinate accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+          END $$;
+          SQL

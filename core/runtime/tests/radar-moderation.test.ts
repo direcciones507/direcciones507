@@ -18,3 +18,20 @@ test("ADMIN can list and approve valid establishments",async()=>{
  expect((await handle(req({action:"publish",id:"invalid"})))?.status).toBe(400);
  expect((await handle(req({action:"publish",id:"00000000-0000-4000-8000-000000000002"})))?.status).toBe(404);
 });
+
+test("revocation requires ADMIN, exact identifiers and enabled ownership",async()=>{
+ const accountRef="00000000-0000-4000-8000-000000000003";
+ const action={action:"revoke_owner",id,accountRef};
+ let calls=0;
+ const ownershipStore={...store,revokeOwner:async(e:string,a:string)=>{calls++;return e===id&&a===accountRef&&calls===1;}};
+ const handle=createModerationRoutes(ownershipStore,admin,allowed,true);
+ expect((await createModerationRoutes(ownershipStore,citizen,allowed,true)(req(action)))?.status).toBe(403);
+ expect((await handle(req(action,"https://example.org")))?.status).toBe(403);
+ expect((await handle(req({...action,accountRef:"invalid"})))?.status).toBe(400);
+ expect((await handle(req({...action,id:"invalid"})))?.status).toBe(400);
+ expect((await createModerationRoutes(store,admin,allowed,true)(req(action)))?.status).toBe(503);
+ expect(calls).toBe(0);
+ expect((await handle(req(action)))?.status).toBe(200);
+ expect((await handle(req(action)))?.status).toBe(404);
+ expect(calls).toBe(2);
+});

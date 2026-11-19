@@ -402,6 +402,32 @@ jobs:
           END;
           $favorite_test$;
           SQL
+      - name: Validate private Radar alert subscriptions
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < db/migrations/0020_radar_alert_preferences.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $alert_test$
+          DECLARE target uuid; actor uuid := gen_random_uuid(); other_actor uuid := gen_random_uuid();
+          BEGIN
+            SELECT id INTO STRICT target FROM radar.establishments WHERE published LIMIT 1;
+            INSERT INTO ad507.users VALUES(actor),(other_actor);
+            INSERT INTO radar.favorites(account_ref,establishment_id) VALUES(actor,target);
+            INSERT INTO radar.alert_preferences(account_ref,establishment_id,activity) VALUES(actor,target,'available');
+            BEGIN
+              INSERT INTO radar.alert_preferences(account_ref,establishment_id,activity) VALUES(other_actor,target,'available');
+              RAISE EXCEPTION 'Alert without favorite accepted';
+            EXCEPTION WHEN foreign_key_violation THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.alert_preferences(account_ref,establishment_id,activity) VALUES(actor,target,'unknown');
+              RAISE EXCEPTION 'Invalid alert accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            DELETE FROM radar.favorites WHERE account_ref=actor AND establishment_id=target;
+            IF EXISTS(SELECT 1 FROM radar.alert_preferences WHERE account_ref=actor) THEN RAISE EXCEPTION 'Orphan alert'; END IF;
+          END;
+          $alert_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

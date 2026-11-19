@@ -162,6 +162,23 @@ jobs:
               if(!rejected) throw Error("Unverified account accepted");
             } finally { await db.close(); }
           '
+      - name: Validate database abuse enforcement
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/abuse-constraints.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $radar_test$
+          DECLARE target uuid; actor uuid := '00000000-0000-4000-8000-000000000001';
+          BEGIN
+            SELECT establishment_id INTO target FROM radar.activity_reports WHERE account_ref=actor AND source='verified_owner' LIMIT 1;
+            IF target IS NULL THEN RAISE EXCEPTION 'Missing report fixture'; END IF;
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,account_ref,state) VALUES(target,actor,'available');
+              RAISE EXCEPTION 'Repeated report accepted';
+            EXCEPTION WHEN SQLSTATE 'P4290' THEN NULL;
+            END;
+          END;
+          $radar_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

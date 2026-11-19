@@ -16,6 +16,10 @@ export function createModerationStore(db:Database):ModerationStore {
     ON CONFLICT (establishment_id) DO NOTHING RETURNING establishment_id`,[id,accountRef,adminRef]);
    return rows.length===1;
   },
+  async revokeOwner(id,accountRef){
+   const rows=await db.unsafe("DELETE FROM radar.verified_owners WHERE establishment_id=$1::uuid AND account_ref=$2::uuid RETURNING establishment_id",[id,accountRef]);
+   return rows.length===1;
+  },
   async publish(id){
    const rows=await db.unsafe("UPDATE radar.establishments SET published=true WHERE id=$1::uuid AND NOT published RETURNING id",[id]);
    return rows.length===1;

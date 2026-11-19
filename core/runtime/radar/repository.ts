@@ -4,6 +4,12 @@ import type {Bounds,Establishment} from "./public-map";
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 export function createRadarRepository(db:Database):RadarRepository {
  return {
+  async register(draft,accountRef) {
+   const rows=await db.unsafe(`INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
+    VALUES ($1,$2,$3,$4,$5,$6)
+    ON CONFLICT DO NOTHING RETURNING id`,[accountRef,draft.name,draft.category,draft.country,draft.latitude,draft.longitude]);
+   return rows[0]?.id??null;
+  },
   async listPublished(country:Country,b:Bounds):Promise<Establishment[]> {
    const rows=await db.unsafe(`SELECT e.id,e.name,e.category,e.country,e.latitude,e.longitude,e.published,
     COALESCE(r.reports,'[]'::jsonb) AS reports

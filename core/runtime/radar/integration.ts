@@ -1,3 +1,4 @@
+import {createAnonymousIdentity} from "./anonymous-identity";
 import {createBusinessRoutes,createBusinessStore} from "./business";
 import {radarPresentation} from "./presentation";
 import {createRadarCampaignLookup} from "./campaign-repository";
@@ -11,7 +12,7 @@ import {createModerationStore} from "./moderation-repository";
 import type {CoreAuth} from "./auth";
 type Database=Parameters<typeof createRadarRepository>[0];
 export const radarOrigin="https://radar.direcciones.lat";
-export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<string,string|undefined>){
+export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<string,string|undefined>,trustedPeer?:(req:Request)=>string|null){
  const enabled=env.RADAR_ENABLED==="true";
  const origins=new Set([radarOrigin]);
  const ownershipEnabled=enabled&&env.RADAR_OWNERSHIP_ENABLED==="true";
@@ -19,7 +20,8 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const campaignLookup=enabled&&env.RADAR_COMMERCIAL_ENABLED==="true"?createRadarCampaignLookup(db,true):undefined;
  const businessEnabled=ownershipEnabled&&env.RADAR_BUSINESS_DETAILS_ENABLED==="true";
  const business=createBusinessRoutes(createBusinessStore(db),auth,origins,businessEnabled);
- const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup);
+ const anonymousIdentity=enabled&&env.RADAR_ANONYMOUS_REPORTS_ENABLED==="true"?createAnonymousIdentity(env.RADAR_ANONYMOUS_REPORTS_SECRET,trustedPeer):undefined;
+ const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity);
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{

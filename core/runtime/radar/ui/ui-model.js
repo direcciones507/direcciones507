@@ -53,3 +53,13 @@ export function nearbyRows(features,lat,lng,radius,category,country,now=Date.now
  .map(f=>({feature:{...f,properties:freshProperties(f.properties,now)},km:distanceKm(lat,lng,f.geometry.coordinates?.[1],f.geometry.coordinates?.[0])}))
  .filter(row=>Number.isFinite(row.km)&&row.km<=radius).sort((a,b)=>a.km-b.km||a.feature.id.localeCompare(b.feature.id)).slice(0,100);
 }
+
+// Real, current reports only. Commercial pin type does not determine community activity.
+export function pulseRows(features,country,activity='',now=Date.now()){
+ const valid=new Set(['available','queue','full','incident']);
+ if(activity&&!valid.has(activity))return [];
+ return features.filter(f=>f?.geometry?.type==='Point'&&typeof f.id==='string'&&f.properties?.country===country)
+ .map(f=>({...f,properties:freshProperties(f.properties,now)}))
+ .filter(f=>valid.has(f.properties.activity)&&(!activity||f.properties.activity===activity)&&['community','verified_owner'].includes(f.properties.source))
+ .sort((a,b)=>Number(b.properties.reportedAt)-Number(a.properties.reportedAt)||a.id.localeCompare(b.id)).slice(0,100);
+}

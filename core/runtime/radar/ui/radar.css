@@ -33,3 +33,5 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 @media(max-width:600px){.hero{padding-top:18px;padding-bottom:16px}.explore{padding-top:12px}.hero-foot{margin-top:20px}.radar-art{margin-top:14px}}
 
 .nearby-actions{display:flex;justify-content:flex-start;padding:8px 12px}.nearby-results{display:grid;gap:12px;max-height:45dvh;overflow:auto}.nearby-results .pending-item{min-width:0;overflow-wrap:anywhere}.nearby-results .pending-item h3{margin:0 0 6px}.nearby-results .pending-item p{margin:6px 0}
+
+.nearby-actions{flex-wrap:wrap;gap:8px}.nearby-actions .button{max-width:100%;white-space:normal}#pulseDialog .form-grid{align-items:end}#pulseResults .activity-badge{margin:4px 0}

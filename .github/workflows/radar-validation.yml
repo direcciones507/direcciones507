@@ -84,3 +84,16 @@ jobs:
               if((await moderation.pending(100)).length!==0) throw Error("Published item still pending");
             } finally { await db.close(); }
           '
+  core-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: core/runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+      - run: bun install --frozen-lockfile
+      - run: bun test tests

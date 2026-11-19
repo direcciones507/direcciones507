@@ -25,3 +25,6 @@ CREATE TABLE IF NOT EXISTS radar.activity_reports (
 CREATE INDEX IF NOT EXISTS radar_activity_recent ON radar.activity_reports(establishment_id,created_at DESC);
 -- Server must derive account_ref and source from authenticated CORE identity.
 -- No public grants, automatic publishing, payments or production migrations here.
+
+-- Initial duplicate guard: same normalized name, country and rounded coordinates (~11m latitude).
+CREATE UNIQUE INDEX IF NOT EXISTS radar_establishment_duplicate ON radar.establishments(country,lower(trim(name)),round(latitude::numeric,4),round(longitude::numeric,4));

@@ -4,20 +4,20 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'@playwright/test');
 const server=spawn(process.execPath,['core/runtime/radar/scripts/preview.mjs'],{env:{...process.env,PORT:'4183',RADAR_TEST_FIXTURES:'1'},stdio:'inherit'});
-const origin='http://127.0.0.1:4183';let browser;
+const origin='http://127.0.0.1:4183';let browser,currentPage;
 const assert=(condition,message)=>{if(!condition)throw Error(message);};
 try{
  for(let i=0;i<50;i++){try{if((await fetch(origin)).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
  browser=await chromium.launch({headless:true,...(process.env.RADAR_BROWSER_EXECUTABLE?{executablePath:process.env.RADAR_BROWSER_EXECUTABLE}:{}),args:['--disable-webgl']});
  await mkdir('/tmp/radar-review',{recursive:true});const report=[];
  for(const [name,width,height,motion] of [['desktop',1440,1000,'no-preference'],['tablet',820,1180,'no-preference'],['mobile',390,844,'reduce'],['small-mobile',320,740,'reduce']]){
-  const context=await browser.newContext({viewport:{width,height},reducedMotion:motion}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const context=await browser.newContext({viewport:{width,height},reducedMotion:motion}),page=await context.newPage(),errors=[];currentPage=page;page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal overflow '+name);
-  await page.screenshot({path:`/tmp/radar-review/${name}-hero.png`});
+  await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-hero.png`});
   await page.getByRole('link',{name:'Explorar Radar',exact:true}).click();await page.locator('.leaflet-container').waitFor();
-  await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).click();await page.locator('#detail').waitFor();
-  await page.screenshot({path:`/tmp/radar-review/${name}-map.png`});
+  await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).click();await page.locator('#detail').waitFor();assert((await page.locator('#detail h3').innerText())==='Café del Istmo','Wrong detail');
+  await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-map.png`});
   await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
   await page.locator('#searchInput').fill('Café');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');
   await page.locator('#searchInput').fill('');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
@@ -44,7 +44,7 @@ try{
   await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
   const before=await page.locator('#searchInput').inputValue();
   await page.locator('#howButton').click();await page.locator('#howDialog').waitFor();
-  await page.screenshot({path:`/tmp/radar-review/${name}-help.png`});
+  await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-help.png`});
   await page.mouse.click(2,2);await page.locator('#howDialog').waitFor({state:'hidden'});
   assert(await page.locator('#searchInput').inputValue()===before,'Help reset search '+name);
   assert(await page.locator('.raster-pin.pin-normal').count()>0,'Help reset zoom '+name);
@@ -60,4 +60,4 @@ try{
   assert(errors.length===0,'Browser errors: '+errors.join('; '));report.push({name,viewport:{width,height},reducedMotion:motion,renderer:'Leaflet 2D fallback',checks:'responsive layout, map, all visible pins, progressive zoom, live-only pulse, priority panel, featured rows, help outside close, country, auth boundary',pageErrors:errors});await context.close();
  }
  await writeFile('/tmp/radar-review/validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
-}finally{await browser?.close();server.kill();}
+}catch(error){if(currentPage){console.error('RADAR_UI_FAILURE',await currentPage.evaluate(()=>({country:document.querySelector('#country')?.value,status:document.querySelector('#dataStatus')?.textContent,count:document.querySelector('#resultCount')?.textContent,category:document.querySelector('#category')?.value,activity:document.querySelector('#activity')?.value,results:document.querySelector('#results')?.innerText})));await currentPage.screenshot({path:'/tmp/radar-review/failure.png',fullPage:true});}throw error;}finally{await browser?.close();server.kill();}

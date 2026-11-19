@@ -29,7 +29,15 @@ export function createRadarRepository(db:Database):RadarRepository {
    return rows[0]?{id:rows[0].id,verifiedOwnerAccount:null}:null;
   },
   async addReport(id,accountRef,state,source) {
-   if(source!=="community")throw new Error("Owner verification not enabled");
+   if(source==="verified_owner"){
+    const verified=await db.unsafe(`INSERT INTO radar.activity_reports(establishment_id,account_ref,state,source)
+     SELECT e.id,o.account_ref,$3,'verified_owner' FROM radar.establishments e
+     JOIN radar.verified_owners o ON o.establishment_id=e.id
+     WHERE e.id=$1::uuid AND e.published AND o.account_ref=$2::uuid RETURNING id`,[id,accountRef,state]);
+    if(!verified.length)throw new Error("Owner verification required");
+    return;
+   }
+   if(source!=="community")throw new Error("Invalid report source");
    const rows=await db.unsafe(`INSERT INTO radar.activity_reports(establishment_id,account_ref,state,source)
     SELECT id,$2,$3,$4 FROM radar.establishments WHERE id=$1::uuid AND published RETURNING id`,[id,accountRef,state,source]);
    if(!rows.length)throw new Error("Establishment unavailable");

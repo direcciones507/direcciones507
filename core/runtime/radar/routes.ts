@@ -9,9 +9,11 @@ export interface RadarRepository {
  listPublished(country:Country,bounds:Bounds,search?:string):Promise<Establishment[]>;
  findPublished(id:string):Promise<{id:string;verifiedOwnerAccount:string|null}|null>;
  addReport(id:string,accountRef:string,state:Report["state"],source:Report["source"]):Promise<void>;
+ addAnonymousReport?(id:string,digest:string,state:Report["state"]):Promise<void>;
+ anonymousReportAllowed?(digest:string,id:string):Promise<boolean>;
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>){
+export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null){
  return async (req:Request):Promise<Response|null>=>{
   const u=new URL(req.url);
   if(!enabled || !["/v1/radar/map","/v1/radar/report","/v1/radar/establishments"].includes(u.pathname))return null;
@@ -46,15 +48,22 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    }
   }
   if(u.pathname==="/v1/radar/report" && req.method==="POST"){
+   const origin=req.headers.get("origin");
+   if(!origin||!origins.has(origin))return json(403,{error:"AUTH_REQUIRED"});
    const actor=await radarActor(req,auth,origins);
-   if(!actor)return json(403,{error:"AUTH_REQUIRED"});
+   const digest=actor?null:anonymousIdentity?.(req);
+   if(!actor&&(!digest||!/^[0-9a-f]{64}$/.test(digest)||!repo.addAnonymousReport))return json(403,{error:"AUTH_REQUIRED"});
    let body:any;
    try {const raw=await req.text();if(raw.length>2048)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
    if(!body||typeof body.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)||!["available","queue","full","incident"].includes(body.state))return json(400,{error:"INVALID_REPORT"});
    const e=await repo.findPublished(body.id);
    if(!e)return json(404,{error:"NOT_FOUND"});
-   if(repo.reportAllowed && !await repo.reportAllowed(actor.accountRef,e.id))return json(429,{error:"REPORT_RATE_LIMIT"});
-   try { await repo.addReport(e.id,actor.accountRef,body.state,reportSource(actor,e.verifiedOwnerAccount)); }
+   if(actor&&repo.reportAllowed&&!await repo.reportAllowed(actor.accountRef,e.id))return json(429,{error:"REPORT_RATE_LIMIT"});
+   if(!actor&&repo.anonymousReportAllowed&&!await repo.anonymousReportAllowed(digest!,e.id))return json(429,{error:"REPORT_RATE_LIMIT"});
+   try {
+    if(actor)await repo.addReport(e.id,actor.accountRef,body.state,reportSource(actor,e.verifiedOwnerAccount));
+    else await repo.addAnonymousReport!(e.id,digest!,body.state);
+   }
    catch(error){if((error as {code?:string})?.code==="P4290")return json(429,{error:"REPORT_RATE_LIMIT"});throw error;}
    return json(201,{ok:true});
   }

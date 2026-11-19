@@ -38,3 +38,22 @@ test("invalid and duplicate submissions",async()=>{
  expect((await handler(submission({...draft,latitude:99})))?.status).toBe(400);
  expect((await handler(submission(draft)))?.status).toBe(409);
 });
+
+test("anonymous reports use trusted digest and cannot claim ownership",async()=>{
+ const digest="a".repeat(64);const recorded:unknown[][]=[];
+ const storage:RadarRepository={...repo,addAnonymousReport:async(...args)=>{recorded.push(args)}};
+ const handler=createRadarRoutes(storage,anon,allowed,true,undefined,()=>digest);
+ expect((await handler(post()))?.status).toBe(201);
+ expect(recorded).toEqual([[id,digest,"available"]]);
+ const foreign=new Request(origin+"/v1/radar/report",{method:"POST",headers:{origin:"https://other.example"},body:JSON.stringify({id,state:"available"})});
+ expect((await handler(foreign))?.status).toBe(403);
+ expect((await createRadarRoutes(storage,anon,allowed,true,undefined,()=>"spoof")(post()))?.status).toBe(403);
+ expect(recorded.length).toBe(1);
+});
+test("anonymous limit and database race return 429",async()=>{
+ const digest="a".repeat(64);
+ const limited:RadarRepository={...repo,anonymousReportAllowed:async()=>false,addAnonymousReport:async()=>{throw Error("Unexpected write")}};
+ expect((await createRadarRoutes(limited,anon,allowed,true,undefined,()=>digest)(post()))?.status).toBe(429);
+ const race:RadarRepository={...repo,addAnonymousReport:async()=>{throw Object.assign(Error("limit"),{code:"P4290"})}};
+ expect((await createRadarRoutes(race,anon,allowed,true,undefined,()=>digest)(post()))?.status).toBe(429);
+});

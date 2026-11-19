@@ -42,6 +42,10 @@ export function createRadarRepository(db:Database,ownershipEnabled=false,resolve
    // Until ownership verification is integrated, all reports are community reports.
    return rows[0]?{id:rows[0].id,verifiedOwnerAccount:null}:null;
   },
+  async addAnonymousReport(id,digest,state) {
+   const rows=await db.unsafe("INSERT INTO radar.activity_reports(establishment_id,anonymous_ref,state,source) SELECT id,$2,$3,'community' FROM radar.establishments WHERE id=$1::uuid AND published RETURNING id",[id,digest,state]);
+   if(!rows.length)throw new Error("Establishment unavailable");
+  },
   async addReport(id,accountRef,state,source) {
    if(source==="verified_owner"){
     const verified=await db.unsafe(`INSERT INTO radar.activity_reports(establishment_id,account_ref,state,source)

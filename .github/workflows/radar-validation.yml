@@ -266,6 +266,17 @@ jobs:
           END;
           $radar_campaign$;
           SQL
+      - name: Exercise approved and expired campaigns
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO radar.campaigns(establishment_id,kind,starts_at,ends_at,status)
+          SELECT id,'featured',now()-interval '1 hour',now()+interval '1 hour','APPROVED' FROM radar.establishments WHERE published LIMIT 1;
+          INSERT INTO radar.campaigns(establishment_id,kind,starts_at,ends_at,status)
+          SELECT establishment_id,'live',now()-interval '2 hours',now()-interval '1 hour','APPROVED' FROM radar.campaigns WHERE kind='featured' LIMIT 1;
+          SQL
+          export RADAR_TEST_DB="postgres://postgres:test-only@$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' radar-db):5432/postgres"
+          cd core/runtime
+          bun -e 'import {SQL} from "bun"; import {createRadarCampaignLookup} from "./radar/campaign-repository"; const db=new SQL(process.env.RADAR_TEST_DB); try {const rows=await db.unsafe("SELECT id::text FROM radar.establishments WHERE published");const ids=rows.map(r=>r.id);const active=await createRadarCampaignLookup(db,true)(ids);if(active.size!==1||[...active.values()][0].kind!=="featured")throw Error("Unexpected active campaigns");if((await createRadarCampaignLookup(db,false)(ids)).size!==0)throw Error("Disabled campaign leaked");} finally {await db.close();}'
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

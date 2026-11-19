@@ -8,8 +8,10 @@ export const radarOrigin="https://radar.direcciones.lat";
 export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<string,string|undefined>){
  const enabled=env.RADAR_ENABLED==="true";
  const origins=new Set([radarOrigin]);
- const api=createRadarRoutes(createRadarRepository(db),auth,origins,enabled);
- const admin=createModerationRoutes(createModerationStore(db),auth,origins,enabled);
+ const ownershipEnabled=enabled&&env.RADAR_OWNERSHIP_ENABLED==="true";
+ const api=createRadarRoutes(createRadarRepository(db,ownershipEnabled),auth,origins,enabled);
+ const moderation=createModerationStore(db);
+ const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{
   const url=new URL(req.url);
   if(url.origin!==radarOrigin||!url.pathname.startsWith("/v1/radar/"))return null;

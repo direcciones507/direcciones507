@@ -3,6 +3,8 @@ import {publicFeatures,validateBounds,type Bounds,type Establishment} from "./pu
 import {validateRegistration,type EstablishmentDraft} from "./registration";
 import {radarActor,reportSource,type CoreAuth} from "./auth";
 export interface RadarRepository {
+ registrationAllowed?(accountRef:string):Promise<boolean>;
+ reportAllowed?(accountRef:string,id:string):Promise<boolean>;
  register?(draft:EstablishmentDraft,accountRef:string):Promise<string|null>;
  listPublished(country:Country,bounds:Bounds):Promise<Establishment[]>;
  findPublished(id:string):Promise<{id:string;verifiedOwnerAccount:string|null}|null>;
@@ -29,6 +31,7 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    try{const raw=await req.text();if(raw.length>4096)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
    const draft=validateRegistration(body);
    if(!draft)return json(400,{error:"INVALID_ESTABLISHMENT"});
+   if(repo.registrationAllowed && !await repo.registrationAllowed(actor.accountRef))return json(429,{error:"REGISTRATION_RATE_LIMIT"});
    const id=await repo.register(draft,actor.accountRef);
    return id?json(201,{id,status:"pending"}):json(409,{error:"DUPLICATE"});
   }
@@ -40,6 +43,7 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    if(!body||typeof body.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)||!["available","queue","full","incident"].includes(body.state))return json(400,{error:"INVALID_REPORT"});
    const e=await repo.findPublished(body.id);
    if(!e)return json(404,{error:"NOT_FOUND"});
+   if(repo.reportAllowed && !await repo.reportAllowed(actor.accountRef,e.id))return json(429,{error:"REPORT_RATE_LIMIT"});
    await repo.addReport(e.id,actor.accountRef,body.state,reportSource(actor,e.verifiedOwnerAccount));
    return json(201,{ok:true});
   }

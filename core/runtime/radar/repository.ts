@@ -10,7 +10,7 @@ export function createRadarRepository(db:Database,ownershipEnabled=false):RadarR
     ON CONFLICT DO NOTHING RETURNING id`,[accountRef,draft.name,draft.category,draft.country,draft.latitude,draft.longitude]);
    return rows[0]?.id??null;
   },
-  async listPublished(country:Country,b:Bounds):Promise<Establishment[]> {
+  async listPublished(country:Country,b:Bounds,search=""):Promise<Establishment[]> {
    const rows=await db.unsafe(`SELECT e.id,e.name,e.category,e.country,e.latitude,e.longitude,e.published,
     COALESCE(r.reports,'[]'::jsonb) AS reports
     FROM radar.establishments e
@@ -20,7 +20,8 @@ export function createRadarRepository(db:Database,ownershipEnabled=false):RadarR
        ORDER BY created_at DESC,(source='verified_owner') DESC LIMIT 20) a) r ON true
     WHERE e.published AND e.country=$1 AND e.latitude BETWEEN $2 AND $3
     AND (($4 < $5 AND e.longitude BETWEEN $4 AND $5) OR ($4 > $5 AND (e.longitude >= $4 OR e.longitude <= $5)))
-    ORDER BY e.id LIMIT 1000`,[country,b.south,b.north,b.west,b.east]);
+    ${search ? "AND (strpos(lower(e.name),lower($6::text))>0 OR strpos(lower(e.category),lower($6::text))>0)" : ""}
+    ORDER BY e.id LIMIT 1000`,[country,b.south,b.north,b.west,b.east,...(search?[search]:[])]);
    return rows.map(r=>({id:r.id,name:r.name,category:r.category,country:r.country,latitude:Number(r.latitude),longitude:Number(r.longitude),published:r.published,reports:(typeof r.reports==="string"?JSON.parse(r.reports):r.reports) as Report[]}));
   },
   async findPublished(id) {

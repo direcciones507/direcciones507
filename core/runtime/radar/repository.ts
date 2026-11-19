@@ -12,6 +12,7 @@ export function createRadarRepository(db:Database,ownershipEnabled=false,resolve
   },
   async listPublished(country:Country,b:Bounds,search=""):Promise<Establishment[]> {
    const rows=await db.unsafe(`SELECT e.id,e.name,e.category,e.country,e.latitude,e.longitude,e.published,
+    e.digital_address_ref IS NOT NULL AS has_link,
     COALESCE(r.reports,'[]'::jsonb) AS reports
     FROM radar.establishments e
     LEFT JOIN LATERAL (SELECT jsonb_agg(jsonb_build_object('state',a.state,'source',a.source,'createdAt',extract(epoch from a.created_at)*1000)) AS reports
@@ -24,8 +25,9 @@ export function createRadarRepository(db:Database,ownershipEnabled=false,resolve
     ORDER BY e.id LIMIT 1000`,[country,b.south,b.north,b.west,b.east,...(search?[search]:[])]);
    const establishments:Establishment[]=rows.map(r=>({id:r.id,name:r.name,category:r.category,country:r.country,latitude:Number(r.latitude),longitude:Number(r.longitude),published:r.published,reports:(typeof r.reports==="string"?JSON.parse(r.reports):r.reports) as Report[]}));
    if(resolveAddress){
-    for(let i=0;i<establishments.length;i+=8){
-     await Promise.all(establishments.slice(i,i+8).map(async e=>{e.digitalAddress=(await resolveAddress(e.id,country))??undefined;}));
+    const linked=establishments.filter((_,i)=>rows[i].has_link===true);
+    for(let i=0;i<linked.length;i+=8){
+     await Promise.all(linked.slice(i,i+8).map(async e=>{e.digitalAddress=(await resolveAddress(e.id,country))??undefined;}));
     }
    }
    return establishments;

@@ -30,3 +30,14 @@ References: https://maplibre.org/maplibre-gl-js/docs/examples/add-a-raster-tile-
 - Live shared Google/email sessions, verification/recovery emails, actual database writes, administrator actions, GPS permissions and commercial activation require the isolated staging environment and existing accounts. No such live verification is claimed by the visual fixtures.
 - Territorial selectors use country and named city map bounds. The public API does not expose province/district fields, so exhaustive administrative subdivisions are not fabricated.
 - Existing deployment gates in DEPLOYMENT.md remain applicable. Production activation is not authorized by this change.
+
+
+## Revision requested 19 November 2026
+
+- Navy, brushed silver and sage identity; local, subsetted Manrope and Inter variable fonts with OFL licenses; existing MapLibre, Leaflet, GSAP and optional Three.js retained.
+- Silver primary actions with touch depth. Informational/promotional lower containers removed; explanation is in an accessible native dialog, outside-click/close-button dismissal, no camera or search reset.
+- Priority sidebar contains only approved, currently active featured/live campaigns matching bounds and filters. Category tracks contain only active featured records and hide when empty. No production/demo seeding.
+- Normal pins reveal at baseline zoom + 0.6 and disappear on zoom-out; existing clustering remains at wide scale. No six-pin cap. Independent campaign deadlines expire locally, pause animation offscreen/hidden, and restore featured/normal status without waiting for a new API response. Availability reports do not activate live campaigns.
+- Business administration uses the existing CORE identity, Origin checks and verified-owner table. Claim requests require explicit ADMIN verification through the existing endpoint. Owner-only hours and availability updates are stored separately from reports/campaigns and recheck ownership during every write. Revocation removes owner data from the public read and blocks further changes.
+- Staging-only prerequisite: apply `business-details.sql` after `ownership.sql`, then enable `RADAR_BUSINESS_DETAILS_ENABLED=true` alongside the existing ownership flag. The web process applies no migrations. No production configuration or data changed for this review.
+- Private visual review contains a genuinely interactive map with empty business data, so it cannot imply commercial eligibility or invent real-world availability. Synthetic records exist only behind `RADAR_TEST_FIXTURES=1` for automated regression; authentication and writes remain disabled there.

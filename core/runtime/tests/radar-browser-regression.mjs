@@ -34,8 +34,14 @@ try{
   assert(motion==='reduce'?pulse==='none':pulse==='livePulse','Incorrect live pulse '+name);
   for(const pin of await page.locator('.raster-pin').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
   await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
+  await page.locator('.raster-cluster,.raster-pin.pin-normal').first().waitFor();
+  // At wide territorial scale, existing clustering represents the revealed normals.
+  await page.locator('#filtersButton').click();await page.locator('#territory').selectOption('0');await page.locator('#filtersButton').click();await page.waitForTimeout(800);
+  await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
   await page.locator('.raster-pin.pin-normal').first().waitFor();
   for(const pin of await page.locator('.raster-pin.pin-normal').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
+  await page.locator('.leaflet-control-zoom-out').click();await page.waitForTimeout(500);assert(await page.locator('.raster-pin.pin-normal').count()===0,'Normal pins remained after zoom out '+name);
+  await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
   const before=await page.locator('#searchInput').inputValue();
   await page.locator('#howButton').click();await page.locator('#howDialog').waitFor();
   await page.screenshot({path:`/tmp/radar-review/${name}-help.png`});
@@ -51,7 +57,7 @@ try{
   await page.locator('#accountDialog [data-close]').click();
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Overflow after interactions '+name);
   if(motion==='reduce'){assert(await page.locator('.sweep').evaluate(e=>getComputedStyle(e).animationName==='none'),'Reduced motion ignored');assert(await page.locator('#threeScene canvas').count()===0,'Reduced-motion device loaded 3D scene');}
-  assert(errors.length===0,'Browser errors: '+errors.join('; '));report.push({name,viewport:{width,height},reducedMotion:motion,renderer:'Leaflet 2D fallback',checks:'hero, overflow, map, card, search, category, activity, country, auth boundary',pageErrors:errors});await context.close();
+  assert(errors.length===0,'Browser errors: '+errors.join('; '));report.push({name,viewport:{width,height},reducedMotion:motion,renderer:'Leaflet 2D fallback',checks:'responsive layout, map, all visible pins, progressive zoom, live-only pulse, priority panel, featured rows, help outside close, country, auth boundary',pageErrors:errors});await context.close();
  }
  await writeFile('/tmp/radar-review/validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 }finally{await browser?.close();server.kill();}

@@ -28,3 +28,7 @@ CREATE INDEX IF NOT EXISTS radar_activity_recent ON radar.activity_reports(estab
 
 -- Initial duplicate guard: same normalized name, country and rounded coordinates (~11m latitude).
 CREATE UNIQUE INDEX IF NOT EXISTS radar_establishment_duplicate ON radar.establishments(country,lower(trim(name)),round(latitude::numeric,4),round(longitude::numeric,4));
+
+-- Support bounded account-level abuse checks without scanning all reports.
+CREATE INDEX IF NOT EXISTS radar_activity_account_recent ON radar.activity_reports(account_ref,created_at DESC);
+CREATE INDEX IF NOT EXISTS radar_registration_account_recent ON radar.establishments(account_ref,created_at DESC);

@@ -29,14 +29,14 @@ SECRET_PATTERNS = [r"postgres(?:ql)?://[^\s'\"]+", r"\bsk-[A-Za-z0-9_-]{16,}\b",
 # Radar migrations are exact, reviewed copies of their isolated module SQL.
 # Only these versions may use Radar-specific DDL; all other files retain foundation rules.
 RADAR_FILES = {
-    "0006_radar_schema.sql": "schema.sql",
-    "0007_radar_core_constraints.sql": "core-constraints.sql",
-    "0008_radar_ownership.sql": "ownership.sql",
-    "0009_radar_abuse_constraints.sql": "abuse-constraints.sql",
-    "0010_radar_account_retention.sql": "account-retention.sql",
-    "0011_radar_address_link.sql": "address-link.sql",
-    "0012_radar_campaigns.sql": "campaigns.sql",
-    "0013_radar_business_details.sql": "business-details.sql",
+    "0009_radar_schema.sql": "schema.sql",
+    "0010_radar_core_constraints.sql": "core-constraints.sql",
+    "0011_radar_ownership.sql": "ownership.sql",
+    "0012_radar_abuse_constraints.sql": "abuse-constraints.sql",
+    "0013_radar_account_retention.sql": "account-retention.sql",
+    "0014_radar_address_link.sql": "address-link.sql",
+    "0015_radar_campaigns.sql": "campaigns.sql",
+    "0016_radar_business_details.sql": "business-details.sql",
 }
 
 for path in SQL_FILES:

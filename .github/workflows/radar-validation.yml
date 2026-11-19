@@ -150,6 +150,16 @@ jobs:
               const store=createModerationStore(db);
               if(!await store.verifyOwner(rows[0].id,account,account)) throw Error("Verification failed");
               if(await store.verifyOwner(rows[0].id,account,account)) throw Error("Duplicate verification accepted");
+              const {createRadarRepository}=await import("./radar/repository");
+              const repo=createRadarRepository(db,true);
+              const id=rows[0].id;
+              if((await repo.findPublished(id))?.verifiedOwnerAccount!==account) throw Error("Owner lookup failed");
+              await repo.addReport(id,account,"available","verified_owner");
+              const reports=await db.unsafe("SELECT source FROM radar.activity_reports WHERE establishment_id=$1",[id]);
+              if(!reports.some(r=>r.source==="verified_owner")) throw Error("Verified report missing");
+              let rejected=false;
+              try { await repo.addReport(id,"00000000-0000-4000-8000-000000000099","available","verified_owner"); } catch { rejected=true; }
+              if(!rejected) throw Error("Unverified account accepted");
             } finally { await db.close(); }
           '
   core-regression:

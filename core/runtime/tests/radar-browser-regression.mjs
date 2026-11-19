@@ -4,14 +4,15 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 const require=createRequire(import.meta.url),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'@playwright/test');
 const server=spawn(process.execPath,['core/runtime/radar/scripts/preview.mjs'],{env:{...process.env,PORT:'4183',RADAR_TEST_FIXTURES:'1'},stdio:'inherit'});
-const origin='http://127.0.0.1:4183';let browser,currentPage;
+const origin='http://127.0.0.1:4183';let browser,currentPage,currentErrors;
 const assert=(condition,message)=>{if(!condition)throw Error(message);};
 try{
  for(let i=0;i<50;i++){try{if((await fetch(origin)).ok)break;}catch{}await new Promise(r=>setTimeout(r,100));}
  browser=await chromium.launch({headless:true,...(process.env.RADAR_BROWSER_EXECUTABLE?{executablePath:process.env.RADAR_BROWSER_EXECUTABLE}:{}),args:['--disable-webgl']});
  await mkdir('/tmp/radar-review',{recursive:true});const report=[];
  for(const [name,width,height,motion] of [['desktop',1440,1000,'no-preference'],['tablet',820,1180,'no-preference'],['mobile',390,844,'reduce'],['small-mobile',320,740,'reduce']]){
-  const context=await browser.newContext({viewport:{width,height},reducedMotion:motion}),page=await context.newPage(),errors=[];currentPage=page;page.on('pageerror',e=>errors.push(e.message));
+  const context=await browser.newContext({viewport:{width,height},reducedMotion:motion}),page=await context.newPage(),errors=[];currentPage=page;currentErrors=errors;page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/radar/ui/raster-map.js',async route=>{const response=await route.fetch();const source=await response.text();await route.fulfill({response,body:source.replace("return {engine:'raster'", "window.__radarTestCamera=()=>({moving,pendingFit,fitSequence,zoom:map.getZoom(),animatingZoom:map._animatingZoom,bounds:{west:map.getBounds().getWest(),east:map.getBounds().getEast(),south:map.getBounds().getSouth(),north:map.getBounds().getNorth()}});return {engine:'raster'")});});
   await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal overflow '+name);
   await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-hero.png`});
@@ -63,4 +64,4 @@ try{
   assert(errors.length===0,'Browser errors: '+errors.join('; '));report.push({name,viewport:{width,height},reducedMotion:motion,renderer:'Leaflet 2D fallback',checks:'responsive layout, map, all visible pins, progressive zoom, live-only pulse, priority panel, featured rows, help outside close, country, auth boundary',pageErrors:errors});await context.close();
  }
  await writeFile('/tmp/radar-review/validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
-}catch(error){if(currentPage){console.error('RADAR_UI_FAILURE',await currentPage.evaluate(()=>({country:document.querySelector('#country')?.value,status:document.querySelector('#dataStatus')?.textContent,count:document.querySelector('#resultCount')?.textContent,category:document.querySelector('#category')?.value,activity:document.querySelector('#activity')?.value,results:document.querySelector('#results')?.innerText})));await currentPage.screenshot({path:'/tmp/radar-review/failure.png',fullPage:true});}throw error;}finally{await browser?.close();server.kill();}
+}catch(error){if(currentPage){console.error('RADAR_PAGE_ERRORS',currentErrors);console.error('RADAR_UI_FAILURE',await currentPage.evaluate(()=>({country:document.querySelector('#country')?.value,status:document.querySelector('#dataStatus')?.textContent,count:document.querySelector('#resultCount')?.textContent,category:document.querySelector('#category')?.value,activity:document.querySelector('#activity')?.value,results:document.querySelector('#results')?.innerText,camera:window.__radarTestCamera?.()})));await currentPage.screenshot({path:'/tmp/radar-review/failure.png',fullPage:true});}throw error;}finally{await browser?.close();server.kill();}

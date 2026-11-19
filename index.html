@@ -1164,6 +1164,23 @@ dialog#plan507Details :is(#plan507Features,#plan507Features) li:hover{background
 #plan507Details .plan507-detail-actions :is(button,a){box-sizing:border-box;min-height:50px;padding:12px 16px!important;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
 </style>
+<style id="commercial-card-shared-style">
+/* Shared existing corporate card presentation. Motion and country controls stay local. */
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan]{--commercial-bg:#fff;--commercial-ink:#14284B;--commercial-muted:#5B6578;--commercial-button:#14284B;--commercial-button-ink:#F5F1E8;display:flex;flex-direction:column;min-width:0;background:var(--commercial-bg)!important;color:var(--commercial-ink)!important;font-family:Inter,system-ui,sans-serif!important;border:1px solid #14284b24!important;border-radius:26px!important;padding:24px!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan][hidden]{display:none!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan][data-commercial-plan="BUSINESS_PREMIUM"]{--commercial-bg:#14284B;--commercial-ink:#F5F1E8;--commercial-muted:#F5F1E8;--commercial-button:#F5F1E8;--commercial-button-ink:#14284B}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(h3,h4,.plan-numeric-val,.latam-plan-price){color:var(--commercial-ink)!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(h3,h4){font-size:19px!important;line-height:1.3!important;font-weight:850!important;margin:0 0 5px!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(.plan-numeric-val,.latam-plan-price){font-size:25px!important;font-weight:800!important;margin:0 0 12px!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(p,.plan-review-notice){color:var(--commercial-muted)!important;font-size:13px!important;line-height:1.55!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(.plan-507-summary,.latam-plan-action>p){margin:0 0 20px!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(.plan-507-icon,.latam-plan-icon){background:#14284B!important;color:#F5F1E8!important;border-radius:15px!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(.plan-507-tag,.latam-plan-label){background:#F5F1E8!important;color:#1D3866!important}
+:is(#mainGlobalHeroView,#commercialWelcome) :is(.plan-pricing-card,.latam-plan-card)[data-commercial-plan] :is(.btn-plan-action-trigger,.latam-plan-action>span){background:var(--commercial-button)!important;color:var(--commercial-button-ink)!important;border-radius:14px!important;min-height:42px!important;padding:11px 16px!important;font-size:14px!important;font-weight:850!important}
+:is(#mainGlobalHeroView .planes-grid-layout,#commercialWelcome .latam-plan-grid){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+@media(max-width:960px){:is(#mainGlobalHeroView .planes-grid-layout,#commercialWelcome .latam-plan-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){:is(#mainGlobalHeroView .planes-grid-layout,#commercialWelcome .latam-plan-grid){grid-template-columns:1fr!important}}
+</style>
 </head>
 <body>
 
@@ -1330,40 +1347,33 @@ dialog#plan507Details :is(#plan507Features,#plan507Features) li:hover{background
         <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 6px;">Adquiere infraestructura logística premium para tu ubicación</p>
         
         <div class="planes-grid-layout">
-          <div class="plan-pricing-card">
+          <div data-plan-price="Gratis" data-commercial-plan="PLACE" class="plan-pricing-card">
             <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span><span class="plan-507-tag">Sitios de interés</span></div>
-            <h4>Agregar lugar</h4><div class="plan-numeric-val">Gratis</div>
-            <p class="plan-507-summary">Iglesias, parques, cascadas, ríos, playas y atractivos de interés. Solo lugares no comerciales; sujetos a revisión y aprobación.</p>
-            <ul class="plan-perks-list" hidden><li>Iglesias, parques, cascadas, ríos, playas y atractivos</li><li>Solo lugares de interés no comerciales</li><li>Disponible por ahora en Panamá y Costa Rica</li><li>Sujeto a revisión y aprobación</li></ul>
+            <h4>Lugar Gratis</h4><div class="plan-numeric-val">Gratis</div>
+            <p class="plan-507-summary">Iglesias, parques, cascadas, ríos, playas y atractivos de interés. Solo lugares no comerciales. Disponible en los ocho países iniciales, sujeto a revisión y aprobación.</p>
+            <ul class="plan-perks-list" hidden><li>Comparte ubicaciones de interés con una dirección digital fácil de encontrar</li><li>Ideal para iglesias, parques, cascadas, ríos, playas y atractivos turísticos</li><li>Solo lugares de interés no comerciales; no incluye establecimientos comerciales</li><li>Nombre, ubicación, referencia y fotografía del lugar</li><li>Enlace y herramientas de navegación para compartir el lugar</li><li>Disponible en los ocho países iniciales, según las condiciones vigentes</li><li>Revisión administrativa de hasta 48 horas después del envío; aprobación no garantizada</li></ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="PLACE" style="cursor:pointer;width:100%;border:0">Elegir plan</button><p style="font-size:13px;color:#edf5ff;line-height:1.6">Revisión administrativa de hasta 48 horas después del envío. Aprobación no garantizada.</p>
           </div>
-          <div class="plan-pricing-card" hidden aria-hidden="true" style="display:none!important" data-dormant-plan="BUSINESS_FREE">
-            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-store" aria-hidden="true"></i></span><span class="plan-507-tag">Para comenzar</span></div>
-            <h4>Negocio Gratis</h4><div class="plan-numeric-val">Gratis</div>
-            <p class="plan-507-summary">Logo, horario, contacto, navegación y código QR para tu negocio.</p>
-            <ul class="plan-perks-list" hidden><li>Código AD507 numérico</li><li>Logo del negocio</li><li>Google Maps, Waze, Uber y WhatsApp</li><li>Ver mapa, llamar y compartir</li><li>Código QR</li><li>Horario y referencia</li><li>Contador básico de visitas</li><li>Indexado en Google</li></ul>
-            <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_FREE" style="cursor:pointer;width:100%;border:0">Elegir plan</button><p style="font-size:13px;color:#edf5ff;line-height:1.6">Revisión administrativa de hasta 48 horas después del envío. Aprobación no garantizada.</p>
-          </div>
-          <div class="plan-pricing-card" data-plan-display="TEMPORARY_ADDRESS" aria-label="Dirección Temporal">
-            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></span><span class="plan-507-tag">Eventos y promociones</span></div>
+          <div data-commercial-plan="TEMPORARY_ADDRESS" class="plan-pricing-card" data-plan-display="TEMPORARY_ADDRESS" aria-label="Dirección Temporal">
+            <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-store" aria-hidden="true"></i></span><span class="plan-507-tag">Eventos y ferias</span></div>
             <h4>Dirección Temporal</h4><div class="plan-numeric-val">$12.99</div>
-            <p class="plan-507-summary">1–30 días: US$12.99. 31–60 días: US$19.99.</p>
-            <ul class="plan-perks-list" hidden><li>Publicación temporal para eventos o promociones</li><li>Hasta 3 fotografías</li><li>Ubicación y código QR para compartir</li><li>No indexable en buscadores</li></ul>
+            <p class="plan-507-summary">1–30 días: US$12.99. 31–60 días: US$19.99. Incluye el día siguiente completo a la fecha final.</p>
+            <ul class="plan-perks-list" hidden><li>Enlace propio del evento sin código AD507</li><li>Hasta tres fotografías</li><li>Ubicación y navegación con Google Maps</li><li>Contacto público opcional y compartir por WhatsApp</li><li>Código QR</li><li>Vigencia de 1 a 60 días según tarifa</li><li>Ficha no indexada en buscadores</li></ul>
             <p style="font-size:13px;color:#edf5ff;line-height:1.6">Guarda tu borrador y revisa la vista previa desde tu cuenta. La publicación requiere pago confirmado.</p>
             <a class="btn-plan-action-trigger" href="https://direcciones.lat/panel/evento/nuevo" style="display:block;text-align:center;text-decoration:none;cursor:pointer;width:100%;border:0">Crear Dirección Temporal</a>
           </div>
-          <div class="plan-pricing-card popular">
+          <div data-plan-price="US$29.99 / año · o 2 × US$16.50 (total US$33.00)" data-commercial-plan="BUSINESS_PREMIUM" class="plan-pricing-card popular">
             <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-star" aria-hidden="true"></i></span><span class="plan-507-tag">Más herramientas</span></div>
-            <h4>Negocio Premium</h4><div class="plan-numeric-val">$29.99</div>
-            <p class="plan-507-summary">US$29.99 al año o 2 cuotas de US$16.50 (total US$33.00). Vigencia anual, renovación manual. Código con nombre, redes sociales, código postal, zona postal y estadísticas.</p>
-            <ul class="plan-perks-list" hidden><li>Todo lo incluido en Negocio Gratis</li><li>Código AD507 con nombre del negocio</li><li>Redes sociales</li><li>Código postal y zona postal</li><li>Estadísticas de tu Dirección507</li><li>Indexado en Google</li></ul>
+            <h4>Premium</h4><div class="plan-numeric-val">$29.99</div>
+            <p class="plan-507-summary">Página web personalizada (Landing Page) y tarjeta de presentación digital para tu negocio o profesión. Enlace personalizado, QR, contacto, ubicación, redes sociales y estadísticas. US$29.99 al año o 2 cuotas de US$16.50 (total US$33.00). Vigencia anual, renovación manual, sin cobros automáticos.</p>
+            <ul class="plan-perks-list" hidden><li>Página web personalizada (Landing Page) con tus datos comerciales o profesionales</li><li>Tarjeta de presentación digital para compartir tu negocio o servicios</li><li>Logo, nombre, horario y referencia de ubicación</li><li>Contacto por teléfono y WhatsApp</li><li>Ubicación y navegación con Google Maps, Waze y Uber</li><li>Enlace personalizado y código QR para compartir</li><li>Código con nombre de tu negocio, sujeto a disponibilidad</li><li>Enlaces a tus redes sociales</li><li>Código postal y zona postal</li><li>Estadísticas de visitas e interacciones desde Mi Panel</li><li>Posibilidad de aparecer en Google y otros buscadores; sin garantía de indexación ni posicionamiento</li></ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM" style="cursor:pointer;width:100%;border:0">Elegir plan</button>
           </div>
-          <div class="plan-pricing-card">
+          <div data-plan-price="US$49.99 / año · o 2 × US$27.50 (total US$55.00)" data-commercial-plan="BUSINESS_PREMIUM_PRO" class="plan-pricing-card">
             <div class="plan-507-top"><span class="plan-507-icon"><i class="fa-solid fa-crown" aria-hidden="true"></i></span><span class="plan-507-tag">Mayor presencia</span></div>
             <h4>Premium Pro</h4><div class="plan-numeric-val">$49.99</div>
-            <p class="plan-507-summary">US$49.99 al año o 2 cuotas de US$27.50 (total US$55.00). Vigencia anual, renovación manual. Beneficios Premium, galería de 5 fotos y estadísticas avanzadas. Enlace exclusivo con nombre: próximamente.</p>
-            <ul class="plan-perks-list" hidden><li>Todo lo incluido en Negocio Premium</li><li>Galería de hasta 5 fotos</li><li>Estadísticas avanzadas de tu dirección digital</li><li>Enlace exclusivo con nombre de tu negocio (próximamente; ejemplo: restaurante-manuel)</li><li>Indexado en Google</li></ul>
+            <p class="plan-507-summary">Página web comercial personalizada (Landing Page) y tarjeta de presentación digital. Todo lo incluido en Premium, descripción comercial, galería de hasta 5 fotos y estadísticas avanzadas. Enlace exclusivo con nombre: próximamente. US$49.99 al año o 2 cuotas de US$27.50 (total US$55.00). Vigencia anual, renovación manual, sin cobros automáticos.</p>
+            <ul class="plan-perks-list" hidden><li>Página web comercial personalizada (Landing Page) con tus datos</li><li>Tarjeta de presentación digital para compartir tu negocio o servicios</li><li>Todo lo incluido en Premium</li><li>Logo, nombre, horario y referencia de ubicación</li><li>Contacto por teléfono y WhatsApp</li><li>Ubicación y navegación con Google Maps, Waze y Uber</li><li>Enlace personalizado y código QR para compartir</li><li>Código con nombre de tu negocio, sujeto a disponibilidad</li><li>Enlaces a tus redes sociales</li><li>Código postal y zona postal</li><li>Estadísticas de visitas e interacciones desde Mi Panel</li><li>Posibilidad de aparecer en Google y otros buscadores; sin garantía de indexación ni posicionamiento</li><li>Descripción comercial de tu negocio o servicios</li><li>Galería de hasta 5 fotos</li><li>Estadísticas avanzadas con filtros y tendencias</li><li>Enlace exclusivo con nombre del negocio: próximamente</li></ul>
             <button type="button" class="btn-plan-action-trigger" data-507-plan="BUSINESS_PREMIUM_PRO" style="cursor:pointer;width:100%;border:0">Elegir plan</button>
           </div>
           <aside class="latam-expansion-card" aria-label="Conoce Direcciones LATAM">
@@ -1396,7 +1406,7 @@ dialog#plan507Details :is(#plan507Features,#plan507Features) li:hover{background
  const temporary=button.closest('[data-plan-display="TEMPORARY_ADDRESS"]')!==null;
  const card=button.closest('.plan-pricing-card');
  title.textContent=card.querySelector('h4').textContent;
- price.textContent=card.querySelector(temporary?'.plan-507-summary':'.plan-numeric-val').textContent;
+ price.textContent=card.dataset.planPrice||card.querySelector(temporary?'.plan-507-summary':'.plan-numeric-val').textContent;
  list.replaceChildren(...Array.from(card.querySelectorAll('.plan-perks-list li')).map(li=>{const item=document.createElement('li');item.textContent=li.textContent.trim().replace(/^✓\s*/, '');item.style.cssText='padding:12px;border:1px solid #294967;border-radius:12px;background:#18334e;color:#edf6ff;line-height:1.5';return item;}));
  document.getElementById('plan507FreeTerms').hidden=button.dataset['507Plan']!=='BUSINESS_FREE';
  document.getElementById('plan507ReviewNotice').hidden=!['BUSINESS_FREE','PLACE'].includes(button.dataset['507Plan']);

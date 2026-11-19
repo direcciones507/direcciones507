@@ -31,3 +31,11 @@ export function searchContext(text,country){
  for(const candidate of countries[country]?.views||[]){const suffix=' en '+candidate.name;if(clean(query).endsWith(clean(suffix))){query=query.slice(0,query.length-suffix.length).trim();view=candidate;break;}}
  return {query:aliases[clean(query)]||query,view};
 }
+
+// Local distance calculation. Coordinates are neither sent nor persisted.
+export function distanceKm(lat1,lng1,lat2,lng2){
+ if(![lat1,lng1,lat2,lng2].every(Number.isFinite)||Math.abs(lat1)>90||Math.abs(lat2)>90||Math.abs(lng1)>180||Math.abs(lng2)>180)return NaN;
+ const rad=n=>n*Math.PI/180,dlat=rad(lat2-lat1),dlng=rad(lng2-lng1);
+ const a=Math.sin(dlat/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dlng/2)**2;
+ return 6371*2*Math.asin(Math.sqrt(Math.max(0,Math.min(1,a))));
+}

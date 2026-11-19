@@ -65,7 +65,14 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     ?config({...env,AD507_GOOGLE_REDIRECT_URI:env.AD507_GOOGLE_REDIRECT_URI_LATAM,AD507_AUTH_SUCCESS_URL:env.AD507_AUTH_SUCCESS_URL_LATAM??'/panel',AD507_PUBLIC_BASE_URL:'https://direcciones.lat'}):null;
   const latam=primary&&primary.origin!=='https://direcciones.lat'&&latamCandidate?.origin==='https://direcciones.lat'?latamCandidate:null;
   const cfg=primary;
-  const forRequest=(req:Request)=>new URL(req.url).hostname==='direcciones.lat'&&latam?latam:primary;
+  const radarCandidate=env.RADAR_ENABLED==='true' && env.AD507_RADAR_DOMAIN_VERIFIED==='true' && env.AD507_GOOGLE_REDIRECT_URI_RADAR
+    ?config({...env,AD507_GOOGLE_REDIRECT_URI:env.AD507_GOOGLE_REDIRECT_URI_RADAR,AD507_AUTH_SUCCESS_URL:'/',AD507_PUBLIC_BASE_URL:'https://radar.direcciones.lat'}):null;
+  const radar=primary&&radarCandidate?.origin==='https://radar.direcciones.lat'?radarCandidate:null;
+  const forRequest=(req:Request)=>{
+    const host=new URL(req.url).hostname;
+    if(host==='radar.direcciones.lat')return radar;
+    return host==='direcciones.lat'&&latam?latam:primary;
+  };
   // Preserve hashes of already-issued primary-domain states; bind LATAM states to LATAM.
   const accountCountries=new Set(['PA','CO','CR','GT','SV','HN','NI','MX']);
   const stateHash=(state:string,origin:string,admin=false,country='')=>hash((admin?'admin|':country?'client:'+country+'|':'')+(origin===primary?.origin?state:origin+'|'+state));

@@ -1,3 +1,5 @@
+import {createRadarAddressResolver} from "./address-resolver";
+import {newPublicAddress} from "../new-address-publication";
 import {createRadarAbuseChecks} from "./abuse";
 import {createRadarRoutes} from "./routes";
 import {createRadarRepository} from "./repository";
@@ -10,7 +12,8 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const enabled=env.RADAR_ENABLED==="true";
  const origins=new Set([radarOrigin]);
  const ownershipEnabled=enabled&&env.RADAR_OWNERSHIP_ENABLED==="true";
- const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled);
+ const resolveAddress=ownershipEnabled&&env.RADAR_ADDRESS_LINKS_ENABLED==="true"?createRadarAddressResolver(db,code=>newPublicAddress(db as Parameters<typeof newPublicAddress>[0],code,"https://direcciones.lat")):undefined;
+ const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress),...createRadarAbuseChecks(db)},auth,origins,enabled);
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{

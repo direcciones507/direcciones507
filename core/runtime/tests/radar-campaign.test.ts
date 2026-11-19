@@ -9,7 +9,7 @@ test("enabled lookup binds IDs and time and maps active campaign",async()=>{
  const lookup=createRadarCampaignLookup({unsafe:async(query,params)=>{
   expect(query).toContain("c.status='APPROVED'");
   expect(query).toContain("c.ends_at>$2");
-  expect(params).toEqual([["id"],new Date(now).toISOString()]);
+  expect(params).toEqual([JSON.stringify(["id"]),new Date(now).toISOString()]);
   return [{id:"id",kind:"featured",starts_at:new Date(now-1000),ends_at:new Date(now+1000)}];
  }},true);
  expect((await lookup(["id"],now)).get("id")).toEqual({kind:"featured",startsAt:now-1000,endsAt:now+1000});

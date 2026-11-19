@@ -1511,7 +1511,7 @@ test('ADMIN-owned paid products publish without orders; clients cannot claim the
  const {createRequestRepository}=await import('../request-repository'),{createNewAddressPublication,newPublicAddress}=await import('../new-address-publication'),{adminBillingExempt,handleAdminBillingGuard}=await import('../admin-billing-policy');
  const stamp=crypto.randomUUID(),r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
  const png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
- const repo=createRequestRepository(sql,{canonical:createNewAddressPublication(sql,{namespaceExclusive:true}),r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
+ const repo=createRequestRepository(sql,{canonical:createNewAddressPublication(sql,{namespaceExclusive:true,fetch:async()=>Response.json({ok:true,codes:[{codigo:'AD507-HISTORICALFIXTURE'}]})}),r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
  const before=(await sql.unsafe('SELECT count(*)::int AS n FROM ad507.orders'))[0].n;
  for(const plan of ['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RESIDENTIAL']){
   const request=await repo.createAdmin(adminId,'admin-exempt-'+plan+'-'+stamp,{type:plan==='RESIDENTIAL'?'RESIDENTIAL':'BUSINESS',plan,name:'Courtesy '+plan+' '+stamp,reference:'Synthetic only',latitude:8.49,longitude:-80.49},plan==='RESIDENTIAL'?[]:[{role:'logo',mime:'image/png',bytes:png}]);

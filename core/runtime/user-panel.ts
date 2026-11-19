@@ -34,7 +34,7 @@ function allowPanelRead(userId: string) {
 export async function userPanelData(sql: Sql, user: { id: string; roles: string[] }, params=new URLSearchParams()) {
   const addressPage=await adminAddressPage(sql,params,'addresses',user.id);
   const billingExempt=user.roles.includes('ADMIN')&&await adminBillingExempt(sql,user.id);
-  const addresses=addressPage.items;
+  const addresses=addressPage.items.map(a=>billingExempt&&a.workflow==='PAYMENT_PENDING'?{...a,workflow:'ADMIN_READY'}:a);
   const orders = await sql.unsafe(`SELECT id::text,status,currency,amount_cents AS "amountCents",created_at AS "createdAt" FROM ad507.orders WHERE user_id=$1::uuid ORDER BY created_at DESC,id LIMIT 100`, [user.id]);
   const plans = await sql.unsafe(`SELECT code,name FROM ad507.plans WHERE status='ACTIVE' ORDER BY code`);
   return { billingExempt, addresses, nextAddressCursor:addressPage.nextCursor, orders, plans, actions: { prepareRequest: user.roles.includes('CLIENT') || user.roles.includes('ADMIN'), submitRequest: USER_PANEL_SUBMISSION_ENABLED && (user.roles.includes('CLIENT') || user.roles.includes('ADMIN')), checkout: false } };

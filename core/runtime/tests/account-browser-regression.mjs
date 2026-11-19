@@ -156,6 +156,7 @@ try{
     return route.fulfill({json:{quote:{amountCents:4999,orderId:order}}});
    }
    if(path==='/panel')return route.fulfill({contentType:'text/html',body:fixtures.pa.html});
+   if(path==='/admin/create')return route.fulfill({contentType:'text/html',body:fixtures.admin.html});
    if(path==='/v1/user/panel')return route.fulfill({json:{user:{email:'test@example.invalid'},addresses:[],orders:[],plans,actions:{prepareRequest:true,submitRequest:true}}});
    return route.fulfill({status:404,body:''});
   });
@@ -180,6 +181,8 @@ try{
    await page.locator('btn-yappy').dispatchEvent('eventClick');await page.locator('#checkout').waitFor({state:'hidden'});assert.equal(posts,beforePosts+1);
    current='PAID';retryAllowed=false;await page.locator('#refresh').click();await page.locator('#message').filter({hasText:'Pago confirmado'}).waitFor();assert.equal(await page.locator('#checkout').isVisible(),false);
   }
+  await page.goto('https://'+host+'/admin/create');
+  await page.locator('#plan option[value=BUSINESS_FREE]').waitFor({state:'attached'});
   assert.deepEqual(errors,[]);await context.close();
  }
  console.log('PASS: generated JavaScript, 9 account browser scenarios + 3 visual Yappy fixtures, mobile/tablet/desktop, 200/401/503, contrast, detail, plans and Google return context; terminal Yappy retries and preserved Lugar on both production hosts');

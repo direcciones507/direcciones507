@@ -32,8 +32,13 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    const draft=validateRegistration(body);
    if(!draft)return json(400,{error:"INVALID_ESTABLISHMENT"});
    if(repo.registrationAllowed && !await repo.registrationAllowed(actor.accountRef))return json(429,{error:"REGISTRATION_RATE_LIMIT"});
-   const id=await repo.register(draft,actor.accountRef);
-   return id?json(201,{id,status:"pending"}):json(409,{error:"DUPLICATE"});
+   try {
+    const id=await repo.register(draft,actor.accountRef);
+    return id?json(201,{id,status:"pending"}):json(409,{error:"DUPLICATE"});
+   } catch(error) {
+    if((error as {code?:string})?.code==="P4290")return json(429,{error:"REGISTRATION_RATE_LIMIT"});
+    throw error;
+   }
   }
   if(u.pathname==="/v1/radar/report" && req.method==="POST"){
    const actor=await radarActor(req,auth,origins);
@@ -44,7 +49,8 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    const e=await repo.findPublished(body.id);
    if(!e)return json(404,{error:"NOT_FOUND"});
    if(repo.reportAllowed && !await repo.reportAllowed(actor.accountRef,e.id))return json(429,{error:"REPORT_RATE_LIMIT"});
-   await repo.addReport(e.id,actor.accountRef,body.state,reportSource(actor,e.verifiedOwnerAccount));
+   try { await repo.addReport(e.id,actor.accountRef,body.state,reportSource(actor,e.verifiedOwnerAccount)); }
+   catch(error){if((error as {code?:string})?.code==="P4290")return json(429,{error:"REPORT_RATE_LIMIT"});throw error;}
    return json(201,{ok:true});
   }
   return json(405,{error:"METHOD_NOT_ALLOWED"});

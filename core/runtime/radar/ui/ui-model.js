@@ -39,3 +39,17 @@ export function distanceKm(lat1,lng1,lat2,lng2){
  const a=Math.sin(dlat/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dlng/2)**2;
  return 6371*2*Math.asin(Math.sqrt(Math.max(0,Math.min(1,a))));
 }
+
+// Geographic query is snapped outward to a coarse grid; precise distance stays local.
+export function nearbyBounds(lat,lng,radius){
+ if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>85||Math.abs(lng)>180||![5,10,20].includes(radius))return null;
+ const padLat=radius/110, padLng=radius/(110*Math.max(.08,Math.cos(lat*Math.PI/180)));
+ const floor=x=>Math.floor(x*4)/4,ceil=x=>Math.ceil(x*4)/4;
+ return normalizeBounds([floor(lng-padLng),floor(lat-padLat),ceil(lng+padLng),ceil(lat+padLat)]);
+}
+export function nearbyRows(features,lat,lng,radius,category,country,now=Date.now()){
+ if(!nearbyBounds(lat,lng,radius))return [];
+ return features.filter(f=>f?.geometry?.type==='Point'&&typeof f.id==='string'&&f.properties?.country===country&&(!category||f.properties.category===category))
+ .map(f=>({feature:{...f,properties:freshProperties(f.properties,now)},km:distanceKm(lat,lng,f.geometry.coordinates?.[1],f.geometry.coordinates?.[0])}))
+ .filter(row=>Number.isFinite(row.km)&&row.km<=radius).sort((a,b)=>a.km-b.km||a.feature.id.localeCompare(b.feature.id)).slice(0,100);
+}

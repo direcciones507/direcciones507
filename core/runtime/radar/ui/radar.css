@@ -31,3 +31,5 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 .hero{min-height:0;padding-top:24px;padding-bottom:24px;align-items:start}.explore{padding-top:17px}.hero-foot{margin-top:30px}
 @media(max-width:800px){.hero{padding-top:20px;padding-bottom:18px}.hero-foot{margin-top:24px}}
 @media(max-width:600px){.hero{padding-top:18px;padding-bottom:16px}.explore{padding-top:12px}.hero-foot{margin-top:20px}.radar-art{margin-top:14px}}
+
+.nearby-actions{display:flex;justify-content:flex-start;padding:8px 12px}.nearby-results{display:grid;gap:12px;max-height:45dvh;overflow:auto}.nearby-results .pending-item{min-width:0;overflow-wrap:anywhere}.nearby-results .pending-item h3{margin:0 0 6px}.nearby-results .pending-item p{margin:6px 0}

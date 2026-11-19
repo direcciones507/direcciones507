@@ -17,7 +17,7 @@ jobs:
           bun-version: "1.4.0"
       - name: Run Radar unit tests
         working-directory: core/runtime
-        run: bun test tests/radar-domain.test.ts tests/radar-public-map.test.ts
+        run: bun test tests/radar-*.test.ts
   radar-postgres:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

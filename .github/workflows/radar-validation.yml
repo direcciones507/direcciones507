@@ -135,6 +135,23 @@ jobs:
             END;
           END $ownership_test$;
           SQL
+      - name: Exercise verified ownership repository
+        working-directory: core/runtime
+        run: |
+          export RADAR_TEST_DB="postgres://postgres:test-only@$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' radar-db):5432/postgres"
+          bun -e '
+            import { SQL } from "bun";
+            import { createModerationStore } from "./radar/moderation-repository";
+            const db=new SQL(process.env.RADAR_TEST_DB);
+            try {
+              const account="00000000-0000-4000-8000-000000000001";
+              const rows=await db.unsafe("SELECT e.id FROM radar.establishments e WHERE e.published AND NOT EXISTS (SELECT 1 FROM radar.verified_owners o WHERE o.establishment_id=e.id)");
+              if(rows.length!==1) throw Error("Expected one unclaimed establishment");
+              const store=createModerationStore(db);
+              if(!await store.verifyOwner(rows[0].id,account,account)) throw Error("Verification failed");
+              if(await store.verifyOwner(rows[0].id,account,account)) throw Error("Duplicate verification accepted");
+            } finally { await db.close(); }
+          '
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

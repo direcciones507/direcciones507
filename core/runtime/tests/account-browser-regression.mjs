@@ -18,10 +18,35 @@ try{
   const homeContext=await browser.newContext({viewport}),home=await homeContext.newPage();home.setDefaultTimeout(7000);
   await home.route('**/*',route=>new URL(route.request().url()).pathname==='/'?route.fulfill({status:200,contentType:'text/html',body:fixtures.home507.html}):route.fulfill({status:404,body:''}));
   await home.goto('https://direcciones507.com/');
-  for(const plan of ['PLACE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
-   await home.locator('[data-507-plan="'+plan+'"]').click();
-   assert.equal(await home.locator('#plan507Continue').getAttribute('href'),'https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+plan);
+  const homePlans={};
+  for(const plan of ['PLACE','TEMPORARY_ADDRESS','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']){
+   const card=home.locator('[data-commercial-plan="'+plan+'"]');
+   await card.locator('.btn-plan-action-trigger').click();
+   const expected=plan==='TEMPORARY_ADDRESS'?'https://direcciones.lat/panel/evento/nuevo':'https://direcciones.lat/panel?country=PA&origin=507&selectedPlan='+plan;
+   assert.equal(await home.locator('#plan507Continue').getAttribute('href'),expected);
+   homePlans[plan]={title:await home.locator('#plan507Title').textContent(),price:await home.locator('#plan507Price').textContent(),features:await home.locator('#plan507Features li').allTextContents(),summary:await card.locator('.plan-507-summary').textContent(),style:await card.evaluate(c=>{const s=getComputedStyle(c);return [s.backgroundColor,s.borderRadius,s.padding];})};
    await home.locator('#plan507Close').click();
+  }
+  const latam=await homeContext.newPage();latam.setDefaultTimeout(7000);
+  await latam.route('**/*',route=>{
+   const path=new URL(route.request().url()).pathname;
+   if(path==='/')return route.fulfill({contentType:'text/html',body:fixtures.commercial.html});
+   if(path==='/v1/user/panel')return route.fulfill({status:401,json:{ok:false,error:'UNAUTHENTICATED'}});
+   return route.fulfill({status:404,body:''});
+  });
+  await latam.goto('https://direcciones.lat/');
+  if(await latam.getByRole('button',{name:'Rechazar',exact:true}).isVisible())await latam.getByRole('button',{name:'Rechazar',exact:true}).click();
+  for(const [plan,expected]of Object.entries(homePlans)){
+   const card=latam.locator('[data-commercial-plan="'+plan+'"]');await card.click();
+   await latam.locator('#latamPlanDetails').waitFor({state:'visible'});
+   assert.equal(await latam.locator('#latamPlanDetailsTitle').textContent(),expected.title);
+   assert.equal(await latam.locator('#latamPlanDetailsPrice').textContent(),expected.price);
+   assert.deepEqual(await latam.locator('#latamPlanDetailsFeatures li').allTextContents(),expected.features);
+   assert.equal(await card.locator('.latam-plan-action>p').textContent(),expected.summary);
+   assert.deepEqual(await card.evaluate(c=>{const s=getComputedStyle(c);return [s.backgroundColor,s.borderRadius,s.padding];}),expected.style);
+   assert.equal(await latam.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+   assert.equal(await latam.locator('#latamPlanDetails').evaluate(c=>c.scrollWidth<=c.clientWidth+1),true);
+   await latam.locator('#latamPlanDetailsBack').click();
   }
   await homeContext.close();
   // Checkout is rendered without provider activity or real payment. Keep the
@@ -125,6 +150,7 @@ try{
     await page.getByRole('button',{name:'Cerrar detalle'}).click();
     await page.locator('#toggleNewRequest').click();await page.locator('#business').click();await page.locator('#requestForm').waitFor({state:'visible'});
     assert.equal(await page.locator('#plan option[value=BUSINESS_FREE]').count(),0);
+    assert.deepEqual(await page.locator('#plan option').allTextContents(),['Premium · $29.99 / año','Premium Pro · $49.99 / año']);
     for(const code of plans.map(p=>p.code).filter(code=>code!=='BUSINESS_FREE')){await page.locator('#plan').selectOption(code);assert.equal(await page.locator('#namedCodeField').isVisible(),code!=='BUSINESS_FREE');}
    }else{
     await page.locator('#login').waitFor({state:'visible'});

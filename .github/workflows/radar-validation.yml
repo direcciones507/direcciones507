@@ -49,3 +49,25 @@ jobs:
             END;
           END $$;
           SQL
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+      - name: Exercise repository against PostgreSQL
+        working-directory: core/runtime
+        run: |
+          export RADAR_TEST_DB="postgres://postgres:test-only@$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' radar-db):5432/postgres"
+          bun -e '
+            import { SQL } from "bun";
+            import { createRadarRepository } from "./radar/repository";
+            const db = new SQL(process.env.RADAR_TEST_DB);
+            try {
+              await db.unsafe("UPDATE radar.establishments SET published=true");
+              const repo = createRadarRepository(db);
+              const rows = await repo.listPublished("PA",{west:-83,south:7,east:-77,north:10});
+              if(rows.length!==1 || rows[0].reports.length!==1) throw Error("Map query failed");
+              if(!(await repo.findPublished(rows[0].id))) throw Error("Lookup failed");
+              await repo.addReport(rows[0].id,"test-account","queue","community");
+              const updated=await repo.listPublished("PA",{west:-83,south:7,east:-77,north:10});
+              if(updated[0].reports.length!==2) throw Error("Report persistence failed");
+            } finally { await db.close(); }
+          '

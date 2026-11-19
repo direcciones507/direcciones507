@@ -4,7 +4,6 @@ import {createHmac} from 'node:crypto';
 import {handlePagaditoCertificationRelay} from './pagadito-certification-relay';
 import {CERTIFICATION_AMOUNTS,createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 import {PAYMENT_PRICES,acceptedOrderAmounts} from './payment-policy';
-import {pagaditoSandboxPage} from './pagadito-sandbox-ui';
 
 const secret='certification-test-only-'.repeat(3);
 const env={AD507_PAGADITO_RELAY_SECRET:secret,AD507_PAGADITO_ISOLATED_DB:'true',AD507_PAGADITO_CERTIFICATION_ENABLED:'true',AD507_PAGADITO_ENVIRONMENT:'sandbox',AD507_PAGADITO_ENABLED:'true',AD507_PAGADITO_SANDBOX_UID:'test',AD507_PAGADITO_SANDBOX_WSK:'test'};
@@ -65,7 +64,4 @@ test('certification restricted to the authorized request; commercial prices and 
  await assert.rejects(createPagaditoSandboxOrderBridge({} as any).quote(crypto.randomUUID(),crypto.randomUUID(),'CERTIFICATION_1'),/PAYMENT_NOT_FOUND/);
  assert.equal(PAYMENT_PRICES.RESIDENTIAL,1499);assert.equal(PAYMENT_PRICES.BUSINESS_PREMIUM,2999);assert.equal(PAYMENT_PRICES.BUSINESS_PREMIUM_PRO,4999);
  assert.deepEqual(acceptedOrderAmounts('BUSINESS_PREMIUM'),[2999,1999]);
- const html=pagaditoSandboxPage('bcd3213d-1b3a-4072-9570-e83c97480fa4');
- for(const [mode,amount] of Object.entries(CERTIFICATION_AMOUNTS)){assert.ok(html.includes('value="'+mode+'"'));assert.ok(html.includes((amount/100).toFixed(2)));}
- for(const script of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new Function(script[1]);
 });

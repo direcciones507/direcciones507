@@ -117,6 +117,24 @@ jobs:
             IF NOT EXISTS (SELECT 1 FROM radar.establishments) THEN RAISE EXCEPTION 'Existing records lost'; END IF;
           END $radar_test$;
           SQL
+      - name: Validate verified ownership schema
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/ownership.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO radar.verified_owners(establishment_id,account_ref,verified_by)
+          SELECT id,'00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001'
+          FROM radar.establishments LIMIT 1;
+          DO $ownership_test$
+          BEGIN
+            IF (SELECT count(*) FROM radar.verified_owners) <> 1 THEN RAISE EXCEPTION 'Ownership missing'; END IF;
+            BEGIN
+              INSERT INTO radar.verified_owners(establishment_id,account_ref)
+              SELECT establishment_id,account_ref FROM radar.verified_owners;
+              RAISE EXCEPTION 'Duplicate ownership accepted';
+            EXCEPTION WHEN unique_violation THEN NULL;
+            END;
+          END $ownership_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

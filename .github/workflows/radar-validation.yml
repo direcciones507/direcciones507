@@ -21,6 +21,31 @@ jobs:
       - name: Run Radar unit tests
         working-directory: core/runtime
         run: bun test tests/radar-*.test.ts
+  radar-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Reuse shared browser dependencies
+        working-directory: core/runtime
+        run: bun install --frozen-lockfile
+      - name: Validate Radar using the runner's existing Chrome
+        run: node core/runtime/tests/radar-browser-regression.mjs
+        env:
+          PLAYWRIGHT_MODULE: ${{ github.workspace }}/core/runtime/node_modules/playwright
+          RADAR_BROWSER_EXECUTABLE: /usr/bin/google-chrome
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: radar-focused-review
+          path: /tmp/radar-review
+          if-no-files-found: ignore
   radar-postgres:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

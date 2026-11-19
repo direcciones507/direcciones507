@@ -36,7 +36,7 @@ jobs:
           VALUES ('test-account','Test','shop','PA',8,-80);
           INSERT INTO radar.activity_reports(establishment_id,account_ref,state)
           SELECT id,'test-account','available' FROM radar.establishments;
-          DO $$
+          DO $radar_test$
           BEGIN
             IF (SELECT count(*) FROM radar.establishments WHERE NOT published) <> 1 THEN
               RAISE EXCEPTION 'Unexpected publication default';
@@ -47,7 +47,7 @@ jobs:
               RAISE EXCEPTION 'Invalid coordinate accepted';
             EXCEPTION WHEN check_violation THEN NULL;
             END;
-          END $$;
+          END $radar_test$;
           SQL
       - uses: oven-sh/setup-bun@v2
         with:
@@ -95,7 +95,7 @@ jobs:
           SQL
           docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/core-constraints.sql
           docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
-          DO $
+          DO $radar_test$
           BEGIN
             BEGIN
               INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
@@ -110,7 +110,7 @@ jobs:
             EXCEPTION WHEN foreign_key_violation THEN NULL;
             END;
             IF NOT EXISTS (SELECT 1 FROM radar.establishments) THEN RAISE EXCEPTION 'Existing records lost'; END IF;
-          END $;
+          END $radar_test$;
           SQL
   core-regression:
     runs-on: ubuntu-24.04

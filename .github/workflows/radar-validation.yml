@@ -179,6 +179,23 @@ jobs:
           END;
           $radar_test$;
           SQL
+      - name: Verify concurrent report limit
+        working-directory: core/runtime
+        run: |
+          export RADAR_TEST_DB="postgres://postgres:test-only@$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' radar-db):5432/postgres"
+          bun -e '
+            import { SQL } from "bun";
+            const db=new SQL(process.env.RADAR_TEST_DB);
+            try {
+              const account="00000000-0000-4000-8000-000000000001";
+              const [row]=await db.unsafe("SELECT establishment_id FROM radar.activity_reports WHERE source=$1 LIMIT 1",["verified_owner"]);
+              await db.unsafe("DELETE FROM radar.activity_reports WHERE account_ref=$1",[account]);
+              const results=await Promise.allSettled(Array.from({length:8},()=>db.unsafe("INSERT INTO radar.activity_reports(establishment_id,account_ref,state) VALUES($1,$2,$3)",[row.establishment_id,account,"available"])));
+              if(results.filter(r=>r.status==="fulfilled").length!==1)throw Error("Concurrent report limit failed");
+              const [count]=await db.unsafe("SELECT count(*)::int AS total FROM radar.activity_reports WHERE account_ref=$1",[account]);
+              if(Number(count.total)!==1)throw Error("Unexpected persisted report count");
+            } finally { await db.close(); }
+          '
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

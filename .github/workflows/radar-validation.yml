@@ -109,6 +109,11 @@ jobs:
               RAISE EXCEPTION 'Orphan reporter accepted';
             EXCEPTION WHEN foreign_key_violation THEN NULL;
             END;
+            BEGIN
+              DELETE FROM ad507.users WHERE id='00000000-0000-4000-8000-000000000001';
+              RAISE EXCEPTION 'Account deletion removed public establishments';
+            EXCEPTION WHEN foreign_key_violation THEN NULL;
+            END;
             IF NOT EXISTS (SELECT 1 FROM radar.establishments) THEN RAISE EXCEPTION 'Existing records lost'; END IF;
           END $radar_test$;
           SQL

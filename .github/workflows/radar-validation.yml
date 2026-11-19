@@ -243,6 +243,29 @@ jobs:
           END;
           $radar_test$;
           SQL
+      - name: Validate promotional campaign storage
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/campaigns.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $radar_campaign$
+          DECLARE target uuid;
+          BEGIN
+            SELECT id INTO STRICT target FROM radar.establishments WHERE published LIMIT 1;
+            INSERT INTO radar.campaigns(establishment_id,kind,starts_at,ends_at) VALUES(target,'live',now(),now()+interval '1 hour');
+            IF EXISTS(SELECT 1 FROM radar.campaigns WHERE status<>'DRAFT') THEN RAISE EXCEPTION 'Campaign activated by default'; END IF;
+            BEGIN
+              INSERT INTO radar.campaigns(establishment_id,kind,starts_at,ends_at) VALUES(target,'featured',now(),now()-interval '1 hour');
+              RAISE EXCEPTION 'Invalid campaign dates accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.campaigns(establishment_id,kind,starts_at,ends_at) VALUES(target,'invalid',now(),now()+interval '1 hour');
+              RAISE EXCEPTION 'Invalid campaign type accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+          END;
+          $radar_campaign$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

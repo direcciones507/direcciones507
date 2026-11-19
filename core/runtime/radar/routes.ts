@@ -11,7 +11,7 @@ export interface RadarRepository {
  addReport(id:string,accountRef:string,state:Report["state"],source:Report["source"]):Promise<void>;
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false){
+export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>){
  return async (req:Request):Promise<Response|null>=>{
   const u=new URL(req.url);
   if(!enabled || !["/v1/radar/map","/v1/radar/report","/v1/radar/establishments"].includes(u.pathname))return null;
@@ -24,7 +24,9 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    const search=u.searchParams.get("q")?.trim()??"";
    if(search.length>100)return json(400,{error:"INVALID_SEARCH"});
    const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
-   return json(200,publicFeatures(rows,b,country,Date.now()));
+   const now=Date.now();
+   if(campaignLookup){const campaigns=await campaignLookup(rows.map(e=>e.id),now);for(const e of rows)e.campaign=campaigns.get(e.id);}
+   return json(200,publicFeatures(rows,b,country,now,!!campaignLookup));
   }
   if(u.pathname==="/v1/radar/establishments" && req.method==="POST"){
    const actor=await radarActor(req,auth,origins);

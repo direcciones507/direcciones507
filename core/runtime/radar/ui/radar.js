@@ -89,6 +89,11 @@ countryOptions();territoryOptions();state.bounds=countries.PA.bounds;
 const stored=readStorage();if(stored&&Date.now()-stored.savedAt<30*60*1000&&['add','report','business'].includes(stored.type)){state.pending=stored;if(countries[stored.country])setCountry(stored.country,false);checkSession().then(user=>{if(user)resumeAction(stored);});}else clearAction();
 fetch('/radar/preview-info',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.preview)$('previewNotice').hidden=false;}).catch(()=>{});
 checkSession();scheduleLoad(0);
+// Default to exploration on a fresh visit; respect explicit anchors and restored history.
+const navigation=performance.getEntriesByType('navigation')[0];
+if(!location.hash&&!state.pending&&(!navigation||navigation.type==='navigate')){
+  $('explorar').scrollIntoView({behavior:'instant',block:'start'});
+}
 const mapObserver=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){initMap();mapObserver.disconnect();}},{rootMargin:'350px'});mapObserver.observe($('map'));
 refreshTimer=setInterval(()=>{if(!document.hidden){render();scheduleLoad(0);}},60000);
 if(!lowPower()){const start=()=>import('./motion.js').then(m=>m.enhance(reduced)).catch(()=>{});if('requestIdleCallback'in window)requestIdleCallback(start,{timeout:2500});else setTimeout(start,1200);}

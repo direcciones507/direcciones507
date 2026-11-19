@@ -17,6 +17,17 @@ export async function rasterMap({container,tiles,bounds,onMove,onSelect,onPick,o
  });}
  map.on('movestart',()=>{moving=true;});map.on('moveend',()=>{moving=false;draw();onMove();});map.on('click',e=>onPick(e.latlng.lng,e.latlng.lat));
  const resize=new ResizeObserver(()=>map.invalidateSize());resize.observe(container);
- function fitBounds(b){const sequence=++fitSequence;pendingFit=true;cancelAnimationFrame(fitFrame);map.stop();const apply=()=>{if(sequence!==fitSequence)return;if(moving){map.once('moveend',()=>{fitFrame=requestAnimationFrame(apply);});return;}pendingFit=false;map.fitBounds(b.map(([lng,lat])=>[lat,lng]),{padding:[25,25],animate:!reduced.matches});};fitFrame=requestAnimationFrame(apply);}
+ function fitBounds(b){
+  const sequence=++fitSequence;pendingFit=true;cancelAnimationFrame(fitFrame);map.stop();
+  const apply=()=>{
+   if(sequence!==fitSequence)return;
+   if(moving){map.once('moveend',()=>{fitFrame=requestAnimationFrame(apply);});return;}
+   const finish=()=>{map.off('moveend',finish);if(sequence!==fitSequence)return;pendingFit=false;onMove();};
+   map.once('moveend',finish);
+   map.fitBounds(b.map(([lng,lat])=>[lat,lng]),{padding:[25,25],animate:!reduced.matches});
+   fitFrame=requestAnimationFrame(()=>{if(!moving&&sequence===fitSequence)finish();});
+  };
+  fitFrame=requestAnimationFrame(apply);
+ }
  return {engine:'raster',isMoving:()=>moving||pendingFit,getBounds:()=>map.getBounds(),getZoom:()=>map.getZoom(),getSource:()=>({setData:data=>{features=data.features;draw();}}),easeTo:({center,zoom})=>map.setView([center[1],center[0]],zoom||map.getZoom(),{animate:!reduced.matches}),fitBounds,resize:()=>map.invalidateSize(),remove:()=>{++fitSequence;cancelAnimationFrame(fitFrame);cancelAnimationFrame(frame);resize.disconnect();map.remove();},makeMarker:(lng,lat,onDrag)=>{const marker=L.marker([lat,lng],{draggable:true,icon:L.divIcon({html:'<span class="placement-pin" aria-label="Pin movible">◎</span>',className:'raster-pin-host',iconSize:[40,40],iconAnchor:[20,20]})}).addTo(map);marker.on('dragend',()=>{const p=marker.getLatLng();onDrag(p.lng,p.lat);});return marker;}};
 }

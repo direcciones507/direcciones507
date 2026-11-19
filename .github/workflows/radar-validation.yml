@@ -59,6 +59,7 @@ jobs:
           bun -e '
             import { SQL } from "bun";
             import { createRadarRepository } from "./radar/repository";
+            import { createModerationStore } from "./radar/moderation-repository";
             const db = new SQL(process.env.RADAR_TEST_DB);
             try {
               await db.unsafe("UPDATE radar.establishments SET published=true");
@@ -74,5 +75,12 @@ jobs:
               await repo.addReport(rows[0].id,"test-account","queue","community");
               const updated=await repo.listPublished("PA",{west:-83,south:7,east:-77,north:10});
               if(updated[0].reports.length!==2) throw Error("Report persistence failed");
+              const moderation=createModerationStore(db);
+              const pending=await moderation.pending(100);
+              if(pending.length!==1 || pending[0].id!==created) throw Error("Pending list failed");
+              if(!(await moderation.publish(created))) throw Error("Publication failed");
+              if(await moderation.publish(created)) throw Error("Repeated approval accepted");
+              if(!(await repo.findPublished(created))) throw Error("Published establishment unavailable");
+              if((await moderation.pending(100)).length!==0) throw Error("Published item still pending");
             } finally { await db.close(); }
           '

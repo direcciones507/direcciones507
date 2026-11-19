@@ -8,10 +8,13 @@ import {isPayableClientRequest} from './paid-activation-policy';
  * Deliberately cannot create an order, charge a card or activate an address.
  * Write operations require a dedicated provider-specific ledger integration.
  */
+export const CERTIFICATION_AMOUNTS:Readonly<Record<string,number>>=Object.freeze({CERTIFICATION_1:1844,CERTIFICATION_2:2379,CERTIFICATION_3:9991,CERTIFICATION_4:10412});
+export const isCertificationMode=(mode:string)=>Object.hasOwn(CERTIFICATION_AMOUNTS,mode);
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export function createPagaditoSandboxOrderBridge(sql:Sql) {
   return Object.freeze({
     async quote(userId:string,addressId:string,mode='ANNUAL') {
+      if(isCertificationMode(mode)&&addressId!=='bcd3213d-1b3a-4072-9570-e83c97480fa4')throw Error('PAYMENT_NOT_FOUND');
       if(!uuid.test(userId)||!uuid.test(addressId))throw Error('PAYMENT_NOT_FOUND');
       return sql.begin(async tx=>{
         const rows=await tx.unsafe(
@@ -24,7 +27,7 @@ export function createPagaditoSandboxOrderBridge(sql:Sql) {
         if(!isPayableClientRequest(address))throw Error('INVALID_PAYMENT_REQUEST');
         if(address.request_data?.migration)throw Error('INVALID_PAYMENT_REQUEST');
         const plan=address.request_data?.plan;
-        const quote=commercialQuote(plan,mode);
+        const quote=isCertificationMode(mode)?{amountCents:CERTIFICATION_AMOUNTS[mode]}:commercialQuote(plan,mode);
         if(quote.amountCents<=0)throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
         if(plan==='RESIDENTIAL')throw Error('PAYMENT_PRODUCT_NOT_AVAILABLE');
         // An existing Yappy/PayPal order may settle later: never create a competing charge.

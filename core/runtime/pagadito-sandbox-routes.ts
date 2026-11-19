@@ -1,4 +1,5 @@
 import type {createGeneralAuth} from './general-auth';
+import {isCertificationMode} from './pagadito-sandbox-order-bridge';
 import type {createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 
 type Context={
@@ -29,7 +30,7 @@ export async function handlePagaditoSandboxQuote(req:Request,context:Context):Pr
   if(!user.roles.some(role=>role==='CLIENT'||role==='ADMIN'))
     return json(403,{ok:false,error:'FORBIDDEN'});
   const mode=url.searchParams.get('mode')||'ANNUAL';
-  if(!['ANNUAL','INSTALLMENTS'].includes(mode))
+  if(!['ANNUAL','INSTALLMENTS'].includes(mode)&&!isCertificationMode(mode))
     return json(400,{ok:false,error:'INVALID_PAYMENT_MODE'});
   try{
     const quote=await context.bridge.quote(user.id,match[1],mode);

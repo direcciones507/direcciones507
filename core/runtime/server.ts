@@ -93,7 +93,7 @@ startLegacyCore(async req => {
     const user=await auth.currentUser(req);
     if(!relayEnabled||!user||user.email.toLowerCase()!==process.env.AD507_PAGADITO_TEST_EMAIL?.toLowerCase())return Response.json({error:'FORBIDDEN'},{status:403,headers:{'cache-control':'no-store'}});
     const mode=url.searchParams.get('mode')||'ANNUAL';
-    if(!['ANNUAL','INSTALLMENTS'].includes(mode))return Response.json({error:'INVALID_MODE'},{status:400});
+    if(!['ANNUAL','INSTALLMENTS','CERTIFICATION_1','CERTIFICATION_2','CERTIFICATION_3','CERTIFICATION_4'].includes(mode))return Response.json({error:'INVALID_MODE'},{status:400});
     try{
       const result=await lookupPagaditoCertification(sql,process.env,user.id,certificationStatusId[1],mode);
       return Response.json(result,{headers:{'cache-control':'no-store'}});

@@ -84,6 +84,34 @@ jobs:
               if((await moderation.pending(100)).length!==0) throw Error("Published item still pending");
             } finally { await db.close(); }
           '
+      - name: Validate shared account foreign keys
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE SCHEMA ad507;
+          CREATE TABLE ad507.users(id uuid PRIMARY KEY);
+          INSERT INTO ad507.users VALUES ('00000000-0000-4000-8000-000000000001');
+          UPDATE radar.establishments SET account_ref='00000000-0000-4000-8000-000000000001';
+          UPDATE radar.activity_reports SET account_ref='00000000-0000-4000-8000-000000000001';
+          SQL
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/core-constraints.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $
+          BEGIN
+            BEGIN
+              INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
+              VALUES ('00000000-0000-4000-8000-000000000002','Orphan','shop','PA',8,-80);
+              RAISE EXCEPTION 'Orphan account accepted';
+            EXCEPTION WHEN foreign_key_violation THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,account_ref,state)
+              SELECT id,'00000000-0000-4000-8000-000000000002','available' FROM radar.establishments LIMIT 1;
+              RAISE EXCEPTION 'Orphan reporter accepted';
+            EXCEPTION WHEN foreign_key_violation THEN NULL;
+            END;
+            IF NOT EXISTS (SELECT 1 FROM radar.establishments) THEN RAISE EXCEPTION 'Existing records lost'; END IF;
+          END $;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

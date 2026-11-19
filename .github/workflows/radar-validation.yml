@@ -379,6 +379,29 @@ jobs:
           END;
           $confirm_test$;
           SQL
+      - name: Validate account-scoped Radar favorites
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < db/migrations/0019_radar_favorites.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $favorite_test$
+          DECLARE target uuid; hidden_target uuid; actor uuid := gen_random_uuid(); other_actor uuid := gen_random_uuid();
+          BEGIN
+            SELECT id INTO STRICT target FROM radar.establishments WHERE published LIMIT 1;
+            INSERT INTO ad507.users VALUES(actor),(other_actor);
+            INSERT INTO radar.favorites(account_ref,establishment_id) VALUES(actor,target),(other_actor,target);
+            INSERT INTO radar.favorites(account_ref,establishment_id) VALUES(actor,target) ON CONFLICT DO NOTHING;
+            IF (SELECT count(*) FROM radar.favorites WHERE establishment_id=target)<>2 THEN RAISE EXCEPTION 'Invalid favorite uniqueness'; END IF;
+            INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude) VALUES(actor,'Favorite private fixture','shop','PA',8,-80) RETURNING id INTO hidden_target;
+            BEGIN
+              INSERT INTO radar.favorites(account_ref,establishment_id) VALUES(actor,hidden_target);
+              RAISE EXCEPTION 'Unpublished favorite accepted';
+            EXCEPTION WHEN SQLSTATE 'P4040' THEN NULL;
+            END;
+            DELETE FROM radar.favorites WHERE account_ref=actor AND establishment_id=target;
+            IF NOT EXISTS(SELECT 1 FROM radar.favorites WHERE account_ref=other_actor AND establishment_id=target) THEN RAISE EXCEPTION 'Other account favorite removed'; END IF;
+          END;
+          $favorite_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

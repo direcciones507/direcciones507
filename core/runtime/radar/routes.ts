@@ -6,7 +6,7 @@ export interface RadarRepository {
  registrationAllowed?(accountRef:string):Promise<boolean>;
  reportAllowed?(accountRef:string,id:string):Promise<boolean>;
  register?(draft:EstablishmentDraft,accountRef:string):Promise<string|null>;
- listPublished(country:Country,bounds:Bounds):Promise<Establishment[]>;
+ listPublished(country:Country,bounds:Bounds,search?:string):Promise<Establishment[]>;
  findPublished(id:string):Promise<{id:string;verifiedOwnerAccount:string|null}|null>;
  addReport(id:string,accountRef:string,state:Report["state"],source:Report["source"]):Promise<void>;
 }
@@ -21,7 +21,10 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    if(!countries.includes(country)||keys.some(k=>!u.searchParams.get(k)?.trim()))return json(400,{error:"INVALID_QUERY"});
    const b=Object.fromEntries(keys.map(k=>[k,Number(u.searchParams.get(k))])) as Bounds;
    if(!validateBounds(b))return json(400,{error:"INVALID_BOUNDS"});
-   return json(200,publicFeatures(await repo.listPublished(country,b),b,country,Date.now()));
+   const search=u.searchParams.get("q")?.trim()??"";
+   if(search.length>100)return json(400,{error:"INVALID_SEARCH"});
+   const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
+   return json(200,publicFeatures(rows,b,country,Date.now()));
   }
   if(u.pathname==="/v1/radar/establishments" && req.method==="POST"){
    const actor=await radarActor(req,auth,origins);

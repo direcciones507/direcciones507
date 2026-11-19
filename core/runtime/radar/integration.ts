@@ -1,3 +1,4 @@
+import {createAlertRoutes} from "./alerts";
 import {createReputationRoutes} from "./reputation";
 import {createContributionRoutes} from "./contributions";
 import {createFavoriteRoutes} from "./favorites";
@@ -25,6 +26,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const businessEnabled=ownershipEnabled&&env.RADAR_BUSINESS_DETAILS_ENABLED==="true";
  const business=createBusinessRoutes(createBusinessStore(db),auth,origins,businessEnabled);
  const anonymousIdentity=enabled&&env.RADAR_ANONYMOUS_REPORTS_ENABLED==="true"?createAnonymousIdentity(env.RADAR_ANONYMOUS_REPORTS_SECRET,trustedPeer):undefined;
+ const alerts=createAlertRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true"&&env.RADAR_ALERTS_ENABLED==="true");
  const reputation=createReputationRoutes(db,auth,origins,enabled&&env.RADAR_REPUTATION_ENABLED==="true");
  const contributions=createContributionRoutes(db,auth,origins,enabled&&env.RADAR_CONTRIBUTIONS_ENABLED==="true");
  const favorites=createFavoriteRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true");
@@ -38,6 +40,6 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
   const presentation=await radarPresentation(req,{...env,RADAR_ANONYMOUS_REPORTS_ENABLED:anonymousIdentity?"true":"false"});if(presentation)return presentation;
   if(!url.pathname.startsWith("/v1/radar/"))return null;
   if(!enabled)return Response.json({error:"RADAR_DISABLED"},{status:503,headers:{"cache-control":"no-store"}});
-  return await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+  return await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
  };
 }

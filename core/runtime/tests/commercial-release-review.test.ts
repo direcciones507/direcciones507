@@ -3,7 +3,8 @@ import {commercialMigrationManifest,reviewFoundationLedger} from '../scripts/com
 
 test('release review fingerprints real unchanged SQL in dependency order without authorizing execution',()=>{
   const m=commercialMigrationManifest();
-  expect(m.foundation.map(f=>f.version)).toEqual(['0000','0001','0002','0003','0004','0005']);
+  expect(m.foundation.map(f=>f.version)).toEqual(['0000','0001','0002','0003','0004','0005','0006','0007','0008','0009','0010','0011','0012','0013']);
+  expect(m.foundation.slice(6).map(f=>f.file)).toEqual(['0006_radar_schema.sql','0007_radar_core_constraints.sql','0008_radar_ownership.sql','0009_radar_abuse_constraints.sql','0010_radar_account_retention.sql','0011_radar_address_link.sql','0012_radar_campaigns.sql','0013_radar_business_details.sql']);
   expect(m.proposals.map(p=>p.file)).toEqual(['landline.sql','requests.sql','payments.sql']);
   expect(m.proposals.map(p=>p.requires)).toEqual(['verified foundation ledger','landline.sql','requests.sql']);
   expect(m.proposals.every(p=>p.version===null&&p.applied===false&&/^[a-f0-9]{64}$/.test(p.checksum_sha256))).toBe(true);
@@ -13,10 +14,10 @@ test('release review fingerprints real unchanged SQL in dependency order without
 test('ledger review requires exact existing versions and checksums, without treating a match as release approval',()=>{
   const m=commercialMigrationManifest(),rows=m.foundation.map(({version,checksum_sha256})=>({version,checksum_sha256}));
   expect(reviewFoundationLedger(rows,m)).toEqual({ledgerMatches:true,missing:[],mismatched:[],unexpected:[],duplicates:[],productionAuthorized:false,publicationVerified:false});
-  expect(reviewFoundationLedger([],m).missing).toHaveLength(6);
+  expect(reviewFoundationLedger([],m).missing).toHaveLength(14);
   expect(reviewFoundationLedger(rows.slice(1),m).ledgerMatches).toBe(false);
   expect(reviewFoundationLedger([{...rows[0],checksum_sha256:'0'.repeat(64)},...rows.slice(1)],m).mismatched).toEqual(['0000']);
-  expect(reviewFoundationLedger([...rows,{version:'0006',checksum_sha256:'a'.repeat(64)}],m).unexpected).toEqual(['0006']);
+  expect(reviewFoundationLedger([...rows,{version:'0014',checksum_sha256:'a'.repeat(64)}],m).unexpected).toEqual(['0014']);
   expect(reviewFoundationLedger([...rows,rows[0]],m).duplicates).toEqual(['0000']);
   expect(reviewFoundationLedger([...rows,rows[0]],m).ledgerMatches).toBe(false);
 });

@@ -29,9 +29,9 @@ export function createRadarRepository(db:Database):RadarRepository {
    return rows[0]?{id:rows[0].id,verifiedOwnerAccount:null}:null;
   },
   async addReport(id,accountRef,state,source) {
-   if(source!=="community" && source!=="verified_owner")throw new Error("Invalid report source");
+   if(source!=="community")throw new Error("Owner verification not enabled");
    const rows=await db.unsafe(`INSERT INTO radar.activity_reports(establishment_id,account_ref,state,source)
-    SELECT e.id,$2,$3,$4 FROM radar.establishments e WHERE e.id=$1::uuid AND e.published AND ($4 = 'community' OR EXISTS (SELECT 1 FROM radar.verified_owners o WHERE o.establishment_id=e.id AND o.account_ref::text=$2::text)) RETURNING id`,[id,accountRef,state,source]);
+    SELECT id,$2,$3,$4 FROM radar.establishments WHERE id=$1::uuid AND published RETURNING id`,[id,accountRef,state,source]);
    if(!rows.length)throw new Error("Establishment unavailable");
   }
  };

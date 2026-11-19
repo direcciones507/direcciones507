@@ -52,8 +52,10 @@ try{
   assert(await page.locator('#searchInput').inputValue()===before,'Help reset search '+name);
   assert(await page.locator('.raster-pin.pin-normal').count()>0,'Help reset zoom '+name);
   assert(await page.locator('main>.how,main>.closing').count()===0,'Promotional containers remain');
-  assert(await page.locator('#featuredGroups .featured-category').count()===2,'Featured categories missing');
-  assert(await page.locator('#featuredGroups .featured-card').count()===2,'Featured-only rows broken');
+  const featuredNames=(await page.locator('#results .result-card:has(.commercial-badge.featured) h4').allTextContents()).sort();
+  const categoryNames=await page.locator('#results .result-card:has(.commercial-badge.featured) .category-label').allTextContents();
+  assert(await page.locator('#featuredGroups .featured-category').count()===new Set(categoryNames).size,'Featured categories do not match this viewport');
+  assert(JSON.stringify((await page.locator('#featuredGroups .featured-card h4').allTextContents()).sort())===JSON.stringify(featuredNames),'Featured-only rows do not match this viewport');
   await page.locator('#searchInput').fill('Café en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).waitFor();
   await page.locator('#searchInput').fill('Servicios en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Servicios Bahía'}).waitFor();
   await page.getByRole('button',{name:'Agregar establecimiento' ,exact:true}).click();await page.locator('#accountDialog').waitFor();

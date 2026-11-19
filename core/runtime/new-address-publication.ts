@@ -614,13 +614,14 @@ function configuredPublicCode(code:string):boolean {
 export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
   if(context.enabled&&req.method==='GET'){
-    const publicMatch=url.pathname.match(/^\/([A-Za-z0-9][A-Za-z0-9_-]{0,89})\/$/);
+    const publicMatch=url.pathname.match(/^\/([A-Za-z0-9][A-Za-z0-9_-]{0,89})\/?$/);
     const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)$/);
     if(publicMatch&&!configuredPublicCode(publicMatch[1].toUpperCase())){try{personalizedCode('BUSINESS_PREMIUM_PRO',publicMatch[1]);}catch{return null;}}
     if(publicMatch||apiMatch&&configuredPublicCode(apiMatch[1])){
       try{const code=(publicMatch??apiMatch)![1];
         const record=await newPublicAddress(sql,code,url.origin);
-        if(record&&publicMatch&&!record.extras.historical&&publicMatch[1]!==record.extras.publicCode)return new Response(null,{status:308,headers:{location:record.url,'cache-control':'no-store'}});
+        if(publicMatch&&!url.pathname.endsWith('/')&&(!record||record.extras.historical))return null;
+        if(record&&publicMatch&&!record.extras.historical&&(!url.pathname.endsWith('/')||publicMatch[1]!==record.extras.publicCode))return new Response(null,{status:308,headers:{location:record.url,'cache-control':'no-store'}});
         if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
         // Owner-retired pages are permanently gone: do not fall back to historical
         // rendering, and let Google discover the 410 instead of a soft-404.

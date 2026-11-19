@@ -29,7 +29,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  return async(req:Request):Promise<Response|null>=>{
   const url=new URL(req.url);
   if(url.origin!==radarOrigin)return null;
-  const presentation=await radarPresentation(req,env);if(presentation)return presentation;
+  const presentation=await radarPresentation(req,{...env,RADAR_ANONYMOUS_REPORTS_ENABLED:anonymousIdentity?"true":"false"});if(presentation)return presentation;
   if(!url.pathname.startsWith("/v1/radar/"))return null;
   if(!enabled)return Response.json({error:"RADAR_DISABLED"},{status:503,headers:{"cache-control":"no-store"}});
   return await business(req)??await admin(req)??await confirmations(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});

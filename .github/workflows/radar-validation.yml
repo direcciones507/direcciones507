@@ -218,6 +218,28 @@ jobs:
           END;
           $radar_test$;
           SQL
+      - name: Validate digital address reference integrity
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 -c 'CREATE TABLE ad507.addresses(id uuid PRIMARY KEY)'
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/address-link.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $radar_test$
+          DECLARE target uuid; address_ref uuid := gen_random_uuid();
+          BEGIN
+            SELECT id INTO STRICT target FROM radar.establishments WHERE published LIMIT 1;
+            BEGIN
+              UPDATE radar.establishments SET digital_address_ref=address_ref WHERE id=target;
+              RAISE EXCEPTION 'Orphan address accepted';
+            EXCEPTION WHEN foreign_key_violation THEN NULL;
+            END;
+            INSERT INTO ad507.addresses VALUES(address_ref);
+            UPDATE radar.establishments SET digital_address_ref=address_ref WHERE id=target;
+            IF NOT EXISTS (SELECT 1 FROM radar.establishments WHERE id=target AND digital_address_ref=address_ref) THEN RAISE EXCEPTION 'Link missing'; END IF;
+            DELETE FROM ad507.addresses WHERE id=address_ref;
+            IF NOT EXISTS (SELECT 1 FROM radar.establishments WHERE id=target AND digital_address_ref IS NULL AND published) THEN RAISE EXCEPTION 'Deletion retention failed'; END IF;
+          END;
+          $radar_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

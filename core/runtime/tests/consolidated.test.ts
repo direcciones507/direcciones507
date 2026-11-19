@@ -564,7 +564,7 @@ test('ADMIN creates without client identity; transfer and reversal only change o
     const collision=createNewAddressPublication(db,{namespaceExclusive:true,fetch:(async()=>Response.json({ok:true,codes:[{codigo:results[0].code}]})) as typeof fetch});
     await expect(collision.reserve({id:created.id,type:'BUSINESS',plan:'BUSINESS_FREE',name:'test',requestedName:''})).rejects.toThrow('CANONICAL_CODE_COLLISION');
     const residential=await repo.createAdmin(adminId,'admin-residential-00000001',{type:'RESIDENTIAL',name:'New residential',reference:'Park',latitude:8,longitude:-80},[]);
-    await repo.review(adminId,residential.id,'APPROVED');await expect(repo.publish(adminId,residential.id)).rejects.toThrow('RESIDENTIAL_PUBLICATION_NOT_READY');
+    await repo.review(adminId,residential.id,'APPROVED');expect((await repo.publish(adminId,residential.id)).status).toBe('ACTIVE');
     expect(await newPublicAddress(db,(await repo.read(adminId,residential.id)).code,origin)).toBeNull();
     await expect(repo.transfer(adminId,(await db.unsafe("SELECT id::text FROM ad507.addresses WHERE code='AD507-TESTBUSINESS'"))[0].id,adminId,clientId)).rejects.toThrow('REQUEST_NOT_FOUND');
   }finally{await db.end();}
@@ -1504,4 +1504,48 @@ test('Yappy signed terminal attempts retry atomically without changing purchase 
   expect((await sql.unsafe('SELECT quote FROM ad507.commercial_payment_terms WHERE order_id=$1::uuid',[next.order.id]))[0].quote.mode).toBe('INSTALLMENTS');
   expect((await sql.unsafe("SELECT before_json FROM ad507.audit_log WHERE entity_id=$1 AND action='YAPPY_PAYMENT_RETRY_PREPARED'",[next.order.id]))[0].before_json.providerOrderId).toBe(first.order.provider_order_id);
  }
+});
+
+
+test('ADMIN-owned paid products publish without orders; clients cannot claim the exemption',async()=>{
+ const {createRequestRepository}=await import('../request-repository'),{createNewAddressPublication,newPublicAddress}=await import('../new-address-publication'),{adminBillingExempt,handleAdminBillingGuard}=await import('../admin-billing-policy');
+ const stamp=crypto.randomUUID(),r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
+ const png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
+ const repo=createRequestRepository(sql,{canonical:createNewAddressPublication(sql,{namespaceExclusive:true}),r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
+ const before=(await sql.unsafe('SELECT count(*)::int AS n FROM ad507.orders'))[0].n;
+ for(const plan of ['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RESIDENTIAL']){
+  const request=await repo.createAdmin(adminId,'admin-exempt-'+plan+'-'+stamp,{type:plan==='RESIDENTIAL'?'RESIDENTIAL':'BUSINESS',plan,name:'Courtesy '+plan+' '+stamp,reference:'Synthetic only',latitude:8.49,longitude:-80.49},plan==='RESIDENTIAL'?[]:[{role:'logo',mime:'image/png',bytes:png}]);
+  expect(request.status).toBe('PENDING_REVIEW');expect(request.workflow).toBeUndefined();
+  const detail=await repo.read(adminId,request.id);expect(detail.billingExempt).toBe(true);expect(detail.canPublish).toBe(true);
+  const active=await repo.publish(adminId,request.id);expect(active.status).toBe('ACTIVE');expect((await repo.publish(adminId,request.id)).code).toBe(active.code);
+  const after=await repo.read(adminId,request.id);expect(after.extras.annualService.mode).toBe('ADMIN_EXEMPT');expect(after.extras.annualService.orderId).toBeUndefined();expect(after.canEdit).toBe(true);
+  if(plan==='RESIDENTIAL'){expect(after.publicUrl).toBeNull();expect(await newPublicAddress(sql,active.code,origin)).toBeNull();}
+ }
+ expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.orders'))[0].n).toBe(before);
+ expect(await adminBillingExempt(sql,clientId)).toBe(false);
+ const client=await repo.submit(clientId,'normal-billing-'+stamp,{type:'BUSINESS',plan:'BUSINESS_PREMIUM',name:'Client '+stamp,reference:'Synthetic',latitude:8,longitude:-80},[{role:'logo',mime:'image/png',bytes:png}]);
+ expect(client.workflow).toBe('PAYMENT_PENDING');expect((await repo.read(clientId,client.id)).billingExempt).toBe(false);
+ await expect(repo.publish(adminId,client.id)).rejects.toThrow('AUTOMATIC_PAID_ACTIVATION_REQUIRED');
+ const target=new Request('https://direcciones.lat/v1/user/requests/'+client.id+'/payment',{method:'POST'});
+ expect((await handleAdminBillingGuard(target,sql,{currentUser:async()=>({id:adminId,roles:['ADMIN']})}))?.status).toBe(409);
+ expect(await handleAdminBillingGuard(target,sql,{currentUser:async()=>({id:clientId,roles:['ADMIN']})})).toBeNull();
+});
+
+test('courtesy Temporal has separate ADMIN authorization, preserves expiry and never records a payment',async()=>{
+ const {createTemporaryEventRepository}=await import('../temporary-event-repository'),{applyAdminBillingExemption}=await import('../scripts/apply-admin-billing-exemption');
+ await sql.unsafe(readFileSync(new URL('../schema-proposals/temporary-events.sql',import.meta.url),'utf8'));await applyAdminBillingExemption(sql);await applyAdminBillingExemption(sql);
+ const repo=createTemporaryEventRepository(sql),input={title:'Courtesy isolated '+crypto.randomUUID(),description:'Synthetic',responsibleName:'Private admin',responsibleEmail:'private@example.test',responsiblePhone:'60000000',countryCode:'PA',province:'Veraguas',district:'Santiago',corregimiento:'Santiago',reference:'Synthetic only',latitude:8.1,longitude:-80.9,startsOn:'2030-01-01',endsOn:'2030-01-02',timezone:'America/Panama',hours:'10–12',publicContactConsent:false,publicContactName:'',publicContactPhone:''};
+ const event=await repo.createDraft(adminId,input);await expect(repo.publishAdmin(clientId,event.id)).rejects.toThrow('FORBIDDEN');
+ await expect(repo.publishAdmin(adminId,event.id)).rejects.toThrow('PRIMARY_PHOTO_REQUIRED');
+ await repo.savePhoto(adminId,event.id,1,'temporary-events/isolated/1.webp',100);
+ expect((await repo.publishAdmin(adminId,event.id)).status).toBe('ACTIVE');expect((await repo.publishAdmin(adminId,event.id)).status).toBe('ACTIVE');
+ const stored=await repo.getOwned(adminId,event.id);expect(stored.payment_order_id).toBeNull();expect(stored.payment_confirmed_at).toBeNull();expect(stored.admin_published_by).toBe(adminId);
+ expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.temporary_event_orders WHERE event_id=$1',[event.id]))[0].n).toBe(0);
+ const publicEvent=await repo.getPublic(event.slug,new Date('2030-01-01T16:00:00Z'));expect(publicEvent?.status).toBe('ACTIVE');expect(JSON.stringify(publicEvent)).not.toContain('private@example.test');
+ expect((await repo.getPublic(event.slug,new Date('2030-01-04T06:00:00Z')))?.status).toBe('EXPIRED');
+ await repo.updateDraft(adminId,event.id,{...input,title:input.title+' edited'});await expect(repo.updateDraft(adminId,event.id,{...input,endsOn:'2030-01-03'})).rejects.toThrow('EVENT_NOT_EDITABLE');
+ const ordinary=await repo.createDraft(clientId,{...input,title:'Ordinary '+crypto.randomUUID(),admin_published_by:clientId,admin_published_at:new Date().toISOString()});
+ expect(await repo.getPublic(ordinary.slug)).toBeNull();await expect(repo.publishAdmin(clientId,ordinary.id)).rejects.toThrow('FORBIDDEN');
+ const {renderTemporaryEventDraftForm,temporaryEventDraftClientScript}=await import('../temporary-event-form');const form=renderTemporaryEventDraftForm('/v1/user/temporary-events',true,true);
+ expect(form).toContain('id="event-publish"');expect(form).not.toContain('<btn-yappy');expect(form).not.toContain('Celular Yappy');expect(form).not.toContain('US$12.99');expect(()=>new Function(temporaryEventDraftClientScript)).not.toThrow();
 });

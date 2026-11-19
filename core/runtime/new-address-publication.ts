@@ -1,3 +1,4 @@
+import {addressBillingExempt} from './admin-billing-policy';
 import {effectiveServicePlan} from './annual-service';
 import {PLACE_AD_PRICE_CENTS,PLACE_AD_DURATION_DAYS} from './payment-policy';
 import {continuousGallery} from './continuous-gallery';
@@ -58,7 +59,7 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
     async publish({id,code,type,executor=sql,automaticPaid=false,paymentEnvironment}) {
       // The existing PostgreSQL reader is the new system's publication destination.
       // No call to PLANES writes, GitHub Pages, Drive, DNS or historical generators.
-      if(type==='RESIDENTIAL')throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
+      if(type==='RESIDENTIAL'&&!await addressBillingExempt(executor,{id}))throw Error('RESIDENTIAL_PUBLICATION_NOT_READY');
       const rows=await executor.unsafe("SELECT id,request_data,address_type,country_code FROM ad507.addresses WHERE id=$1::uuid AND code=$2 AND source='USER_REQUEST' AND ((status IN ('PENDING_REVIEW','SUSPENDED') AND review_decision='APPROVED') OR ($3::boolean AND status='DRAFT' AND request_data->>'workflow'='PAYMENT_PENDING' AND request_data->>'plan' IN ('BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO') AND request_data->'migration' IS NULL))",[id,code,automaticPaid]);
       if(!rows.length)throw Error('APPROVAL_REQUIRED');
       if(automaticPaid){

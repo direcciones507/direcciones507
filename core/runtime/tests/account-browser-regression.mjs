@@ -211,5 +211,28 @@ try{
   await page.locator('#plan option[value=BUSINESS_FREE]').waitFor({state:'attached'});
   assert.deepEqual(errors,[]);await context.close();
  }
+ // ADMIN sees the same forms with server-authorized free actions, never checkout.
+ for(const width of [390,820]){
+  const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.setDefaultTimeout(7000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.route('**/*',route=>{
+   const p=new URL(route.request().url()).pathname;
+   if(p==='/panel')return route.fulfill({contentType:'text/html',body:fixtures.admin.html});
+   if(p==='/panel/evento/nuevo')return route.fulfill({contentType:'text/html',body:fixtures.adminEvent.html});
+   if(p==='/icons')return route.fulfill({contentType:'text/html',body:fixtures.businessIcons.html});
+   if(p==='/v1/user/panel')return route.fulfill({json:{user:{email:'admin@example.invalid'},billingExempt:true,addresses:[],orders:[],plans,actions:{prepareRequest:true,submitRequest:true}}});
+   if(p==='/v1/user/temporary-events')return route.fulfill({json:{events:[]}});
+   return route.fulfill({status:404,body:''});
+  });
+  await page.goto('https://direcciones.lat/panel?selectedPlan=BUSINESS_PREMIUM');await page.locator('#requestForm').waitFor({state:'visible'});
+  if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible())await page.getByRole('button',{name:'Rechazar',exact:true}).click();
+  assert.equal(await page.locator('#orderSection').isVisible(),false);
+  assert.equal((await page.locator('#plan option').allTextContents()).some(s=>s.includes('$')),false);
+  assert.match(await page.locator('.temporary-event-cta').textContent(),/Gratis/);
+  await page.locator('.temporary-event-cta').click();await page.locator('#temporary-event-draft').waitFor({state:'visible'});
+  assert.equal(await page.locator('btn-yappy').count(),0);assert.equal(await page.locator('#event-alias').count(),0);assert.equal(await page.locator('#event-publish').count(),1);
+  await page.goto('https://direcciones.lat/icons');
+  for(const target of ['#btnHorario .accordion-icon-left i','#btnQR .accordion-icon-left i'])assert.equal(await page.locator(target).evaluate(e=>getComputedStyle(e).color),'rgb(238, 244, 252)');
+  assert.deepEqual(errors,[]);await context.close();
+ }
  console.log('PASS: generated JavaScript, 9 account browser scenarios + 3 visual Yappy fixtures, mobile/tablet/desktop, 200/401/503, contrast, detail, plans and Google return context; terminal Yappy retries and preserved Lugar on both production hosts');
 }finally{await browser.close();}

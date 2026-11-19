@@ -161,6 +161,7 @@ try{
   });
   await page.goto('https://'+host+'/panel?country=PA&selectedPlan=BUSINESS_PREMIUM');
   await page.locator('#requestForm').waitFor({state:'visible'});
+  if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible())await page.getByRole('button',{name:'Rechazar',exact:true}).click();
   assert.equal(await page.locator('#plan').inputValue(),'BUSINESS_PREMIUM');
   assert.deepEqual(await page.locator('#plan option').evaluateAll(options=>options.map(o=>o.value)),['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']);
   await page.locator('#plan').selectOption('BUSINESS_PREMIUM_PRO');

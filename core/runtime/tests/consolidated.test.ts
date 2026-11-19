@@ -1485,7 +1485,7 @@ test('Yappy signed terminal attempts retry atomically without changing purchase 
   await expect(repo.prepare(clientId,id,'pending-'+crypto.randomUUID())).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
   expect((await repo.read(clientId,first.order.id)).retryAllowed).toBe(false);
   await repo.registerProviderOrder(first.order.id,'retry-reference-'+crypto.randomUUID());
-  const forged=signed(first.order.provider_order_id,status);forged.set('hash','forged');await expect(repo.confirm(forged)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');
+  const forged=signed(first.order.provider_order_id,status);forged.set('hash','0'.repeat(64));await expect(repo.confirm(forged)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');
   await repo.confirm(signed(first.order.provider_order_id,status));
   expect((await repo.read(clientId,first.order.id)).retryAllowed).toBe(true);
   await expect(repo.prepare(adminId,id,'wrong-owner-'+crypto.randomUUID())).rejects.toThrow('PAYMENT_NOT_FOUND');

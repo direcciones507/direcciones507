@@ -51,6 +51,8 @@ try{
   assert(await page.locator('main>.how,main>.closing').count()===0,'Promotional containers remain');
   assert(await page.locator('#featuredGroups .featured-category').count()===2,'Featured categories missing');
   assert(await page.locator('#featuredGroups .featured-card').count()===2,'Featured-only rows broken');
+  await page.locator('#searchInput').fill('Café en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).waitFor();
+  await page.locator('#searchInput').fill('Servicios en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Servicios Bahía'}).waitFor();
   await page.getByRole('button',{name:'Agregar establecimiento' ,exact:true}).click();await page.locator('#accountDialog').waitFor();
   await page.frameLocator('#accountFrame').getByText('Vista previa visual',{exact:true}).waitFor();
   assert(await page.frameLocator('#accountFrame').locator('body').innerText().then(t=>t.includes('no solicita credenciales')),'Preview must not collect credentials');

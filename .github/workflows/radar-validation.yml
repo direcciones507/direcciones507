@@ -196,6 +196,21 @@ jobs:
               if(Number(count.total)!==1)throw Error("Unexpected persisted report count");
             } finally { await db.close(); }
           '
+      - name: Verify account deletion preserves establishments
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < core/runtime/radar/account-retention.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $radar_test$
+          DECLARE actor uuid := '00000000-0000-4000-8000-000000000001'; target uuid;
+          BEGIN
+            SELECT id INTO target FROM radar.establishments WHERE account_ref=actor AND published LIMIT 1;
+            IF target IS NULL THEN RAISE EXCEPTION 'Missing establishment fixture'; END IF;
+            DELETE FROM ad507.users WHERE id=actor;
+            IF NOT EXISTS (SELECT 1 FROM radar.establishments WHERE id=target AND account_ref IS NULL AND published) THEN RAISE EXCEPTION 'Establishment lost'; END IF;
+            IF EXISTS (SELECT 1 FROM radar.verified_owners WHERE account_ref=actor) OR EXISTS (SELECT 1 FROM radar.activity_reports WHERE account_ref=actor) THEN RAISE EXCEPTION 'Deleted identity retained'; END IF;
+          END;
+          $radar_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

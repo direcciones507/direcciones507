@@ -347,6 +347,38 @@ jobs:
           END;
           $anonymous_test$;
           SQL
+      - name: Validate community confirmations and contradictions
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < db/migrations/0018_radar_activity_confirmations.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $confirm_test$
+          DECLARE target uuid; first_report uuid; old_report uuid; voter uuid := gen_random_uuid();
+          BEGIN
+            SELECT id INTO STRICT target FROM radar.establishments WHERE published LIMIT 1;
+            INSERT INTO ad507.users VALUES(voter);
+            INSERT INTO radar.activity_reports(establishment_id,anonymous_ref,state) VALUES(target,repeat('d',64),'queue') RETURNING id INTO first_report;
+            INSERT INTO radar.activity_confirmations(report_id,account_ref,agrees) VALUES(first_report,voter,true);
+            INSERT INTO radar.activity_confirmations(report_id,anonymous_ref,agrees) VALUES(first_report,repeat('e',64),false);
+            BEGIN
+              INSERT INTO radar.activity_confirmations(report_id,anonymous_ref,agrees) VALUES(first_report,repeat('d',64),true);
+              RAISE EXCEPTION 'Self validation accepted';
+            EXCEPTION WHEN SQLSTATE 'P4090' THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.activity_confirmations(report_id,account_ref,agrees) VALUES(first_report,voter,true);
+              RAISE EXCEPTION 'Duplicate validation accepted';
+            EXCEPTION WHEN unique_violation OR SQLSTATE 'P4290' THEN NULL;
+            END;
+            INSERT INTO radar.activity_reports(establishment_id,anonymous_ref,state,created_at) VALUES(target,repeat('f',64),'full',now()-interval '31 minutes') RETURNING id INTO old_report;
+            BEGIN
+              INSERT INTO radar.activity_confirmations(report_id,anonymous_ref,agrees) VALUES(old_report,repeat('9',64),true);
+              RAISE EXCEPTION 'Expired report accepted';
+            EXCEPTION WHEN SQLSTATE 'P4040' THEN NULL;
+            END;
+            IF (SELECT count(*) FROM radar.activity_confirmations WHERE report_id=first_report)<>2 THEN RAISE EXCEPTION 'Invalid validation count'; END IF;
+          END;
+          $confirm_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

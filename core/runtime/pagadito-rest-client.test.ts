@@ -21,12 +21,12 @@ test('Pagadito sandbox transport uses HTTPS, Basic auth and does not expose secr
     });
     assert.deepEqual(result,{response_code:'PG200-00'});
     assert.equal(requests.length,1);
-    assert.equal(requests[0].url,'https://sandbox-api.pagadito.com/v1/payment');
+    assert.equal(requests[0].url,'https://sandbox-api.pagadito.com/v1/payment/');
     assert.equal(requests[0].init.method,'POST');
     const headers=new Headers(requests[0].init.headers);
     assert.equal(headers.get('authorization'),
       'Basic '+Buffer.from('sandbox-user:sandbox-secret').toString('base64'));
-    assert.equal(headers.get('content-type'),'application/json');
+    assert.equal(headers.get('content-type'),'application/json;charset=UTF-8');
     assert.equal(JSON.parse(String(requests[0].init.body)).transaction.merchantTransactionId,'order-example');
 
     globalThis.fetch=(async()=>new Response('provider diagnostic with sensitive content',{status:503})) as typeof fetch;

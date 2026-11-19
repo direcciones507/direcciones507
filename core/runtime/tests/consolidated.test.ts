@@ -1470,3 +1470,38 @@ test('real Core publisher activates a confirmed Premium Pro without ADMIN and le
  const proof=new URLSearchParams({orderId:intent.order.provider_order_id,status:'E',domain:origin,hash:createHmac('sha256','real-pro-fixture').update(intent.order.provider_order_id+'E'+origin).digest('hex')});
  await payments.confirm(proof);await payments.confirm(proof);const active=await requests.read(owner,request.id) as any;expect(active.status).toBe('ACTIVE');expect(active.review).toBeNull();expect(active.extras.annualService.startsAt).toBeTruthy();expect((await newPublicAddress(sql,code,origin))?.plan?.code).toBe('BUSINESS_PREMIUM_PRO');
 });
+
+
+test('Yappy signed terminal attempts retry atomically without changing purchase terms or request data',async()=>{
+ const {createPaymentRepository}=await import('../payment-repository'),{createHmac}=await import('node:crypto');
+ const config={environment:'test' as const,merchantId:'retry-fixture',domain:origin,ipnUrl:origin+'/ipn',secret:Buffer.from('retry-fixture.secret').toString('base64')};
+ const repo=createPaymentRepository(sql,config,{commercialEnabled:true});
+ const signed=(orderId:string,status:string)=>new URLSearchParams({orderId,status,domain:origin,hash:createHmac('sha256','retry-fixture').update(orderId+status+origin).digest('hex')});
+ for(const status of ['R','X','C']){
+  const rows=await sql.unsafe("INSERT INTO ad507.addresses(address_type,status,name,source,request_key_hash,request_data) VALUES('BUSINESS','DRAFT','Yappy retry isolated','USER_REQUEST',$1,$2::jsonb) RETURNING id",[crypto.randomUUID(),sql.json({plan:'BUSINESS_PREMIUM',workflow:'PAYMENT_PENDING',reference:'Keep all saved data'})]);
+  const id=rows[0].id;await sql.unsafe('INSERT INTO ad507.address_ownership(address_id,user_id) VALUES($1::uuid,$2::uuid)',[id,clientId]);
+  const first=await repo.prepare(clientId,id,'first-'+crypto.randomUUID(),'INSTALLMENTS');
+  const before=(await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data;
+  await expect(repo.prepare(clientId,id,'pending-'+crypto.randomUUID())).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+  expect((await repo.read(clientId,first.order.id)).retryAllowed).toBe(false);
+  await repo.registerProviderOrder(first.order.id,'retry-reference-'+crypto.randomUUID());
+  const forged=signed(first.order.provider_order_id,status);forged.set('hash','forged');await expect(repo.confirm(forged)).rejects.toThrow('INVALID_PAYMENT_SIGNATURE');
+  await repo.confirm(signed(first.order.provider_order_id,status));
+  expect((await repo.read(clientId,first.order.id)).retryAllowed).toBe(true);
+  await expect(repo.prepare(adminId,id,'wrong-owner-'+crypto.randomUUID())).rejects.toThrow('PAYMENT_NOT_FOUND');
+  const attempts=await Promise.allSettled([repo.prepare(clientId,id,'retry-a-'+crypto.randomUUID()),repo.prepare(clientId,id,'retry-b-'+crypto.randomUUID())]);
+  expect(attempts.filter(a=>a.status==='fulfilled')).toHaveLength(1);
+  const next=(attempts.find(a=>a.status==='fulfilled') as PromiseFulfilledResult<any>).value;
+  expect(next.order.id).toBe(first.order.id);expect(next.order.provider_order_id).not.toBe(first.order.provider_order_id);expect(next.order.amount_cents).toBe(1650);
+  const claims=await Promise.allSettled([repo.claimProviderOrder(next.order.id),repo.claimProviderOrder(next.order.id)]);expect(claims.filter(a=>a.status==='fulfilled')).toHaveLength(1);
+  await repo.completeProviderOrder(next.order.id,'new-reference-'+crypto.randomUUID());
+  await expect(repo.confirm(signed(first.order.provider_order_id,'E'))).rejects.toThrow('PAYMENT_NOT_FOUND');
+  expect((await repo.read(clientId,next.order.id)).status).toBe('PENDING');
+  await repo.confirm(signed(next.order.provider_order_id,'E'));
+  expect((await repo.read(clientId,next.order.id)).retryAllowed).toBe(false);
+  await expect(repo.prepare(clientId,id,'paid-'+crypto.randomUUID())).rejects.toThrow('PAYMENT_ALREADY_EXISTS');
+  expect((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data).toEqual(before);
+  expect((await sql.unsafe('SELECT quote FROM ad507.commercial_payment_terms WHERE order_id=$1::uuid',[next.order.id]))[0].quote.mode).toBe('INSTALLMENTS');
+  expect((await sql.unsafe("SELECT before_json FROM ad507.audit_log WHERE entity_id=$1 AND action='YAPPY_PAYMENT_RETRY_PREPARED'",[next.order.id]))[0].before_json.providerOrderId).toBe(first.order.provider_order_id);
+ }
+});

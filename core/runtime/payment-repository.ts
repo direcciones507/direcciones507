@@ -28,6 +28,13 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     if(!terms.length)return validStoredOrderAmount(row.payment_plan,row.amount_cents);
     const q=terms[0].quote;try{return q.plan===row.payment_plan&&row.amount_cents===commercialQuote(q.plan,q.mode).amountCents&&Object.entries(commercialQuote(q.plan,q.mode)).every(([key,value])=>q[key]===value)}catch{return false}
   };
+  // Only a signed terminal IPN can release a Yappy attempt. Browser errors and
+  // elapsed time alone never prove that the provider cannot still charge.
+  const retryVerified=async(tx:any,order:any)=>{
+    if(order.provider!=='YAPPY'||!['FAILED','CANCELLED'].includes(order.status)||!order.provider_reference||order.provider_reference.startsWith('INITIALIZING:'))return false;
+    const proof=await tx.unsafe("SELECT 1 FROM ad507.audit_log WHERE entity_type='ORDER' AND entity_id=$1 AND action='YAPPY_PAYMENT_CONFIRMED' AND after_json->>'status'=$2 AND after_json->>'providerStatus'=ANY($3::text[]) AND (after_json->>'providerOrderId'=$4 OR after_json->>'providerOrderId' IS NULL AND NOT EXISTS(SELECT 1 FROM ad507.audit_log retry WHERE retry.entity_id=$1 AND retry.action='YAPPY_PAYMENT_RETRY_PREPARED')) LIMIT 1",[order.id,order.status,order.status==='CANCELLED'?['C']:['R','X'],order.provider_order_id]);
+    return proof.length>0;
+  };
   const advertising=createAdvertisingRepository(sql,config.environment,!!options.commercialEnabled&&!!options.placeAdvertisingEnabled,paypal?'PAYPAL':'YAPPY');
   return {
     quoteAdvertising:advertising.quote,prepareAdvertising:advertising.prepare,
@@ -141,10 +148,18 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         const operation=createHash('sha256').update(config.environment+':'+userId+':'+addressId+':'+key).digest('hex');
         const existing=await tx.unsafe("SELECT * FROM ad507.orders WHERE provider='YAPPY' AND operation_key=$1",[operation]);
         if(existing.length){const p=existing[0];if(p.payment_plan!==plan||!await validOrder(tx,p))throw Error('PAYMENT_AMOUNT_CHANGED');return {required:true,order:p};}
-        // Do not replace rejected/expired intents automatically: late signed
-        // execution can still settle the original order. Reconcile before retry.
-        const active=await tx.unsafe("SELECT id FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment=$2",[addressId,config.environment]);
-        if(active.length)throw Error('PAYMENT_ALREADY_EXISTS');
+        const active=await tx.unsafe("SELECT * FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment=$2 FOR UPDATE",[addressId,config.environment]);
+        if(active.length){
+          const prior=active[0];
+          if(active.length!==1||!await retryVerified(tx,prior))throw Error('PAYMENT_ALREADY_EXISTS');
+          if(prior.payment_plan!==plan||!await validOrder(tx,prior))throw Error('PAYMENT_AMOUNT_CHANGED');
+          // Keep the purchase, stored price/terms and request data. Rotate only
+          // the closed provider attempt and retain its full binding in the ledger.
+          const next=randomBytes(7).toString('hex');
+          await tx.unsafe("INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,before_json,after_json) VALUES($1::uuid,'USER','YAPPY_PAYMENT_RETRY_PREPARED','ORDER',$2,$3::jsonb,$4::jsonb)",[userId,prior.id,tx.json({status:prior.status,providerOrderId:prior.provider_order_id,providerReference:prior.provider_reference,operationKey:prior.operation_key}),tx.json({providerOrderId:next})]);
+          const retried=await tx.unsafe("UPDATE ad507.orders SET status='PENDING',provider_order_id=$2,provider_reference=NULL,operation_key=$3,confirmed_at=NULL,updated_at=now() WHERE id=$1::uuid RETURNING *",[prior.id,next,operation]);
+          return {required:true,order:retried[0]};
+        }
         const id=randomBytes(7).toString('hex');
         const orders=await tx.unsafe("INSERT INTO ad507.orders(user_id,address_id,amount_cents,provider,payment_plan,payment_environment,provider_order_id,operation_key) VALUES($1::uuid,$2::uuid,$3,'YAPPY',$4,$5,$6,$7) RETURNING *",[userId,addressId,amount,plan,config.environment,id,operation]);
         if(options.commercialEnabled)await tx.unsafe("INSERT INTO ad507.commercial_payment_terms(order_id,address_id,payment_environment,purpose,cycle,quote) VALUES($1::uuid,$2::uuid,$3,'INITIAL',$2::text,$4::jsonb)",[orders[0].id,addressId,config.environment,tx.json(q)]);
@@ -207,7 +222,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
     async read(userId:string,orderId:string) {
       requireYappy();
       if(!uuid.test(userId)||!uuid.test(orderId))throw Error('PAYMENT_NOT_FOUND');
-      const rows=await sql.unsafe("SELECT p.id,p.address_id,p.payment_plan,p.amount_cents,p.currency,p.status,p.confirmed_at,a.code,a.country_code FROM ad507.orders p JOIN ad507.users u ON u.id=p.user_id JOIN ad507.addresses a ON a.id=p.address_id WHERE p.id=$1::uuid AND p.user_id=$2::uuid AND u.status='ACTIVE' AND p.provider='YAPPY' AND p.payment_environment=$3",[orderId,userId,config.environment]);
+      const rows=await sql.unsafe("SELECT p.id,p.address_id,p.payment_plan,p.amount_cents,p.currency,p.status,p.confirmed_at,p.provider,p.provider_reference,p.provider_order_id,a.code,a.country_code,a.status AS address_status,a.source,a.request_data,a.address_type,a.review_decision,a.publication_receipt FROM ad507.orders p JOIN ad507.users u ON u.id=p.user_id JOIN ad507.addresses a ON a.id=p.address_id WHERE p.id=$1::uuid AND p.user_id=$2::uuid AND u.status='ACTIVE' AND p.provider='YAPPY' AND p.payment_environment=$3",[orderId,userId,config.environment]);
       if(!rows.length)throw Error('PAYMENT_NOT_FOUND');assertCountryCommerce(rows[0].country_code??'PA');
       // Reconcile an already-confirmed Yappy payment on authenticated status reads.
       // A provider notification may persist PAID but fail during subsequent publication.
@@ -216,7 +231,10 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         try { await options.onVerifiedPayment(rows[0].address_id); }
         catch(error) { console.error('PAID_ADDRESS_RECONCILIATION_FAILED',rows[0].id,error instanceof Error?error.message:'unknown'); }
       }
-      return rows[0];
+      const row=rows[0];
+      const retryAllowed=isPayableClientRequest({...row,status:row.address_status})&&await retryVerified(sql,row);
+      const {provider,provider_reference,provider_order_id,request_data,address_status,source,address_type,review_decision,publication_receipt,...payment}=row;
+      return {...payment,retryAllowed};
     },
     async confirm(query:URLSearchParams) {
       requireYappy();
@@ -233,7 +251,7 @@ export function createPaymentRepository(sql:Sql,config:YappyConfiguration|{provi
         if(row.status==='REFUNDED'||row.status==='PAID'||row.status===proof.status)return {id:row.id,status:row.status,unchanged:true,addressId:row.address_id};
         if(row.status!=='PENDING'&&proof.status!=='PAID')return {id:row.id,status:row.status,unchanged:true,addressId:row.address_id};
         await tx.unsafe("UPDATE ad507.orders SET status=$2,confirmed_at=CASE WHEN $2='PAID' THEN now() ELSE confirmed_at END,updated_at=now() WHERE id=$1::uuid",[row.id,proof.status]);
-        await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','YAPPY_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[row.id,tx.json({status:row.status}),tx.json({status:proof.status,providerStatus:proof.providerStatus})]);
+        await tx.unsafe("INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,before_json,after_json) VALUES('SYSTEM','YAPPY_PAYMENT_CONFIRMED','ORDER',$1,$2::jsonb,$3::jsonb)",[row.id,tx.json({status:row.status}),tx.json({status:proof.status,providerStatus:proof.providerStatus,providerOrderId:row.provider_order_id})]);
         if(proof.status==='PAID'){const paid={...row,status:'PAID',confirmed_at:new Date().toISOString()};await applyAnnualRenewal(tx,paid);await confirmPlaceAdvertising(tx,paid);}
         return {id:row.id,status:proof.status,unchanged:false,addressId:row.address_id};
       });

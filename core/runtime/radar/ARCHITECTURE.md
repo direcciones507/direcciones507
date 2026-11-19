@@ -20,3 +20,6 @@ Use navy, silver and restrained blue, no neon or purple. Cinematic 3D entrance a
 
 ## Shared account entry (owner-approved)
 Reuse the existing Direcciones507/LATAM login card and its actual shared rendering, styles, animations, Google/email registration, verification and password recovery. No separate Radar login design or identity database. Preserve the originating Radar action and validated local return destination through authentication, without exposing credentials or accepting arbitrary external return URLs. Host-bound cookies remain isolated; account identity is shared. Verify the three entry points visually, on mobile and desktop, and test return-to-action before release.
+
+## Visual handoff to ChatGPT Work
+Owner-approved division: complete backend, shared authentication, persistence, moderation, commercial rules and CI before visual handoff. Work owns MapLibre, responsive interface, motion graphics, scrolling and selective 3D. Reuse existing components; inspect only relevant files, consolidate edits and tests, avoid unrelated audits or redesign, and do not change backend contracts or deploy production without approval. Keep visual assets lightweight and respect reduced motion. Report actual validation results and blockers; no fixed credit-consumption guarantee.

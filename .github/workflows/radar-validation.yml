@@ -302,6 +302,51 @@ jobs:
           export RADAR_TEST_DB="postgres://postgres:test-only@$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' radar-db):5432/postgres"
           cd core/runtime
           bun -e 'import {SQL} from "bun"; import {createRadarCampaignLookup} from "./radar/campaign-repository"; const db=new SQL(process.env.RADAR_TEST_DB); try {const rows=await db.unsafe("SELECT id::text FROM radar.establishments WHERE published");const ids=rows.map(r=>r.id);const active=await createRadarCampaignLookup(db,true)(ids);if(active.size!==1||[...active.values()][0].kind!=="featured")throw Error("Unexpected active campaigns");if((await createRadarCampaignLookup(db,false)(ids)).size!==0)throw Error("Disabled campaign leaked");} finally {await db.close();}'
+      - name: Validate anonymous report identity and abuse limits
+        run: |
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 < db/migrations/0017_radar_anonymous_reports.sql
+          docker exec -i radar-db psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          DO $anonymous_test$
+          DECLARE target uuid; visitor text := repeat('a',64); actor uuid := gen_random_uuid();
+          BEGIN
+            SELECT id INTO STRICT target FROM radar.establishments WHERE published LIMIT 1;
+            INSERT INTO ad507.users VALUES(actor);
+            INSERT INTO radar.activity_reports(establishment_id,anonymous_ref,state) VALUES(target,visitor,'available');
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,anonymous_ref,state) VALUES(target,visitor,'full');
+              RAISE EXCEPTION 'Anonymous duplicate accepted';
+            EXCEPTION WHEN SQLSTATE 'P4290' THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,anonymous_ref,state,source) VALUES(target,repeat('b',64),'full','verified_owner');
+              RAISE EXCEPTION 'Anonymous owner accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,state) VALUES(target,'available');
+              RAISE EXCEPTION 'Missing identity accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,anonymous_ref,state) VALUES(target,'invalid-digest','available');
+              RAISE EXCEPTION 'Malformed digest accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,account_ref,anonymous_ref,state) VALUES(target,actor,repeat('c',64),'available');
+              RAISE EXCEPTION 'Mixed identity accepted';
+            EXCEPTION WHEN check_violation THEN NULL;
+            END;
+            INSERT INTO radar.activity_reports(establishment_id,account_ref,state) VALUES(target,actor,'queue');
+            BEGIN
+              INSERT INTO radar.activity_reports(establishment_id,account_ref,state) VALUES(target,actor,'full');
+              RAISE EXCEPTION 'Registered duplicate accepted';
+            EXCEPTION WHEN SQLSTATE 'P4290' THEN NULL;
+            END;
+            IF (SELECT count(*) FROM radar.activity_reports WHERE anonymous_ref=visitor) <> 1 THEN RAISE EXCEPTION 'Anonymous persistence failed'; END IF;
+          END;
+          $anonymous_test$;
+          SQL
   core-regression:
     runs-on: ubuntu-24.04
     timeout-minutes: 15

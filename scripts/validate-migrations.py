@@ -37,6 +37,7 @@ RADAR_FILES = {
     "0014_radar_address_link.sql": "address-link.sql",
     "0015_radar_campaigns.sql": "campaigns.sql",
     "0016_radar_business_details.sql": "business-details.sql",
+    "0017_radar_anonymous_reports.sql": "anonymous-reports.sql",
 }
 
 for path in SQL_FILES:

@@ -13,3 +13,7 @@ Radar es un módulo de Direcciones, no una plataforma independiente. Tres domini
 ## Approved domain decision
 
 Radar canonical public hostname: `radar.direcciones.lat`, replacing the previously proposed Direcciones507-based Radar hostname. Keep `direcciones507.com` and `direcciones.lat` unchanged. Use the shared CORE, database and existing accounts. DNS (Cloudflare), Railway custom domain/TLS, exact allowed origins, Google OAuth callbacks and secure cross-domain session/return flows must be verified before public release. Configuration explicitly deferred until later; no DNS or production changes authorized by this decision. Continue infrastructure development in the feature branch.
+
+## Approved visual release requirements
+
+Use navy, silver and restrained blue, no neon or purple. Cinematic 3D entrance and smooth scroll storytelling with GSAP ScrollTrigger, selective Three.js/WebGL, parallax, animated map pins, cards and transitions. MapLibre remains the interactive map engine. Preserve fast access to map, mobile performance, reduced-motion fallback, keyboard accessibility and static fallback if WebGL fails. Motion must not block map search, login or reporting. Validate these before release.

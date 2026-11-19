@@ -2,7 +2,7 @@ import type {RadarRepository} from "./routes";
 import type {Country,Report} from "./domain";
 import type {Bounds,Establishment} from "./public-map";
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
-export function createRadarRepository(db:Database):RadarRepository {
+export function createRadarRepository(db:Database,ownershipEnabled=false):RadarRepository {
  return {
   async register(draft,accountRef) {
    const rows=await db.unsafe(`INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
@@ -24,6 +24,10 @@ export function createRadarRepository(db:Database):RadarRepository {
    return rows.map(r=>({id:r.id,name:r.name,category:r.category,country:r.country,latitude:Number(r.latitude),longitude:Number(r.longitude),published:r.published,reports:(typeof r.reports==="string"?JSON.parse(r.reports):r.reports) as Report[]}));
   },
   async findPublished(id) {
+   if(ownershipEnabled){
+    const rows=await db.unsafe("SELECT e.id,o.account_ref AS owner FROM radar.establishments e LEFT JOIN radar.verified_owners o ON o.establishment_id=e.id WHERE e.id=$1::uuid AND e.published",[id]);
+    return rows[0]?{id:rows[0].id,verifiedOwnerAccount:rows[0].owner??null}:null;
+   }
    const rows=await db.unsafe("SELECT id FROM radar.establishments WHERE id=$1::uuid AND published",[id]);
    // Until ownership verification is integrated, all reports are community reports.
    return rows[0]?{id:rows[0].id,verifiedOwnerAccount:null}:null;

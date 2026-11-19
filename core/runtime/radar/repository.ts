@@ -2,7 +2,7 @@ import type {RadarRepository} from "./routes";
 import type {Country,Report} from "./domain";
 import type {Bounds,Establishment} from "./public-map";
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
-export function createRadarRepository(db:Database,ownershipEnabled=false):RadarRepository {
+export function createRadarRepository(db:Database,ownershipEnabled=false,resolveAddress?:(id:string,country:Country)=>Promise<Establishment["digitalAddress"]|null>):RadarRepository {
  return {
   async register(draft,accountRef) {
    const rows=await db.unsafe(`INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
@@ -22,7 +22,13 @@ export function createRadarRepository(db:Database,ownershipEnabled=false):RadarR
     AND (($4 < $5 AND e.longitude BETWEEN $4 AND $5) OR ($4 > $5 AND (e.longitude >= $4 OR e.longitude <= $5)))
     ${search ? "AND (strpos(lower(e.name),lower($6::text))>0 OR strpos(lower(e.category),lower($6::text))>0)" : ""}
     ORDER BY e.id LIMIT 1000`,[country,b.south,b.north,b.west,b.east,...(search?[search]:[])]);
-   return rows.map(r=>({id:r.id,name:r.name,category:r.category,country:r.country,latitude:Number(r.latitude),longitude:Number(r.longitude),published:r.published,reports:(typeof r.reports==="string"?JSON.parse(r.reports):r.reports) as Report[]}));
+   const establishments:Establishment[]=rows.map(r=>({id:r.id,name:r.name,category:r.category,country:r.country,latitude:Number(r.latitude),longitude:Number(r.longitude),published:r.published,reports:(typeof r.reports==="string"?JSON.parse(r.reports):r.reports) as Report[]}));
+   if(resolveAddress){
+    for(let i=0;i<establishments.length;i+=8){
+     await Promise.all(establishments.slice(i,i+8).map(async e=>{e.digitalAddress=(await resolveAddress(e.id,country))??undefined;}));
+    }
+   }
+   return establishments;
   },
   async findPublished(id) {
    if(ownershipEnabled){

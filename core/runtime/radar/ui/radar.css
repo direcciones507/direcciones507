@@ -162,3 +162,6 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
  .detail h3{font-size:1rem}.detail p{font-size:.75rem}.detail .button{font-size:.8125rem}
  .map-bottom{padding-block:8px}
 }
+
+/* Keep the full search prompt readable on the narrowest phones. */
+@media(max-width:360px){.search>svg{display:none}}

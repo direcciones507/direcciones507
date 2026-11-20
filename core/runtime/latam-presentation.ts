@@ -715,6 +715,7 @@ function openLatamAccess(){document.getElementById('latamAccessCountry').textCon
 document.querySelectorAll('[data-latam-session="guest"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openLatamAccess();}));
 const legalVersion=${JSON.stringify(LEGAL_VERSION)};
 let latamEmailMode='login';
+let latamRadarContinue=false;
 function prepareAccountLegalAcceptance(){const checkbox=document.getElementById('latamRegistrationTermsAccepted');if(!checkbox.checked){checkbox.setCustomValidity('Acepta las condiciones para crear una cuenta.');checkbox.reportValidity();checkbox.focus();return false;}checkbox.setCustomValidity('');try{sessionStorage.setItem('ad507PendingLegalAcceptance',JSON.stringify({accepted:true,version:legalVersion}));}catch{}return true;}
 document.getElementById('latamRegistrationTermsAccepted').onchange=event=>event.target.setCustomValidity('');
 const latamEmailSubmit=document.getElementById('latamEmailSubmit');
@@ -722,7 +723,7 @@ const latamEmailNotice=document.getElementById('latamPasswordNotice');
 const latamEmailPassword=document.getElementById('latamAccessPassword');
 const latamEmailField=document.getElementById('latamAccessEmail');
 function setLatamEmailMode(mode){
- latamEmailMode=mode;document.getElementById('latamRegistrationTerms').hidden=mode!=='register';document.getElementById('latamRegistrationTermsAccepted').checked=false;
+ latamRadarContinue=false;latamEmailMode=mode;document.getElementById('latamRegistrationTerms').hidden=mode!=='register';document.getElementById('latamRegistrationTermsAccepted').checked=false;
  latamEmailSubmit.textContent=mode==='register'?'Crear cuenta con correo':mode==='login'?'Ingresar con correo':mode==='forgot'?'Enviar recuperación':mode==='verify'?'Verificar correo':'Cambiar contraseña';
  document.getElementById('latamPasswordRow').hidden=mode==='forgot'||mode==='verify';
  document.getElementById('latamPasswordLabel').hidden=mode==='forgot'||mode==='verify';
@@ -737,6 +738,7 @@ document.getElementById('latamCreateAccount').onclick=()=>setLatamEmailMode('reg
 document.getElementById('latamForgotPassword').onclick=()=>setLatamEmailMode('forgot');
 document.getElementById('latamTogglePassword').onclick=()=>{const visible=latamEmailPassword.type==='text';latamEmailPassword.type=visible?'password':'text';const button=document.getElementById('latamTogglePassword');button.textContent=visible?'Mostrar':'Ocultar';button.setAttribute('aria-pressed',String(!visible));button.setAttribute('aria-label',visible?'Mostrar contraseña':'Ocultar contraseña');};
 latamEmailSubmit.onclick=async()=>{
+ if(latamRadarContinue){location.assign('https://radar.direcciones.lat/');return;}
  const email=latamEmailField.value.trim(),password=latamEmailPassword.value;
  const route={register:'register',login:'login',forgot:'forgot',verify:'verify',reset:'reset'}[latamEmailMode];
  const token=new URLSearchParams(location.search).get('token')||'';
@@ -748,7 +750,7 @@ latamEmailSubmit.onclick=async()=>{
   const response=await fetch('/v1/auth/email/'+route,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(route==='register'?{email,password,token,legalAcceptance:{accepted:true,version:legalVersion}}:{email,password,token})});
   const result=await response.json();
   if(!response.ok)throw Error(result.error||'No se pudo completar la solicitud.');
-  if(route==='login'){if(result.redirect==='https://radar.direcciones.lat/'){location.assign(result.redirect);return;}const p=new URLSearchParams(location.search);const selected=p.get('selectedPlan');location.assign('/panel?country='+encodeURIComponent(document.getElementById('commercialCountry').value)+(p.get('origin')==='507'?'&origin=507':'')+(selected?'&selectedPlan='+encodeURIComponent(selected):''));return;}
+  if(route==='login'){if(result.redirect==='https://radar.direcciones.lat/'){latamRadarContinue=true;latamEmailPassword.value='';latamEmailSubmit.textContent='Continuar';latamEmailNotice.textContent='Ingreso exitoso. Pulsa Continuar para regresar a Radar.';return;}const p=new URLSearchParams(location.search);const selected=p.get('selectedPlan');location.assign('/panel?country='+encodeURIComponent(document.getElementById('commercialCountry').value)+(p.get('origin')==='507'?'&origin=507':'')+(selected?'&selectedPlan='+encodeURIComponent(selected):''));return;}
   latamEmailNotice.textContent=route==='register'||route==='forgot'?'Si el correo cumple las condiciones, recibirás un mensaje con las instrucciones.':'Solicitud completada. Ya puedes ingresar.';
   if(route==='verify'||route==='reset'){setLatamEmailMode('login');latamEmailPassword.value='';history.replaceState({},'',location.pathname+'?country='+encodeURIComponent(document.getElementById('commercialCountry')?.value||'PA'));latamEmailNotice.textContent='Solicitud completada. Ya puedes ingresar.';}
  }catch(err){latamEmailNotice.textContent=err instanceof Error?err.message:'No se pudo completar la solicitud.';}

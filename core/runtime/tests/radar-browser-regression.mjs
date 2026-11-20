@@ -62,11 +62,11 @@ try{
   await page.getByRole('button',{name:'Agregar establecimiento',exact:true}).click();
   await page.waitForURL('https://direcciones.lat/auth/radar');
   assert(new URL(page.url()).search==='', 'No authentication tokens or arbitrary return URLs');
-  await page.goBack();await page.locator('#searchInput').waitFor();
+  await page.goBack();await page.waitForFunction(()=>typeof window.__radarTestState==='function'&&typeof window.__radarTestCamera==='function');
   assert(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')||'null')?.type==='add'),'Pending Radar action lost during shared login navigation');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Overflow after interactions '+name);
   if(motion==='reduce'){assert(await page.locator('.sweep').evaluate(e=>getComputedStyle(e).animationName==='none'),'Reduced motion ignored');assert(await page.locator('#threeScene canvas').count()===0,'Reduced-motion device loaded 3D scene');}
-  assert(errors.length===0,'Browser errors: '+errors.join('; '));report.push({name,viewport:{width,height},reducedMotion:motion,renderer:'Leaflet 2D fallback',checks:'responsive layout, map, all visible pins, progressive zoom, live-only pulse, priority panel, featured rows, help outside close, country, auth boundary',pageErrors:errors});await context.close();
+  assert(errors.length===0,'Browser errors: '+errors.join('; '));report.push({name,viewport:{width,height},reducedMotion:motion,renderer:'Leaflet 2D fallback',checks:'responsive layout, map, all visible pins, progressive zoom, live-only pulse, priority panel, featured rows, help outside close, country, auth boundary',pageErrors:errors});await page.unrouteAll({behavior:'wait'});await context.close();
  }
  await writeFile('/tmp/radar-review/validation.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));
 }catch(error){if(currentPage){console.error('RADAR_PAGE_ERRORS',currentErrors);console.error('RADAR_UI_FAILURE',await currentPage.evaluate(()=>({country:document.querySelector('#country')?.value,status:document.querySelector('#dataStatus')?.textContent,count:document.querySelector('#resultCount')?.textContent,category:document.querySelector('#category')?.value,activity:document.querySelector('#activity')?.value,results:document.querySelector('#results')?.innerText,camera:window.__radarTestCamera?.(),policy:window.__radarTestState?.()})));await currentPage.screenshot({path:'/tmp/radar-review/failure.png',fullPage:true});}throw error;}finally{await browser?.close();server.kill();}

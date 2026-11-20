@@ -124,7 +124,15 @@ function detail(f,focus=true){
 let mapSelectionSequence=0;
 function openPinGroup(rows){const out=$('pinGroupResults');out.replaceChildren();const sorted=[...rows].sort((a,b)=>({live:0,featured:1,normal:2}[a.properties.pin]??3)-({live:0,featured:1,normal:2}[b.properties.pin]??3)||a.properties.name.localeCompare(b.properties.name));for(const f of sorted){const button=el('button','button subtle wide',f.properties.name+(f.properties.pin==='live'?' · En vivo':f.properties.pin==='featured'?' · Destacado':''));button.type='button';button.onclick=()=>{close('pinGroupDialog');const latest=filtered().find(row=>row.id===f.id);if(latest)selectFeature(latest);else toast('El establecimiento ya no está en esta consulta.');};out.append(button);}show('pinGroupDialog');}
 function dismissDetail(){++mapSelectionSequence;if(!state.selected&&$('detail').hidden)return;state.selected=null;$('detail').hidden=true;for(const n of document.querySelectorAll('.result-card[aria-pressed="true"]'))n.setAttribute('aria-pressed','false');}
-// Canvas and raster map taps are handled by their own pin-selection logic.
+// Close the pin card on any free map surface, while leaving navigation and pin selection intact.
+// A renderer handles its own actual map tiles/pins; this catches surrounding map-area overlays.
+document.querySelector('.map-area')?.addEventListener('click',event=>{
+ const target=event.target;
+ if(!(target instanceof Element)||$('detail').hidden||state.picking||document.querySelector('dialog[open]'))return;
+ if(target.closest('#detail,#map,.map-tools,.map-top,.map-legend,.map-bottom,.pick-notice,.map-fallback,button,a,input,select'))return;
+ dismissDetail();
+});
+// Map taps are processed by the renderer. Other free surfaces close the card too.
 document.addEventListener('click',event=>{const target=event.target;if(!(target instanceof Element)||$('detail').hidden||target.closest('#detail,#map,.result-card,.featured-card,dialog')||document.querySelector('dialog[open]'))return;dismissDetail();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('detail').hidden&&!document.querySelector('dialog[open]'))dismissDetail();});
 function selectFeature(f){state.selected=f;for(const n of document.querySelectorAll('.result-card'))n.setAttribute('aria-pressed',String(n.dataset.id===f.id));detail(f);}
@@ -166,7 +174,13 @@ let pulseFrame=0,lastPulse=0;function liveVisible(){return !document.hidden&&!re
  const up=e=>{const start=activePointers.get(e.pointerId);activePointers.delete(e.pointerId);if(!start||start.moved||multiPointer||state.picking||Math.hypot(e.clientX-start.x,e.clientY-start.y)>10)return;const r=canvas.getBoundingClientRect();void selectAt({x:(e.clientX-r.left)*canvas.clientWidth/r.width,y:(e.clientY-r.top)*canvas.clientHeight/r.height}).catch(()=>toast('No se pudo consultar este PIN. Intenta nuevamente.'));};
  canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('pointerleave',cancel);
  map.once('remove',()=>{canvas.removeEventListener('pointerdown',down);canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerup',up);canvas.removeEventListener('pointercancel',cancel);canvas.removeEventListener('pointerleave',cancel);});
- map.on('click',e=>{if(state.picking)finishPicking(e.lngLat.lng,e.lngLat.lat);});let warned=false;map.on('error',()=>{if(!warned){warned=true;toast('Algunos recursos del mapa no pudieron cargar. La consulta en lista sigue disponible.');}});map.getCanvas().addEventListener('webglcontextlost',e=>{e.preventDefault();mapUnavailable('El dispositivo interrumpió el mapa. Puedes seguir consultando la lista.');});const resize=new ResizeObserver(()=>map.resize());resize.observe($('map'));map.once('remove',()=>resize.disconnect());if(state.country!=='PA')map.fitBounds(countries[state.country].bounds,{padding:30,duration:0});}
+ map.on('click',e=>{
+  if(state.picking){finishPicking(e.lngLat.lng,e.lngLat.lat);return;}
+  // A blank map click dismisses the card even if mobile browsers skip pointerup.
+  if($('detail').hidden||!map.getLayer('pins'))return;
+  const point=e.point,box=[[point.x-12,point.y-12],[point.x+12,point.y+12]];
+  if(!map.queryRenderedFeatures(box,{layers:['priority-pins','pins','clusters','cluster-depth']}).length)dismissDetail();
+ });let warned=false;map.on('error',()=>{if(!warned){warned=true;toast('Algunos recursos del mapa no pudieron cargar. La consulta en lista sigue disponible.');}});map.getCanvas().addEventListener('webglcontextlost',e=>{e.preventDefault();mapUnavailable('El dispositivo interrumpió el mapa. Puedes seguir consultando la lista.');});const resize=new ResizeObserver(()=>map.resize());resize.observe($('map'));map.once('remove',()=>resize.disconnect());if(state.country!=='PA')map.fitBounds(countries[state.country].bounds,{padding:30,duration:0});}
  catch{await initRasterMap();}}
 async function initRasterMap(){try{state.map?.remove();state.map=null;const {rasterMap}=await import('./raster-map.js');let warned=false;state.map=await rasterMap({container:$('map'),tiles:document.querySelector('meta[name="radar-tiles"]')?.content||'https://tile.openstreetmap.org/{z}/{x}/{y}.png',bounds:countries[state.country].bounds,reduced,onMove:()=>{if(state.resetZoom&&!state.map.isMoving()){state.revealZoom=state.map.getZoom()+normalZoomStep;state.resetZoom=false;}updateMap(filtered());scheduleLoad();},onSelect:f=>{if(!state.picking)selectFeature(f);},onPick:(lng,lat)=>{if(state.picking)finishPicking(lng,lat);else dismissDetail();},onError:()=>{if(!warned){warned=true;toast('No se pudieron cargar algunas teselas. Revisa tu conexión; la lista sigue disponible.');}}});$('mapFallback').hidden=true;updateMap(filtered());state.revealZoom=state.map.getZoom()+normalZoomStep;if(state.country!=='PA'){state.resetZoom=true;state.map.fitBounds(countries[state.country].bounds);}updateMap(filtered());scheduleLoad(0);}catch{mapUnavailable('No se pudo cargar el mapa. Puedes seguir buscando por país y zona en la lista.');}}
 function mapUnavailable(message){state.map?.remove();state.map=null;$('fallbackMessage').textContent=message;$('mapFallback').hidden=false;scheduleLoad(0);}

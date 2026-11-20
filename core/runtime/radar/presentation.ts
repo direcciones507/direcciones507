@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 const uiRoot=new URL('./ui/',import.meta.url);
-const assets=new Set(['vendor/manrope.woff','vendor/inter.woff','radar.css','radar.js','ui-model.js','motion.js','raster-map.js','vendor/leaflet.js','vendor/leaflet.css','vendor/maplibre-gl.css','vendor/maplibre-gl.mjs','vendor/maplibre-gl-shared.mjs','vendor/maplibre-gl-worker.mjs','vendor/gsap.min.js','vendor/ScrollTrigger.min.js','vendor/three.module.min.js','vendor/three.core.min.js']);
+const assets=new Set(['vendor/manrope.woff','vendor/inter.woff','radar.css','radar.js','ui-model.js','registration-form.js','motion.js','raster-map.js','vendor/leaflet.js','vendor/leaflet.css','vendor/maplibre-gl.css','vendor/maplibre-gl.mjs','vendor/maplibre-gl-shared.mjs','vendor/maplibre-gl-worker.mjs','vendor/gsap.min.js','vendor/ScrollTrigger.min.js','vendor/three.module.min.js','vendor/three.core.min.js']);
 function tileUrl(env:Record<string,string|undefined>){
  const fallback='https://tile.openstreetmap.org/{z}/{x}/{y}.png';
  try{const raw=env.RADAR_TILE_URL||fallback;const u=new URL(raw);return u.protocol==='https:'&&!u.username&&!u.password&&['{z}','{x}','{y}'].every(p=>raw.includes(p))?raw:fallback;}catch{return fallback;}

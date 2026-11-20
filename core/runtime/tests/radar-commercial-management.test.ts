@@ -64,3 +64,5 @@ test('public card does not confuse declared total capacity with availability',()
  renderCommercialDetails(target,{registrationProfile:{capacity:{total:12,unit:'tables'}},details:null},doc);
  assert.ok(nodes.find(n=>n.textContent==='Capacidad total: 12 mesas'));assert.ok(!nodes.some(n=>n.textContent.includes('disponibles')));
 });
+
+test('WhatsApp is explicit and cannot use an arbitrary URL',async()=>{const {commercialWhatsapp}=await import('../radar/ui/commercial-details.js');const node=()=>({setAttribute(){},append(){}});const doc:any={createElement:node,createElementNS:node};assert.equal(commercialWhatsapp({registrationProfile:{phone:'+50760000000'}},doc),null);assert.equal(commercialWhatsapp({registrationProfile:{whatsapp:'https://evil.test'}},doc),null);assert.equal(commercialWhatsapp({registrationProfile:{whatsapp:'+50760000000'}},doc)?.href,'https://wa.me/50760000000');});

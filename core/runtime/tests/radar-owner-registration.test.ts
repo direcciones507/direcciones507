@@ -45,3 +45,5 @@ test('declared capacity is optional, category-specific and does not grant verifi
   assert.equal(validateRegistration({...candidate,profile:{...candidate.profile,capacity:{total:20,unit:'invalid'}}}),null);
  }
 });
+
+test('commercial WhatsApp is optional and validated independently',()=>{const candidate={...input,profile:{...profile,whatsapp:'+50760000000'}};assert.equal(validateRegistration(candidate)?.profile?.whatsapp,'+50760000000');assert.equal(validateRegistration({...candidate,profile:{...profile,whatsapp:'https://evil.test'}}),null);assert.equal(validateRegistration({...candidate,profile:{...profile,whatsapp:''}})?.profile?.whatsapp,undefined);});

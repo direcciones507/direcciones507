@@ -1,4 +1,4 @@
-import {renderCommercialDetails} from './commercial-details.js';
+import {renderCommercialDetails,commercialWhatsapp} from './commercial-details.js';
 import {registrationIntent,registrationKind,registrationChoiceMarkup,ownerRegistrationMarkup,setRegistrationKind,renderCategoryRegistrationFields,collectOwnerRegistration,restoreOwnerRegistration,registrationTerritoryLabels} from './registration-form.js';
 import {pulseRows,nearbyBounds,nearbyRows,distanceKm,countries, activityLabels, categoryLabel, normalizeBounds, safeAddress, freshProperties, mapFeatures, priorityFeatures, featuredGroups, normalZoomStep,searchContext} from './ui-model.js';
 const $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -76,7 +76,7 @@ function detail(f,focus=true){
  const top=el('div','detail-top');top.append(el('span','category-label',categoryLabel(p.category)));
  const closeButton=el('button','icon-button','×');closeButton.setAttribute('aria-label','Cerrar ficha');
  closeButton.onclick=()=>{dismissDetail();const button=[...document.querySelectorAll('.result-card')].find(n=>n.dataset.id===f.id);button?.focus({preventScroll:true});};
- top.append(closeButton);d.append(top,el('h3','',p.name));
+ const whatsapp=commercialWhatsapp(p);if(whatsapp)top.append(whatsapp);top.append(closeButton);d.append(top,el('h3','',p.name));
  if(['live','featured'].includes(p.pin))d.append(el('span','commercial-badge '+p.pin,p.pin==='featured'?'Destacado':'Pin en vivo'));
  d.append(el('p','detail-country',countries[p.country||state.country]?.name||state.country));
  const activity=el('div','detail-activity');activity.append(activityBadge(p),el('span','',relativeTime(p)));d.append(activity);

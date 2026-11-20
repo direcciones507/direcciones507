@@ -1,7 +1,7 @@
 import {validateBusiness} from "./business";
 import {categoryRegistrationFields,capacityUnit} from "./ui/registration-form.js";
 import {countries,validCoordinates,type Country} from "./domain";
-export type RegistrationProfile={province:string;locality:string;description:string;phone:string;hours:Record<string,string>;socials:string[];extras:Record<string,string>;capacity?:{total:number;unit:string}};
+export type RegistrationProfile={province:string;locality:string;description:string;phone:string;whatsapp?:string;hours:Record<string,string>;socials:string[];extras:Record<string,string>;capacity?:{total:number;unit:string}};
 export type EstablishmentDraft={name:string;category:string;country:Country;latitude:number;longitude:number;registrationKind?:"owner";profile?:RegistrationProfile};
 export function validateRegistration(input:unknown):EstablishmentDraft|null{
  if(!input||typeof input!=="object"||Array.isArray(input))return null;
@@ -21,6 +21,7 @@ export function validateRegistrationProfile(input:unknown,category:string):Regis
  const p=input as Record<string,any>,text=(key:string,max:number)=>typeof p[key]==='string'&&p[key].trim().length<=max?p[key].trim():null;
  const province=text('province',100),locality=text('locality',160),description=text('description',1200),phone=text('phone',32);
  if(!province||!locality||!description||phone===null||(phone&&!/^[+0-9 ()-]{5,32}$/.test(phone)))return null;
+ const whatsapp=p.whatsapp===undefined?'':text('whatsapp',16);if(whatsapp===null||(whatsapp&&!/^\+[1-9][0-9]{6,14}$/.test(whatsapp)))return null;
  const business=validateBusiness({hours:p.hours,quantity:null,unit:'units'});if(!business)return null;
  if(!Array.isArray(p.socials)||p.socials.length>8||p.socials.some((v:any)=>typeof v!=='string')||p.socials.join('\n').length>1000)return null;
  const socials:string[]=[];for(const value of p.socials){try{const u=new URL(value);if(u.protocol!=='https:'||u.username||u.password||u.port&&u.port!=='443'||value.length>250)return null;socials.push(u.href);}catch{return null;}}
@@ -30,6 +31,6 @@ export function validateRegistrationProfile(input:unknown,category:string):Regis
  const extras:Record<string,string>={};for(const key of keys){const value=p.extras[key]??'';if(typeof value!=='string'||value.trim().length>250)return null;if(value.trim())extras[key]=value.trim();}
  let capacity:RegistrationProfile['capacity'];
  if(p.capacity!==undefined){const c=p.capacity;if(!c||typeof c!=='object'||Array.isArray(c)||!Number.isInteger(c.total)||c.total<0||c.total>100000||c.unit!==capacityUnit(category))return null;capacity={total:c.total,unit:c.unit};}
- const profile={province,locality,description,phone,hours:business.hours,socials,extras,...(capacity?{capacity}:{})};
+ const profile={province,locality,description,phone,...(whatsapp?{whatsapp}:{}),hours:business.hours,socials,extras,...(capacity?{capacity}:{})};
  return new TextEncoder().encode(JSON.stringify(profile)).byteLength<=8000?profile:null;
 }

@@ -21,12 +21,14 @@ try{
   assert(await page.locator('#personalTools').getAttribute('open')===null,'Tools initially open '+name);
   assert(await page.evaluate(()=>{const title=document.querySelector('#heroTitle').getBoundingClientRect(),art=document.querySelector('.radar-art').getBoundingClientRect();return art.left>=title.right-1&&art.top<title.bottom&&art.bottom>title.top;}),'Radar not beside title '+name);
   if(width<=600)assert(await page.evaluate(()=>{const add=document.querySelector('#addButton').getBoundingClientRect(),search=document.querySelector('#searchForm').getBoundingClientRect();return Math.abs(add.left-search.left)<1&&Math.abs(add.width-search.width)<1;}),'Add/search alignment '+name);
+  await page.locator('.header').scrollIntoViewIfNeeded();
   await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-hero.png`});
   await page.locator('#map').scrollIntoViewIfNeeded();await page.locator('.leaflet-container').waitFor();
   await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).click();await page.locator('#detail').waitFor();assert((await page.locator('#detail h3').innerText())==='Café del Istmo','Wrong detail');
   assert(await page.locator('#detail .detail-options').getAttribute('open')===null,'Actions initially expanded '+name);
   assert(await page.getByRole('button',{name:'Reportar actividad',exact:true}).isHidden(),'Actions leak from collapsed card '+name);
   assert(await page.evaluate(()=>{const card=document.querySelector('#detail').getBoundingClientRect(),map=document.querySelector('.map-area').getBoundingClientRect();return card.width<=300&&card.height<map.height*.7&&card.left>=map.left&&card.right<=map.right;}),'Card covers map '+name);
+  await page.locator('.map-area').scrollIntoViewIfNeeded();
   await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-map.png`});
   await page.locator('#detail .detail-options>summary').click();
   assert(await page.getByRole('button',{name:'Reportar actividad',exact:true}).isVisible(),'Actions cannot open '+name);

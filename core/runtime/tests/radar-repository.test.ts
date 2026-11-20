@@ -7,7 +7,7 @@ test("map query binds bounds and country and normalizes rows",async()=>{
  expect(query).toContain("e.published");expect(query).toContain("LIMIT 1000");
  return [{id:"a",name:"Shop",category:"shop",country:"PA",latitude:"8",longitude:"-80",published:true,reports:"[]"}];
  }});
- expect(await repo.listPublished("PA",bounds)).toEqual([{id:"a",name:"Shop",category:"shop",country:"PA",latitude:8,longitude:-80,published:true,reports:[]}]);
+ expect(await repo.listPublished("PA",bounds)).toEqual([{id:"a",name:"Shop",category:"shop",country:"PA",latitude:8,longitude:-80,published:true,verifiedOwner:false,reports:[]}]);
 });
 test("published lookup does not grant unverified ownership",async()=>{
  const repo=createRadarRepository({unsafe:async(q,p)=>{expect(q).toContain("AND published");expect(p).toEqual(["a"]);return [{id:"a"}]}});

@@ -55,3 +55,19 @@ test('Railway TLS termination preserves only the verified Radar canonical origin
  const forged=new Request('http://direcciones.lat/',{headers:{'x-forwarded-host':'radar.direcciones.lat','x-forwarded-proto':'https'}});
  expect(await handler(forged)).toBeNull();
 });
+
+test('Radar identity uses its own favicon and canonical metadata without opening indexation',async()=>{
+ const env={RADAR_ENABLED:'true'};
+ const result=await radarPresentation(new Request(radarOrigin+'/?utm_source=test'),env);
+ const html=await result!.text();
+ expect(html).toContain('rel="canonical" href="https://radar.direcciones.lat/"');
+ expect(html).toContain('rel="icon" type="image/svg+xml" href="/radar/ui/favicon.svg"');
+ expect(html).toContain('property="og:url" content="https://radar.direcciones.lat/"');
+ expect(html).toContain('property="og:title"');
+ expect(result?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+ const icon=await radarPresentation(new Request(radarOrigin+'/radar/ui/favicon.svg'),env);
+ expect(icon?.status).toBe(200);
+ expect(icon?.headers.get('content-type')).toBe('image/svg+xml');
+ expect(await icon!.text()).toContain('<svg');
+ expect((await radarPresentation(new Request(radarOrigin+'/radar/ui/favicon.svg',{method:'HEAD'}),env))?.status).toBe(200);
+});

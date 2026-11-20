@@ -747,7 +747,7 @@ latamEmailSubmit.onclick=async()=>{
  if(['register','login','reset'].includes(route)&&password.length<12){latamEmailNotice.textContent='La contraseña debe tener al menos 12 caracteres.';return;}
  latamEmailSubmit.disabled=true;latamEmailNotice.textContent='Procesando solicitud…';
  try{
-  const response=await fetch('/v1/auth/email/'+route,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(route==='register'?{email,password,token,legalAcceptance:{accepted:true,version:legalVersion}}:{email,password,token})});
+  const response=await fetch('/v1/auth/email/'+route,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(route==='register'?{email,password,token,legalAcceptance:{accepted:true,version:legalVersion}}:['verify','reset'].includes(route)?{email,password,token,radarReturn:new URLSearchParams(location.search).get('radar')||''}:{email,password,token})});
   const result=await response.json();
   if(!response.ok)throw Error(result.error||'No se pudo completar la solicitud.');
   if(route==='login'){if(result.redirect==='https://radar.direcciones.lat/'){latamRadarContinue=true;latamEmailPassword.value='';latamEmailSubmit.textContent='Continuar';latamEmailNotice.textContent='Ingreso exitoso. Pulsa Continuar para regresar a Radar.';return;}const p=new URLSearchParams(location.search);const selected=p.get('selectedPlan');location.assign('/panel?country='+encodeURIComponent(document.getElementById('commercialCountry').value)+(p.get('origin')==='507'?'&origin=507':'')+(selected?'&selectedPlan='+encodeURIComponent(selected):''));return;}

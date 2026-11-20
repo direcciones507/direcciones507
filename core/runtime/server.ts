@@ -85,6 +85,7 @@ startLegacyCore(async req => {
     if(!token||!email||!/^[A-Za-z0-9_-]{43}$/.test(token)||email.length>320)return new Response('Enlace inválido',{status:400,headers:{'cache-control':'no-store'}});
     const next=new URL('/',url.origin);
     next.searchParams.set('token',token);next.searchParams.set('email',email);next.searchParams.set('action',url.pathname==='/recuperar-contrasena'?'reset':'verify');
+    const radarContext=url.searchParams.get('radar');if(radarContext&&/^[A-Za-z0-9_-]{43}$/.test(radarContext))next.searchParams.set('radar',radarContext);
     return new Response(null,{status:302,headers:{location:next.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
   }
   if(req.method==='GET' && url.hostname==='direcciones.lat' && url.pathname==='/sitemap.xml'){

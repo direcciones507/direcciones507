@@ -6,13 +6,13 @@ import {runInNewContext} from 'node:vm';
 // Exercise the actual shared-card handler with no browser, account or database writes.
 const source=readFileSync(new URL('../latam-presentation.ts',import.meta.url),'utf8');
 const handler=source.slice(source.indexOf('latamEmailSubmit.onclick=async()=>{'),source.indexOf('const authParams=new URLSearchParams(location.search);'));
-function card(result:any,ok=true){
+function card(result:any,ok=true,mode='login',search='?access=1'){
  const redirects:string[]=[],requests:any[]=[];
  const submit:any={disabled:false,textContent:'Ingresar con correo'},notice:any={textContent:''},password:any={value:'synthetic-password-123'};
- const sandbox:any={URLSearchParams,Error,latamEmailMode:'login',latamEmailSubmit:submit,latamEmailNotice:notice,latamEmailPassword:password,
+ const sandbox:any={URLSearchParams,Error,latamEmailMode:mode,latamEmailSubmit:submit,latamEmailNotice:notice,latamEmailPassword:password,
   latamEmailField:{value:'test@example.invalid',checkValidity:()=>true},
   document:{getElementById:()=>({value:'PA'})},
-  location:{search:'?access=1',assign:(target:string)=>redirects.push(target)},
+  history:{replaceState:()=>{}},setLatamEmailMode:()=>{},location:{search,assign:(target:string)=>redirects.push(target)},
   fetch:async(url:string,options:any)=>{requests.push({url,options});return {ok,json:async()=>result};}};
  runInNewContext('let latamRadarContinue=false;\n'+handler,sandbox);
  return {submit,notice,password,redirects,requests};
@@ -31,4 +31,10 @@ test('ordinary LATAM login preserves its existing panel destination and ignores 
  for(const redirect of [undefined,'https://evil.example/','https://radar.direcciones.lat.evil.example/']){
   const c=card({ok:true,redirect});await c.submit.onclick();assert.deepEqual(c.redirects,['/panel?country=PA']);assert.equal(c.submit.textContent,'Ingresar con correo');
  }
+});
+
+test('email verification forwards signed context without accepting a return URL',async()=>{
+ const token='t'.repeat(43),proof='p'.repeat(43),c=card({ok:true},true,'verify','?token='+token+'&radar='+proof);
+ await c.submit.onclick();const body=JSON.parse(c.requests[0].options.body);
+ assert.equal(body.token,token);assert.equal(body.radarReturn,proof);assert.equal(body.returnTo,undefined);assert.deepEqual(c.redirects,[]);
 });

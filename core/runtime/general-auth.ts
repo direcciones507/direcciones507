@@ -168,6 +168,8 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       if(password.length>128||token.length>256)return respond(400,{ok:false,error:'INVALID_INPUT'});
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>320)return respond(400,{ok:false,error:'INVALID_EMAIL'});
       const digest=(v:string)=>hash(v);
+      const emailRadarContext=async(purpose:string,code:string)=>(await signature('radar-email|'+cfg.origin+'|'+purpose+'|'+email+'|'+code,radar!.secret)).toString('base64url');
+      const emailRadarQuery=async(purpose:string,code:string)=>await radarReturn(req)?'&radar='+await emailRadarContext(purpose,code):'';
       const makeToken=()=>random();
       const passwordHash=async(v:string,salt?:string)=>{const actual=salt??secureRandomBytes(16).toString('hex');const derived=await derivePassword(v,Buffer.from(actual,'hex'),64) as Buffer;return 'scrypt:'+actual+':'+derived.toString('hex');};
       const validPassword=async(stored:string,v:string)=>{const parts=stored.split(':');if(parts.length!==3||parts[0]!=='scrypt'||!/^[0-9a-f]{32}$/.test(parts[1]))return false;if(!/^[0-9a-f]{128}$/.test(parts[2]))return false;const calculated=await passwordHash(v,parts[1]);return timingSafeEqual(Buffer.from(calculated),Buffer.from(stored));};
@@ -195,12 +197,12 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         });
         if(!id)return respond(200,{ok:true,message:'IF_ELIGIBLE_EMAIL_SENT'});
         const code=await issue(id,'VERIFY_EMAIL');
-        await mailer.send({to:email,subject:'Verifica tu correo de Direcciones',text:cfg.origin+'/verificar-correo?token='+encodeURIComponent(code)+'&email='+encodeURIComponent(email)});
+        await mailer.send({to:email,subject:'Verifica tu correo de Direcciones',text:cfg.origin+'/verificar-correo?token='+encodeURIComponent(code)+'&email='+encodeURIComponent(email)+await emailRadarQuery('VERIFY_EMAIL',code)});
         return respond(200,{ok:true,message:'IF_ELIGIBLE_EMAIL_SENT'});
       }
       if(url.pathname==='/v1/auth/email/forgot'){
         const users=await sql.unsafe("SELECT u.id::text FROM ad507.users u JOIN ad507.email_credentials c ON c.user_id=u.id WHERE lower(u.email)=$1 AND u.status='ACTIVE' AND c.email_verified_at IS NOT NULL",[email]);
-        if(users.length){const code=await issue(users[0].id,'RESET_PASSWORD');await mailer.send({to:email,subject:'Recupera tu acceso a Direcciones',text:cfg.origin+'/recuperar-contrasena?token='+encodeURIComponent(code)+'&email='+encodeURIComponent(email)});}
+        if(users.length){const code=await issue(users[0].id,'RESET_PASSWORD');await mailer.send({to:email,subject:'Recupera tu acceso a Direcciones',text:cfg.origin+'/recuperar-contrasena?token='+encodeURIComponent(code)+'&email='+encodeURIComponent(email)+await emailRadarQuery('RESET_PASSWORD',code)});}
         return respond(200,{ok:true,message:'IF_ELIGIBLE_EMAIL_SENT'});
       }
       if(url.pathname==='/v1/auth/email/verify'||url.pathname==='/v1/auth/email/reset'){
@@ -219,6 +221,8 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
           return true;
         });
         if(!updated)return respond(400,{ok:false,error:'INVALID_TOKEN'});
+        // Context grants only a fixed return intent, never a session or account permission.
+        if(radar&&cfg.origin===radar.origin&&typeof data.radarReturn==='string'&&/^[A-Za-z0-9_-]{43}$/.test(data.radarReturn)&&timingSafeEqual(Buffer.from(data.radarReturn),Buffer.from(await emailRadarContext(purpose,token))))return respond(200,{ok:true},[await radarReturnCookie()]);
         return respond(200,{ok:true});
       }
       if(url.pathname==='/v1/auth/email/login'){

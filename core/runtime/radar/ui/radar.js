@@ -31,8 +31,27 @@ async function refreshCategoryCatalog(){
 void refreshCategoryCatalog();
 window.addEventListener('focus',()=>{void refreshCategoryCatalog();});
 $('placeCategory').addEventListener('change',()=>renderCategoryRegistrationFields($('businessCategoryFields'),$('placeCategory').value));
+// Keep native selects for keyboard/assistive technology; pointer activation uses a dismissible menu.
+let activeSelectMenu=null;
+function dismissSelectMenu(restore=false){if(!activeSelectMenu)return;const {menu,select}=activeSelectMenu;activeSelectMenu=null;menu.remove();select.removeAttribute('aria-expanded');if(restore)select.focus({preventScroll:true});}
+function openSelectMenu(select){
+ dismissSelectMenu();if(select.disabled||select.multiple||select.size>1)return;
+ const menu=el('div','radar-select-popover');menu.setAttribute('role','listbox');menu.setAttribute('aria-label',select.closest('label')?.innerText?.trim().split('\\n')[0]||'Seleccionar opción');
+ const options=Array.from(select.options),buttons=[];
+ function addOption(option){if(option.hidden||option.disabled||option.parentElement?.disabled)return;const button=el('button','',option.label);button.type='button';button.setAttribute('role','option');button.setAttribute('aria-selected',String(option.selected));button.onclick=()=>{const changed=select.value!==option.value;select.value=option.value;dismissSelectMenu(true);if(changed){select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}));}};menu.append(button);buttons.push(button);}
+ for(const child of select.children){if(child.tagName==='OPTGROUP'){if(child.disabled)continue;menu.append(el('div','select-group',child.label));for(const option of child.children)addOption(option);}else if(child.tagName==='OPTION')addOption(child);}
+ if(!buttons.length)return;
+ (select.closest('dialog[open]')||document.body).append(menu);activeSelectMenu={select,menu};select.setAttribute('aria-expanded','true');
+ const rect=select.getBoundingClientRect(),width=Math.min(Math.max(rect.width,190),innerWidth-16),left=Math.max(8,Math.min(rect.left,innerWidth-width-8));menu.style.width=width+'px';menu.style.left=left+'px';const below=innerHeight-rect.bottom-8,above=rect.top-8;const available=Math.max(below,above);menu.style.maxHeight=Math.min(420,Math.max(80,available))+'px';menu.style.top=(below>=Math.min(menu.offsetHeight,above)?rect.bottom+4:Math.max(8,rect.top-menu.offsetHeight-4))+'px';
+ menu.addEventListener('keydown',event=>{const index=buttons.indexOf(document.activeElement);if(event.key==='Escape'){event.preventDefault();event.stopPropagation();dismissSelectMenu(true);}else if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length;buttons[next].focus();}else if(event.key==='Tab'){dismissSelectMenu(true);}});
+ (buttons.find(b=>b.getAttribute('aria-selected')==='true')||buttons[0]).focus({preventScroll:true});
+}
+const customSelectIds=new Set(['placeCategory','placeCountry','category','country','territory','nearbyCategory','pulseFilter','activity','nearbyRadius','alertFavorite','alertActivity','contributionsFilter']);
+document.addEventListener('pointerdown',event=>{const select=event.target.closest?.('select');if(activeSelectMenu&&!activeSelectMenu.menu.contains(event.target)&&event.target!==activeSelectMenu.select){const dialog=activeSelectMenu.select.closest('dialog[open]');dismissSelectMenu();if(dialog&&event.target===dialog){event.preventDefault();event.stopImmediatePropagation();return;}}if(select&&customSelectIds.has(select.id)&&event.button===0&&!select.disabled){event.preventDefault();if(activeSelectMenu?.select===select)dismissSelectMenu(true);else openSelectMenu(select);}},true);
+document.addEventListener('click',event=>{const select=event.target.closest?.('select');if(select&&customSelectIds.has(select.id)&&event.detail>0){event.preventDefault();}if(activeSelectMenu&&!activeSelectMenu.menu.contains(event.target)&&event.target!==activeSelectMenu.select)dismissSelectMenu();},true);
+window.addEventListener('resize',()=>dismissSelectMenu());
 for(const b of document.querySelectorAll('[data-close]'))b.onclick=()=>b.closest('dialog').close();
-for(const d of document.querySelectorAll('dialog')){d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});d.addEventListener('close',()=>{if(d.id==='accountDialog'){clearInterval(authTimer);$('accountFrame').src='about:blank';}if(d.id==='addDialog'&&!state.picking)clearPickMarker();});}
+for(const d of document.querySelectorAll('dialog')){d.addEventListener('click',e=>{if(e.target===d){if(activeSelectMenu){dismissSelectMenu();return;}const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}});d.addEventListener('close',()=>{if(activeSelectMenu?.select.closest('dialog')===d)dismissSelectMenu();if(d.id==='accountDialog'){clearInterval(authTimer);$('accountFrame').src='about:blank';}if(d.id==='addDialog'&&!state.picking)clearPickMarker();});}
 $('howButton').onclick=()=>show('howDialog');
 function scrollMap(){document.querySelector('#explorar').scrollIntoView({behavior:reduced.matches?'instant':'smooth',block:'start'});}
 function scrollPicker(){document.querySelector('.map-area').scrollIntoView({behavior:reduced.matches?'instant':'smooth',block:'start'});}
@@ -45,6 +64,7 @@ function setCountry(code,move=true){if(!countries[code])return;nearbyTarget=null
 $('country').onchange=()=>setCountry($('country').value);
 $('territory').onchange=()=>{const view=countries[state.country].views[Number($('territory').value)];const bounds=$('territory').value===''?countries[state.country].bounds:view.bounds;state.bounds=bounds;if(state.map){state.resetZoom=true;state.map.fitBounds(bounds,{padding:30,duration:reduced.matches?0:650});}scheduleLoad(0);};
 $('filtersButton').onclick=()=>{const open=$('filters').hidden;$('filters').hidden=!open;$('filtersButton').setAttribute('aria-expanded',String(open));state.map?.resize();};
+document.addEventListener('click',e=>{if(!$('filters').hidden&&!$('filters').contains(e.target)&&!$('filtersButton').contains(e.target)&&!e.target.closest?.('.radar-select-popover')&&!document.querySelector('dialog[open]')){$('filters').hidden=true;$('filtersButton').setAttribute('aria-expanded','false');state.map?.resize();}});
 $('category').onchange=render; $('activity').onchange=render;
 $('resetFilters').onclick=()=>{$('searchInput').value='';$('category').value='';$('activity').value='';setCountry(state.country);};
 $('searchForm').onsubmit=e=>{e.preventDefault();const context=searchContext($('searchInput').value,state.country);if(context.view){$('territory').value=String(countries[state.country].views.indexOf(context.view));state.bounds=context.view.bounds;if(state.map){state.resetZoom=true;state.map.fitBounds(context.view.bounds,{padding:30,duration:reduced.matches?0:650});}}scheduleLoad(0);};

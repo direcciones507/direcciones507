@@ -12,6 +12,9 @@ export function createCategoryStore(db:Database){return {
  const categories=await db.unsafe('SELECT id,group_id AS "groupId",label,sort_order AS "sortOrder",active,capacity_unit AS "capacityUnit" FROM radar.category_catalog ORDER BY sort_order,id',[]);
  return {groups,categories};
  },
+ async lookup(id:string,activeOnly=false){
+ const rows=await db.unsafe(`SELECT c.capacity_unit AS "capacityUnit" FROM radar.category_catalog c JOIN radar.category_groups g ON g.id=c.group_id WHERE c.id=$1 AND (NOT $2::boolean OR (c.active AND g.active))`,[id,activeOnly]);return rows[0]?.capacityUnit as string|undefined;
+ },
  async save(actor:string,input:unknown){
  const v=validateCategoryEntry(input);if(!v)return false;
  const rows=v.kind==='group'?await db.unsafe(`WITH saved AS (

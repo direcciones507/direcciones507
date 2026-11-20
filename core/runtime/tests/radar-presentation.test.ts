@@ -91,3 +91,26 @@ test('Radar social preview and touch icon serve fixed PNG dimensions and HEAD wi
   expect((await radarPresentation(new Request(url),{}))?.status).toBe(503);
  }
 });
+
+test('Radar SEO remains closed by default and only exposes canonical public URL after explicit release',async()=>{
+ const closed=createRadarIntegration(db,auth,{RADAR_ENABLED:'true'});
+ const open=createRadarIntegration(db,auth,{RADAR_ENABLED:'true',RADAR_INDEXING_ENABLED:'true'});
+ const request=(path:string,method='GET')=>new Request(radarOrigin+path,{method});
+ const robots=await closed(request('/robots.txt'));
+ expect(robots?.status).toBe(200);
+ const rules=await robots!.text();
+ for(const path of ['/v1/','/auth/','/radar/account','/panel','/admin'])expect(rules).toContain('Disallow: '+path);
+ expect(rules).not.toContain('Sitemap:');
+ expect((await closed(request('/sitemap.xml')))?.status).toBe(404);
+ expect((await closed(request('/')))?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+ expect((await open(request('/')))?.headers.get('x-robots-tag')).toBe('index, follow');
+ expect((await open(request('/radar')))?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+ expect(await (await open(request('/robots.txt')))!.text()).toContain('Sitemap: '+radarOrigin+'/sitemap.xml');
+ const sitemap=await open(request('/sitemap.xml'));
+ expect(sitemap?.status).toBe(200);
+ expect(sitemap?.headers.get('content-type')).toContain('application/xml');
+ expect(await sitemap!.text()).toContain('<loc>'+radarOrigin+'/</loc>');
+ expect((await (await open(request('/sitemap.xml','HEAD')))!.arrayBuffer()).byteLength).toBe(0);
+ expect(await open(new Request('https://direcciones.lat/sitemap.xml'))).toBeNull();
+ expect((await createRadarIntegration(db,auth,{})(request('/robots.txt')))?.status).toBe(503);
+});

@@ -85,7 +85,7 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
  };
 }
 
-export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)})){
+export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),privateEnabled=false){
  const tile=doc.getElementById('radarTile'),view=doc.getElementById('radarView'),out=doc.getElementById('radarAdminRows');if(!tile||!view||!out)return;
  const text=(tag:string,value:string)=>{const n=doc.createElement(tag);n.textContent=value;return n;};
  let offset=0,query='';
@@ -100,7 +100,7 @@ export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>
      const row=doc.createElement('article');row.className='tile';
      row.append(text('h4',String(item.name||'Establecimiento')),text('p',String(item.country||'')+(item.accountName?' · '+String(item.accountName):'')));
      if(item.reason)row.append(text('p',String(item.reason)));
-     if(key==='requests'||key==='owners'){
+     if(privateEnabled&&(key==='requests'||key==='owners')){
       const inspect=doc.createElement('button');inspect.type='button';inspect.className='btn';inspect.textContent='Consultar identificación privada';
       const privateStatus=text('p','');privateStatus.setAttribute('role','status');
       inspect.onclick=async()=>{
@@ -187,5 +187,5 @@ export function withCoreRadarAdmin(html:string,env:Record<string,string|undefine
  const categoryMarkup=env.RADAR_CATEGORY_CATALOG_ENABLED==='true'?'<button type="button" id="radarCategoryButton" class="btn">Categorías Radar</button><div id="radarCategoryRows" hidden aria-live="polite"></div>':'';
  return html.replace('<button id="statsTile"','<button id="radarTile" class="tile action"><b>Radar</b><span class="muted">Establecimientos y verificación voluntaria</span></button><button id="statsTile"')
   .replace('</main>','<section id="radarView" class="card list hidden"><div class="listhead"><h2>Radar</h2><button type="button" id="radarClose" class="btn">Cerrar</button></div><p>La verificación es manual e independiente de pagos. No publicar videos ni documentos de comprobación. Listas limitadas a 100 registros por sección.</p>'+categoryMarkup+'<label>Buscar establecimiento<input id="radarAdminSearch" type="search" maxlength="100"></label><button type="button" id="radarAdminFilter" class="btn">Buscar</button><div id="radarAdminRows" class="rows" aria-live="polite"></div></section></main>')
-  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')();</script></body>');
+  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')(undefined,undefined,'+(env.RADAR_OWNER_PRIVATE_ENABLED==='true')+');</script></body>');
 }

@@ -1,0 +1,29 @@
+{
+  "country": "PA",
+  "level": "ADM1",
+  "status": "NAMES_VERIFIED_GEOMETRY_PENDING",
+  "source": {
+    "title": "Conjunto de Datos de Límites Político-Administrativos de la República de Panamá, escala 1:25 000, año 2025",
+    "provider": "Instituto Geográfico Nacional Tommy Guardia / ANATI",
+    "url": "https://services6.arcgis.com/LC15PAkubfypkSFO/ArcGIS/rest/services/provincias_panama/FeatureServer/0",
+    "checked": "2026-11-20",
+    "geometryStatus": "Unavailable in current session",
+    "licenseStatus": "Confirm redistribution terms before importing geometry"
+  },
+  "names": [
+    "Bocas del Toro",
+    "Chiriquí",
+    "Coclé",
+    "Colón",
+    "Comarca Emberá-Wounaán",
+    "Comarca Kuna Yala",
+    "Comarca Ngäbe-Buglé",
+    "Darién",
+    "Herrera",
+    "Los Santos",
+    "Panamá",
+    "Panamá Oeste",
+    "Veraguas"
+  ],
+  "scope": "13 land units; do not import the seven water records as administrative regions."
+}

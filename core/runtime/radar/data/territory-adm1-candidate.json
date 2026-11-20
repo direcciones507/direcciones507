@@ -1,0 +1,2430 @@
+{
+  "version": 1,
+  "level": "ADM1",
+  "status": "REVIEW_REQUIRED",
+  "source": {
+    "title": "GeoJSON Atlas / Natural Earth 1:10m",
+    "commit": "644874ada665a0f2c0c81a0d47adacea97365c30",
+    "license": "CC0-1.0",
+    "licenseUrl": "https://github.com/BenPortner/geojson-atlas/blob/644874ada665a0f2c0c81a0d47adacea97365c30/LICENSE.txt",
+    "attribution": "Natural Earth, via BenPortner/geojson-atlas",
+    "transformation": "Camera extents only, rounded outward; original source names and IDs retained."
+  },
+  "countries": {
+    "PA": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/PA.geojson",
+      "expectedCount": 13,
+      "sourceFeatureCount": 12,
+      "regions": [
+        {
+          "id": "PAN-1958",
+          "name": "Bocas del Toro",
+          "sourceIso": "PA-1",
+          "bounds": [
+            [
+              -82.94429,
+              8.80879
+            ],
+            [
+              -82.00674,
+              9.60273
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1332",
+          "name": "Chiriquí",
+          "sourceIso": "PA-4",
+          "bounds": [
+            [
+              -83.05325,
+              7.99728
+            ],
+            [
+              -81.51047,
+              8.92024
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1336",
+          "name": "Coclé",
+          "sourceIso": "PA-2",
+          "bounds": [
+            [
+              -80.82209,
+              8.09137
+            ],
+            [
+              -80.0408,
+              9.04749
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1337",
+          "name": "Colón",
+          "sourceIso": "PA-3",
+          "bounds": [
+            [
+              -80.8626,
+              8.61384
+            ],
+            [
+              -79.07453,
+              9.6293
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1418",
+          "name": "Darién",
+          "sourceIso": "PA-5",
+          "bounds": [
+            [
+              -78.45847,
+              7.23509
+            ],
+            [
+              -77.16327,
+              9.07325
+            ]
+          ]
+        },
+        {
+          "id": "PAN-3455",
+          "name": "Emberá",
+          "sourceIso": "PA-EM",
+          "bounds": [
+            [
+              -78.33449,
+              7.58989
+            ],
+            [
+              -77.26943,
+              8.77663
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1338",
+          "name": "Herrera",
+          "sourceIso": "PA-6",
+          "bounds": [
+            [
+              -80.947,
+              7.52959
+            ],
+            [
+              -80.3755,
+              8.13855
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1419",
+          "name": "Kuna Yala",
+          "sourceIso": "PA-KY",
+          "bounds": [
+            [
+              -79.28105,
+              8.53781
+            ],
+            [
+              -77.37352,
+              9.57332
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1339",
+          "name": "Los Santos",
+          "sourceIso": "PA-7",
+          "bounds": [
+            [
+              -80.72207,
+              7.23672
+            ],
+            [
+              -79.99352,
+              7.99723
+            ]
+          ]
+        },
+        {
+          "id": "PAN-3454",
+          "name": "Ngöbe Buglé",
+          "sourceIso": "PA-NB",
+          "bounds": [
+            [
+              -82.43964,
+              8.26215
+            ],
+            [
+              -81.15607,
+              9.17952
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1340",
+          "name": "Panama",
+          "sourceIso": "PA-8",
+          "bounds": [
+            [
+              -80.16451,
+              8.20898
+            ],
+            [
+              -78.04254,
+              9.47901
+            ]
+          ]
+        },
+        {
+          "id": "PAN-1341",
+          "name": "Veraguas",
+          "sourceIso": "PA-9",
+          "bounds": [
+            [
+              -81.88281,
+              7.20571
+            ],
+            [
+              -80.60407,
+              8.8857
+            ]
+          ]
+        }
+      ],
+      "excluded": [],
+      "notes": "Source omits Panamá Oeste; other geometry may include older boundaries. Do not activate."
+    },
+    "CO": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/CO.geojson",
+      "expectedCount": 33,
+      "sourceFeatureCount": 34,
+      "regions": [
+        {
+          "id": "COL-1283",
+          "name": "Amazonas",
+          "sourceIso": "CO-AMA",
+          "bounds": [
+            [
+              -74.41472,
+              -4.23649
+            ],
+            [
+              -69.41831,
+              0.13323
+            ]
+          ]
+        },
+        {
+          "id": "COL-1314",
+          "name": "Antioquia",
+          "sourceIso": "CO-ANT",
+          "bounds": [
+            [
+              -77.12638,
+              5.43364
+            ],
+            [
+              -73.88781,
+              8.86987
+            ]
+          ]
+        },
+        {
+          "id": "COL-1420",
+          "name": "Arauca",
+          "sourceIso": "CO-ARA",
+          "bounds": [
+            [
+              -72.35091,
+              6.02627
+            ],
+            [
+              -69.43201,
+              7.09993
+            ]
+          ]
+        },
+        {
+          "id": "COL-1412",
+          "name": "Atlántico",
+          "sourceIso": "CO-ATL",
+          "bounds": [
+            [
+              -75.26639,
+              10.26741
+            ],
+            [
+              -74.72181,
+              11.08767
+            ]
+          ]
+        },
+        {
+          "id": "COL-1399",
+          "name": "Bogota",
+          "sourceIso": "CO-CUN",
+          "bounds": [
+            [
+              -74.49357,
+              3.67538
+            ],
+            [
+              -73.99503,
+              4.83552
+            ]
+          ]
+        },
+        {
+          "id": "COL-1413",
+          "name": "Bolívar",
+          "sourceIso": "CO-BOL",
+          "bounds": [
+            [
+              -75.70358,
+              6.99605
+            ],
+            [
+              -73.75469,
+              10.81087
+            ]
+          ]
+        },
+        {
+          "id": "COL-1315",
+          "name": "Boyacá",
+          "sourceIso": "CO-BOY",
+          "bounds": [
+            [
+              -74.6625,
+              4.6608
+            ],
+            [
+              -71.96402,
+              7.04014
+            ]
+          ]
+        },
+        {
+          "id": "COL-1397",
+          "name": "Caldas",
+          "sourceIso": "CO-CAL",
+          "bounds": [
+            [
+              -75.92681,
+              4.80006
+            ],
+            [
+              -74.63184,
+              5.77914
+            ]
+          ]
+        },
+        {
+          "id": "COL-1403",
+          "name": "Caquetá",
+          "sourceIso": "CO-CAQ",
+          "bounds": [
+            [
+              -76.29705,
+              -0.68498
+            ],
+            [
+              -71.32233,
+              2.95073
+            ]
+          ]
+        },
+        {
+          "id": "COL-1422",
+          "name": "Casanare",
+          "sourceIso": "CO-CAS",
+          "bounds": [
+            [
+              -73.06861,
+              4.29823
+            ],
+            [
+              -69.85575,
+              6.35135
+            ]
+          ]
+        },
+        {
+          "id": "COL-1404",
+          "name": "Cauca",
+          "sourceIso": "CO-CAU",
+          "bounds": [
+            [
+              -78.2203,
+              0.97213
+            ],
+            [
+              -75.78102,
+              3.31794
+            ]
+          ]
+        },
+        {
+          "id": "COL-1414",
+          "name": "Cesar",
+          "sourceIso": "CO-CES",
+          "bounds": [
+            [
+              -74.1371,
+              7.67821
+            ],
+            [
+              -72.91523,
+              10.86632
+            ]
+          ]
+        },
+        {
+          "id": "COL-1415",
+          "name": "Chocó",
+          "sourceIso": "CO-CHO",
+          "bounds": [
+            [
+              -77.89584,
+              3.99464
+            ],
+            [
+              -76.04248,
+              8.67842
+            ]
+          ]
+        },
+        {
+          "id": "COL-1316",
+          "name": "Córdoba",
+          "sourceIso": "CO-COR",
+          "bounds": [
+            [
+              -76.50512,
+              7.36415
+            ],
+            [
+              -74.79925,
+              9.4462
+            ]
+          ]
+        },
+        {
+          "id": "COL-1398",
+          "name": "Cundinamarca",
+          "sourceIso": "CO-CUN",
+          "bounds": [
+            [
+              -74.89116,
+              3.70401
+            ],
+            [
+              -73.05297,
+              5.82639
+            ]
+          ]
+        },
+        {
+          "id": "COL-1424",
+          "name": "Guainía",
+          "sourceIso": "CO-GUA",
+          "bounds": [
+            [
+              -70.90939,
+              1.17269
+            ],
+            [
+              -66.87506,
+              4.03988
+            ]
+          ]
+        },
+        {
+          "id": "COL-1423",
+          "name": "Guaviare",
+          "sourceIso": "CO-GUV",
+          "bounds": [
+            [
+              -73.67506,
+              0.66404
+            ],
+            [
+              -69.99445,
+              2.90543
+            ]
+          ]
+        },
+        {
+          "id": "COL-1405",
+          "name": "Huila",
+          "sourceIso": "CO-HUI",
+          "bounds": [
+            [
+              -76.60072,
+              1.56011
+            ],
+            [
+              -74.49356,
+              3.77213
+            ]
+          ]
+        },
+        {
+          "id": "COL-1318",
+          "name": "La Guajira",
+          "sourceIso": "CO-LAG",
+          "bounds": [
+            [
+              -73.65101,
+              10.40024
+            ],
+            [
+              -71.10749,
+              12.46833
+            ]
+          ]
+        },
+        {
+          "id": "COL-1416",
+          "name": "Magdalena",
+          "sourceIso": "CO-MAG",
+          "bounds": [
+            [
+              -74.94775,
+              8.88767
+            ],
+            [
+              -73.56183,
+              11.3579
+            ]
+          ]
+        },
+        {
+          "id": "COL-1425",
+          "name": "Meta",
+          "sourceIso": "CO-MET",
+          "bounds": [
+            [
+              -74.89752,
+              1.6245
+            ],
+            [
+              -71.06033,
+              4.91939
+            ]
+          ]
+        },
+        {
+          "id": "COL-1406",
+          "name": "Nariño",
+          "sourceIso": "CO-NAR",
+          "bounds": [
+            [
+              -79.02152,
+              0.33419
+            ],
+            [
+              -76.84365,
+              2.68734
+            ]
+          ]
+        },
+        {
+          "id": "COL-1421",
+          "name": "Norte de Santander",
+          "sourceIso": "CO-NSA",
+          "bounds": [
+            [
+              -73.64034,
+              6.87542
+            ],
+            [
+              -71.99381,
+              9.29538
+            ]
+          ]
+        },
+        {
+          "id": "COL-1407",
+          "name": "Putumayo",
+          "sourceIso": "CO-PUT",
+          "bounds": [
+            [
+              -77.23857,
+              -0.56376
+            ],
+            [
+              -73.86414,
+              1.43775
+            ]
+          ]
+        },
+        {
+          "id": "COL-1400",
+          "name": "Quindío",
+          "sourceIso": "CO-QUI",
+          "bounds": [
+            [
+              -75.89038,
+              4.07851
+            ],
+            [
+              -75.3896,
+              4.72023
+            ]
+          ]
+        },
+        {
+          "id": "COL-1401",
+          "name": "Risaralda",
+          "sourceIso": "CO-RIS",
+          "bounds": [
+            [
+              -76.18292,
+              4.67136
+            ],
+            [
+              -75.37802,
+              5.57734
+            ]
+          ]
+        },
+        {
+          "id": "COL-1342",
+          "name": "San Andrés y Providencia",
+          "sourceIso": "CO-SAP",
+          "bounds": [
+            [
+              -81.72371,
+              12.50242
+            ],
+            [
+              -80.08934,
+              13.57836
+            ]
+          ]
+        },
+        {
+          "id": "COL-1317",
+          "name": "Santander",
+          "sourceIso": "CO-SAN",
+          "bounds": [
+            [
+              -74.51943,
+              5.7114
+            ],
+            [
+              -72.47686,
+              8.16147
+            ]
+          ]
+        },
+        {
+          "id": "COL-1417",
+          "name": "Sucre",
+          "sourceIso": "CO-SUC",
+          "bounds": [
+            [
+              -75.70514,
+              8.27988
+            ],
+            [
+              -74.54213,
+              10.14313
+            ]
+          ]
+        },
+        {
+          "id": "COL-1402",
+          "name": "Tolima",
+          "sourceIso": "CO-TOL",
+          "bounds": [
+            [
+              -76.113,
+              2.8892
+            ],
+            [
+              -74.4802,
+              5.31441
+            ]
+          ]
+        },
+        {
+          "id": "COL-1408",
+          "name": "Valle del Cauca",
+          "sourceIso": "CO-VAC",
+          "bounds": [
+            [
+              -77.47766,
+              3.09286
+            ],
+            [
+              -75.70808,
+              5.03572
+            ]
+          ]
+        },
+        {
+          "id": "COL-1426",
+          "name": "Vaupés",
+          "sourceIso": "CO-VAU",
+          "bounds": [
+            [
+              -72.03576,
+              -1.23931
+            ],
+            [
+              -69.13745,
+              2.10117
+            ]
+          ]
+        },
+        {
+          "id": "COL-1427",
+          "name": "Vichada",
+          "sourceIso": "CO-VID",
+          "bounds": [
+            [
+              -71.0637,
+              2.78251
+            ],
+            [
+              -67.41859,
+              6.31375
+            ]
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "id": "COL+99?",
+          "reason": "Unnamed source feature; classification requires verification"
+        }
+      ],
+      "notes": "Unnamed feature excluded; duplicate source ISO for Bogotá and Cundinamarca; verify both extents and modern codes."
+    },
+    "CR": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/CR.geojson",
+      "expectedCount": 7,
+      "sourceFeatureCount": 7,
+      "regions": [
+        {
+          "id": "CRI-1333",
+          "name": "Alajuela",
+          "sourceIso": "CR-A",
+          "bounds": [
+            [
+              -85.44119,
+              9.82451
+            ],
+            [
+              -84.15773,
+              11.07042
+            ]
+          ]
+        },
+        {
+          "id": "CRI-1327",
+          "name": "Cartago",
+          "sourceIso": "CR-C",
+          "bounds": [
+            [
+              -84.07929,
+              9.46758
+            ],
+            [
+              -83.31891,
+              10.13623
+            ]
+          ]
+        },
+        {
+          "id": "CRI-1334",
+          "name": "Guanacaste",
+          "sourceIso": "CR-G",
+          "bounds": [
+            [
+              -85.94645,
+              9.72482
+            ],
+            [
+              -84.76399,
+              11.20994
+            ]
+          ]
+        },
+        {
+          "id": "CRI-1328",
+          "name": "Heredia",
+          "sourceIso": "CR-H",
+          "bounds": [
+            [
+              -84.20186,
+              9.94564
+            ],
+            [
+              -83.70356,
+              10.78945
+            ]
+          ]
+        },
+        {
+          "id": "CRI-1329",
+          "name": "Limón",
+          "sourceIso": "CR-L",
+          "bounds": [
+            [
+              -83.94273,
+              9.07064
+            ],
+            [
+              -82.56283,
+              10.93797
+            ]
+          ]
+        },
+        {
+          "id": "CRI-1330",
+          "name": "Puntarenas",
+          "sourceIso": "CR-P",
+          "bounds": [
+            [
+              -87.11767,
+              5.51508
+            ],
+            [
+              -82.71936,
+              10.33198
+            ]
+          ]
+        },
+        {
+          "id": "CRI-1331",
+          "name": "San José",
+          "sourceIso": "CR-SJ",
+          "bounds": [
+            [
+              -84.59163,
+              9.06606
+            ],
+            [
+              -83.42939,
+              10.19897
+            ]
+          ]
+        }
+      ],
+      "excluded": [],
+      "notes": "Counts match reference only; verify names, geometry and current official coverage."
+    },
+    "GT": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/GT.geojson",
+      "expectedCount": 22,
+      "sourceFeatureCount": 22,
+      "regions": [
+        {
+          "id": "GTM-1948",
+          "name": "Alta Verapaz",
+          "sourceIso": "GT-AV",
+          "bounds": [
+            [
+              -90.81815,
+              15.15106
+            ],
+            [
+              -89.39634,
+              16.08238
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1942",
+          "name": "Baja Verapaz",
+          "sourceIso": "GT-BV",
+          "bounds": [
+            [
+              -90.87192,
+              14.88152
+            ],
+            [
+              -89.91737,
+              15.29571
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1949",
+          "name": "Chimaltenango",
+          "sourceIso": "GT-CM",
+          "bounds": [
+            [
+              -91.11415,
+              14.38284
+            ],
+            [
+              -90.65761,
+              14.94188
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1960",
+          "name": "Chiquimula",
+          "sourceIso": "GT-CQ",
+          "bounds": [
+            [
+              -89.73636,
+              14.41547
+            ],
+            [
+              -89.14269,
+              14.94932
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1956",
+          "name": "El Progreso",
+          "sourceIso": "GT-PR",
+          "bounds": [
+            [
+              -90.41761,
+              14.67429
+            ],
+            [
+              -89.76456,
+              15.15985
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1950",
+          "name": "Escuintla",
+          "sourceIso": "GT-ES",
+          "bounds": [
+            [
+              -91.55187,
+              13.91113
+            ],
+            [
+              -90.51571,
+              14.4893
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1951",
+          "name": "Guatemala",
+          "sourceIso": "GT-GU",
+          "bounds": [
+            [
+              -90.76523,
+              14.25623
+            ],
+            [
+              -90.20908,
+              14.91703
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1943",
+          "name": "Huehuetenango",
+          "sourceIso": "GT-HU",
+          "bounds": [
+            [
+              -92.10594,
+              15.15597
+            ],
+            [
+              -90.99479,
+              16.06987
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1959",
+          "name": "Izabal",
+          "sourceIso": "GT-IZ",
+          "bounds": [
+            [
+              -89.66137,
+              15.07128
+            ],
+            [
+              -88.22093,
+              15.96964
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1961",
+          "name": "Jalapa",
+          "sourceIso": "GT-JA",
+          "bounds": [
+            [
+              -90.28521,
+              14.43348
+            ],
+            [
+              -89.66023,
+              14.87765
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1962",
+          "name": "Jutiapa",
+          "sourceIso": "GT-JU",
+          "bounds": [
+            [
+              -90.29286,
+              13.7314
+            ],
+            [
+              -89.49614,
+              14.57762
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1944",
+          "name": "Petén",
+          "sourceIso": "GT-PE",
+          "bounds": [
+            [
+              -91.44251,
+              15.8421
+            ],
+            [
+              -89.1492,
+              17.81603
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1945",
+          "name": "Quezaltenango",
+          "sourceIso": "GT-QZ",
+          "bounds": [
+            [
+              -92.13797,
+              14.51172
+            ],
+            [
+              -91.42829,
+              15.22088
+            ]
+          ]
+        },
+        {
+          "id": "GTM-3467",
+          "name": "Quiché",
+          "sourceIso": "GT-QC",
+          "bounds": [
+            [
+              -91.33223,
+              14.8071
+            ],
+            [
+              -90.4315,
+              16.07927
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1946",
+          "name": "Retalhuleu",
+          "sourceIso": "GT-RE",
+          "bounds": [
+            [
+              -92.1624,
+              14.11734
+            ],
+            [
+              -91.5105,
+              14.74014
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1953",
+          "name": "Sacatepéquez",
+          "sourceIso": "GT-SA",
+          "bounds": [
+            [
+              -90.89148,
+              14.4049
+            ],
+            [
+              -90.61759,
+              14.77791
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1947",
+          "name": "San Marcos",
+          "sourceIso": "GT-SM",
+          "bounds": [
+            [
+              -92.24626,
+              14.48732
+            ],
+            [
+              -91.6161,
+              15.45447
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1957",
+          "name": "Santa Rosa",
+          "sourceIso": "GT-SR",
+          "bounds": [
+            [
+              -90.62744,
+              13.78871
+            ],
+            [
+              -90.05033,
+              14.51907
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1954",
+          "name": "Sololá",
+          "sourceIso": "GT-SO",
+          "bounds": [
+            [
+              -91.47661,
+              14.53043
+            ],
+            [
+              -91.06882,
+              14.91067
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1952",
+          "name": "Suchitepéquez",
+          "sourceIso": "GT-SU",
+          "bounds": [
+            [
+              -91.66523,
+              14.04829
+            ],
+            [
+              -91.09539,
+              14.73957
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1955",
+          "name": "Totonicapán",
+          "sourceIso": "GT-TO",
+          "bounds": [
+            [
+              -91.59389,
+              14.81764
+            ],
+            [
+              -91.18298,
+              15.26491
+            ]
+          ]
+        },
+        {
+          "id": "GTM-1963",
+          "name": "Zacapa",
+          "sourceIso": "GT-ZA",
+          "bounds": [
+            [
+              -89.878,
+              14.77987
+            ],
+            [
+              -89.14694,
+              15.3029
+            ]
+          ]
+        }
+      ],
+      "excluded": [],
+      "notes": "Counts match reference only; verify names, geometry and current official coverage."
+    },
+    "SV": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/SV.geojson",
+      "expectedCount": 14,
+      "sourceFeatureCount": 14,
+      "regions": [
+        {
+          "id": "SLV-1343",
+          "name": "Ahuachapán",
+          "sourceIso": "SV-AH",
+          "bounds": [
+            [
+              -90.11478,
+              13.66507
+            ],
+            [
+              -89.69586,
+              14.06008
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1344",
+          "name": "Cabañas",
+          "sourceIso": "SV-CA",
+          "bounds": [
+            [
+              -88.97653,
+              13.74869
+            ],
+            [
+              -88.488,
+              14.01613
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1357",
+          "name": "Chalatenango",
+          "sourceIso": "SV-CH",
+          "bounds": [
+            [
+              -89.42718,
+              13.94635
+            ],
+            [
+              -88.69044,
+              14.41308
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1345",
+          "name": "Cuscatlán",
+          "sourceIso": "SV-CU",
+          "bounds": [
+            [
+              -89.16084,
+              13.64229
+            ],
+            [
+              -88.85025,
+              14.07597
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1346",
+          "name": "La Libertad",
+          "sourceIso": "SV-LI",
+          "bounds": [
+            [
+              -89.60943,
+              13.41445
+            ],
+            [
+              -89.11186,
+              14.07163
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1347",
+          "name": "La Paz",
+          "sourceIso": "SV-PA",
+          "bounds": [
+            [
+              -89.14438,
+              13.26608
+            ],
+            [
+              -88.78132,
+              13.67294
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1350",
+          "name": "La Unión",
+          "sourceIso": "SV-UN",
+          "bounds": [
+            [
+              -88.09148,
+              13.15863
+            ],
+            [
+              -87.69319,
+              13.91587
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1351",
+          "name": "Morazán",
+          "sourceIso": "SV-MO",
+          "bounds": [
+            [
+              -88.27418,
+              13.54178
+            ],
+            [
+              -87.93635,
+              13.99287
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1352",
+          "name": "San Miguel",
+          "sourceIso": "SV-SM",
+          "bounds": [
+            [
+              -88.5324,
+              13.17119
+            ],
+            [
+              -88.00855,
+              13.91912
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1349",
+          "name": "San Salvador",
+          "sourceIso": "SV-SS",
+          "bounds": [
+            [
+              -89.27411,
+              13.48811
+            ],
+            [
+              -89.02357,
+              14.06822
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1353",
+          "name": "San Vicente",
+          "sourceIso": "SV-SV",
+          "bounds": [
+            [
+              -88.89607,
+              13.2593
+            ],
+            [
+              -88.48733,
+              13.81229
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1358",
+          "name": "Santa Ana",
+          "sourceIso": "SV-SA",
+          "bounds": [
+            [
+              -89.75545,
+              13.77507
+            ],
+            [
+              -89.24651,
+              14.44538
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1348",
+          "name": "Sonsonate",
+          "sourceIso": "SV-SO",
+          "bounds": [
+            [
+              -89.95349,
+              13.51306
+            ],
+            [
+              -89.43616,
+              13.90897
+            ]
+          ]
+        },
+        {
+          "id": "SLV-1354",
+          "name": "Usulután",
+          "sourceIso": "SV-US",
+          "bounds": [
+            [
+              -88.81716,
+              13.16042
+            ],
+            [
+              -88.1125,
+              13.69284
+            ]
+          ]
+        }
+      ],
+      "excluded": [],
+      "notes": "Counts match reference only; verify names, geometry and current official coverage."
+    },
+    "HN": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/HN.geojson",
+      "expectedCount": 18,
+      "sourceFeatureCount": 18,
+      "regions": [
+        {
+          "id": "HND-637",
+          "name": "Atlántida",
+          "sourceIso": "HN-AT",
+          "bounds": [
+            [
+              -87.79487,
+              15.42655
+            ],
+            [
+              -86.36167,
+              15.9355
+            ]
+          ]
+        },
+        {
+          "id": "HND-661",
+          "name": "Choluteca",
+          "sourceIso": "HN-CH",
+          "bounds": [
+            [
+              -87.51224,
+              12.97977
+            ],
+            [
+              -86.70186,
+              13.76061
+            ]
+          ]
+        },
+        {
+          "id": "HND-638",
+          "name": "Colón",
+          "sourceIso": "HN-CL",
+          "bounds": [
+            [
+              -86.44725,
+              15.06874
+            ],
+            [
+              -84.99994,
+              16.03315
+            ]
+          ]
+        },
+        {
+          "id": "HND-646",
+          "name": "Comayagua",
+          "sourceIso": "HN-CM",
+          "bounds": [
+            [
+              -88.07788,
+              14.05102
+            ],
+            [
+              -87.20834,
+              15.05764
+            ]
+          ]
+        },
+        {
+          "id": "HND-651",
+          "name": "Copán",
+          "sourceIso": "HN-CP",
+          "bounds": [
+            [
+              -89.23243,
+              14.5003
+            ],
+            [
+              -88.63928,
+              15.29997
+            ]
+          ]
+        },
+        {
+          "id": "HND-647",
+          "name": "Cortés",
+          "sourceIso": "HN-CR",
+          "bounds": [
+            [
+              -88.46744,
+              14.80354
+            ],
+            [
+              -87.72515,
+              15.92103
+            ]
+          ]
+        },
+        {
+          "id": "HND-662",
+          "name": "El Paraíso",
+          "sourceIso": "HN-EP",
+          "bounds": [
+            [
+              -87.22413,
+              13.50579
+            ],
+            [
+              -85.56314,
+              14.42383
+            ]
+          ]
+        },
+        {
+          "id": "HND-639",
+          "name": "Francisco Morazán",
+          "sourceIso": "HN-FM",
+          "bounds": [
+            [
+              -87.6494,
+              13.66004
+            ],
+            [
+              -86.71356,
+              15.0319
+            ]
+          ]
+        },
+        {
+          "id": "HND-640",
+          "name": "Gracias a Dios",
+          "sourceIso": "HN-GD",
+          "bounds": [
+            [
+              -84.99995,
+              14.61947
+            ],
+            [
+              -83.13044,
+              15.98795
+            ]
+          ]
+        },
+        {
+          "id": "HND-648",
+          "name": "Intibucá",
+          "sourceIso": "HN-IN",
+          "bounds": [
+            [
+              -88.5023,
+              13.85119
+            ],
+            [
+              -87.84778,
+              14.66485
+            ]
+          ]
+        },
+        {
+          "id": "HND-641",
+          "name": "Islas de la Bahía",
+          "sourceIso": "HN-IB",
+          "bounds": [
+            [
+              -86.99741,
+              16.06638
+            ],
+            [
+              -83.91234,
+              17.41865
+            ]
+          ]
+        },
+        {
+          "id": "HND-649",
+          "name": "La Paz",
+          "sourceIso": "HN-LP",
+          "bounds": [
+            [
+              -88.23224,
+              13.83419
+            ],
+            [
+              -87.59658,
+              14.4291
+            ]
+          ]
+        },
+        {
+          "id": "HND-652",
+          "name": "Lempira",
+          "sourceIso": "HN-LE",
+          "bounds": [
+            [
+              -88.97888,
+              13.96906
+            ],
+            [
+              -88.3168,
+              14.94168
+            ]
+          ]
+        },
+        {
+          "id": "HND-653",
+          "name": "Ocotepeque",
+          "sourceIso": "HN-OC",
+          "bounds": [
+            [
+              -89.3638,
+              14.21017
+            ],
+            [
+              -88.71532,
+              14.72892
+            ]
+          ]
+        },
+        {
+          "id": "HND-642",
+          "name": "Olancho",
+          "sourceIso": "HN-OL",
+          "bounds": [
+            [
+              -86.98748,
+              14.04201
+            ],
+            [
+              -84.99994,
+              15.585
+            ]
+          ]
+        },
+        {
+          "id": "HND-650",
+          "name": "Santa Bárbara",
+          "sourceIso": "HN-SB",
+          "bounds": [
+            [
+              -88.7609,
+              14.64877
+            ],
+            [
+              -87.98581,
+              15.54045
+            ]
+          ]
+        },
+        {
+          "id": "HND-645",
+          "name": "Valle",
+          "sourceIso": "HN-VA",
+          "bounds": [
+            [
+              -87.81717,
+              13.24917
+            ],
+            [
+              -87.34778,
+              13.84991
+            ]
+          ]
+        },
+        {
+          "id": "HND-643",
+          "name": "Yoro",
+          "sourceIso": "HN-YO",
+          "bounds": [
+            [
+              -87.93512,
+              14.89774
+            ],
+            [
+              -86.23289,
+              15.72101
+            ]
+          ]
+        }
+      ],
+      "excluded": [],
+      "notes": "Counts match reference only; verify names, geometry and current official coverage."
+    },
+    "NI": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/NI.geojson",
+      "expectedCount": 17,
+      "sourceFeatureCount": 17,
+      "regions": [
+        {
+          "id": "NIC-657",
+          "name": "Atlántico Norte",
+          "sourceIso": "NI-AN",
+          "bounds": [
+            [
+              -85.50638,
+              13.03026
+            ],
+            [
+              -82.72569,
+              15.03097
+            ]
+          ]
+        },
+        {
+          "id": "NIC-644",
+          "name": "Atlántico Sur",
+          "sourceIso": "NI-AS",
+          "bounds": [
+            [
+              -85.2279,
+              10.94399
+            ],
+            [
+              -83.02114,
+              13.28235
+            ]
+          ]
+        },
+        {
+          "id": "NIC-668",
+          "name": "Boaco",
+          "sourceIso": "NI-BO",
+          "bounds": [
+            [
+              -85.97837,
+              12.04133
+            ],
+            [
+              -84.96852,
+              12.79367
+            ]
+          ]
+        },
+        {
+          "id": "NIC-654",
+          "name": "Carazo",
+          "sourceIso": "NI-CA",
+          "bounds": [
+            [
+              -86.50235,
+              11.51946
+            ],
+            [
+              -86.07246,
+              11.957
+            ]
+          ]
+        },
+        {
+          "id": "NIC-663",
+          "name": "Chinandega",
+          "sourceIso": "NI-CI",
+          "bounds": [
+            [
+              -87.68583,
+              12.45838
+            ],
+            [
+              -86.6546,
+              13.29335
+            ]
+          ]
+        },
+        {
+          "id": "NIC-669",
+          "name": "Chontales",
+          "sourceIso": "NI-CO",
+          "bounds": [
+            [
+              -85.65666,
+              11.63146
+            ],
+            [
+              -84.57462,
+              12.64952
+            ]
+          ]
+        },
+        {
+          "id": "NIC-664",
+          "name": "Estelí",
+          "sourceIso": "NI-ES",
+          "bounds": [
+            [
+              -86.73222,
+              12.84851
+            ],
+            [
+              -86.09951,
+              13.43813
+            ]
+          ]
+        },
+        {
+          "id": "NIC-655",
+          "name": "Granada",
+          "sourceIso": "NI-GR",
+          "bounds": [
+            [
+              -86.12322,
+              11.60471
+            ],
+            [
+              -85.52291,
+              12.20618
+            ]
+          ]
+        },
+        {
+          "id": "NIC-656",
+          "name": "Jinotega",
+          "sourceIso": "NI-JI",
+          "bounds": [
+            [
+              -86.24786,
+              12.99393
+            ],
+            [
+              -84.83546,
+              14.60255
+            ]
+          ]
+        },
+        {
+          "id": "NIC-658",
+          "name": "León",
+          "sourceIso": "NI-LE",
+          "bounds": [
+            [
+              -87.17358,
+              12.00052
+            ],
+            [
+              -86.2639,
+              13.12153
+            ]
+          ]
+        },
+        {
+          "id": "NIC-665",
+          "name": "Madriz",
+          "sourceIso": "NI-MD",
+          "bounds": [
+            [
+              -86.76413,
+              13.20035
+            ],
+            [
+              -86.05967,
+              13.66015
+            ]
+          ]
+        },
+        {
+          "id": "NIC-659",
+          "name": "Managua",
+          "sourceIso": "NI-MN",
+          "bounds": [
+            [
+              -86.67073,
+              11.76677
+            ],
+            [
+              -85.82806,
+              12.63647
+            ]
+          ]
+        },
+        {
+          "id": "NIC-660",
+          "name": "Masaya",
+          "sourceIso": "NI-MS",
+          "bounds": [
+            [
+              -86.28142,
+              11.85617
+            ],
+            [
+              -85.96405,
+              12.15229
+            ]
+          ]
+        },
+        {
+          "id": "NIC-666",
+          "name": "Matagalpa",
+          "sourceIso": "NI-MT",
+          "bounds": [
+            [
+              -86.28881,
+              12.52207
+            ],
+            [
+              -84.69645,
+              13.38154
+            ]
+          ]
+        },
+        {
+          "id": "NIC-667",
+          "name": "Nueva Segovia",
+          "sourceIso": "NI-NS",
+          "bounds": [
+            [
+              -86.77406,
+              13.48517
+            ],
+            [
+              -85.74311,
+              14.05517
+            ]
+          ]
+        },
+        {
+          "id": "NIC-4800",
+          "name": "Rio San Juan",
+          "sourceIso": "NI-SJ",
+          "bounds": [
+            [
+              -85.34098,
+              10.71348
+            ],
+            [
+              -83.66013,
+              11.87055
+            ]
+          ]
+        },
+        {
+          "id": "NIC-24",
+          "name": "Rivas",
+          "sourceIso": "NI-RI",
+          "bounds": [
+            [
+              -86.17521,
+              10.93935
+            ],
+            [
+              -84.88496,
+              11.68206
+            ]
+          ]
+        }
+      ],
+      "excluded": [],
+      "notes": "Atlantic regional names are historical; verify current official names and extents."
+    },
+    "MX": {
+      "reviewed": false,
+      "sourceUrl": "https://raw.githubusercontent.com/BenPortner/geojson-atlas/644874ada665a0f2c0c81a0d47adacea97365c30/geojson/natural_earth/countries/10m/MX.geojson",
+      "expectedCount": 32,
+      "sourceFeatureCount": 33,
+      "regions": [
+        {
+          "id": "MEX-2717",
+          "name": "Aguascalientes",
+          "sourceIso": "MX-AGU",
+          "bounds": [
+            [
+              -102.85636,
+              21.67015
+            ],
+            [
+              -101.84543,
+              22.46478
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2706",
+          "name": "Baja California",
+          "sourceIso": "MX-BCN",
+          "bounds": [
+            [
+              -118.36881,
+              27.99942
+            ],
+            [
+              -112.5414,
+              32.71284
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2707",
+          "name": "Baja California Sur",
+          "sourceIso": "MX-BCS",
+          "bounds": [
+            [
+              -115.75378,
+              22.87215
+            ],
+            [
+              -109.41362,
+              28.00127
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2722",
+          "name": "Campeche",
+          "sourceIso": "MX-CAM",
+          "bounds": [
+            [
+              -92.48615,
+              17.80196
+            ],
+            [
+              -89.0135,
+              20.82403
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2735",
+          "name": "Chiapas",
+          "sourceIso": "MX-CHP",
+          "bounds": [
+            [
+              -94.12508,
+              14.54627
+            ],
+            [
+              -90.37985,
+              17.99369
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2709",
+          "name": "Chihuahua",
+          "sourceIso": "MX-CHH",
+          "bounds": [
+            [
+              -109.15359,
+              25.62029
+            ],
+            [
+              -103.30999,
+              31.77776
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2708",
+          "name": "Coahuila",
+          "sourceIso": "MX-COA",
+          "bounds": [
+            [
+              -103.96347,
+              24.56496
+            ],
+            [
+              -99.80696,
+              29.89394
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2718",
+          "name": "Colima",
+          "sourceIso": "MX-COL",
+          "bounds": [
+            [
+              -114.79858,
+              18.32453
+            ],
+            [
+              -103.47781,
+              19.53716
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2727",
+          "name": "Distrito Federal",
+          "sourceIso": "MX-DIF",
+          "bounds": [
+            [
+              -99.33474,
+              19.0578
+            ],
+            [
+              -98.93914,
+              19.57106
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2710",
+          "name": "Durango",
+          "sourceIso": "MX-DUR",
+          "bounds": [
+            [
+              -107.12628,
+              22.3191
+            ],
+            [
+              -102.49025,
+              26.8386
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2728",
+          "name": "Guanajuato",
+          "sourceIso": "MX-GUA",
+          "bounds": [
+            [
+              -102.09968,
+              19.9054
+            ],
+            [
+              -99.70747,
+              21.87293
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2729",
+          "name": "Guerrero",
+          "sourceIso": "MX-GRO",
+          "bounds": [
+            [
+              -102.17958,
+              16.31827
+            ],
+            [
+              -98.00173,
+              18.87064
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2730",
+          "name": "Hidalgo",
+          "sourceIso": "MX-HID",
+          "bounds": [
+            [
+              -99.84411,
+              19.58552
+            ],
+            [
+              -98.00018,
+              21.39885
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2719",
+          "name": "Jalisco",
+          "sourceIso": "MX-JAL",
+          "bounds": [
+            [
+              -105.69869,
+              18.95383
+            ],
+            [
+              -101.52054,
+              22.77159
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2731",
+          "name": "México",
+          "sourceIso": "MX-MEX",
+          "bounds": [
+            [
+              -100.6236,
+              18.38926
+            ],
+            [
+              -98.59648,
+              20.3089
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2720",
+          "name": "Michoacán",
+          "sourceIso": "MX-MIC",
+          "bounds": [
+            [
+              -103.74203,
+              17.91598
+            ],
+            [
+              -100.12284,
+              20.40315
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2732",
+          "name": "Morelos",
+          "sourceIso": "MX-MOR",
+          "bounds": [
+            [
+              -99.51069,
+              18.34994
+            ],
+            [
+              -98.6464,
+              19.14245
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2721",
+          "name": "Nayarit",
+          "sourceIso": "MX-NAY",
+          "bounds": [
+            [
+              -106.68895,
+              20.68515
+            ],
+            [
+              -103.94468,
+              23.03741
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2714",
+          "name": "Nuevo León",
+          "sourceIso": "MX-NLE",
+          "bounds": [
+            [
+              -101.21566,
+              23.18959
+            ],
+            [
+              -98.44569,
+              27.79355
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2723",
+          "name": "Oaxaca",
+          "sourceIso": "MX-OAX",
+          "bounds": [
+            [
+              -98.55455,
+              15.65805
+            ],
+            [
+              -93.86483,
+              18.66889
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2724",
+          "name": "Puebla",
+          "sourceIso": "MX-PUE",
+          "bounds": [
+            [
+              -99.04974,
+              17.89219
+            ],
+            [
+              -96.72812,
+              20.82535
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2733",
+          "name": "Querétaro",
+          "sourceIso": "MX-QUE",
+          "bounds": [
+            [
+              -100.56882,
+              19.938
+            ],
+            [
+              -99.04229,
+              21.64551
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2736",
+          "name": "Quintana Roo",
+          "sourceIso": "MX-ROO",
+          "bounds": [
+            [
+              -89.41537,
+              17.88847
+            ],
+            [
+              -86.70059,
+              21.62344
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2715",
+          "name": "San Luis Potosí",
+          "sourceIso": "MX-SLP",
+          "bounds": [
+            [
+              -102.29967,
+              21.17426
+            ],
+            [
+              -98.34771,
+              24.56497
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2711",
+          "name": "Sinaloa",
+          "sourceIso": "MX-SIN",
+          "bounds": [
+            [
+              -109.44055,
+              22.44896
+            ],
+            [
+              -105.38862,
+              27.07745
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2712",
+          "name": "Sonora",
+          "sourceIso": "MX-SON",
+          "bounds": [
+            [
+              -115.03975,
+              26.23694
+            ],
+            [
+              -108.46646,
+              32.49937
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2725",
+          "name": "Tabasco",
+          "sourceIso": "MX-TAB",
+          "bounds": [
+            [
+              -94.13708,
+              17.25191
+            ],
+            [
+              -90.9909,
+              18.64849
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2716",
+          "name": "Tamaulipas",
+          "sourceIso": "MX-TAM",
+          "bounds": [
+            [
+              -100.12559,
+              22.21978
+            ],
+            [
+              -97.13927,
+              27.67012
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2726",
+          "name": "Tlaxcala",
+          "sourceIso": "MX-TLA",
+          "bounds": [
+            [
+              -98.70909,
+              19.10648
+            ],
+            [
+              -97.61282,
+              19.73084
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2734",
+          "name": "Veracruz",
+          "sourceIso": "MX-VER",
+          "bounds": [
+            [
+              -98.64227,
+              17.15022
+            ],
+            [
+              -93.5895,
+              22.48054
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2737",
+          "name": "Yucatán",
+          "sourceIso": "MX-YUC",
+          "bounds": [
+            [
+              -90.44213,
+              19.65104
+            ],
+            [
+              -87.52509,
+              21.61604
+            ]
+          ]
+        },
+        {
+          "id": "MEX-2713",
+          "name": "Zacatecas",
+          "sourceIso": "MX-ZAC",
+          "bounds": [
+            [
+              -104.32975,
+              21.04176
+            ],
+            [
+              -100.82844,
+              25.16555
+            ]
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "id": "MEX+99?",
+          "reason": "Unnamed source feature; classification requires verification"
+        }
+      ],
+      "notes": "Unnamed feature excluded; Distrito Federal is historical naming. Verify Ciudad de México and geometry."
+    }
+  }
+}

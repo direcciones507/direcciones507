@@ -15,13 +15,14 @@ try{
  await mkdir('/tmp/radar-new-features',{recursive:true});
  context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',geolocation:{latitude:8.9824,longitude:-79.5199},permissions:['geolocation']});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
- await page.route(origin+'/',async route=>{const response=await route.fetch(),html=await response.text();await route.fulfill({response,body:html.replace('</head>',['anonymous-reports','activity-validation','favorites','contributions','reputation','alerts'].map(s=>'<meta name="radar-'+s+'" content="true">').join('')+'</head>')});});
+ await page.route(origin+'/',async route=>{const response=await route.fetch(),html=await response.text();await route.fulfill({response,body:html.replace('</head>',['anonymous-reports','activity-validation','favorites','contributions','reputation','alerts','registration-profiles'].map(s=>'<meta name="radar-'+s+'" content="true">').join('')+'</head>')});});
  await page.route('**/v1/auth/me',route=>route.fulfill({json:{user:{id:'test-only',roles:[]}}}));
  let saved=false,subscribed=false,validated=false;
  await page.route('**/v1/radar/**',async route=>{
   const req=route.request(),u=new URL(req.url()),kind=u.pathname.split('/').at(-1);
   if(kind==='map')return route.continue();
   const body=req.method()==='POST'?req.postDataJSON():null;calls.push({kind,body});
+  if(kind==='establishments')return route.fulfill({status:201,json:{id:'00000000-0000-4000-8000-000000000088',status:'published'}});
   if(kind==='activity-validation'){
    if(req.method()==='GET')return route.fulfill({json:{report:{id:reportId,state:'available',source:'community',reportedAt:now,confirmations:2,contradictions:1}}});
    validated=body.reportId===reportId&&body.agrees===true;return route.fulfill({status:201,json:{ok:true}});
@@ -79,6 +80,13 @@ try{
  assert(!saved,'Favorite removal');await page.locator('#favoritesDialog [data-close]').click();
  assert(calls.every(c=>!c.body||!('latitude' in c.body)&&!('longitude' in c.body)&&!('accountRef' in c.body)),'Unexpected precise position or account override in writes');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal overflow');
+ // A declared owner uses the existing free publication endpoint, not a permission grant.
+ await page.locator('#addButton').click();await page.getByRole('button',{name:'Soy propietario de un comercio',exact:true}).click();
+ await page.locator('#placeName').fill('Comercio sintético aislado');await page.locator('#placeCategory').selectOption('shop');
+ await page.locator('#latitude').fill('8.9824');await page.locator('#longitude').fill('-79.5199');
+ await page.locator('[name=businessProvince]').fill('Panamá');await page.locator('[name=businessLocality]').fill('Ciudad de Panamá');await page.locator('[name=businessDescription]').fill('Información comercial sintética');await page.locator('[name=businessPhone]').fill('+507 6000-0000');await page.locator('[name=businessSocials]').fill('https://example.test/');await page.locator('[name=businessExtra_products]').fill('Productos');
+ await page.locator('#addForm button[type=submit]').click();await page.locator('#addDialog').waitFor({state:'hidden'});
+ const registration=calls.find(c=>c.kind==='establishments')?.body;assert(registration?.registrationKind==='owner','Commercial choice lost');assert(registration.profile.description==='Información comercial sintética','Commercial description lost');assert(registration.profile.extras.products==='Productos','Category fields lost');assert(!('verified' in registration)&&!('accountRef' in registration),'Registration cannot confer ownership');
  assert(!errors.length,'Page errors: '+errors.join('; '));
  console.log('Radar new features: isolated mobile interactions passed; no real writes.');
 }finally{await context?.close();await browser?.close();server.kill();}

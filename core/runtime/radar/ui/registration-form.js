@@ -33,3 +33,15 @@ export function renderCategoryRegistrationFields(container,category,doc=document
  container.replaceChildren();
  for(const [key,title] of (Object.hasOwn(categoryRegistrationFields,category)?categoryRegistrationFields[category]:categoryRegistrationFields.other)){const label=doc.createElement('label'),input=doc.createElement('input');label.textContent=title;input.name='businessExtra_'+key;input.maxLength=250;label.append(input);container.append(label);}
 }
+export function collectOwnerRegistration(form){
+ const value=name=>String(form.elements.namedItem(name)?.value||'').trim(),hours={};
+ for(const [key,label] of days){const start=value('businessOpen_'+key),end=value('businessClose_'+key);if(form.elements.namedItem('businessClosed_'+key)?.checked)hours[key]='closed';else if(start||end){if(!start||!end)throw Error('Completa apertura y cierre de '+label+'.');hours[key]=start+'-'+end;}}
+ const extras={};for(const input of form.querySelectorAll('[name^="businessExtra_"]'))if(input.value.trim())extras[input.name.slice('businessExtra_'.length)]=input.value.trim();
+ return {province:value('businessProvince'),locality:value('businessLocality'),description:value('businessDescription'),phone:value('businessPhone'),hours,socials:value('businessSocials').split(/\r?\n/).map(v=>v.trim()).filter(Boolean),extras};
+}
+export function restoreOwnerRegistration(form,profile){
+ if(!profile)return;for(const [key,name] of [['province','businessProvince'],['locality','businessLocality'],['description','businessDescription'],['phone','businessPhone']])form.elements.namedItem(name).value=profile[key]||'';
+ form.elements.namedItem('businessSocials').value=Array.isArray(profile.socials)?profile.socials.join('\n'):'';
+ for(const [key] of days){const h=profile.hours?.[key],parts=typeof h==='string'&&h!=='closed'?h.split('-'):[];form.elements.namedItem('businessClosed_'+key).checked=h==='closed';form.elements.namedItem('businessOpen_'+key).value=parts[0]||'';form.elements.namedItem('businessClose_'+key).value=parts[1]||'';}
+ for(const input of form.querySelectorAll('[name^="businessExtra_"]'))input.value=profile.extras?.[input.name.slice('businessExtra_'.length)]||'';
+}

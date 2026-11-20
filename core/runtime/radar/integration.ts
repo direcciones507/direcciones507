@@ -33,14 +33,15 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const resolveAddress=ownershipEnabled&&env.RADAR_ADDRESS_LINKS_ENABLED==="true"?createRadarAddressResolver(db,code=>newPublicAddress(db as Parameters<typeof newPublicAddress>[0],code,"https://direcciones.lat")):undefined;
  const campaignLookup=enabled&&env.RADAR_COMMERCIAL_ENABLED==="true"?createRadarCampaignLookup(db,true):undefined;
  const businessEnabled=ownershipEnabled&&env.RADAR_BUSINESS_DETAILS_ENABLED==="true";
- const business=createBusinessRoutes(createBusinessStore(db),auth,origins,businessEnabled);
+ const profilesEnabled=businessEnabled&&env.RADAR_REGISTRATION_PROFILES_ENABLED==='true';
+ const business=createBusinessRoutes(createBusinessStore(db,profilesEnabled),auth,origins,businessEnabled);
  const anonymousIdentity=enabled&&env.RADAR_ANONYMOUS_REPORTS_ENABLED==="true"?createAnonymousIdentity(env.RADAR_ANONYMOUS_REPORTS_SECRET,trustedPeer):undefined;
  const alerts=createAlertRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true"&&env.RADAR_ALERTS_ENABLED==="true");
  const reputation=createReputationRoutes(db,auth,origins,enabled&&env.RADAR_REPUTATION_ENABLED==="true");
  const contributions=createContributionRoutes(db,auth,origins,enabled&&env.RADAR_CONTRIBUTIONS_ENABLED==="true");
  const favorites=createFavoriteRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true");
  const confirmations=createConfirmationRoutes(db,auth,origins,enabled&&env.RADAR_ACTIVITY_VALIDATION_ENABLED==="true",anonymousIdentity);
- const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity);
+ const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled,profilesEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity,profilesEnabled);
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{

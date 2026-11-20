@@ -88,7 +88,7 @@ try{
   await page.locator('#searchInput').fill('Café en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).waitFor();
   await page.locator('#searchInput').fill('Servicios en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Servicios Bahía'}).waitFor();
   await page.route('https://direcciones.lat/auth/radar',route=>route.fulfill({contentType:'text/html',body:'<p>Acceso existente de LATAM: navegación interceptada en prueba.</p>'}));
-  await page.getByRole('button',{name:'Agregar establecimiento',exact:true}).click();
+  await page.getByRole('button',{name:'Agregar establecimiento',exact:true}).click();await page.getByRole('button',{name:'Soy usuario',exact:true}).click();
   await page.waitForURL('https://direcciones.lat/auth/radar');
   assert(new URL(page.url()).search==='', 'No authentication tokens or arbitrary return URLs');
   await page.goBack();await page.waitForFunction(()=>typeof window.__radarTestState==='function');

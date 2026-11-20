@@ -13,7 +13,7 @@ export interface RadarRepository {
  anonymousReportAllowed?(digest:string,id:string):Promise<boolean>;
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null){
+export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false){
  return async (req:Request):Promise<Response|null>=>{
   const u=new URL(req.url);
   if(!enabled || !["/v1/radar/map","/v1/radar/report","/v1/radar/establishments"].includes(u.pathname))return null;
@@ -38,11 +38,13 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    try{const raw=await req.text();if(raw.length>4096)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
    const draft=validateRegistration(body);
    if(!draft)return json(400,{error:"INVALID_ESTABLISHMENT"});
+   if(draft.registrationKind==='owner'&&!ownerRegistrationEnabled)return json(503,{error:"OWNER_REGISTRATION_DISABLED"});
    if(repo.registrationAllowed && !await repo.registrationAllowed(actor.accountRef))return json(429,{error:"REGISTRATION_RATE_LIMIT"});
    try {
     const id=await repo.register(draft,actor.accountRef);
     return id?json(201,{id,status:"published"}):json(409,{error:"DUPLICATE"});
    } catch(error) {
+    if(draft.registrationKind==='owner'&&(error as {code?:string})?.code==='42P01')return json(503,{error:"OWNER_REGISTRATION_DISABLED"});
     if((error as {code?:string})?.code==="P4290")return json(429,{error:"REGISTRATION_RATE_LIMIT"});
     throw error;
    }

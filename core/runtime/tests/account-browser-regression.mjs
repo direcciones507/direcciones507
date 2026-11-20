@@ -15,14 +15,14 @@ const plans=['BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].map(code
 let passed=0;
 try{
  // Shared card + real Radar UI; every HTTP request is isolated and no real account is used.
- {
+ for(const registrationKind of ['user','owner']){
   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage();page.setDefaultTimeout(10000);
   const radar='https://radar.direcciones.lat',latam='https://direcciones.lat';let loginPosts=0,logoutPosts=0;
   await context.route('**/*',async route=>{
    const request=route.request(),url=new URL(request.url()),path=url.pathname;
    if(![radar,latam].includes(url.origin))return route.abort();
    if(url.origin===radar){
-    if(path==='/')return route.fulfill({contentType:'text/html',body:readFileSync(new URL('../radar/ui/index.html',import.meta.url),'utf8')});
+    if(path==='/')return route.fulfill({contentType:'text/html',body:readFileSync(new URL('../radar/ui/index.html',import.meta.url),'utf8').replace('</head>','<meta name="radar-registration-profiles" content="true"></head>')});
     if(path.startsWith('/radar/ui/')&&!path.includes('..')){
      const asset=path.slice('/radar/ui/'.length);
      // This test covers authentication, so no map engines or remote tiles are required.
@@ -44,7 +44,7 @@ try{
    }
    return route.fulfill({status:404,body:''});
   });
-  await page.goto(radar+'/');await page.locator('#addButton').click();await page.waitForURL(latam+'/?access=1');
+  await page.goto(radar+'/');await page.locator('#addButton').click();await page.getByRole('button',{name:registrationKind==='owner'?'Soy propietario de un comercio':'Soy usuario',exact:true}).click();await page.waitForURL(latam+'/?access=1');
   if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible()){
    // The access dialog is modal: close it before using a background consent control.
    await page.getByRole('button',{name:'Cerrar acceso',exact:true}).click();
@@ -58,6 +58,8 @@ try{
   await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.waitForURL(radar+'/');await page.locator('#addDialog').waitFor({state:'visible'});
   assert.equal(await page.locator('#accountButton').innerText(),'Mi cuenta');assert.equal(loginPosts,1);
   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).type),'add');
+  assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).registrationKind),registrationKind);
+  assert.equal(await page.locator('#ownerRegistrationFields').isVisible(),registrationKind==='owner');
   await page.locator('#addDialog [data-close]').click();page.once('dialog',dialog=>dialog.accept());await page.locator('#accountButton').click();
   await page.getByRole('button',{name:'Ingresar',exact:true}).waitFor();assert.equal(logoutPosts,1);
   assert.equal(await page.evaluate(()=>sessionStorage.getItem('radarAction')),null);

@@ -9,13 +9,14 @@ export function validateBusiness(input:any){
  if(!['tables','rooms','places','units'].includes(input.unit))return null;
  return {hours,quantity:input.quantity,unit:input.unit};
 }
-export function createBusinessStore(db:Database){return {
+export function createBusinessStore(db:Database,profilesEnabled=false){return {
  async mine(account:string){return await db.unsafe(`SELECT e.id,e.name,e.category,e.country,
- (o.account_ref IS NOT NULL) AS authorized,(r.account_ref IS NOT NULL) AS requested
+ (o.account_ref IS NOT NULL) AS authorized,(r.account_ref IS NOT NULL) AS requested,${profilesEnabled?"(p.submitted_by IS NOT NULL)":"false"} AS declared
  FROM radar.establishments e
  LEFT JOIN radar.verified_owners o ON o.establishment_id=e.id AND o.account_ref=$1::uuid
  LEFT JOIN radar.ownership_requests r ON r.establishment_id=e.id AND r.account_ref=$1::uuid
- WHERE e.published AND (o.account_ref IS NOT NULL OR r.account_ref IS NOT NULL)
+ ${profilesEnabled?"LEFT JOIN radar.registration_profiles p ON p.establishment_id=e.id AND p.submitted_by=$1::uuid":""}
+ WHERE e.published AND (o.account_ref IS NOT NULL OR r.account_ref IS NOT NULL ${profilesEnabled?"OR p.submitted_by IS NOT NULL":""})
  ORDER BY e.created_at DESC,e.id LIMIT 100`,[account]);},
  async inspect(id:string,account:string){const rows=await db.unsafe(`SELECT e.id,(o.account_ref=$2::uuid) AS authorized,d.hours,d.quantity,d.unit,
  EXISTS(SELECT 1 FROM radar.ownership_requests r WHERE r.establishment_id=e.id AND r.account_ref=$2::uuid) AS requested

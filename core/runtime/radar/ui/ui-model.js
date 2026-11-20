@@ -9,7 +9,7 @@ export const countries={
  MX:{name:'México',bounds:[[-118.5,14.4],[-86.7,32.8]],views:[{name:'Ciudad de México',bounds:[[-99.35,19.2],[-98.95,19.6]]}]}
 };
 export const activityLabels={available:'Poca afluencia',queue:'Afluencia media',full:'Alta afluencia',incident:'Incidencia',unknown:'Pendiente de actualización'};
-export const categoryLabel=c=>({shop:'Comercio',restaurant:'Restaurante',cafe:'Cafetería',health:'Salud',services:'Servicios',hotel:'Alojamiento',other:'Otra'})[c]||String(c||'Establecimiento');
+export const categoryLabel=c=>({shop:'Comercio',restaurant:'Restaurante',cafe:'Cafetería',health:'Salud',services:'Servicios',hotel:'Alojamiento',tourism:'Turismo',other:'Otra'})[c]||String(c||'Establecimiento');
 export function normalizeBounds(input){let [w,s,e,n]=input;const wrap=x=>((x+180)%360+360)%360-180;if(e-w>=359.9){w=-180;e=180;}else{w=wrap(w);e=wrap(e);}return [w,Math.max(-85,s),e,Math.min(85,n)];}
 export function safeAddress(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&['direcciones507.com','www.direcciones507.com','direcciones.lat','www.direcciones.lat'].includes(u.hostname)?u.href:null;}catch{return null;}}
 export function freshProperties(input={},now=Date.now()){

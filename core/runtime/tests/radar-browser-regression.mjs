@@ -34,7 +34,7 @@ try{
   assert(await page.locator('.raster-pin.pin-live').count()===1,'Live missing '+name);
   const pulse=await page.locator('.raster-pin.pin-live').evaluate(e=>getComputedStyle(e,'::after').animationName);
   assert(motion==='reduce'?pulse==='none':pulse==='livePulse','Incorrect live pulse '+name);
-  for(const pin of await page.locator('.raster-pin').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
+  for(const pin of await page.locator('.raster-pin').all()){await pin.click();await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
   await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
   await page.locator('.raster-cluster,.raster-pin.pin-normal').first().waitFor();
   // At wide territorial scale, existing clustering represents the revealed normals.
@@ -42,7 +42,7 @@ try{
   await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
   let normalZoomSteps=1;if(await page.locator('.raster-pin.pin-normal').count()===0){await page.locator('.raster-cluster').first().click();normalZoomSteps+=2;await page.waitForTimeout(500);}
   await page.locator('.raster-pin.pin-normal').first().waitFor();
-  for(const pin of await page.locator('.raster-pin.pin-normal').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
+  for(const pin of await page.locator('.raster-pin.pin-normal').all()){await pin.click();await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
   for(let i=0;i<normalZoomSteps;i++){await page.locator('.leaflet-control-zoom-out').click();await page.waitForTimeout(350);}assert(await page.locator('.raster-cluster,.raster-pin.pin-normal').count()===0,'Normal pins remained after zoom out '+name);
   for(let i=0;i<normalZoomSteps;i++){await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(350);}
   const before=await page.locator('#searchInput').inputValue();

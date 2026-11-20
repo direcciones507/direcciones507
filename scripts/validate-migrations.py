@@ -43,6 +43,7 @@ RADAR_FILES = {
     "0020_radar_alert_preferences.sql": "alert-preferences.sql",
     "0021_radar_registration_profiles.sql": "registration-profiles.sql",
     "0022_radar_category_catalog.sql": "category-catalog.sql",
+    "0023_radar_owner_private_declarations.sql": "owner-private-declarations.sql",
 }
 
 for path in SQL_FILES:

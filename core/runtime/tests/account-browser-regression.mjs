@@ -45,7 +45,12 @@ try{
    return route.fulfill({status:404,body:''});
   });
   await page.goto(radar+'/');await page.locator('#addButton').click();await page.waitForURL(latam+'/?access=1');
-  if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible())await page.getByRole('button',{name:'Rechazar',exact:true}).click();
+  if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible()){
+   // The access dialog is modal: close it before using a background consent control.
+   await page.getByRole('button',{name:'Cerrar acceso',exact:true}).click();
+   await page.getByRole('button',{name:'Rechazar',exact:true}).click();
+   await page.reload();await page.locator('#latamAccess').waitFor({state:'visible'});
+  }
   await page.locator('#latamAccessEmail').fill('radar-browser@example.invalid');await page.locator('#latamAccessPassword').fill('synthetic-password-123');
   await page.locator('#latamEmailSubmit').click();await page.getByRole('button',{name:'Continuar',exact:true}).waitFor();
   assert.equal(page.url(),latam+'/?access=1');assert.equal(loginPosts,1);assert.equal(await page.locator('#latamAccessPassword').inputValue(),'');

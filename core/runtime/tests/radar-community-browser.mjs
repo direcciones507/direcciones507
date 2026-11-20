@@ -41,8 +41,9 @@ try{
   return route.fulfill({status:404,json:{error:'ISOLATED_TEST'}});
  });
  await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#resultCount')?.textContent==='3'&&document.querySelector('#accountButton')?.textContent==='Mi cuenta');
- await page.getByRole('link',{name:'Explorar Radar',exact:true}).click();await page.locator('.leaflet-container').waitFor();
+ await page.locator('#map').scrollIntoViewIfNeeded();await page.locator('.leaflet-container').waitFor();
  await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).click();
+ await page.locator('#detail .detail-options>summary').click();
  await page.getByRole('button',{name:'Validar actividad',exact:true}).click();
  await page.locator('#validationVote').waitFor();await page.locator('#validationGps').click();
  await page.waitForFunction(()=>document.querySelector('#validationDistance').textContent.includes('Distancia aproximada'));
@@ -57,6 +58,8 @@ try{
  await page.screenshot({path:'/tmp/radar-new-features/nearby-mobile.png'});await page.locator('#nearbyDialog [data-close]').click();
  await page.locator('#pulseButton').click();await page.locator('#pulseResults article').filter({hasText:'Restaurante La Terraza'}).waitFor();assert(await page.locator('#pulseResults article').count()===1,'Pulse must show active live campaigns only');assert(await page.locator('#pulseResults article').filter({hasText:'Café del Istmo'}).count()===0,'Featured/community-only report leaked into Pulse');
  await page.screenshot({path:'/tmp/radar-new-features/pulse-mobile.png'});await page.locator('#pulseDialog [data-close]').click();
+ assert(await page.locator('#favoritesButton').isHidden(),'Personal tools initially visible');
+ await page.locator('#personalTools>summary').click();
  await page.locator('#favoritesButton').click();await page.locator('#favoritesResults article').filter({hasText:'Café del Istmo'}).waitFor();
  await page.locator('#favoritesDialog [data-close]').click();
  await page.locator('#contributionsButton').click();await page.locator('#contributionsResults article').filter({hasText:'Café del Istmo'}).waitFor();
@@ -70,6 +73,7 @@ try{
  await page.getByRole('button',{name:'Desactivar alerta',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('#alertsStatus').textContent.includes('Todavía no tienes alertas'));
  assert(!subscribed,'Alert unsubscribe');await page.locator('#alertsDialog [data-close]').click();
+ await page.locator('#personalTools>summary').click();
  await page.locator('#favoritesButton').click();await page.getByRole('button',{name:'Quitar favorito',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('#favoritesStatus').textContent.includes('Todavía no tienes favoritos'));
  assert(!saved,'Favorite removal');await page.locator('#favoritesDialog [data-close]').click();

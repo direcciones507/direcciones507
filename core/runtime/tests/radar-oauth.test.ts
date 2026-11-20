@@ -72,3 +72,27 @@ test('release flags and LATAM verification are required, and Radar rejects cross
  for(const override of [{RADAR_ENABLED:'false'},{AD507_RADAR_DOMAIN_VERIFIED:'false'},{AD507_INTERNATIONAL_DOMAIN_VERIFIED:'false'}]){const {auth}=setup(override);expect((await auth.handle(request('/auth/google/login','',undefined,radar)))!.status).toBe(503);}
  const {auth}=setup();expect((await auth.handle(new Request(radar+'/auth/logout',{method:'POST',headers:{origin:'https://evil.example'}})))!.status).toBe(403);
 });
+
+test('verified LATAM TLS proxy preserves Radar intent for email and Google',async()=>{
+ const {auth}=setup();
+ const proxy=(path:string,cookie='',body?:any)=>new Request('http://direcciones.lat:8080'+path,{method:body?'POST':'GET',headers:{origin:latam,cookie,'x-forwarded-proto':'https',...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const entry=(await auth.handle(proxy('/auth/radar')))!;
+ expect(entry.status).toBe(302);expect(entry.headers.get('location')).toBe(latam+'/?access=1');
+ const marker=cookies(entry);
+ const login=(await auth.handle(proxy('/v1/auth/email/login',marker,{email:user.email,password})))!;
+ expect(login.status).toBe(200);expect((await login.json()).redirect).toBe(radar+'/');
+ const start=(await auth.handle(proxy('/auth/google/login',marker)))!;
+ const target=new URL(start.headers.get('location')!);
+ expect(target.searchParams.get('redirect_uri')).toBe(latam+'/auth/google/callback');
+ const finish=(await auth.handle(proxy('/auth/google/callback?code=test-code&state='+target.searchParams.get('state'),marker+'; '+cookies(start))))!;
+ expect(finish.status).toBe(302);expect(finish.headers.get('location')).toBe(radar+'/');
+});
+test('LATAM proxy normalization does not authorize foreign hosts, ports, insecure requests or redirect overrides',async()=>{
+ const {auth}=setup();
+ for(const [url,proto] of [['http://evil.example/auth/radar','https'],['http://direcciones.lat:8081/auth/radar','https'],['http://direcciones.lat/auth/radar','http'],['http://direcciones.lat/auth/radar','https,http'],['http://direcciones.lat:8080/auth/radar?returnTo=https://evil.example','https']]){
+  const result=(await auth.handle(new Request(url,{headers:{'x-forwarded-proto':proto,'x-forwarded-host':'direcciones.lat'}})))!;
+  expect(result.status).toBe(400);expect(result.headers.has('location')).toBe(false);
+ }
+ const disabled=setup({RADAR_ENABLED:'false'}).auth;
+ expect((await disabled.handle(new Request('http://direcciones.lat:8080/auth/radar',{headers:{'x-forwarded-proto':'https'}})))!.status).toBe(400);
+});

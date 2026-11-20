@@ -1,3 +1,4 @@
+import {accountEmailEntry} from './account-email';
 import {handleAdminBillingGuard} from './admin-billing-policy';
 import {pagaditoSandboxPage} from './pagadito-sandbox-ui';
 import {pagaditoRelayEnabled,createPagaditoCertificationRelay,handlePagaditoCertificationRelay,lookupPagaditoCertification} from './pagadito-certification-relay';
@@ -80,14 +81,7 @@ startLegacyCore(async req => {
     if(url.pathname==='/crear-cuenta'||url.pathname==='/mi-cuenta'||url.searchParams.get('access')==='1')destination.searchParams.set('access','1');
     return new Response(null,{status:302,headers:{location:destination.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
   }
-  if(req.method==='GET' && (url.pathname==='/verificar-correo'||url.pathname==='/recuperar-contrasena') && url.hostname==='direcciones.lat'){
-    const token=url.searchParams.get('token'),email=url.searchParams.get('email');
-    if(!token||!email||!/^[A-Za-z0-9_-]{43}$/.test(token)||email.length>320)return new Response('Enlace inválido',{status:400,headers:{'cache-control':'no-store'}});
-    const next=new URL('/',url.origin);
-    next.searchParams.set('token',token);next.searchParams.set('email',email);next.searchParams.set('action',url.pathname==='/recuperar-contrasena'?'reset':'verify');
-    const radarContext=url.searchParams.get('radar');if(radarContext&&/^[A-Za-z0-9_-]{43}$/.test(radarContext))next.searchParams.set('radar',radarContext);
-    return new Response(null,{status:302,headers:{location:next.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
-  }
+  const emailEntry=accountEmailEntry(req);if(emailEntry)return emailEntry;
   if(req.method==='GET' && url.hostname==='direcciones.lat' && url.pathname==='/sitemap.xml'){
     const result=await handleAutomaticSitemap({sql,env:{...process.env,AD507_PUBLIC_BASE_URL:'https://direcciones.lat'}});
     return new Response(result.body,{status:result.status,headers:result.headers});

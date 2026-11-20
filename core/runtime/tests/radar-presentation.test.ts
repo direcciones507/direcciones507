@@ -117,3 +117,21 @@ test('Radar SEO remains closed by default and only exposes canonical public URL 
  expect(await open(new Request('https://direcciones.lat/sitemap.xml'))).toBeNull();
  expect((await createRadarIntegration(db,auth,{})(request('/robots.txt')))?.status).toBe(503);
 });
+
+test('Radar API and account redirect preserve noindex and no-store after SEO release',async()=>{
+ const env={RADAR_ENABLED:'true',RADAR_INDEXING_ENABLED:'true',RADAR_FAVORITES_ENABLED:'true'};
+ const handler=createRadarIntegration({unsafe:async()=>[]},auth,env);
+ for(const [path,status] of [['/v1/radar/map?country=PA&west=-83&south=7&east=-77&north=10',200],['/v1/radar/map',400],['/v1/radar/unavailable',404],['/radar/account',302]] as const){
+  const r=await handler(new Request(radarOrigin+path));
+  expect(r?.status).toBe(status);
+  expect(r?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+  expect(r?.headers.get('cache-control')).toContain('no-store');
+ }
+ const denied=await handler(new Request(radarOrigin+'/v1/radar/report',{method:'POST',headers:{origin:radarOrigin},body:'{}'}));
+ expect(denied?.status).toBe(403);
+ expect(denied?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+ expect(denied?.headers.get('x-content-type-options')).toBe('nosniff');
+ const disabled=await createRadarIntegration(db,auth,{})(new Request(radarOrigin+'/v1/radar/map'));
+ expect(disabled?.status).toBe(503);
+ expect(disabled?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+});

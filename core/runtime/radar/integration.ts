@@ -50,7 +50,13 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
   if(url.origin!==radarOrigin)return null;
   const presentation=await radarPresentation(req,{...env,RADAR_ANONYMOUS_REPORTS_ENABLED:anonymousIdentity?"true":"false"});if(presentation)return presentation;
   if(!url.pathname.startsWith("/v1/radar/"))return null;
-  if(!enabled)return Response.json({error:"RADAR_DISABLED"},{status:503,headers:{"cache-control":"no-store"}});
-  return await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+  const response=!enabled?Response.json({error:"RADAR_DISABLED"},{status:503}):
+   await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+  // API responses must never become indexable or cacheable, even after public SEO release.
+  const headers=new Headers(response.headers);
+  headers.set("x-robots-tag","noindex, nofollow");
+  headers.set("x-content-type-options","nosniff");
+  if(!headers.get("cache-control")?.includes("no-store"))headers.set("cache-control","no-store");
+  return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
  };
 }

@@ -75,3 +75,21 @@ test("malformed JSON and invalid UTF-8 are rejected before storage",async()=>{
   expect(r?.status).toBe(400);
  }
 });
+
+test("public map bounds concurrent database work and leaves writes available",async()=>{
+ let release!:()=>void;const gate=new Promise<void>(r=>{release=r});let reads=0;
+ const handler=createRadarRoutes({...repo,listPublished:async()=>{reads++;await gate;return []}},user,allowed,true);
+ const pending=Array.from({length:8},()=>handler(map()));
+ const busy=await handler(map());
+ expect(busy?.status).toBe(429);expect(busy?.headers.get("retry-after")).toBe("2");
+ expect(await busy!.json()).toEqual({error:"MAP_BUSY"});expect(reads).toBe(8);
+ expect((await handler(post()))?.status).toBe(201);
+ release();expect((await Promise.all(pending)).every(r=>r?.status===200)).toBe(true);
+ expect((await handler(map()))?.status).toBe(200);
+});
+test("public map releases admission slot even after storage errors",async()=>{
+ let fail=true;
+ const handler=createRadarRoutes({...repo,listPublished:async()=>{if(fail)throw Error("storage");return []}},anon,allowed,true);
+ for(let i=0;i<9;i++)await expect(handler(map())).rejects.toThrow("storage");
+ fail=false;expect((await handler(map()))?.status).toBe(200);
+});

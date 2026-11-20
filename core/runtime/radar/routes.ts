@@ -15,6 +15,10 @@ export interface RadarRepository {
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
 export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false){
+ // A per-process admission cap protects the shared pool without using visitor IPs.
+ // Tune only after isolated load testing; writes and authentication are independent.
+ let activeMapReads=0;
+ const maxMapReads=8;
  return async (req:Request):Promise<Response|null>=>{
   const u=new URL(req.url);
   if(!enabled || !["/v1/radar/map","/v1/radar/report","/v1/radar/establishments"].includes(u.pathname))return null;
@@ -26,10 +30,15 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    if(!validateBounds(b))return json(400,{error:"INVALID_BOUNDS"});
    const search=u.searchParams.get("q")?.trim()??"";
    if(search.length>100)return json(400,{error:"INVALID_SEARCH"});
-   const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
-   const now=Date.now();
-   if(campaignLookup){const campaigns=await campaignLookup(rows.map(e=>e.id),now);for(const e of rows)e.campaign=campaigns.get(e.id);}
-   return json(200,publicFeatures(rows,b,country,now,!!campaignLookup));
+   if(activeMapReads>=maxMapReads)return Response.json({error:"MAP_BUSY"},{status:429,headers:{"cache-control":"no-store","retry-after":"2"}});
+   activeMapReads++;
+   try{
+    const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
+    const now=Date.now();
+    if(campaignLookup){const campaigns=await campaignLookup(rows.map(e=>e.id),now);for(const e of rows)e.campaign=campaigns.get(e.id);}
+    return json(200,publicFeatures(rows,b,country,now,!!campaignLookup));
+   }finally{activeMapReads--;}
+
   }
   if(u.pathname==="/v1/radar/establishments" && req.method==="POST"){
    const actor=await radarActor(req,auth,origins);

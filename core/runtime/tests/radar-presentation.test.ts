@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {createRadarIntegration,radarOrigin} from '../radar/integration';
+import {createRadarIntegration,radarOrigin,normalizeRadarRequest} from '../radar/integration';
 import {radarPresentation} from '../radar/presentation';
 import {safeAddress,freshProperties,normalizeBounds} from '../radar/ui/ui-model.js';
 const db={unsafe:async()=>{throw Error('Presentation must not access PostgreSQL')}};
@@ -37,3 +37,21 @@ test('map bounds wrap longitude and constrain latitude before API requests',()=>
  expect(normalizeBounds([170,-1,190,1])).toEqual([170,-1,-170,1]);
 });
 
+
+test('Railway TLS termination preserves only the verified Radar canonical origin',async()=>{
+ const env={RADAR_ENABLED:'true',AD507_RADAR_DOMAIN_VERIFIED:'true'};
+ const proxy=(url:string,proto='https')=>new Request(url,{headers:{'x-forwarded-proto':proto}});
+ const handler=createRadarIntegration(db,auth,env);
+ const req=proxy('http://radar.direcciones.lat:8080/?utm_source=chatgpt');
+ expect(normalizeRadarRequest(req,env).url).toBe(radarOrigin+'/?utm_source=chatgpt');
+ expect((await handler(req))?.status).toBe(200);
+ expect((await handler(proxy('http://radar.direcciones.lat/radar/ui/radar.js')))?.status).toBe(200);
+ expect(await handler(proxy('http://direcciones.lat/'))).toBeNull();
+ expect(await handler(proxy('http://radar.direcciones.lat.evil.test/'))).toBeNull();
+ expect(await handler(proxy('http://radar.direcciones.lat:1234/'))).toBeNull();
+ expect(await handler(proxy('http://radar.direcciones.lat/','http'))).toBeNull();
+ expect(await createRadarIntegration(db,auth,{RADAR_ENABLED:'true'})(req)).toBeNull();
+ expect((await createRadarIntegration(db,auth,{...env,RADAR_ENABLED:'false'})(req))?.status).toBe(503);
+ const forged=new Request('http://direcciones.lat/',{headers:{'x-forwarded-host':'radar.direcciones.lat','x-forwarded-proto':'https'}});
+ expect(await handler(forged)).toBeNull();
+});

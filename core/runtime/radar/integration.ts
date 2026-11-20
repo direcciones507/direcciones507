@@ -17,6 +17,15 @@ import {createModerationStore} from "./moderation-repository";
 import type {CoreAuth} from "./auth";
 type Database=Parameters<typeof createRadarRepository>[0];
 export const radarOrigin="https://radar.direcciones.lat";
+// Railway terminates TLS before Bun. Only canonical Radar host requests may
+// be normalized, and only when the configured domain is verified and the
+// Railway edge marks the original connection as HTTPS. Never use forwarded host.
+export function normalizeRadarRequest(req:Request,env:Record<string,string|undefined>):Request {
+ const url=new URL(req.url);
+ if(env.AD507_RADAR_DOMAIN_VERIFIED!=="true"||url.hostname!=="radar.direcciones.lat"||url.protocol!=="http:"||url.username||url.password||(url.port&&url.port!=="8080")||req.headers.get("x-forwarded-proto")!=="https")return req;
+ url.protocol="https:";url.port="";
+ return new Request(url.toString(),req);
+}
 export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<string,string|undefined>,trustedPeer?:(req:Request)=>string|null){
  const enabled=env.RADAR_ENABLED==="true";
  const origins=new Set([radarOrigin]);
@@ -35,6 +44,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{
+  req=normalizeRadarRequest(req,env);
   const url=new URL(req.url);
   if(url.origin!==radarOrigin)return null;
   const presentation=await radarPresentation(req,{...env,RADAR_ANONYMOUS_REPORTS_ENABLED:anonymousIdentity?"true":"false"});if(presentation)return presentation;

@@ -79,7 +79,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     const [nonce,expires,sig,extra]=value.split('.');const exp=Number(expires);
     if(extra||!/^[A-Za-z0-9_-]{43}$/.test(nonce??'')||!Number.isInteger(exp)||exp<=Date.now()/1000||exp>Date.now()/1000+600)return false;
     const expected=await signature('radar-return|'+radar.origin+'|'+nonce+'|'+expires,radar.secret),supplied=Buffer.from(sig??'','base64url');
-    return supplied.length===expected.length&&timingSafeEqual(expected,supplied);
+    return /^[A-Za-z0-9_-]{43}$/.test(sig??'')&&supplied.toString('base64url')===sig&&supplied.length===expected.length&&timingSafeEqual(expected,supplied);
   }
   async function radarReturnCookie(){
     const nonce=random(),expires=Math.floor(Date.now()/1000)+600;

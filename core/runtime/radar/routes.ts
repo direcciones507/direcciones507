@@ -14,7 +14,7 @@ export interface RadarRepository {
  anonymousReportAllowed?(digest:string,id:string):Promise<boolean>;
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false,catalog?:{list():Promise<{groups:any[];categories:any[]}>;lookup(id:string,activeOnly?:boolean):Promise<string|undefined>}){
+export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false,catalog?:{list():Promise<{groups:any[];categories:any[]}>;lookup(id:string,activeOnly?:boolean):Promise<string|undefined>},privateOwnerRequired=false){
  // A per-process admission cap protects the shared pool without using visitor IPs.
  // Tune only after isolated load testing; writes and authentication are independent.
  let activeMapReads=0;
@@ -49,12 +49,12 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    const actor=await radarActor(req,auth,origins);
    if(!actor)return json(403,{error:"AUTH_REQUIRED"});
    if(!repo.register)return json(503,{error:"REGISTRATION_DISABLED"});
-   const parsed=await readRadarJson(req,4096);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+   const parsed=await readRadarJson(req,4608);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
    const body=parsed.body;
    const requestedCategory=(body as any)?.category;
    const unit=catalog&&typeof requestedCategory==="string"?await catalog.lookup(requestedCategory.trim(),true):undefined;
    if(catalog&&!unit)return json(400,{error:"INVALID_CATEGORY"});
-   const draft=validateRegistration(body,unit);
+   const draft=validateRegistration(body,unit,privateOwnerRequired);
    if(!draft)return json(400,{error:"INVALID_ESTABLISHMENT"});
    if(draft.registrationKind==='owner'&&!ownerRegistrationEnabled)return json(503,{error:"OWNER_REGISTRATION_DISABLED"});
    if(repo.registrationAllowed && !await repo.registrationAllowed(actor.accountRef))return json(429,{error:"REGISTRATION_RATE_LIMIT"});

@@ -43,7 +43,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const favorites=createFavoriteRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true");
  const confirmations=createConfirmationRoutes(db,auth,origins,enabled&&env.RADAR_ACTIVITY_VALIDATION_ENABLED==="true",anonymousIdentity);
  const catalog=enabled&&env.RADAR_CATEGORY_CATALOG_ENABLED==="true"?createCategoryStore(db):undefined;
- const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled,profilesEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity,profilesEnabled,catalog);
+ const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled,profilesEnabled,profilesEnabled&&env.RADAR_OWNER_PRIVATE_ENABLED==='true'),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity,profilesEnabled,catalog,profilesEnabled&&env.RADAR_OWNER_PRIVATE_ENABLED==='true');
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{

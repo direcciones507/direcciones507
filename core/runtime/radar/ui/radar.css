@@ -189,3 +189,16 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 .radar-select-popover button[aria-selected=true]{background:#294769;}
 .radar-select-popover button:focus-visible{outline-offset:-3px;}
 .radar-select-popover .select-group{padding:7px 12px 3px;color:#a6b4c7;font-size:13px;font-weight:600;}
+
+
+/* Owner identity is private and kept in a compact, independent disclosure. */
+.owner-private-fields{border:1px solid #526983;border-radius:12px;padding:12px;margin:12px 0;min-width:0;position:relative}
+.owner-private-fields legend{color:#dce7f6;font-weight:650;padding:0 6px}
+.owner-private-fields .form-grid{margin:0}
+.owner-privacy-popover{position:relative;margin:8px 0}
+.owner-privacy-popover summary{cursor:pointer;color:#a9c8f1;font-size:13px;list-style:none;width:max-content;max-width:100%;border-bottom:1px dotted #a9c8f1}
+.owner-privacy-popover summary::-webkit-details-marker{display:none}
+.owner-privacy-content{position:absolute;z-index:8;top:calc(100% + 5px);left:0;width:min(340px,calc(100vw - 50px));padding:12px;background:#14283f;border:1px solid #6989a9;border-radius:12px;box-shadow:0 12px 30px #000a}
+.owner-privacy-content p{font-size:13px;line-height:1.5;margin:0 0 8px}
+.owner-privacy-content p:last-child{margin-bottom:0}
+@media(max-width:600px){.dialog .owner-private-fields{padding:8px 6px;margin:10px 0;border-radius:8px}.owner-privacy-content{width:min(310px,calc(100vw - 40px))}}

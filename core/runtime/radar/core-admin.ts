@@ -29,6 +29,14 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
   const parsed=await readRadarJson(req,(management?8192:2048));if(!parsed.ok)return json(parsed.status,{error:parsed.error});
   const body=parsed.body as any;
   try{
+   if(admin&&body?.action==='owner_private_inspect'){
+    if(env.RADAR_OWNER_PRIVATE_ENABLED!=='true')return json(503,{error:'OWNER_PRIVATE_DISABLED'});
+    if(typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ID'});
+    const rows=await db.unsafe(`SELECT e.name,d.legal_name AS "legalName",d.tax_identifier AS "taxId",d.country
+     FROM radar.owner_private_declarations d JOIN radar.establishments e ON e.id=d.establishment_id
+     WHERE d.establishment_id=$1::uuid LIMIT 1`,[body.id]);
+    return rows.length?json(200,{item:rows[0]}):json(404,{error:'NOT_FOUND'});
+   }
    if(admin&&['categories_list','categories_save'].includes(body?.action)){
     if(env.RADAR_CATEGORY_CATALOG_ENABLED!=='true')return json(503,{error:'CATEGORY_CATALOG_DISABLED'});
     const store=createCategoryStore(db);
@@ -77,7 +85,7 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
  };
 }
 
-export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)})){
+export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),privateEnabled=false){
  const tile=doc.getElementById('radarTile'),view=doc.getElementById('radarView'),out=doc.getElementById('radarAdminRows');if(!tile||!view||!out)return;
  const text=(tag:string,value:string)=>{const n=doc.createElement(tag);n.textContent=value;return n;};
  let offset=0,query='';
@@ -92,6 +100,21 @@ export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>
      const row=doc.createElement('article');row.className='tile';
      row.append(text('h4',String(item.name||'Establecimiento')),text('p',String(item.country||'')+(item.accountName?' · '+String(item.accountName):'')));
      if(item.reason)row.append(text('p',String(item.reason)));
+     if(privateEnabled&&(key==='requests'||key==='owners')){
+      const inspect=doc.createElement('button');inspect.type='button';inspect.className='btn';inspect.textContent='Consultar identificación privada';
+      const privateStatus=text('p','');privateStatus.setAttribute('role','status');
+      inspect.onclick=async()=>{
+       if(privateStatus.dataset.loaded==='true'){privateStatus.textContent='';privateStatus.dataset.loaded='false';return;}
+       inspect.disabled=true;privateStatus.textContent='Consultando…';
+       try{const response=await send({action:'owner_private_inspect',id:item.id});if(!response.ok)throw Error();const data=(await response.json()).item;
+        privateStatus.textContent='Nombre legal: '+String(data.legalName||'')+' · Identificación tributaria: '+String(data.taxId||'')+' · País: '+String(data.country||'');
+        privateStatus.dataset.loaded='true';
+       }catch{privateStatus.textContent='Sin identificación privada disponible o función aún desactivada.';}
+       finally{inspect.disabled=false;}
+      };
+      row.append(inspect,privateStatus);
+     }
+
      if(key==='establishments'){out.append(row);continue;}
      let checked:any;
      if(key==='requests'){
@@ -164,5 +187,5 @@ export function withCoreRadarAdmin(html:string,env:Record<string,string|undefine
  const categoryMarkup=env.RADAR_CATEGORY_CATALOG_ENABLED==='true'?'<button type="button" id="radarCategoryButton" class="btn">Categorías Radar</button><div id="radarCategoryRows" hidden aria-live="polite"></div>':'';
  return html.replace('<button id="statsTile"','<button id="radarTile" class="tile action"><b>Radar</b><span class="muted">Establecimientos y verificación voluntaria</span></button><button id="statsTile"')
   .replace('</main>','<section id="radarView" class="card list hidden"><div class="listhead"><h2>Radar</h2><button type="button" id="radarClose" class="btn">Cerrar</button></div><p>La verificación es manual e independiente de pagos. No publicar videos ni documentos de comprobación. Listas limitadas a 100 registros por sección.</p>'+categoryMarkup+'<label>Buscar establecimiento<input id="radarAdminSearch" type="search" maxlength="100"></label><button type="button" id="radarAdminFilter" class="btn">Buscar</button><div id="radarAdminRows" class="rows" aria-live="polite"></div></section></main>')
-  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')();</script></body>');
+  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')(undefined,undefined,'+(env.RADAR_OWNER_PRIVATE_ENABLED==='true')+');</script></body>');
 }

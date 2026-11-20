@@ -61,7 +61,7 @@ test("anonymous limit and database race return 429",async()=>{
 test("oversized registration and report streams are rejected before database operations",async()=>{
  const never=async()=>{throw Error("Unexpected database operation")};
  const handler=createRadarRoutes({...repo,register:never,findPublished:never},user,allowed,true);
- for(const [path,limit] of [["establishments",4096],["report",2048]] as const){
+ for(const [path,limit] of [["establishments",4608],["report",2048]] as const){
   const stream=new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new Uint8Array(limit));controller.enqueue(new Uint8Array(1));controller.close();}});
   const request=new Request(origin+"/v1/radar/"+path,{method:"POST",headers:{origin,"content-type":"application/json"},body:stream});
   const result=await handler(request);

@@ -14,11 +14,11 @@ test('release review fingerprints real unchanged SQL in dependency order without
 test('ledger review requires exact existing versions and checksums, without treating a match as release approval',()=>{
   const m=commercialMigrationManifest(),rows=m.foundation.map(({version,checksum_sha256})=>({version,checksum_sha256}));
   expect(reviewFoundationLedger(rows,m)).toEqual({ledgerMatches:true,missing:[],mismatched:[],unexpected:[],duplicates:[],productionAuthorized:false,publicationVerified:false});
-  expect(reviewFoundationLedger([],m).missing).toHaveLength(20);
+  expect(reviewFoundationLedger([],m).missing).toHaveLength(21);
   expect(reviewFoundationLedger(rows.filter(row=>row.version!=='0017'),m).missing).toEqual(['0017']);
   expect(reviewFoundationLedger(rows.slice(1),m).ledgerMatches).toBe(false);
   expect(reviewFoundationLedger([{...rows[0],checksum_sha256:'0'.repeat(64)},...rows.slice(1)],m).mismatched).toEqual(['0000']);
-  expect(reviewFoundationLedger([...rows,{version:'0023',checksum_sha256:'a'.repeat(64)}],m).unexpected).toEqual(['0023']);
+  expect(reviewFoundationLedger([...rows,{version:'0024',checksum_sha256:'a'.repeat(64)}],m).unexpected).toEqual(['0024']);
   expect(reviewFoundationLedger([...rows,rows[0]],m).duplicates).toEqual(['0000']);
   expect(reviewFoundationLedger([...rows,rows[0]],m).ledgerMatches).toBe(false);
 });

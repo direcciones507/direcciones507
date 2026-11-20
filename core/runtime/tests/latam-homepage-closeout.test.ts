@@ -44,3 +44,13 @@ test('responsive homepage separates hero, country selection and balanced footer 
  expect(countries).toEqual(['PA','CO','CR','GT','SV','HN','NI','MX']);
  expect(html.match(/id="latamAccess"/g)?.length).toBe(1);
 });
+
+test('both homepages use the current shared Direcciones LATAM social profiles',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const pages=[readFileSync(new URL('../../../index.html',import.meta.url),'utf8'),commercialEntryHtml(true,new URL('https://direcciones.lat/'))];
+ const expected=["https://www.instagram.com/direccioneslatam/","https://www.tiktok.com/@direccioneslatam","https://www.facebook.com/share/1K5ofVtKLX/"];
+ for(const html of pages){
+  for(const href of expected)expect(html).toContain('href="'+href+'"');
+  for(const obsolete of ['https://instagram.com/direcciones507','https://tiktok.com/@direcciones507','18ezKyzYvg','1GWvNrt6RP'])expect(html).not.toContain(obsolete);
+ }
+});

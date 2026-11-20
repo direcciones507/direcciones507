@@ -45,7 +45,7 @@ try{
   const body=route.request().postDataJSON();calls.push(body);await route.fulfill({json:body.action==='inspect'?{item:{name:'Comercio sintético',category:'shop',profile:{province:'Panamá',locality:'Santiago',description:'Original',phone:'',socials:[],extras:{},hours:{}}}}:{ok:true}});
  });
  await page.goto(origin+'/panel');await page.getByRole('button',{name:'Editar ficha comercial',exact:true}).click();
- await page.getByLabel('Descripción pública',{exact:true}).fill('Descripción actualizada');await page.getByRole('button',{name:'Guardar cambios',exact:true}).click();
+ try{await page.getByLabel('Descripción pública',{exact:true}).fill('Descripción actualizada',{timeout:5000});}catch(error){console.error('Synthetic editor diagnostics:',JSON.stringify({calls:calls.filter(c=>c.action==='inspect'),errors,html:await page.locator('#radarAccountItems').innerHTML()}));throw error;}await page.getByRole('button',{name:'Guardar cambios',exact:true}).click();
  await page.getByText('Cambios guardados en tu ficha comercial.',{exact:true}).waitFor();assert.equal(calls.find(c=>c.action==='update').profile.description,'Descripción actualizada');
  await page.getByRole('button',{name:'Cerrar edición',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Editar ficha comercial',exact:true}).isEnabled(),true);
  assert.deepEqual(errors,[]);console.log('CORE commercial browser: named review, explicit confirmation, pagination, search and owner editor passed. Synthetic writes only.');

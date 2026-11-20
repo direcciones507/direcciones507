@@ -50,8 +50,15 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
   if(url.origin!==radarOrigin)return null;
   const presentation=await radarPresentation(req,{...env,RADAR_ANONYMOUS_REPORTS_ENABLED:anonymousIdentity?"true":"false"});if(presentation)return presentation;
   if(!url.pathname.startsWith("/v1/radar/"))return null;
-  const response=!enabled?Response.json({error:"RADAR_DISABLED"},{status:503}):
-   await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+  let response:Response;
+  try{
+   response=!enabled?Response.json({error:"RADAR_DISABLED"},{status:503}):
+    await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+  }catch{
+   // Keep diagnostics free of SQL text, credentials, request payloads and account IDs.
+   console.error("RADAR_API_UNEXPECTED_ERROR");
+   response=Response.json({error:"RADAR_API_UNAVAILABLE"},{status:500});
+  }
   // API responses must never become indexable or cacheable, even after public SEO release.
   const headers=new Headers(response.headers);
   headers.set("x-robots-tag","noindex, nofollow");

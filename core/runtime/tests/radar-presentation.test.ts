@@ -135,3 +135,19 @@ test('Radar API and account redirect preserve noindex and no-store after SEO rel
  expect(disabled?.status).toBe(503);
  expect(disabled?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
 });
+
+test('Radar storage and identity failures return sanitized JSON with privacy headers',async()=>{
+ const env={RADAR_ENABLED:'true',RADAR_INDEXING_ENABLED:'true'};
+ const backendError=()=>{throw Error('internal database and account details');};
+ const failedStorage=createRadarIntegration({unsafe:async()=>backendError()},auth,env);
+ const failedIdentity=createRadarIntegration(db,{currentUser:async()=>backendError()},env);
+ const map=new Request(radarOrigin+'/v1/radar/map?country=PA&west=-83&south=7&east=-77&north=10');
+ const report=new Request(radarOrigin+'/v1/radar/report',{method:'POST',headers:{origin:radarOrigin},body:'{}'});
+ for(const result of [await failedStorage(map),await failedIdentity(report)]){
+  expect(result?.status).toBe(500);
+  expect(result?.headers.get('cache-control')).toBe('no-store');
+  expect(result?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+  expect(result?.headers.get('x-content-type-options')).toBe('nosniff');
+  expect(await result!.json()).toEqual({error:'RADAR_API_UNAVAILABLE'});
+ }
+});

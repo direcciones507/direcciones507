@@ -73,3 +73,95 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 .radar-cluster-list{display:grid;gap:6px;min-width:160px;color:#12213a}
 .radar-cluster-list button{padding:7px 9px;text-align:left;background:#eef3f7;color:#12213a;border:1px solid #b9c8d6;border-radius:7px;font-size:13px;cursor:pointer}
 .radar-cluster-list button:last-child{font-weight:700}
+
+/* Final visual block: compact introduction, existing tools and corner card. */
+.header{padding-block:18px}
+.hero{padding-block:18px;align-items:center;column-gap:24px}
+.hero h1{font-size:clamp(40px,4.4vw,64px);margin:12px 0 16px}
+.hero .eyebrow{margin-bottom:12px}
+.hero-description{margin:0;line-height:1.6}
+.hero-actions{margin-top:12px}
+.hero-note br{display:none}
+.hero-foot{margin-top:16px}
+.radar-art{height:315px}
+.radar-disc{width:260px;height:260px;margin:-130px}
+.art-card{padding:10px 12px;font-size:11px;max-width:190px}
+.card-one{top:24px}.card-two{bottom:24px}
+.orbital-label{font-size:9px}
+.explore{padding-top:12px}
+.explore>.section-heading{margin-bottom:14px}
+.toolbar{gap:8px;padding:10px 12px}
+.search{gap:8px;padding:3px 4px 3px 10px}
+.search input{font-size:14px;min-width:0;padding:9px 0;min-height:44px}
+.search-submit,.toolbar>#filtersButton{min-height:44px;padding:10px 14px}
+.country-control select{min-height:46px;padding-block:10px}
+.filters{gap:10px;padding:12px}.filters label,.filters select{min-width:0}
+.nearby-actions{display:flex;align-items:start;gap:10px;padding:8px 12px 12px}
+.nearby-actions>.button,.personal-tools>summary{min-height:46px;height:auto;padding:11px 14px;font-size:.875rem}
+.personal-tools{min-width:0;order:3;position:relative}
+.personal-tools:not(:has(button:not([hidden]))){display:none}
+.personal-tools summary,.detail-options summary{list-style:none;cursor:pointer;user-select:none}
+.personal-tools summary::-webkit-details-marker,.detail-options summary::-webkit-details-marker{display:none}
+.disclosure-arrow{display:inline-block;margin-left:auto;transition:transform .2s}
+.personal-tools[open]>summary .disclosure-arrow,.detail-options[open]>summary .disclosure-arrow{transform:rotate(180deg)}
+.personal-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-top:12px}
+.personal-tools-grid>.button{width:100%;min-height:44px;font-size:.8125rem;padding:10px;order:0}
+.detail{left:12px;bottom:64px;width:min(300px,calc(100% - 74px));padding:12px 14px;max-height:calc(100% - 136px);border-radius:12px;scrollbar-width:thin;overscroll-behavior:contain}
+.detail-top{align-items:center;gap:8px}
+.detail-top .icon-button{width:44px;height:44px;min-width:44px}
+.detail h3{font-size:1.125rem;line-height:1.3;margin:2px 0 8px;overflow-wrap:anywhere}
+.detail p{font-size:.8125rem;line-height:1.4;margin:6px 0}
+.detail .commercial-badge{font-size:.75rem;margin:0 0 4px}
+.detail-activity{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:6px 0 10px;color:var(--muted);font-size:.6875rem}
+.detail-activity .activity-badge{font-size:.6875rem;margin:0;padding:3px 7px}
+.detail-options>summary{width:100%;min-height:44px;justify-content:space-between;padding:9px 12px;font-size:.8125rem}
+.detail-options-content{padding-top:8px}
+.detail-actions{display:grid;gap:8px;margin-top:12px}
+.detail-actions>.button{width:100%;min-height:44px;font-size:.8125rem;padding:10px}
+@media(max-width:800px){
+ .header{padding-block:14px;gap:12px}.header nav{gap:12px}
+ .hero{padding-block:16px;column-gap:16px}.radar-art{height:270px}
+ .hero h1{font-size:42px}.hero-description{font-size:.9375rem}
+ .radar-disc{width:220px;height:220px;margin:-110px}
+ .hero-foot{font-size:9px;gap:10px}.orbital-label{font-size:8px}
+ .art-card{font-size:10px;max-width:160px}.art-card small{font-size:9px}
+ .personal-tools{flex-basis:100%}.personal-tools>summary{width:100%}
+ .personal-tools-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:600px){
+ .header{padding:12px 16px;gap:10px}.header nav{gap:8px}
+ .header nav .nav-how{font-size:.8125rem;min-height:44px;padding:8px 0}
+ .header nav .button{min-height:44px}
+ .hero{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:8px 12px;padding:16px 20px}
+ .hero-copy{display:contents}
+ .hero .eyebrow{grid-column:1/-1;font-size:.625rem;margin:0 0 4px;letter-spacing:.09em}
+ .hero h1{grid-column:1;grid-row:2;font-size:clamp(24px,6vw,36px);letter-spacing:-.045em;margin:0;align-self:center}
+ .hero-description{grid-column:1/-1;max-width:none;font-size:.875rem;line-height:1.5;margin-top:4px}
+ .hero-actions{grid-column:1/-1;margin:0}.hero-note{font-size:.6875rem}
+ .hero-foot{grid-column:1/-1;margin:0;gap:10px;font-size:.5625rem;flex-wrap:wrap}
+ .radar-art{grid-column:2;grid-row:2;height:132px;margin:0;width:100%;min-width:0;align-self:center}
+ .radar-disc{width:120px;height:120px;margin:-60px}
+ .radar-art .art-card,.radar-art .orbital-label{display:none}
+ .orbit-one{inset:16px 0}.orbit-two{inset:5px 15px}
+ .radar-center svg{width:24px;height:30px}
+ .explore{padding:8px 12px 0}.explore>.section-heading{padding-inline:13px;margin-bottom:12px}
+ .section-heading h2{font-size:25px;line-height:1.25;max-width:none}.section-heading .eyebrow{font-size:.625rem;margin:0 0 6px}
+ .explore>.section-heading>#addButton{width:100%;min-height:46px;margin-top:14px;font-size:.875rem}
+ .toolbar{padding:10px 12px;gap:8px}.search{padding-left:8px;gap:6px}
+ .search input{font-size:16px}.toolbar .search-submit{padding:8px;font-size:.8125rem}
+ .search>svg{width:18px;height:18px}
+ .country-control{width:auto;min-width:0}.country-control select{font-size:.875rem}
+ .toolbar>#filtersButton{padding:10px 14px}
+ .filters{grid-template-columns:minmax(0,1fr)}.filters label:first-child{grid-column:auto}
+ .filters select{font-size:.875rem;padding-right:32px}.filters .button{width:100%;min-height:44px}
+ .nearby-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;gap:10px;padding:8px 12px 12px;align-items:stretch}
+ .nearby-actions>.button{height:100%;width:100%;min-height:48px;padding:10px 8px;font-size:.8125rem;line-height:1.35}
+ .personal-tools{grid-column:1/-1}.personal-tools>summary{min-height:44px;font-size:.8125rem}
+ .personal-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .detail{left:10px;bottom:62px;width:min(270px,calc(100% - 70px));padding:10px 12px;max-height:calc(100% - 136px)}
+ .detail h3{font-size:1rem}.detail p{font-size:.75rem}.detail .button{font-size:.8125rem}
+ .map-bottom{padding-block:8px}
+}
+
+/* Keep the full search prompt readable on the narrowest phones. */
+@media(max-width:360px){.search>svg{display:none}}

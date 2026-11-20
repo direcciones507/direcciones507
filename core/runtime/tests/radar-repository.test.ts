@@ -23,3 +23,10 @@ test("unpublished establishment cannot receive report",async()=>{
  expect(await repo.findPublished("a")).toBeNull();
  await expect(repo.addReport("a","b","available","community")).rejects.toThrow();
 });
+
+test("new registrations are published atomically, without granting ownership or updating duplicates",async()=>{
+ const draft={name:"Shop",category:"shop",country:"PA" as const,latitude:8,longitude:-80};
+ const repo=createRadarRepository({unsafe:async(q,p)=>{expect(q).toContain("longitude,published)");expect(q).toContain("VALUES ($1,$2,$3,$4,$5,$6,true)");expect(q).toContain("ON CONFLICT DO NOTHING");expect(p).toEqual(["account","Shop","shop","PA",8,-80]);return [{id:"new"}]}});
+ expect(await repo.register!(draft,"account")).toBe("new");
+ const duplicate=createRadarRepository({unsafe:async()=>[]});expect(await duplicate.register!(draft,"account")).toBeNull();
+});

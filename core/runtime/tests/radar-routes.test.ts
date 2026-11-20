@@ -27,10 +27,10 @@ const draft={name:"Shop",category:"retail",country:"PA",latitude:8,longitude:-80
 test("registration requires login",async()=>{
  expect((await createRadarRoutes(repo,anon,allowed,true)(submission(draft)))?.status).toBe(403);
 });
-test("registration binds authenticated identity and moderation status",async()=>{
+test("registration binds authenticated identity and public status",async()=>{
  const storage:RadarRepository={...repo,register:async(d,account)=>{expect(d).toEqual(draft);expect(account).toBe("citizen");return id}};
  const r=await createRadarRoutes(storage,user,allowed,true)(submission({...draft,published:true,accountRef:"other"}));
- expect(r?.status).toBe(201);expect(await r?.json()).toEqual({id,status:"pending"});
+ expect(r?.status).toBe(201);expect(await r?.json()).toEqual({id,status:"published"});
 });
 test("invalid and duplicate submissions",async()=>{
  const storage:RadarRepository={...repo,register:async()=>null};

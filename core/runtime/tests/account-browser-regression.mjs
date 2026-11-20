@@ -14,6 +14,51 @@ const id='11111111-1111-4111-8111-111111111111';
 const plans=['BUSINESS_FREE','BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].map(code=>({code,name:code}));
 let passed=0;
 try{
+ // Shared card + real Radar UI; every HTTP request is isolated and no real account is used.
+ {
+  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage();page.setDefaultTimeout(10000);
+  const radar='https://radar.direcciones.lat',latam='https://direcciones.lat';let loginPosts=0,logoutPosts=0;
+  await context.route('**/*',async route=>{
+   const request=route.request(),url=new URL(request.url()),path=url.pathname;
+   if(![radar,latam].includes(url.origin))return route.abort();
+   if(url.origin===radar){
+    if(path==='/')return route.fulfill({contentType:'text/html',body:readFileSync(new URL('../radar/ui/index.html',import.meta.url),'utf8')});
+    if(path.startsWith('/radar/ui/')&&!path.includes('..')){
+     const asset=path.slice('/radar/ui/'.length);
+     // This test covers authentication, so no map engines or remote tiles are required.
+     if(asset.includes('vendor/')||asset==='raster-map.js')return route.fulfill({status:404,body:''});
+     return route.fulfill({contentType:asset.endsWith('.css')?'text/css':'text/javascript',body:readFileSync(new URL('../radar/ui/'+asset,import.meta.url))});
+    }
+    if(path==='/v1/auth/me')return route.fulfill({status:request.headers().cookie?.includes('__Secure-ad507_radar_session=isolated-test')?200:401,json:request.headers().cookie?.includes('__Secure-ad507_radar_session=isolated-test')?{user:{id:'00000000-0000-4000-8000-000000000001',roles:['CLIENT']}}:{error:'UNAUTHENTICATED'}});
+    if(path==='/v1/radar/map')return route.fulfill({json:{type:'FeatureCollection',features:[]}});
+    if(path==='/auth/logout'){logoutPosts++;return route.fulfill({status:204,headers:{'set-cookie':'__Secure-ad507_radar_session=; Max-Age=0; Path=/; Secure; HttpOnly; Domain=direcciones.lat; SameSite=Lax'}});}
+   }else{
+    if(path==='/auth/radar')return route.fulfill({status:302,headers:{location:latam+'/?access=1'}});
+    if(path==='/')return route.fulfill({contentType:'text/html',body:fixtures.commercial.html});
+    if(path==='/v1/user/panel')return route.fulfill({status:401,json:{error:'UNAUTHENTICATED'}});
+    if(path==='/v1/auth/email/login'){
+     loginPosts++;assert.equal(request.method(),'POST');assert.equal(request.headers().origin,latam);
+     assert.deepEqual(request.postDataJSON(),{email:'radar-browser@example.invalid',password:'synthetic-password-123',token:''});
+     return route.fulfill({json:{ok:true,redirect:radar+'/'},headers:{'set-cookie':'__Secure-ad507_radar_session=isolated-test; Path=/; Secure; HttpOnly; Domain=direcciones.lat; SameSite=Lax'}});
+    }
+   }
+   return route.fulfill({status:404,body:''});
+  });
+  await page.goto(radar+'/');await page.locator('#addButton').click();await page.waitForURL(latam+'/?access=1');
+  if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible())await page.getByRole('button',{name:'Rechazar',exact:true}).click();
+  await page.locator('#latamAccessEmail').fill('radar-browser@example.invalid');await page.locator('#latamAccessPassword').fill('synthetic-password-123');
+  await page.locator('#latamEmailSubmit').click();await page.getByRole('button',{name:'Continuar',exact:true}).waitFor();
+  assert.equal(page.url(),latam+'/?access=1');assert.equal(loginPosts,1);assert.equal(await page.locator('#latamAccessPassword').inputValue(),'');
+  const cookie=(await context.cookies(radar)).find(c=>c.name==='__Secure-ad507_radar_session');assert.ok(cookie?.httpOnly&&cookie?.secure);
+  await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.waitForURL(radar+'/');await page.locator('#addDialog').waitFor({state:'visible'});
+  assert.equal(await page.locator('#accountButton').innerText(),'Mi cuenta');assert.equal(loginPosts,1);
+  assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).type),'add');
+  await page.locator('#addDialog [data-close]').click();page.once('dialog',dialog=>dialog.accept());await page.locator('#accountButton').click();
+  await page.getByRole('button',{name:'Ingresar',exact:true}).waitFor();assert.equal(logoutPosts,1);
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('radarAction')),null);
+  await context.close();console.log('PASS: isolated Radar -> shared LATAM email card -> Continue -> Radar pending add action -> logout; no real accounts or writes.');
+ }
+
  for(const viewport of [{width:390,height:844},{width:820,height:1180},{width:1440,height:1000}]){
   const homeContext=await browser.newContext({viewport}),home=await homeContext.newPage();home.setDefaultTimeout(7000);
   await home.route('**/*',route=>new URL(route.request().url()).pathname==='/'?route.fulfill({status:200,contentType:'text/html',body:fixtures.home507.html}):route.fulfill({status:404,body:''}));

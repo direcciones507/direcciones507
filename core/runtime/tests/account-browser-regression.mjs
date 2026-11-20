@@ -34,6 +34,7 @@ try{
     if(path==='/auth/logout'){logoutPosts++;return route.fulfill({status:204,headers:{'set-cookie':'__Secure-ad507_radar_session=; Max-Age=0; Path=/; Secure; HttpOnly; Domain=direcciones.lat; SameSite=Lax'}});}
    }else{
     if(path==='/auth/radar')return route.fulfill({status:302,headers:{location:latam+'/?access=1'}});
+    if(path==='/panel')return route.fulfill({contentType:'text/html; charset=utf-8',body:fixtures.plan.html});
     if(path==='/')return route.fulfill({contentType:'text/html',body:fixtures.commercial.html});
     if(path==='/v1/user/panel')return route.fulfill({status:401,json:{error:'UNAUTHENTICATED'}});
     if(path==='/v1/auth/email/login'){
@@ -60,10 +61,10 @@ try{
   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).type),'add');
   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).registrationKind),registrationKind);
   assert.equal(await page.locator('#ownerRegistrationFields').isVisible(),registrationKind==='owner');
-  await page.locator('#addDialog [data-close]').click();page.once('dialog',dialog=>dialog.accept());await page.locator('#accountButton').click();
-  await page.getByRole('button',{name:'Ingresar',exact:true}).waitFor();assert.equal(logoutPosts,1);
-  assert.equal(await page.evaluate(()=>sessionStorage.getItem('radarAction')),null);
-  await context.close();console.log('PASS: isolated Radar -> shared LATAM email card -> Continue -> Radar pending add action -> logout; no real accounts or writes.');
+  await page.locator('#addDialog [data-close]').click();await page.locator('#accountButton').click();
+  await page.waitForURL(latam+'/panel');assert.equal(logoutPosts,0);
+  assert.ok((await context.cookies(radar)).some(c=>c.name==='__Secure-ad507_radar_session'&&c.httpOnly&&c.secure));
+  await context.close();console.log('PASS: isolated Radar -> shared LATAM email card -> Continue -> Radar pending add action -> CORE account; no real accounts or writes.');
  }
 
  for(const viewport of [{width:390,height:844},{width:820,height:1180},{width:1440,height:1000}]){

@@ -29,7 +29,7 @@ export function setRegistrationKind(form,kind){
  const fields=form.querySelector('#ownerRegistrationFields');if(fields){fields.hidden=kind!=='owner';fields.disabled=kind!=='owner';}
  // This changes required controls only, never any authentication or authorization state.
 }
-export function capacityUnit(category){return ['restaurant','cafe','bar'].includes(category)?'tables':category==='hotel'?'rooms':['tourism','health','services','entertainment','education','sports'].includes(category)?'places':'units';}
+export function capacityUnit(category){return ["restaurant","fonda","cafe","specialty-coffee","pizza","fast-food","juice","smoothies","bubble-tea","bakery","ice-cream","pastry","bar","terrace","rooftop","karaoke","brewery","lounge"].includes(category)?'tables':["hotel","hostel","cabin","vacation-rental","resort","glamping"].includes(category)?'rooms':["nightclub","casino","event-hall","tourism","recreation","sports","health","services","entertainment","education","clinic","gym","beauty","barber"].includes(category)?'places':'units';}
 export function renderCategoryRegistrationFields(container,category,doc=document){
  container.replaceChildren();
  for(const [key,title] of (Object.hasOwn(categoryRegistrationFields,category)?categoryRegistrationFields[category]:categoryRegistrationFields.other)){const label=doc.createElement('label'),input=doc.createElement('input');label.textContent=title;input.name='businessExtra_'+key;input.maxLength=250;label.append(input);container.append(label);}

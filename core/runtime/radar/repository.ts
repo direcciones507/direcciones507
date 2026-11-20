@@ -2,11 +2,25 @@ import type {RadarRepository} from "./routes";
 import type {Country,Report} from "./domain";
 import type {Bounds,Establishment} from "./public-map";
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
-export function createRadarRepository(db:Database,ownershipEnabled=false,resolveAddress?:(id:string,country:Country)=>Promise<Establishment["digitalAddress"]|null>,businessEnabled=false,registrationProfilesEnabled=false):RadarRepository {
+export function createRadarRepository(db:Database,ownershipEnabled=false,resolveAddress?:(id:string,country:Country)=>Promise<Establishment["digitalAddress"]|null>,businessEnabled=false,registrationProfilesEnabled=false,privateOwnerEnabled=false):RadarRepository {
  return {
   async register(draft,accountRef) {
    if(draft.registrationKind==='owner'){
     if(!registrationProfilesEnabled||!draft.profile)throw Error('OWNER_REGISTRATION_DISABLED');
+    if(privateOwnerEnabled){
+     if(!draft.ownerPrivate)throw Error('OWNER_PRIVATE_REQUIRED');
+     const rows=await db.unsafe(`WITH added AS (
+      INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude,published)
+      VALUES ($1,$2,$3,$4,$5,$6,true) ON CONFLICT DO NOTHING RETURNING id
+     ),saved AS (
+      INSERT INTO radar.registration_profiles(establishment_id,submitted_by,profile)
+      SELECT id,$1::uuid,$7::text::jsonb FROM added RETURNING establishment_id
+     ),owner_saved AS (
+      INSERT INTO radar.owner_private_declarations(establishment_id,submitted_by,legal_name,tax_identifier,country)
+      SELECT establishment_id,$1::uuid,$8::text,$9::text,$4::text FROM saved RETURNING establishment_id
+     ) SELECT establishment_id AS id FROM owner_saved`,[accountRef,draft.name,draft.category,draft.country,draft.latitude,draft.longitude,JSON.stringify(draft.profile),draft.ownerPrivate.legalName,draft.ownerPrivate.taxId]);
+     return rows[0]?.id??null;
+    }
     const rows=await db.unsafe(`WITH added AS (
      INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude,published)
      VALUES ($1,$2,$3,$4,$5,$6,true) ON CONFLICT DO NOTHING RETURNING id

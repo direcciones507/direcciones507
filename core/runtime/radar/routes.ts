@@ -41,7 +41,7 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    if(repo.registrationAllowed && !await repo.registrationAllowed(actor.accountRef))return json(429,{error:"REGISTRATION_RATE_LIMIT"});
    try {
     const id=await repo.register(draft,actor.accountRef);
-    return id?json(201,{id,status:"pending"}):json(409,{error:"DUPLICATE"});
+    return id?json(201,{id,status:"published"}):json(409,{error:"DUPLICATE"});
    } catch(error) {
     if((error as {code?:string})?.code==="P4290")return json(429,{error:"REGISTRATION_RATE_LIMIT"});
     throw error;

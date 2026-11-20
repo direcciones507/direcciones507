@@ -73,6 +73,15 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   const clearRadarReturn=()=>cookie(radarReturnName,'',0);
   const sharedRadarCookie=async(payload:Payload)=>cookie(radarSessionName,await sign({...payload,origin:radarOrigin},radar!.secret),Math.max(0,Math.min(28800,Math.floor(payload.exp-Date.now()/1000))))+'; Domain=direcciones.lat';
   const radarRedirect=(cookies:string[]=[])=>{const headers=new Headers({location:radarOrigin+'/','cache-control':'no-store','referrer-policy':'no-referrer'});for(const value of cookies)headers.append('set-cookie',value);return new Response(null,{status:302,headers});};
+  // Railway terminates TLS before Bun. Normalize only the configured LATAM
+  // authentication origin, never a forwarded host or arbitrary redirect.
+  function normalizeLatamRadarAuth(req:Request):Request {
+    if(!radar)return req;
+    const url=new URL(req.url);
+    if(url.protocol!=='http:'||url.hostname!=='direcciones.lat'||(url.port!==''&&url.port!=='8080')||url.username||url.password||req.headers.get('x-forwarded-proto')!=='https'||!routes.has(url.pathname))return req;
+    url.protocol='https:';url.port='';
+    return new Request(url.toString(),req);
+  }
   async function radarReturn(req:Request){
     if(!radar||new URL(req.url).origin!==radar.origin)return false;
     const value=readCookie(req,radarReturnName);if(!value)return false;
@@ -123,6 +132,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     return { id: u.id, email: u.email, displayName: u.display_name, roles: Array.from(u.roles) };
   }
   async function handle(req: Request): Promise<Response | null> {
+    req=normalizeLatamRadarAuth(req);
     const cfg=forRequest(req);
     const url = new URL(req.url);
     if (!routes.has(url.pathname)) return null;

@@ -16,7 +16,8 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   const whatsapp=field('whatsapp','WhatsApp comercial público (opcional)',profile.whatsapp,'input',16);whatsapp.type='tel';whatsapp.placeholder='+50760000000';whatsapp.pattern='\\+[1-9][0-9]{6,14}';
   field('socials','Redes o sitio web · Un enlace HTTPS por línea',(profile.socials||[]).join('\n'),'textarea',1000);
   const capacityUnit=["restaurant","fonda","cafe","specialty-coffee","pizza","fast-food","juice","smoothies","bubble-tea","bakery","ice-cream","pastry","bar","terrace","rooftop","karaoke","brewery","lounge"].includes(item.category)?'tables':["hotel","hostel","cabin","vacation-rental","resort","glamping"].includes(item.category)?'rooms':["nightclub","casino","event-hall","tourism","recreation","sports","health","services","entertainment","education","clinic","gym","beauty","barber"].includes(item.category)?'places':'units';
-  const total=field('totalCapacity','Capacidad total · '+({tables:'Mesas',rooms:'Habitaciones',places:'Cupos',units:'Unidades'}[capacityUnit])+' (opcional)',profile.capacity?.unit===capacityUnit?String(profile.capacity.total):'','input',6);total.type='number';total.min='0';total.max='100000';total.step='1';
+  const effectiveUnit=(['tables','rooms','places','units'].includes(item.configuredUnit)?item.configuredUnit:capacityUnit) as 'tables'|'rooms'|'places'|'units';
+  const total=field('totalCapacity','Capacidad total · '+({tables:'Mesas',rooms:'Habitaciones',places:'Cupos',units:'Unidades'}[effectiveUnit])+' (opcional)',profile.capacity?.unit===effectiveUnit?String(profile.capacity.total):'','input',6);total.type='number';total.min='0';total.max='100000';total.step='1';
   form.append(text('p','La capacidad total es independiente de la cantidad disponible.'));
   const quantity=field('quantity','Cantidad disponible (opcional)',item.quantity===null||item.quantity===undefined?'':String(item.quantity),'input',6);
   quantity.type='number';quantity.min='0';quantity.max='100000';quantity.step='1';
@@ -44,7 +45,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
     const hours:Record<string,string>={},extras:Record<string,string>={};
     for(const [key] of days){if(fields[key+'Mode'].value==='closed')hours[key]='closed';else if(fields[key+'Mode'].value==='open')hours[key]=fields[key+'Start'].value+'-'+fields[key+'End'].value;}
     for(const [key] of extraFields)if(fields['extra_'+key].value.trim())extras[key]=fields['extra_'+key].value.trim();
-    const profile={...(total.value===''?{}:{capacity:{total:Number(total.value),unit:capacityUnit}}),province:fields.province.value.trim(),locality:fields.locality.value.trim(),description:fields.description.value.trim(),phone:fields.phone.value.trim(),whatsapp:whatsapp.value.trim(),socials:fields.socials.value.split(/\r?\n/).map((v:string)=>v.trim()).filter(Boolean),hours,extras};
+    const profile={...(total.value===''?{}:{capacity:{total:Number(total.value),unit:effectiveUnit}}),province:fields.province.value.trim(),locality:fields.locality.value.trim(),description:fields.description.value.trim(),phone:fields.phone.value.trim(),whatsapp:whatsapp.value.trim(),socials:fields.socials.value.split(/\r?\n/).map((v:string)=>v.trim()).filter(Boolean),hours,extras};
     const result=await send({action:'update',id,profile,availability:{quantity:quantity.value===''?null:Number(quantity.value),unit:unit.value}});if(!result.ok)throw Error();status.textContent='Cambios guardados en tu ficha comercial.';
    }catch{status.textContent='No se guardaron los cambios. Revisa los datos y tu autorización antes de reintentar.';}
    finally{save.disabled=false;close.disabled=false;}

@@ -1,7 +1,7 @@
 import {validateBusiness} from "./business";
-import {categoryRegistrationFields} from "./ui/registration-form.js";
+import {categoryRegistrationFields,capacityUnit} from "./ui/registration-form.js";
 import {countries,validCoordinates,type Country} from "./domain";
-export type RegistrationProfile={province:string;locality:string;description:string;phone:string;hours:Record<string,string>;socials:string[];extras:Record<string,string>};
+export type RegistrationProfile={province:string;locality:string;description:string;phone:string;hours:Record<string,string>;socials:string[];extras:Record<string,string>;capacity?:{total:number;unit:string}};
 export type EstablishmentDraft={name:string;category:string;country:Country;latitude:number;longitude:number;registrationKind?:"owner";profile?:RegistrationProfile};
 export function validateRegistration(input:unknown):EstablishmentDraft|null{
  if(!input||typeof input!=="object"||Array.isArray(input))return null;
@@ -28,6 +28,8 @@ export function validateRegistrationProfile(input:unknown,category:string):Regis
  const definitions=Object.hasOwn(categoryRegistrationFields,category)?categoryRegistrationFields[category]:categoryRegistrationFields.other,keys=definitions.map(([key]:string[])=>key);
  if(Object.keys(p.extras).some(key=>!keys.includes(key)))return null;
  const extras:Record<string,string>={};for(const key of keys){const value=p.extras[key]??'';if(typeof value!=='string'||value.trim().length>250)return null;if(value.trim())extras[key]=value.trim();}
- const profile={province,locality,description,phone,hours:business.hours,socials,extras};
+ let capacity:RegistrationProfile['capacity'];
+ if(p.capacity!==undefined){const c=p.capacity;if(!c||typeof c!=='object'||Array.isArray(c)||!Number.isInteger(c.total)||c.total<0||c.total>100000||c.unit!==capacityUnit(category))return null;capacity={total:c.total,unit:c.unit};}
+ const profile={province,locality,description,phone,hours:business.hours,socials,extras,...(capacity?{capacity}:{})};
  return new TextEncoder().encode(JSON.stringify(profile)).byteLength<=8000?profile:null;
 }

@@ -19,6 +19,13 @@ test('user form excludes hidden owner requirements while owner form enables its 
 });
 
 test('category fields fall back safely for unknown or inherited property names',()=>{
- const nodes:any[]=[],doc:any={createElement:()=>({append:(child:any)=>nodes.push(child)})},container:any={replaceChildren:()=>{nodes.length=0;},append:()=>{}};
- for(const category of ['restaurant','tourism','constructor','__proto__']){renderCategoryRegistrationFields(container,category,doc);assert.ok(nodes.length>0);assert.ok(nodes.every(n=>n.maxLength===250&&n.name.startsWith('businessExtra_')));}
+ const nodes:any[]=[],doc:any={createElement:()=>({dataset:{},append:(child:any)=>nodes.push(child)})},container:any={replaceChildren:()=>{nodes.length=0;},append:()=>{}};
+ for(const [category,unit] of [['restaurant','tables'],['hotel','rooms'],['tourism','places'],['constructor','units'],['__proto__','units']]){
+  renderCategoryRegistrationFields(container,category,doc);
+  const extras=nodes.filter(n=>n.name?.startsWith('businessExtra_')),capacity=nodes.filter(n=>n.name==='businessCapacity');
+  assert.ok(extras.length>0);assert.ok(extras.every(n=>n.maxLength===250));
+  assert.equal(capacity.length,1);assert.equal(nodes.length,extras.length+1);
+  assert.equal(capacity[0].dataset.unit,unit);assert.equal(capacity[0].type,'number');
+  assert.equal(capacity[0].min,'0');assert.equal(capacity[0].max,'100000');assert.equal(capacity[0].step,'1');
+ }
 });

@@ -36,3 +36,12 @@ test('commercial profile and free publication save atomically without granting o
   await assert.rejects(()=>repo.register!(invalid,account));assert.equal((await pg.query('SELECT * FROM radar.establishments')).rows.length,before);
  }finally{await pg.close();}
 },20000);
+
+test('declared capacity is optional, category-specific and does not grant verified ownership',()=>{
+ for(const [category,unit] of [['restaurant','tables'],['hotel','rooms'],['services','places'],['shop','units']]){
+  const candidate={...input,category,profile:{...profile,extras:{},capacity:{total:20,unit}}};
+  assert.deepEqual(validateRegistration(candidate)?.profile?.capacity,{total:20,unit});
+  for(const total of [-1,1.5,100001,'20'])assert.equal(validateRegistration({...candidate,profile:{...candidate.profile,capacity:{total,unit}}}),null);
+  assert.equal(validateRegistration({...candidate,profile:{...candidate.profile,capacity:{total:20,unit:'invalid'}}}),null);
+ }
+});

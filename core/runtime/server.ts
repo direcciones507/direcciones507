@@ -20,6 +20,7 @@ import { createNewAddressPublication, handleNewPublicRoutes } from './new-addres
 import postgres from 'postgres';
 import { createGeneralAuth } from './general-auth';
 import { createRadarIntegration, normalizeRadarRequest } from './radar/integration';
+import {createCoreRadarAdmin,withCoreRadarAdmin} from './radar/core-admin';
 import { startLegacyCore } from './legacy';
 import { commercialEntryHtml, handleUserPanel } from './user-panel';
 import { createRequestRepository } from './request-repository';
@@ -41,6 +42,7 @@ import {createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge'
 const sql = postgres(process.env.DATABASE_URL!, { max: 2, connect_timeout: 5, idle_timeout: 30, max_lifetime: 1800, connection:{statement_timeout:'15000',lock_timeout:'5000'}, application_name: 'ad507-core-general-auth' });
 const auth = createGeneralAuth(sql, process.env);
 const radarHandler = createRadarIntegration(sql, auth, process.env);
+const coreRadarAdmin=createCoreRadarAdmin(sql,auth,process.env);
 if(process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true'){
  let expiring=false;
  const expire=async()=>{if(expiring)return;expiring=true;try{await expireTemporaryEvents(sql);}catch{console.error('TEMPORARY_EVENT_EXPIRATION_RETRY_PENDING');}finally{expiring=false}};
@@ -65,6 +67,7 @@ const adminHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><m
 startLegacyCore(async req => {
   req=normalizeRadarRequest(req,process.env);
   const radarResponse = await radarHandler(req); if (radarResponse) return radarResponse;
+  const radarAdminResponse=await coreRadarAdmin(req);if(radarAdminResponse)return radarAdminResponse;
   const openGraphImage=handleLatamOpenGraphImage(req);if(openGraphImage)return openGraphImage;
   const analyticsResponse=await handleAnalyticsRoutes(req,{sql,auth});if(analyticsResponse)return analyticsResponse;
   const legalResponse=handleLegalRoutes(req);if(legalResponse)return legalResponse;
@@ -153,7 +156,7 @@ startLegacyCore(async req => {
   if (req.method === 'GET' && url.pathname === '/' && req.headers.get('cookie')?.includes('ad507_session=')) {
     try { const user = await auth.currentUser(req); if (user) return new Response(null, { status: 302, headers: { location: user.roles.includes('ADMIN') ? '/admin' : '/panel', 'cache-control': 'no-store' } }); } catch {}
   }
-  if (req.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin/')) return new Response(adminHtml, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'", 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } });
+  if (req.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin/')) return new Response(withCoreRadarAdmin(adminHtml,process.env), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'", 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } });
   if (req.method === 'GET' && url.pathname === '/v1/admin/addresses') {
     try {
       const user = await auth.currentUser(req);

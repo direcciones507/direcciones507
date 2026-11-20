@@ -5,8 +5,8 @@ type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 export function createRadarRepository(db:Database,ownershipEnabled=false,resolveAddress?:(id:string,country:Country)=>Promise<Establishment["digitalAddress"]|null>,businessEnabled=false):RadarRepository {
  return {
   async register(draft,accountRef) {
-   const rows=await db.unsafe(`INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude)
-    VALUES ($1,$2,$3,$4,$5,$6)
+   const rows=await db.unsafe(`INSERT INTO radar.establishments(account_ref,name,category,country,latitude,longitude,published)
+    VALUES ($1,$2,$3,$4,$5,$6,true)
     ON CONFLICT DO NOTHING RETURNING id`,[accountRef,draft.name,draft.category,draft.country,draft.latitude,draft.longitude]);
    return rows[0]?.id??null;
   },

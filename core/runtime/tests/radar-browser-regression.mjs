@@ -62,7 +62,7 @@ try{
   await page.getByRole('button',{name:'Agregar establecimiento',exact:true}).click();
   await page.waitForURL('https://direcciones.lat/auth/radar');
   assert(new URL(page.url()).search==='', 'No authentication tokens or arbitrary return URLs');
-  await page.goBack();await page.waitForFunction(()=>typeof window.__radarTestState==='function'&&typeof window.__radarTestCamera==='function');
+  await page.goBack();await page.waitForFunction(()=>typeof window.__radarTestState==='function');
   assert(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')||'null')?.type==='add'),'Pending Radar action lost during shared login navigation');
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Overflow after interactions '+name);
   if(motion==='reduce'){assert(await page.locator('.sweep').evaluate(e=>getComputedStyle(e).animationName==='none'),'Reduced motion ignored');assert(await page.locator('#threeScene canvas').count()===0,'Reduced-motion device loaded 3D scene');}

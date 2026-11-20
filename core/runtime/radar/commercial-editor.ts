@@ -7,7 +7,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   form.append(text('h4','Editar información de '+item.name));
   const fields:Record<string,any>={};
   const field=(key:string,label:string,value:string,tag='input',max=250,required=false)=>{
-   const l=text('label',label),input=doc.createElement(tag);input.setAttribute('style','display:block;width:100%;max-width:100%');input.name=key;input.value=value||'';input.maxLength=max;input.required=required;if(tag==='input')input.type='text';l.append(input);form.append(l);fields[key]=input;return input;
+   const l=text('label',label),input=doc.createElement(tag);input.setAttribute('style','display:block;width:100%;max-width:100%');input.name=key;input.setAttribute('aria-label',label);input.value=value||'';input.maxLength=max;input.required=required;if(tag==='input')input.type='text';l.append(input);form.append(l);fields[key]=input;return input;
   };
   field('province','Provincia o división territorial',profile.province,'input',100,true);
   field('locality','Localidad',profile.locality,'input',160,true);

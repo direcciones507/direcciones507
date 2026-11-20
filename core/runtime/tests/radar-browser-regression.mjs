@@ -27,30 +27,44 @@ try{
   await page.locator('#activity').selectOption('queue');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');await page.locator('#activity').selectOption('');
   await page.locator('#country').selectOption('CR');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');
   await page.locator('#country').selectOption('PA');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
-  // Every visible priority pin is clickable; normal pins reveal with a small map zoom.
+  // Real pointer selection, including overlapping markers at wide territorial scales.
   await page.locator('#filtersButton').click();
-  await page.locator('.raster-pin').first().waitFor();
-  assert(await page.locator('.raster-pin.pin-normal').count()===0,'Normal visible before zoom '+name);
-  assert(await page.locator('.raster-pin.pin-live').count()===1,'Live missing '+name);
-  const pulse=await page.locator('.raster-pin.pin-live').evaluate(e=>getComputedStyle(e,'::after').animationName);
-  assert(motion==='reduce'?pulse==='none':pulse==='livePulse','Incorrect live pulse '+name);
-  for(const pin of await page.locator('.raster-pin').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
-  await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
-  await page.locator('.raster-cluster,.raster-pin.pin-normal').first().waitFor();
-  // At wide territorial scale, existing clustering represents the revealed normals.
-  await page.locator('#filtersButton').click();await page.locator('#territory').selectOption('0');await page.locator('#filtersButton').click();await page.waitForTimeout(800);
-  await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(500);
-  let normalZoomSteps=1;if(await page.locator('.raster-pin.pin-normal').count()===0){await page.locator('.raster-cluster').first().click();normalZoomSteps+=2;await page.waitForTimeout(500);}
-  await page.locator('.raster-pin.pin-normal').first().waitFor();
-  for(const pin of await page.locator('.raster-pin.pin-normal').all()){await pin.click({force:true});await page.locator('#detail').waitFor();await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();}
-  for(let i=0;i<normalZoomSteps;i++){await page.locator('.leaflet-control-zoom-out').click();await page.waitForTimeout(350);}assert(await page.locator('.raster-cluster,.raster-pin.pin-normal').count()===0,'Normal pins remained after zoom out '+name);
-  for(let i=0;i<normalZoomSteps;i++){await page.locator('.leaflet-control-zoom-in').click();await page.waitForTimeout(350);}
+  const normalVisible=()=>page.evaluate(()=>document.querySelectorAll('.raster-pin.pin-normal').length+[...document.querySelectorAll('.raster-cluster')].reduce((n,e)=>n+Number(e.dataset.normalCount||0),0));
+  await page.locator('.raster-pin,.raster-cluster').first().waitFor();
+  assert(await normalVisible()===0,'Normal visible before zoom '+name);
+  assert(await page.locator('.raster-pin.pin-live,.raster-cluster.pin-live').count()===1,'Live missing '+name);
+  const group=page.locator('.raster-cluster.pin-live').first();
+  if(await group.count()){
+   await group.click();await page.locator('.radar-cluster-list').waitFor();
+   await page.locator('.radar-cluster-choice').filter({hasText:'Restaurante La Terraza'}).click();
+   await page.locator('#detail').waitFor();assert(await page.locator('#detail h3').innerText()==='Restaurante La Terraza','Wrong grouped live detail');
+   await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
+  }else{
+   await page.locator('.raster-pin.pin-live').click();await page.locator('#detail').waitFor();assert(await page.locator('#detail h3').innerText()==='Restaurante La Terraza','Wrong live detail');await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
+  }
+  await page.locator('#filtersButton').click();await page.locator('#territory').selectOption('0');await page.locator('#filtersButton').click();
+  await page.waitForFunction(()=>!window.__radarTestCamera().moving&&!window.__radarTestCamera().pendingFit&&!window.__radarTestState().resetZoom);
+  await page.locator('.leaflet-control-zoom-in').click();
+  await page.waitForFunction(()=>document.querySelector('.raster-pin.pin-normal,.raster-cluster:not([data-normal-count="0"])'));
+  assert(await normalVisible()>0,'Normal pins not revealed '+name);
+  const normal=page.locator('.raster-pin.pin-normal').first();
+  if(await normal.count()){
+   const expected=await normal.getAttribute('aria-label');await normal.click();await page.locator('#detail').waitFor();assert(await page.locator('#detail h3').innerText()===expected,'Wrong normal detail');
+  }else{
+   await page.locator('.raster-cluster:not([data-normal-count="0"])').first().click();
+   const choice=page.locator('.radar-cluster-choice').filter({hasNotText:/En vivo|Destacado/}).first();
+   const expected=await choice.innerText();await choice.click();await page.locator('#detail').waitFor();assert(await page.locator('#detail h3').innerText()===expected,'Wrong grouped normal detail');
+  }
+  await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
+  await page.locator('.leaflet-control-zoom-out').click();await page.waitForFunction(()=>!document.querySelector('.raster-pin.pin-normal,.raster-cluster:not([data-normal-count="0"])'));
+  assert(await normalVisible()===0,'Normal pins remained after zoom out '+name);
+  await page.locator('.leaflet-control-zoom-in').click();await page.waitForFunction(()=>document.querySelector('.raster-pin.pin-normal,.raster-cluster:not([data-normal-count="0"])'));
   const before=await page.locator('#searchInput').inputValue();
   await page.locator('#howButton').click();await page.locator('#howDialog').waitFor();
   await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-help.png`});
   await page.mouse.click(2,2);await page.locator('#howDialog').waitFor({state:'hidden'});
   assert(await page.locator('#searchInput').inputValue()===before,'Help reset search '+name);
-  assert(await page.locator('.raster-pin.pin-normal').count()>0,'Help reset zoom '+name);
+  assert(await normalVisible()>0,'Help reset zoom '+name);
   assert(await page.locator('main>.how,main>.closing').count()===0,'Promotional containers remain');
   const featuredNames=(await page.locator('#results .result-card:has(.commercial-badge.featured) h4').allTextContents()).sort();
   const categoryNames=await page.locator('#results .result-card:has(.commercial-badge.featured) .category-label').allTextContents();

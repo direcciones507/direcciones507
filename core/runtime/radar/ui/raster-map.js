@@ -10,13 +10,23 @@ export async function rasterMap({container,tiles,bounds,onMove,onSelect,onPick,o
  let features=[],frame=0,moving=false,pendingFit=false,fitSequence=0,fitFrame=0,lastSignature=null;
  function draw(){cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const b=map.getBounds(),visible=features.filter(f=>b.contains([f.geometry.coordinates[1],f.geometry.coordinates[0]]));
  // Geographic grid groups keep the 2D fallback inexpensive at country zoom.
- const groups=new Map(),zoom=map.getZoom(),cell=zoom<14?55:0;
- for(const f of visible){const [lng,lat]=f.geometry.coordinates,p=map.project([lat,lng],zoom);const key=cell&&f.properties.pin==='normal'?`${Math.floor(p.x/cell)},${Math.floor(p.y/cell)}`:f.id;const group=groups.get(key)||[];group.push(f);groups.set(key,group);}
+ const groups=new Map(),zoom=map.getZoom(),cell=52;
+ const ordered=[...visible].sort((a,b)=>({live:0,featured:1,normal:2}[a.properties.pin]??3)-({live:0,featured:1,normal:2}[b.properties.pin]??3)||a.id.localeCompare(b.id));
+ // Combine overlapping markers, including paid pins, without changing location data.
+ const buckets=new Map();
+ for(const f of ordered){const [lng,lat]=f.geometry.coordinates,p=map.project([lat,lng],zoom),x=Math.floor(p.x/cell),y=Math.floor(p.y/cell);let match=null;
+ for(let dx=-1;dx<=1&&!match;dx++)for(let dy=-1;dy<=1&&!match;dy++)for(const candidate of buckets.get((x+dx)+','+(y+dy))||[]){if(Math.abs(candidate.p.x-p.x)<cell&&Math.abs(candidate.p.y-p.y)<cell){match=candidate;break;}}
+ if(match){match.group.push(f);continue;}
+ const group=[f],entry={p,group},key=x+','+y;groups.set(f.id,group);const bucket=buckets.get(key)||[];bucket.push(entry);buckets.set(key,bucket);
+ }
  // Keep existing DOM markers when a refresh returns the same visual groups.
  const signature=JSON.stringify([...groups].map(([key,group])=>[key,group.map(f=>[f.id,f.geometry.coordinates,f.properties.pin,f.properties.name])]));
  if(signature===lastSignature)return;
  lastSignature=signature; pins.clearLayers();
- for(const group of groups.values()){const f=group[0],coords=[f.geometry.coordinates[1],f.geometry.coordinates[0]];if(group.length>1){const button=document.createElement('button');button.className='raster-cluster';button.textContent=String(group.length);button.setAttribute('aria-label',`Ampliar grupo de ${group.length} establecimientos`);const marker=L.marker(coords,{icon:L.divIcon({html:button,className:'raster-pin-host',iconSize:[44,44],iconAnchor:[22,22]}),keyboard:false}).addTo(pins);button.onclick=e=>{e.stopPropagation();map.setView(coords,map.getZoom()+2);};continue;}
+ for(const group of groups.values()){const f=group[0],coords=[f.geometry.coordinates[1],f.geometry.coordinates[0]];if(group.length>1){const button=document.createElement('button');button.type='button';button.className='raster-cluster pin-'+f.properties.pin;button.textContent=String(group.length);button.dataset.normalCount=String(group.filter(item=>item.properties.pin==='normal').length);button.setAttribute('aria-label',`Ver grupo de ${group.length} establecimientos`);L.marker(coords,{icon:L.divIcon({html:button,className:'raster-pin-host',iconSize:[44,44],iconAnchor:[22,22]}),keyboard:false}).addTo(pins);
+ button.onclick=e=>{e.stopPropagation();const panel=document.createElement('div');panel.className='radar-cluster-list';const title=document.createElement('strong');title.textContent='Establecimientos cercanos';panel.append(title);
+ for(const item of group){const choice=document.createElement('button');choice.type='button';choice.className='radar-cluster-choice';choice.textContent=item.properties.name+(item.properties.pin==='live'?' · En vivo':item.properties.pin==='featured'?' · Destacado':'');choice.onclick=event=>{event.stopPropagation();const latest=features.find(candidate=>candidate.id===item.id);map.closePopup();if(latest)onSelect(latest);};panel.append(choice);}
+ const zoomButton=document.createElement('button');zoomButton.type='button';zoomButton.textContent='Acercar mapa';zoomButton.disabled=map.getZoom()>=map.getMaxZoom();zoomButton.onclick=event=>{event.stopPropagation();map.closePopup();map.setView(coords,Math.min(map.getMaxZoom(),map.getZoom()+2));};panel.append(zoomButton);L.DomEvent.disableClickPropagation(panel);L.DomEvent.disableScrollPropagation(panel);L.popup({autoPan:true,autoPanPadding:[18,18],maxWidth:260,maxHeight:220}).setLatLng(coords).setContent(panel).openOn(map);};continue;}
  const button=document.createElement('button');button.className='raster-pin pin-'+f.properties.pin;button.dataset.id=f.id;button.style.setProperty('--pin-color',palette[f.properties.pin]||palette.normal);button.setAttribute('aria-label',f.properties.name);button.title=f.properties.name;button.append(document.createElement('span'));button.onclick=e=>{e.stopPropagation();const latest=features.find(item=>item.id===f.id);if(latest)onSelect(latest);};L.marker(coords,{icon:L.divIcon({html:button,className:'raster-pin-host',iconSize:[38,50],iconAnchor:[19,48]}),keyboard:false}).addTo(pins);}
  });}
  map.on('movestart',()=>{moving=true;});map.on('moveend',()=>{moving=false;draw();onMove();});map.on('click',e=>onPick(e.latlng.lng,e.latlng.lat));

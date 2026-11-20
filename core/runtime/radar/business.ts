@@ -25,7 +25,7 @@ export function createBusinessStore(db:Database){return {
  SELECT o.establishment_id,o.account_ref FROM radar.verified_owners o JOIN radar.establishments e ON e.id=o.establishment_id
  WHERE o.establishment_id=$1::uuid AND o.account_ref=$2::uuid AND e.published FOR UPDATE OF o)
  INSERT INTO radar.business_details(establishment_id,updated_by,hours,quantity,unit)
- SELECT establishment_id,account_ref,$3::jsonb,$4,$5 FROM owner
+ SELECT establishment_id,account_ref,$3::text::jsonb,$4,$5 FROM owner
  ON CONFLICT(establishment_id) DO UPDATE SET updated_by=EXCLUDED.updated_by,hours=EXCLUDED.hours,quantity=EXCLUDED.quantity,unit=EXCLUDED.unit,updated_at=now()
  RETURNING establishment_id`,[id,account,JSON.stringify(data.hours),data.quantity,data.unit]);return rows.length===1;},
  async requests(){return await db.unsafe(`SELECT r.establishment_id AS id,r.account_ref::text AS "accountRef",r.reason,e.name

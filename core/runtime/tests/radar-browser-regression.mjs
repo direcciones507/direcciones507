@@ -35,6 +35,8 @@ try{
   assert(await page.getByRole('button',{name:'Reportar actividad',exact:true}).isVisible(),'Actions cannot open '+name);
   await page.locator('#detail .detail-options>summary').click();
   assert(await page.getByRole('button',{name:'Reportar actividad',exact:true}).isHidden(),'Actions cannot close '+name);
+  await page.locator('#searchInput').click();await page.locator('#detail').waitFor({state:'hidden'});
+  await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).click();await page.locator('#detail').waitFor();
   await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
   await page.locator('#searchInput').fill('Café');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');
   await page.locator('#searchInput').fill('');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');

@@ -6,10 +6,12 @@ export async function radarAccountData(db:Database,account:string,env:Record<str
  try{return {available:true,items:await createBusinessStore(db,env.RADAR_REGISTRATION_PROFILES_ENABLED==='true').mine(account),...(env.RADAR_CORE_ADMIN_ENABLED==='true'?{verificationAvailable:true,...(env.RADAR_REGISTRATION_PROFILES_ENABLED==='true'?{managementAvailable:true}:{})}:{})};}
  catch{return {available:false,items:[]};} // Radar must not take the existing account panel offline.
 }
-export const radarAccountSection='<section id="radarAccountSection" class="card hidden"><h2>Mis establecimientos en Radar</h2><p>Registrar un establecimiento no concede titularidad. Las solicitudes pendientes no permiten administrarlo.</p><div id="radarAccountItems" aria-live="polite"></div></section>';
+export const radarAccountSection='<section id="radarAccountSection" class="card hidden"><h2>Mis establecimientos en Radar</h2><p><a href="https://radar.direcciones.lat/">Volver a Radar</a></p><p>Registrar un establecimiento no concede titularidad. Las solicitudes pendientes no permiten administrarlo.</p><div id="radarAccountItems" aria-live="polite"></div></section>';
 export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unknown)=>fetch('/v1/user/radar/verification',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)})){
  const section=doc.getElementById('radarAccountSection'),out=doc.getElementById('radarAccountItems');if(!section||!out)return;
  out.replaceChildren();section.classList.toggle('hidden',!data);if(!data)return;
+ // The panel section is initially hidden; scroll after the asynchronous account load.
+ if(doc.defaultView?.location.hash==='#radarAccountSection'&&typeof doc.defaultView.requestAnimationFrame==='function')doc.defaultView.requestAnimationFrame(()=>section.scrollIntoView({block:'start'}));
  const text=(tag:string,value:string)=>{const node=doc.createElement(tag);node.textContent=value;return node;};
  if(data.available!==true){out.append(text('p','No pudimos cargar tus establecimientos de Radar. Recarga la página para reintentar.'));return;}
  const items=Array.isArray(data.items)?data.items:[];
@@ -21,6 +23,7 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
    const edit=doc.createElement('button');edit.type='button';edit.textContent='Editar ficha comercial';
    edit.onclick=async()=>{edit.disabled=true;await openCommercialEditor(row,item.id,doc,undefined,()=>{edit.disabled=false;});};row.append(edit);
   }
+  if(item.authorized!==true&&item.declared===true)row.append(text('p','Puedes consultar tu comercio aquí. La edición de la ficha, horarios y capacidad (mesas, habitaciones o cupos) está reservada actualmente a propietarios autorizados.'));
   if(data.verificationAvailable===true&&item.declared===true&&item.authorized!==true&&item.requested!==true){
    row.append(text('p','Verificación voluntaria gratuita e independiente de pagos. Contacta soporte por los canales oficiales para aportar un video continuo de fachada, letrero, aviso de operaciones e interior. No muestres tu cédula. La evidencia es privada; revisión manual de 48–72 horas.'));
    const button=doc.createElement('button');button.type='button';button.textContent='Solicitar verificación';

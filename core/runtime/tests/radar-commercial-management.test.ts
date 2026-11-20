@@ -52,9 +52,9 @@ test('public profile rendering uses one effective schedule, safe links and serve
  assert.equal(nodes.filter(n=>n.tag==='h4').length,1);assert.ok(nodes.find(n=>n.textContent==='Lunes: Cerrado'));assert.ok(!nodes.find(n=>n.textContent.includes('08:00')));
  assert.equal(nodes.filter(n=>n.tag==='a').length,2);assert.ok(nodes.find(n=>n.href==='tel:+50760000000'));assert.ok(nodes.find(n=>n.textContent==='<script>unsafe()</script>'));assert.ok(nodes.find(n=>n.textContent==='0 mesas disponibles'));
 });
-test('public ADMIN retirement is conditional on its CORE replacement; privacy resolves to the shared legal route',async()=>{
+test('retired public ADMIN never reappears when gates are closed; privacy resolves to CORE',async()=>{
  const request=new Request('https://radar.direcciones.lat/');
  const retired=await (await radarPresentation(request,env))!.text();assert.ok(!retired.includes('id="ownerForm"'));assert.ok(!retired.includes('id="adminDialog"'));assert.ok(retired.includes('href="https://direcciones.lat/admin"'));assert.ok(retired.includes('https://direcciones.lat/legal/privacy'));
- const fallback=await (await radarPresentation(request,{RADAR_ENABLED:'true'}))!.text();assert.ok(fallback.includes('id="ownerForm"'));
+ const fallback=await (await radarPresentation(request,{RADAR_ENABLED:'true'}))!.text();assert.ok(!fallback.includes('id="ownerForm"'));
  const source=readFileSync(new URL('../radar/ui/radar.js',import.meta.url),'utf8');assert.ok(!source.includes('Administrar o reclamar esta ficha'));
 });

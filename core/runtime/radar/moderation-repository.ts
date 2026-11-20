@@ -1,6 +1,6 @@
 import type {ModerationStore} from "./moderation";
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
-export function createModerationStore(db:Database):ModerationStore {
+export function createModerationStore(db:Database,requireRequest=false):ModerationStore {
  return {
   async pending(limit){
    const safeLimit=Number.isInteger(limit)?Math.max(1,Math.min(100,limit)):100;
@@ -13,6 +13,7 @@ export function createModerationStore(db:Database):ModerationStore {
     JOIN ad507.users u ON u.id=$2::uuid
     JOIN ad507.users a ON a.id=$3::uuid
     WHERE e.id=$1::uuid AND e.published
+    ${requireRequest?'AND EXISTS(SELECT 1 FROM radar.ownership_requests r WHERE r.establishment_id=e.id AND r.account_ref=u.id)':''}
     ON CONFLICT (establishment_id) DO NOTHING RETURNING establishment_id,account_ref)
     INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,after_json)
     SELECT $3::uuid,'ADMIN','RADAR_OWNER_VERIFIED','radar_establishment',establishment_id::text,

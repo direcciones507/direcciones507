@@ -14,6 +14,11 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   field('description','Descripción pública',profile.description,'textarea',1200,true);
   field('phone','Teléfono comercial público',profile.phone,'input',32).type='tel';
   field('socials','Redes o sitio web · Un enlace HTTPS por línea',(profile.socials||[]).join('\n'),'textarea',1000);
+  const quantity=field('quantity','Cantidad disponible (opcional)',item.quantity===null||item.quantity===undefined?'':String(item.quantity),'input',6);
+  quantity.type='number';quantity.min='0';quantity.max='100000';quantity.step='1';
+  const unitLabel=text('label','Unidad'),unit=doc.createElement('select');unit.name='unit';
+  for(const [value,label] of [['tables','Mesas'],['rooms','Habitaciones'],['places','Cupos'],['units','Unidades']]){const option=text('option',label);option.value=value;unit.append(option);}
+  unit.value=item.unit||'units';unitLabel.append(unit);form.append(unitLabel);
   const definitions:any={restaurant:[['cuisine','Tipo de cocina'],['services','Servicios']],hotel:[['accommodation','Alojamiento'],['services','Servicios']],shop:[['products','Productos']],services:[['services','Servicios']],tourism:[['experiences','Experiencias'],['access','Acceso']]};
   const extraFields=definitions[item.category]||[['services','Servicios']];
   for(const [key,label] of extraFields)field('extra_'+key,label,profile.extras?.[key]);
@@ -36,7 +41,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
     for(const [key] of days){if(fields[key+'Mode'].value==='closed')hours[key]='closed';else if(fields[key+'Mode'].value==='open')hours[key]=fields[key+'Start'].value+'-'+fields[key+'End'].value;}
     for(const [key] of extraFields)if(fields['extra_'+key].value.trim())extras[key]=fields['extra_'+key].value.trim();
     const profile={province:fields.province.value.trim(),locality:fields.locality.value.trim(),description:fields.description.value.trim(),phone:fields.phone.value.trim(),socials:fields.socials.value.split(/\r?\n/).map((v:string)=>v.trim()).filter(Boolean),hours,extras};
-    const result=await send({action:'update',id,profile});if(!result.ok)throw Error();status.textContent='Cambios guardados en tu ficha comercial.';
+    const result=await send({action:'update',id,profile,availability:{quantity:quantity.value===''?null:Number(quantity.value),unit:unit.value}});if(!result.ok)throw Error();status.textContent='Cambios guardados en tu ficha comercial.';
    }catch{status.textContent='No se guardaron los cambios. Revisa los datos y tu autorización antes de reintentar.';}
    finally{save.disabled=false;close.disabled=false;}
   };

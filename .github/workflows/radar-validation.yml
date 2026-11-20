@@ -40,6 +40,11 @@ jobs:
         env:
           PLAYWRIGHT_MODULE: ${{ github.workspace }}/core/runtime/node_modules/playwright
           RADAR_BROWSER_EXECUTABLE: /usr/bin/google-chrome
+      - name: Validate real WebGL pin selection with mouse and touchscreen
+        run: node core/runtime/tests/radar-webgl-browser.mjs
+        env:
+          PLAYWRIGHT_MODULE: ${{ github.workspace }}/core/runtime/node_modules/playwright
+          RADAR_BROWSER_EXECUTABLE: /usr/bin/google-chrome
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -165,3 +165,5 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 
 /* Keep the full search prompt readable on the narrowest phones. */
 @media(max-width:360px){.search>svg{display:none}}
+
+.commercial-whatsapp{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;flex:0 0 36px;border-radius:50%;background:#168342;color:#fff;text-decoration:none}.commercial-whatsapp svg{width:23px;height:23px}.commercial-whatsapp:focus-visible{outline:2px solid currentColor;outline-offset:3px}

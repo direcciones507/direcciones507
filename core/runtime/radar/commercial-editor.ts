@@ -16,7 +16,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   field('socials','Redes o sitio web · Un enlace HTTPS por línea',(profile.socials||[]).join('\n'),'textarea',1000);
   const quantity=field('quantity','Cantidad disponible (opcional)',item.quantity===null||item.quantity===undefined?'':String(item.quantity),'input',6);
   quantity.type='number';quantity.min='0';quantity.max='100000';quantity.step='1';
-  const unitLabel=text('label','Unidad'),unit=doc.createElement('select');unit.name='unit';
+  const unitLabel=text('label','Unidad'),unit=doc.createElement('select');unit.name='unit';unit.setAttribute('aria-label','Unidad');
   for(const [value,label] of [['tables','Mesas'],['rooms','Habitaciones'],['places','Cupos'],['units','Unidades']]){const option=text('option',label);option.value=value;unit.append(option);}
   unit.value=item.unit||'units';unitLabel.append(unit);form.append(unitLabel);
   const definitions:any={restaurant:[['cuisine','Tipo de cocina'],['services','Servicios']],hotel:[['accommodation','Alojamiento'],['services','Servicios']],shop:[['products','Productos']],services:[['services','Servicios']],tourism:[['experiences','Experiencias'],['access','Acceso']]};

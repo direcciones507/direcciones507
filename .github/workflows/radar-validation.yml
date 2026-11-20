@@ -140,6 +140,8 @@ jobs:
               if(!(await moderation.publish(legacyId))) throw Error("Legacy moderation failed");
               if(await moderation.publish(legacyId)) throw Error("Repeated legacy approval accepted");
               if(!(await repo.findPublished(legacyId))) throw Error("Legacy publication failed");
+              // Remove only this isolated legacy fixture so subsequent ownership tests retain their expected dataset.
+              await db.unsafe("DELETE FROM radar.establishments WHERE id=$1 AND name=$2",[legacyId,"Legacy pending"]);
               if(!(await repo.findPublished(created))) throw Error("Published establishment unavailable");
               if((await moderation.pending(100)).length!==0) throw Error("Published item still pending");
               const bounds={west:-83,south:7,east:-77,north:10};

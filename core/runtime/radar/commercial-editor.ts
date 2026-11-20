@@ -13,6 +13,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   field('locality','Localidad',profile.locality,'input',160,true);
   field('description','Descripción pública',profile.description,'textarea',1200,true);
   field('phone','Teléfono comercial público',profile.phone,'input',32).type='tel';
+  const whatsapp=field('whatsapp','WhatsApp comercial público (opcional)',profile.whatsapp,'input',16);whatsapp.type='tel';whatsapp.placeholder='+50760000000';whatsapp.pattern='\\+[1-9][0-9]{6,14}';
   field('socials','Redes o sitio web · Un enlace HTTPS por línea',(profile.socials||[]).join('\n'),'textarea',1000);
   const capacityUnit=['restaurant','cafe','bar'].includes(item.category)?'tables':item.category==='hotel'?'rooms':['tourism','health','services','entertainment','education','sports'].includes(item.category)?'places':'units';
   const total=field('totalCapacity','Capacidad total · '+({tables:'Mesas',rooms:'Habitaciones',places:'Cupos',units:'Unidades'}[capacityUnit])+' (opcional)',profile.capacity?.unit===capacityUnit?String(profile.capacity.total):'','input',6);total.type='number';total.min='0';total.max='100000';total.step='1';
@@ -43,7 +44,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
     const hours:Record<string,string>={},extras:Record<string,string>={};
     for(const [key] of days){if(fields[key+'Mode'].value==='closed')hours[key]='closed';else if(fields[key+'Mode'].value==='open')hours[key]=fields[key+'Start'].value+'-'+fields[key+'End'].value;}
     for(const [key] of extraFields)if(fields['extra_'+key].value.trim())extras[key]=fields['extra_'+key].value.trim();
-    const profile={...(total.value===''?{}:{capacity:{total:Number(total.value),unit:capacityUnit}}),province:fields.province.value.trim(),locality:fields.locality.value.trim(),description:fields.description.value.trim(),phone:fields.phone.value.trim(),socials:fields.socials.value.split(/\r?\n/).map((v:string)=>v.trim()).filter(Boolean),hours,extras};
+    const profile={...(total.value===''?{}:{capacity:{total:Number(total.value),unit:capacityUnit}}),province:fields.province.value.trim(),locality:fields.locality.value.trim(),description:fields.description.value.trim(),phone:fields.phone.value.trim(),whatsapp:whatsapp.value.trim(),socials:fields.socials.value.split(/\r?\n/).map((v:string)=>v.trim()).filter(Boolean),hours,extras};
     const result=await send({action:'update',id,profile,availability:{quantity:quantity.value===''?null:Number(quantity.value),unit:unit.value}});if(!result.ok)throw Error();status.textContent='Cambios guardados en tu ficha comercial.';
    }catch{status.textContent='No se guardaron los cambios. Revisa los datos y tu autorización antes de reintentar.';}
    finally{save.disabled=false;close.disabled=false;}

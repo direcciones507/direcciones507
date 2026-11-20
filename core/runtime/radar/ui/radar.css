@@ -50,3 +50,8 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
  #howDialog .how-grid article{padding:18px}
  #howDialog .how-grid p{line-height:1.6}
 }
+
+/* Visible, indeterminate GPS progress; no fabricated progress percentage. */
+#placeGps[aria-busy="true"]::before{content:"";display:inline-block;width:1em;height:1em;margin-inline-end:.5em;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;vertical-align:-.15em;animation:radar-location-wait .8s linear infinite}
+@keyframes radar-location-wait{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){#placeGps[aria-busy="true"]::before{animation:none}}

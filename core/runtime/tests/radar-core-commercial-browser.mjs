@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url),ts=require('typescript'),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const work=await mkdtemp(join(tmpdir(),'radar-core-browser-'));
 await writeFile(join(work,'package.json'),'{"type":"module"}');
-for(const file of ['core-admin','commercial-management','commercial-editor','account-panel','moderation','moderation-repository','business','registration','auth','domain']){
+for(const file of ['core-admin','commercial-management','commercial-editor','account-panel','moderation','moderation-repository','business','registration','auth','domain','request-body']){
  const source=await readFile(new URL('../radar/'+file+'.ts',import.meta.url),'utf8');
  const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace(/from (["'])(\.[^"']+)\1/g,(all,q,spec)=>'from '+q+spec+(/\.[a-z]+$/.test(spec)?'':'.js')+q);
  await writeFile(join(work,file+'.js'),compiled);

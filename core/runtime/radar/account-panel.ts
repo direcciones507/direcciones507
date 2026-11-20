@@ -22,6 +22,36 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
   if(data.managementAvailable===true&&item.authorized===true){
    const edit=doc.createElement('button');edit.type='button';edit.textContent='Editar ficha comercial';
    edit.onclick=async()=>{edit.disabled=true;await openCommercialEditor(row,item.id,doc,undefined,()=>{edit.disabled=false;});};row.append(edit);
+   // A verified owner may update availability without opening the full profile editor.
+   const quick=doc.createElement('button');quick.type='button';quick.textContent='Actualizar disponibilidad ahora';
+   const panel=doc.createElement('div'),status=text('p','');status.setAttribute('role','status');panel.hidden=true;
+   const sendAvailability=async(body:any)=>fetch('/v1/user/radar/business',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+   quick.onclick=async()=>{
+    if(!panel.hidden){panel.hidden=true;return;}
+    quick.disabled=true;status.textContent='Cargando disponibilidad…';panel.replaceChildren();
+    try{
+     const response=await sendAvailability({action:'inspect',id:item.id});if(!response.ok)throw Error();
+     const data=(await response.json()).item;if(!data||typeof data!=='object')throw Error();
+     const names:any={tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'};
+     const type=names[data.unit]||names[data.configuredUnit]||names.units;
+     const capacity=data.profile?.capacity?.total;
+     const form=doc.createElement('form');form.style.cssText='display:flex;flex-wrap:wrap;align-items:end;gap:10px;width:100%';
+     const label=text('label','Cantidad disponible ahora ('+type+')');const number=doc.createElement('input');number.type='number';number.inputMode='numeric';number.min='0';number.max=String(Number.isInteger(capacity)?Math.min(capacity,100000):100000);number.step='1';number.required=true;number.style.cssText='display:block;width:min(240px,100%);max-width:100%';
+     if(Number.isInteger(data.quantity))number.value=String(data.quantity);label.append(number);
+     const save=text('button','Guardar disponibilidad');save.type='submit';
+     const clear=text('button','Ocultar cantidad');clear.type='button';
+     form.append(label,save,clear);panel.replaceChildren(form,status);panel.hidden=false;status.textContent=Number.isInteger(capacity)?'Capacidad habitual: '+capacity+' '+type+'.':'Indica la cantidad disponible en este momento.';
+     const submit=async(quantity:number|null)=>{
+      save.disabled=clear.disabled=true;status.textContent='Actualizando…';
+      try{const result=await sendAvailability({action:'availability',id:item.id,quantity});if(!result.ok)throw Error();number.value=quantity===null?'':String(quantity);status.textContent=quantity===null?'Disponibilidad oculta.':'Disponibilidad actualizada en Radar.';}
+      catch{status.textContent='No se pudo actualizar. Comprueba tus permisos y vuelve a intentar.';}
+      finally{save.disabled=clear.disabled=false;}
+     };
+     form.onsubmit=e=>{e.preventDefault();if(form.reportValidity())void submit(Number(number.value));};clear.onclick=()=>void submit(null);
+    }catch{status.textContent='No se pudo consultar la ficha. Actualiza la página y comprueba tu titularidad.';panel.hidden=false;}
+    finally{quick.disabled=false;}
+   };
+   row.append(quick,panel);
   }
   if(item.authorized!==true&&item.declared===true)row.append(text('p','Puedes consultar tu comercio aquí. La edición de la ficha, horarios y capacidad (mesas, habitaciones o cupos) está reservada actualmente a propietarios autorizados.'));
   if(data.verificationAvailable===true&&item.declared===true&&item.authorized!==true&&item.requested!==true){

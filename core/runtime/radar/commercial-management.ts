@@ -9,6 +9,25 @@ export function createCommercialManagement(db:Database,catalog?:{lookup(id:strin
    LEFT JOIN radar.business_details d ON d.establishment_id=e.id AND d.updated_by=o.account_ref
    WHERE e.id=$1::uuid AND e.published`,[id,account]);const item=rows[0];if(!item)return null;const configuredUnit=await catalog?.lookup(item.category);return configuredUnit?{...item,configuredUnit}:item;
  },
+ async updateAvailability(id:string,account:string,quantity:unknown){
+  if(quantity!==null&&(!Number.isInteger(quantity)||Number(quantity)<0||Number(quantity)>100000))return 'INVALID_QUANTITY';
+  // Only a verified owner may update this value; preserve the existing schedule and unit.
+  const rows=await db.unsafe(`WITH owner AS MATERIALIZED (
+   SELECT o.establishment_id,o.account_ref,p.profile
+   FROM radar.verified_owners o JOIN radar.establishments e ON e.id=o.establishment_id AND e.published
+   LEFT JOIN radar.registration_profiles p ON p.establishment_id=e.id
+   WHERE o.establishment_id=$1::uuid AND o.account_ref=$2::uuid FOR UPDATE OF o
+  ),saved AS (
+   INSERT INTO radar.business_details(establishment_id,updated_by,hours,quantity,unit)
+   SELECT establishment_id,account_ref,COALESCE(profile->'hours','{}'::jsonb),$3::int,
+    COALESCE(NULLIF(profile->'capacity'->>'unit',''),'units') FROM owner
+   ON CONFLICT(establishment_id) DO UPDATE SET quantity=EXCLUDED.quantity,updated_at=now(),updated_by=EXCLUDED.updated_by
+   RETURNING establishment_id
+  ) INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata)
+   SELECT $2::uuid,'USER','RADAR_AVAILABILITY_UPDATED','radar_establishment',establishment_id::text,
+    '{"quantityUpdated":true}'::jsonb FROM saved RETURNING entity_id`,[id,account,quantity]);
+  return rows.length===1?'UPDATED':'OWNER_REQUIRED';
+ },
  async update(id:string,account:string,input:unknown,availability?:unknown){
   const item=await this.inspect(id,account);if(!item)return 'OWNER_REQUIRED';
   const profile=validateRegistrationProfile(input,item.category,item.configuredUnit);if(!profile)return 'INVALID_PROFILE';

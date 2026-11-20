@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import type {CoreAuth} from './auth';
 import {createBusinessRoutes,createBusinessStore} from './business';
 import {createModerationRoutes} from './moderation';
@@ -24,8 +25,8 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
   if(req.headers.get('origin')!==origin)return json(403,{error:'FORBIDDEN'});
   const user=await auth.currentUser(req);
   if(!user||admin&&!user.roles.includes('ADMIN'))return json(403,{error:'FORBIDDEN'});
-  let body:any;
-  try{const raw=await req.text();if(raw.length>(management?8192:2048))return json(413,{error:'BODY_TOO_LARGE'});body=JSON.parse(raw);}catch{return json(400,{error:'INVALID_BODY'});}
+  const parsed=await readRadarJson(req,(management?8192:2048));if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
   try{
    if(management){
     if(env.RADAR_REGISTRATION_PROFILES_ENABLED!=='true')return json(503,{error:'PROFILE_MANAGEMENT_DISABLED'});

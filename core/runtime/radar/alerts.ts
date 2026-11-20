@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {radarActor,type CoreAuth} from "./auth";
 type DB={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -8,8 +9,8 @@ export function createAlertRoutes(db:DB,auth:CoreAuth,origins:ReadonlySet<string
   if(!enabled||new URL(req.url).pathname!=="/v1/radar/alerts")return null;
   if(req.method!=="POST")return json(405,{error:"METHOD_NOT_ALLOWED"});
   const actor=await radarActor(req,auth,origins);if(!actor)return json(403,{error:"AUTH_REQUIRED"});
-  let body:any;
-  try{const raw=await req.text();if(raw.length>1024)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+  const parsed=await readRadarJson(req,1024);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
   if(body?.action==="list"){
    const rows=await db.unsafe(`SELECT e.id,e.name,e.country,p.activity,
     r.state,r.source,extract(epoch from r.created_at)*1000 AS reported_at

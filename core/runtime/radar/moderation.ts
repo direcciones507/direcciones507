@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {radarActor,type CoreAuth} from "./auth";
 export interface ModerationStore {
  pending(limit:number):Promise<readonly {id:string;name:string;category:string;country:string;latitude:number;longitude:number}[]>;
@@ -13,8 +14,8 @@ export function createModerationRoutes(store:ModerationStore,auth:CoreAuth,origi
   if(req.method!=="POST")return json(405,{error:"METHOD_NOT_ALLOWED"});
   const actor=await radarActor(req,auth,origins);
   if(!actor?.isAdmin)return json(403,{error:"FORBIDDEN"});
-  let body:any;
-  try{const raw=await req.text();if(raw.length>2048)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+  const parsed=await readRadarJson(req,2048);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
   if(body?.action==="revoke_owner"){
    const uuid=(v:unknown)=>typeof v==="string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
    if(!uuid(body.id)||!uuid(body.accountRef))return json(400,{error:"INVALID_REVOCATION"});

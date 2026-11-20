@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {radarActor,type CoreAuth} from "./auth";
 type DB={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"private, no-store"}});
@@ -13,8 +14,8 @@ export function createReputationRoutes(db:DB,auth:CoreAuth,origins:ReadonlySet<s
   if(req.method!=="POST")return json(405,{error:"METHOD_NOT_ALLOWED"});
   const actor=await radarActor(req,auth,origins);
   if(!actor)return json(403,{error:"AUTH_REQUIRED"});
-  let body:any;
-  try{const raw=await req.text();if(raw.length>512)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+  const parsed=await readRadarJson(req,512);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
   if(body?.action!=="summary")return json(400,{error:"INVALID_REPUTATION"});
   const rows=await db.unsafe(`WITH own_reports AS (
    SELECT r.id,r.establishment_id,r.created_at FROM radar.activity_reports r

@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {radarActor,type CoreAuth} from './auth';
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 export const days=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as const;
@@ -47,7 +48,8 @@ export function createBusinessRoutes(store:ReturnType<typeof createBusinessStore
  if(!enabled)return json(503,{error:'VERIFICATION_DISABLED'});
  if(req.method!=='POST')return json(405,{error:'METHOD_NOT_ALLOWED'});
  const actor=await radarActor(req,auth,origins);if(!actor)return json(403,{error:'AUTH_REQUIRED'});
- let body:any;try{const raw=await req.text();if(raw.length>4096)return json(413,{error:'BODY_TOO_LARGE'});body=JSON.parse(raw);}catch{return json(400,{error:'INVALID_BODY'});}
+ const parsed=await readRadarJson(req,4096);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
  if(body?.action==='requests')return actor.isAdmin?json(200,{items:await store.requests()}):json(403,{error:'FORBIDDEN'});
  if(body?.action==='mine')return json(200,{items:await store.mine(actor.accountRef)});
  if(!body||typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ACTION'});

@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import type {CoreAuth} from "./auth";
 import {radarActor} from "./auth";
 type DB={unsafe(query:string,params:any[]):PromiseLike<any[]>};
@@ -24,8 +25,8 @@ export function createConfirmationRoutes(db:DB,auth:CoreAuth,origins:ReadonlySet
   if(!origin||!origins.has(origin))return json(403,{error:"AUTH_REQUIRED"});
   const actor=await radarActor(req,auth,origins),digest=actor?null:anonymousIdentity?.(req);
   if(!actor&&(!digest||!/^[0-9a-f]{64}$/.test(digest)))return json(403,{error:"AUTH_REQUIRED"});
-  let body:any;
-  try{const raw=await req.text();if(raw.length>1024)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+  const parsed=await readRadarJson(req,1024);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
   if(!body||typeof body.reportId!=="string"||!uuid.test(body.reportId)||typeof body.agrees!=="boolean")return json(400,{error:"INVALID_CONFIRMATION"});
   try{
    await db.unsafe("INSERT INTO radar.activity_confirmations(report_id,account_ref,anonymous_ref,agrees) VALUES($1,$2,$3,$4)",[body.reportId,actor?.accountRef??null,digest??null,body.agrees]);

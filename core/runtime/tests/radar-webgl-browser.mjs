@@ -28,9 +28,17 @@ try{
     if(!f)return false;const point=map.project(f.geometry.coordinates);
     return map.queryRenderedFeatures([point.x,point.y-16],{layers:[layer]}).some(hit=>hit.properties.radarId===f.id);
    },{name,layer});
+   await page.locator('#map').scrollIntoViewIfNeeded();
+   await page.evaluate(()=>{window.__radarPointerEvents=[];for(const type of ['pointerdown','pointerup','pointercancel','click'])document.addEventListener(type,e=>window.__radarPointerEvents.push({type,target:e.target.className,x:e.clientX,y:e.clientY}),{capture:true});});
    const pos=await page.evaluate(coords=>{const p=window.__radarWebGLTest.map().project(coords),r=window.__radarWebGLTest.map().getCanvas().getBoundingClientRect();return {x:r.left+p.x,y:r.top+p.y-16};},coords);
+   const target=await page.evaluate(({x,y})=>({hit:document.elementFromPoint(x,y)?.className,inside:x>=0&&y>=0&&x<innerWidth&&y<innerHeight,canvas:document.elementFromPoint(x,y)===window.__radarWebGLTest.map().getCanvas()}),pos);
+   console.log('WEBGL_POINTER_TARGET',JSON.stringify({touch,name,pos,target}));
+   assert(target.inside&&target.canvas,'Rendered pin is blocked or outside viewport: '+JSON.stringify(target));
    if(touch)await page.touchscreen.tap(pos.x,pos.y);else await page.mouse.click(pos.x,pos.y);
-   await page.locator('#detail').waitFor();
+   try{await page.locator('#detail').waitFor({timeout:12000});}catch(error){
+    console.error('WEBGL_SELECTION_FAILURE',JSON.stringify(await page.evaluate(({x,y})=>{const map=window.__radarWebGLTest.map(),r=map.getCanvas().getBoundingClientRect(),p=[x-r.left,y-r.top];return {events:window.__radarPointerEvents,hit:document.elementFromPoint(x,y)?.className,rows:map.queryRenderedFeatures([[p[0]-12,p[1]-12],[p[0]+12,p[1]+12]],{layers:['pins','priority-pins','clusters','cluster-depth']}).map(f=>({layer:f.layer.id,id:f.properties.radarId,cluster:f.properties.cluster_id})),group:document.querySelector('#pinGroupDialog').open,toast:document.querySelector('#toast').textContent};},pos)),errors);
+    throw error;
+   }
    assert(await page.locator('#detail h3').innerText()===name,'Wrong WebGL pin selection '+name);
    await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
   }

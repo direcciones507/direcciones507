@@ -71,3 +71,23 @@ test('Radar identity uses its own favicon and canonical metadata without opening
  expect(await icon!.text()).toContain('<svg');
  expect((await radarPresentation(new Request(radarOrigin+'/radar/ui/favicon.svg',{method:'HEAD'}),env))?.status).toBe(200);
 });
+
+test('Radar social preview and touch icon serve fixed PNG dimensions and HEAD without exposing data',async()=>{
+ const env={RADAR_ENABLED:'true'};
+ const html=await (await radarPresentation(new Request(radarOrigin+'/'),env))!.text();
+ expect(html).toContain('property="og:image" content="https://radar.direcciones.lat/radar/ui/share.png"');
+ expect(html).toContain('rel="apple-touch-icon" sizes="180x180"');
+ for(const [asset,width,height] of [['share.png',1200,630],['apple-touch-icon.png',180,180]] as const){
+  const url=radarOrigin+'/radar/ui/'+asset;
+  const image=await radarPresentation(new Request(url),env);
+  expect(image?.status).toBe(200);
+  expect(image?.headers.get('content-type')).toBe('image/png');
+  expect(image?.headers.get('x-content-type-options')).toBe('nosniff');
+  const bytes=await image!.arrayBuffer(),view=new DataView(bytes);
+  expect(view.getUint32(0)).toBe(0x89504e47);
+  expect(view.getUint32(16)).toBe(width);expect(view.getUint32(20)).toBe(height);
+  const head=await radarPresentation(new Request(url,{method:'HEAD'}),env);
+  expect(head?.status).toBe(200);expect((await head!.arrayBuffer()).byteLength).toBe(0);
+  expect((await radarPresentation(new Request(url),{}))?.status).toBe(503);
+ }
+});

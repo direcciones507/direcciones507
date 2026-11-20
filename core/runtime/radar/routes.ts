@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {countries,type Country,type Report} from "./domain";
 import {publicFeatures,validateBounds,type Bounds,type Establishment} from "./public-map";
 import {validateRegistration,type EstablishmentDraft} from "./registration";
@@ -13,7 +14,11 @@ export interface RadarRepository {
  anonymousReportAllowed?(digest:string,id:string):Promise<boolean>;
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null){
+export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false){
+ // A per-process admission cap protects the shared pool without using visitor IPs.
+ // Tune only after isolated load testing; writes and authentication are independent.
+ let activeMapReads=0;
+ const maxMapReads=8;
  return async (req:Request):Promise<Response|null>=>{
   const u=new URL(req.url);
   if(!enabled || !["/v1/radar/map","/v1/radar/report","/v1/radar/establishments"].includes(u.pathname))return null;
@@ -25,24 +30,31 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    if(!validateBounds(b))return json(400,{error:"INVALID_BOUNDS"});
    const search=u.searchParams.get("q")?.trim()??"";
    if(search.length>100)return json(400,{error:"INVALID_SEARCH"});
-   const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
-   const now=Date.now();
-   if(campaignLookup){const campaigns=await campaignLookup(rows.map(e=>e.id),now);for(const e of rows)e.campaign=campaigns.get(e.id);}
-   return json(200,publicFeatures(rows,b,country,now,!!campaignLookup));
+   if(activeMapReads>=maxMapReads)return Response.json({error:"MAP_BUSY"},{status:429,headers:{"cache-control":"no-store","retry-after":"2"}});
+   activeMapReads++;
+   try{
+    const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
+    const now=Date.now();
+    if(campaignLookup){const campaigns=await campaignLookup(rows.map(e=>e.id),now);for(const e of rows)e.campaign=campaigns.get(e.id);}
+    return json(200,publicFeatures(rows,b,country,now,!!campaignLookup));
+   }finally{activeMapReads--;}
+
   }
   if(u.pathname==="/v1/radar/establishments" && req.method==="POST"){
    const actor=await radarActor(req,auth,origins);
    if(!actor)return json(403,{error:"AUTH_REQUIRED"});
    if(!repo.register)return json(503,{error:"REGISTRATION_DISABLED"});
-   let body:unknown;
-   try{const raw=await req.text();if(raw.length>4096)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+   const parsed=await readRadarJson(req,4096);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+   const body=parsed.body;
    const draft=validateRegistration(body);
    if(!draft)return json(400,{error:"INVALID_ESTABLISHMENT"});
+   if(draft.registrationKind==='owner'&&!ownerRegistrationEnabled)return json(503,{error:"OWNER_REGISTRATION_DISABLED"});
    if(repo.registrationAllowed && !await repo.registrationAllowed(actor.accountRef))return json(429,{error:"REGISTRATION_RATE_LIMIT"});
    try {
     const id=await repo.register(draft,actor.accountRef);
     return id?json(201,{id,status:"published"}):json(409,{error:"DUPLICATE"});
    } catch(error) {
+    if(draft.registrationKind==='owner'&&(error as {code?:string})?.code==='42P01')return json(503,{error:"OWNER_REGISTRATION_DISABLED"});
     if((error as {code?:string})?.code==="P4290")return json(429,{error:"REGISTRATION_RATE_LIMIT"});
     throw error;
    }
@@ -53,8 +65,8 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    const actor=await radarActor(req,auth,origins);
    const digest=actor?null:anonymousIdentity?.(req);
    if(!actor&&(!digest||!/^[0-9a-f]{64}$/.test(digest)||!repo.addAnonymousReport))return json(403,{error:"AUTH_REQUIRED"});
-   let body:any;
-   try {const raw=await req.text();if(raw.length>2048)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+   const parsed=await readRadarJson(req,2048);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+   const body=parsed.body as any;
    if(!body||typeof body.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)||!["available","queue","full","incident"].includes(body.state))return json(400,{error:"INVALID_REPORT"});
    const e=await repo.findPublished(body.id);
    if(!e)return json(404,{error:"NOT_FOUND"});

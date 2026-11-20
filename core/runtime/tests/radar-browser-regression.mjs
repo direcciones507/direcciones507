@@ -85,10 +85,12 @@ try{
   const categoryNames=await page.locator('#results .result-card:has(.commercial-badge.featured) .category-label').allTextContents();
   assert(await page.locator('#featuredGroups .featured-category').count()===new Set(categoryNames).size,'Featured categories do not match this viewport');
   assert(JSON.stringify((await page.locator('#featuredGroups .featured-card h4').allTextContents()).sort())===JSON.stringify(featuredNames),'Featured-only rows do not match this viewport');
+  await page.locator('#filtersButton').click();await page.locator('#territory').selectOption('');await page.locator('#filtersButton').click();
   await page.locator('#searchInput').fill('Café en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).waitFor();
+  assert(await page.locator('#territory').inputValue()==='0','Geographic search must synchronize territory selection');
   await page.locator('#searchInput').fill('Servicios en Ciudad de Panamá');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.locator('#results .result-card').filter({hasText:'Servicios Bahía'}).waitFor();
   await page.route('https://direcciones.lat/auth/radar',route=>route.fulfill({contentType:'text/html',body:'<p>Acceso existente de LATAM: navegación interceptada en prueba.</p>'}));
-  await page.getByRole('button',{name:'Agregar establecimiento',exact:true}).click();
+  await page.getByRole('button',{name:'Agregar establecimiento',exact:true}).click();await page.getByRole('button',{name:'Soy usuario',exact:true}).click();
   await page.waitForURL('https://direcciones.lat/auth/radar');
   assert(new URL(page.url()).search==='', 'No authentication tokens or arbitrary return URLs');
   await page.goBack();await page.waitForFunction(()=>typeof window.__radarTestState==='function');

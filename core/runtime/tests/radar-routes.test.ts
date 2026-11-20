@@ -57,3 +57,39 @@ test("anonymous limit and database race return 429",async()=>{
  const race:RadarRepository={...repo,addAnonymousReport:async()=>{throw Object.assign(Error("limit"),{code:"P4290"})}};
  expect((await createRadarRoutes(race,anon,allowed,true,undefined,()=>digest)(post()))?.status).toBe(429);
 });
+
+test("oversized registration and report streams are rejected before database operations",async()=>{
+ const never=async()=>{throw Error("Unexpected database operation")};
+ const handler=createRadarRoutes({...repo,register:never,findPublished:never},user,allowed,true);
+ for(const [path,limit] of [["establishments",4096],["report",2048]] as const){
+  const stream=new ReadableStream<Uint8Array>({start(controller){controller.enqueue(new Uint8Array(limit));controller.enqueue(new Uint8Array(1));controller.close();}});
+  const request=new Request(origin+"/v1/radar/"+path,{method:"POST",headers:{origin,"content-type":"application/json"},body:stream});
+  const result=await handler(request);
+  expect(result?.status).toBe(413);expect(await result!.json()).toEqual({error:"BODY_TOO_LARGE"});
+ }
+});
+test("malformed JSON and invalid UTF-8 are rejected before storage",async()=>{
+ const handler=createRadarRoutes({...repo,register:async()=>{throw Error("Unexpected write")}},user,allowed,true);
+ for(const body of ["{",new Uint8Array([0xff])]){
+  const r=await handler(new Request(origin+"/v1/radar/establishments",{method:"POST",headers:{origin},body}));
+  expect(r?.status).toBe(400);
+ }
+});
+
+test("public map bounds concurrent database work and leaves writes available",async()=>{
+ let release!:()=>void;const gate=new Promise<void>(r=>{release=r});let reads=0;
+ const handler=createRadarRoutes({...repo,listPublished:async()=>{reads++;await gate;return []}},user,allowed,true);
+ const pending=Array.from({length:8},()=>handler(map()));
+ const busy=await handler(map());
+ expect(busy?.status).toBe(429);expect(busy?.headers.get("retry-after")).toBe("2");
+ expect(await busy!.json()).toEqual({error:"MAP_BUSY"});expect(reads).toBe(8);
+ expect((await handler(post()))?.status).toBe(201);
+ release();expect((await Promise.all(pending)).every(r=>r?.status===200)).toBe(true);
+ expect((await handler(map()))?.status).toBe(200);
+});
+test("public map releases admission slot even after storage errors",async()=>{
+ let fail=true;
+ const handler=createRadarRoutes({...repo,listPublished:async()=>{if(fail)throw Error("storage");return []}},anon,allowed,true);
+ for(let i=0;i<9;i++)await expect(handler(map())).rejects.toThrow("storage");
+ fail=false;expect((await handler(map()))?.status).toBe(200);
+});

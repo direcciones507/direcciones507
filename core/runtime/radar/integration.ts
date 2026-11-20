@@ -33,14 +33,15 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const resolveAddress=ownershipEnabled&&env.RADAR_ADDRESS_LINKS_ENABLED==="true"?createRadarAddressResolver(db,code=>newPublicAddress(db as Parameters<typeof newPublicAddress>[0],code,"https://direcciones.lat")):undefined;
  const campaignLookup=enabled&&env.RADAR_COMMERCIAL_ENABLED==="true"?createRadarCampaignLookup(db,true):undefined;
  const businessEnabled=ownershipEnabled&&env.RADAR_BUSINESS_DETAILS_ENABLED==="true";
- const business=createBusinessRoutes(createBusinessStore(db),auth,origins,businessEnabled);
+ const profilesEnabled=businessEnabled&&env.RADAR_REGISTRATION_PROFILES_ENABLED==='true';
+ const business=createBusinessRoutes(createBusinessStore(db,profilesEnabled),auth,origins,businessEnabled);
  const anonymousIdentity=enabled&&env.RADAR_ANONYMOUS_REPORTS_ENABLED==="true"?createAnonymousIdentity(env.RADAR_ANONYMOUS_REPORTS_SECRET,trustedPeer):undefined;
  const alerts=createAlertRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true"&&env.RADAR_ALERTS_ENABLED==="true");
  const reputation=createReputationRoutes(db,auth,origins,enabled&&env.RADAR_REPUTATION_ENABLED==="true");
  const contributions=createContributionRoutes(db,auth,origins,enabled&&env.RADAR_CONTRIBUTIONS_ENABLED==="true");
  const favorites=createFavoriteRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true");
  const confirmations=createConfirmationRoutes(db,auth,origins,enabled&&env.RADAR_ACTIVITY_VALIDATION_ENABLED==="true",anonymousIdentity);
- const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity);
+ const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled,profilesEnabled),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity,profilesEnabled);
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{
@@ -49,7 +50,20 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
   if(url.origin!==radarOrigin)return null;
   const presentation=await radarPresentation(req,{...env,RADAR_ANONYMOUS_REPORTS_ENABLED:anonymousIdentity?"true":"false"});if(presentation)return presentation;
   if(!url.pathname.startsWith("/v1/radar/"))return null;
-  if(!enabled)return Response.json({error:"RADAR_DISABLED"},{status:503,headers:{"cache-control":"no-store"}});
-  return await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+  let response:Response;
+  try{
+   response=!enabled?Response.json({error:"RADAR_DISABLED"},{status:503}):
+    await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+  }catch{
+   // Keep diagnostics free of SQL text, credentials, request payloads and account IDs.
+   console.error("RADAR_API_UNEXPECTED_ERROR");
+   response=Response.json({error:"RADAR_API_UNAVAILABLE"},{status:500});
+  }
+  // API responses must never become indexable or cacheable, even after public SEO release.
+  const headers=new Headers(response.headers);
+  headers.set("x-robots-tag","noindex, nofollow");
+  headers.set("x-content-type-options","nosniff");
+  if(!headers.get("cache-control")?.includes("no-store"))headers.set("cache-control","no-store");
+  return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
  };
 }

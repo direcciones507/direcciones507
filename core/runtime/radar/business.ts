@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {radarActor,type CoreAuth} from './auth';
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 export const days=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as const;
@@ -9,7 +10,15 @@ export function validateBusiness(input:any){
  if(!['tables','rooms','places','units'].includes(input.unit))return null;
  return {hours,quantity:input.quantity,unit:input.unit};
 }
-export function createBusinessStore(db:Database){return {
+export function createBusinessStore(db:Database,profilesEnabled=false){return {
+ async mine(account:string){return await db.unsafe(`SELECT e.id,e.name,e.category,e.country,
+ (o.account_ref IS NOT NULL) AS authorized,(r.account_ref IS NOT NULL) AS requested,${profilesEnabled?"(p.submitted_by IS NOT NULL)":"false"} AS declared
+ FROM radar.establishments e
+ LEFT JOIN radar.verified_owners o ON o.establishment_id=e.id AND o.account_ref=$1::uuid
+ LEFT JOIN radar.ownership_requests r ON r.establishment_id=e.id AND r.account_ref=$1::uuid
+ ${profilesEnabled?"LEFT JOIN radar.registration_profiles p ON p.establishment_id=e.id AND p.submitted_by=$1::uuid":""}
+ WHERE e.published AND (o.account_ref IS NOT NULL OR r.account_ref IS NOT NULL ${profilesEnabled?"OR p.submitted_by IS NOT NULL":""})
+ ORDER BY e.created_at DESC,e.id LIMIT 100`,[account]);},
  async inspect(id:string,account:string){const rows=await db.unsafe(`SELECT e.id,(o.account_ref=$2::uuid) AS authorized,d.hours,d.quantity,d.unit,
  EXISTS(SELECT 1 FROM radar.ownership_requests r WHERE r.establishment_id=e.id AND r.account_ref=$2::uuid) AS requested
  FROM radar.establishments e LEFT JOIN radar.verified_owners o ON o.establishment_id=e.id
@@ -39,8 +48,10 @@ export function createBusinessRoutes(store:ReturnType<typeof createBusinessStore
  if(!enabled)return json(503,{error:'VERIFICATION_DISABLED'});
  if(req.method!=='POST')return json(405,{error:'METHOD_NOT_ALLOWED'});
  const actor=await radarActor(req,auth,origins);if(!actor)return json(403,{error:'AUTH_REQUIRED'});
- let body:any;try{const raw=await req.text();if(raw.length>4096)return json(413,{error:'BODY_TOO_LARGE'});body=JSON.parse(raw);}catch{return json(400,{error:'INVALID_BODY'});}
+ const parsed=await readRadarJson(req,4096);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
  if(body?.action==='requests')return actor.isAdmin?json(200,{items:await store.requests()}):json(403,{error:'FORBIDDEN'});
+ if(body?.action==='mine')return json(200,{items:await store.mine(actor.accountRef)});
  if(!body||typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ACTION'});
  if(body.action==='inspect'){const item=await store.inspect(body.id,actor.accountRef);if(!item)return json(404,{error:'NOT_FOUND'});return json(200,{authorized:item.authorized===true,requested:item.requested===true,...(item.authorized?{hours:item.hours??{},quantity:item.quantity??null,unit:item.unit??'units'}:{})});}
  if(body.action==='claim'){

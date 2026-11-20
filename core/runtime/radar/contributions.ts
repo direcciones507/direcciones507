@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {radarActor,type CoreAuth} from "./auth";
 type DB={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"private, no-store"}});
@@ -8,8 +9,8 @@ export function createContributionRoutes(db:DB,auth:CoreAuth,origins:ReadonlySet
   if(req.method!=="POST")return json(405,{error:"METHOD_NOT_ALLOWED"});
   const actor=await radarActor(req,auth,origins);
   if(!actor)return json(403,{error:"AUTH_REQUIRED"});
-  let body:any;
-  try{const raw=await req.text();if(raw.length>1024)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+  const parsed=await readRadarJson(req,1024);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
   if(!body||body.action!=="list")return json(400,{error:"INVALID_CONTRIBUTIONS"});
   const kind=body.kind??"all",offset=body.offset??0;
   if(!kinds.has(kind)||!Number.isSafeInteger(offset)||offset<0||offset>2000)return json(400,{error:"INVALID_CONTRIBUTIONS"});

@@ -1,16 +1,15 @@
 # Radar deployment gates
 
-Staging first. No production activation authorized.
+Current release candidate: PR #325, branch feature/radar-functional-2. See [master checklist #317](https://github.com/direcciones507/direcciones507/issues/317). This document does not authorize deployment.
 
-Apply SQL in this order on a backed-up isolated database with CORE migrations already applied:
-1. schema.sql
-2. core-constraints.sql
-3. ownership.sql
-4. abuse-constraints.sql
-5. account-retention.sql
+## Migration status
+The master checklist records migrations 0009–0021 applied and backup/restoration verified on 20 November 2026. These supersede the original standalone SQL instructions. Never replay the standalone SQL or repeat approved migrations. If the target environment differs, inspect its migration ledger and stop at any divergence; follow the official CORE migration procedure with explicit authorization.
 
-These files are not yet registered in the CORE migration ledger. Register and validate them before deployment; do not replay non-idempotent SQL against a live database.
+## Release sequence
+1. Review the exact candidate SHA, branch divergence, and relevant successful CI. Code in a draft PR is not production acceptance.
+2. Verify the existing CORE authentication, account isolation, owner permissions, ADMIN replacement, community tools and commercial forms in an isolated environment. Keep anonymous participation disabled until its separate security criteria are met.
+3. Complete the remaining security and performance review in #317 and #321, with controlled tests outside production. Confirm rollback using the existing gates, without removing data.
+4. With separate approval, merge and deploy through the existing CORE infrastructure. Verify all existing hosts, canonical TLS, private routes, mobile and tablet behavior, and unchanged historical addresses, legal and payment flows. Do not change commercial terms.
+5. Only after final acceptance and separate approval, enable public Radar indexation using the existing indexing gate. Check robots.txt, canonical sitemap and privacy headers. Notify the user to submit the independent Radar sitemap to Google Search Console and Bing Webmaster Tools.
 
-Keep RADAR_ENABLED and RADAR_OWNERSHIP_ENABLED unset until schema validation succeeds. Verify the canonical host, TLS, Google callback and AD507_RADAR_DOMAIN_VERIFIED before enabling authentication. Commercial features remain disabled.
-
-CI covers public queries, moderation, ownership, account limits, concurrent reports and deletion retention using disposable PostgreSQL. Staging must additionally verify the actual CORE database adapter, shared login rendering, return-to-action, public address privacy and all existing hosts. Review branch divergence from main before merge.
+Record evidence and close only verified checklist items. No new infrastructure, migration replay, payment changes or DNS changes are authorized by this document.

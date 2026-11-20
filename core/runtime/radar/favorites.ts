@@ -1,3 +1,4 @@
+import {readRadarJson} from "./request-body";
 import {radarActor,type CoreAuth} from "./auth";
 type DB={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -8,8 +9,8 @@ export function createFavoriteRoutes(db:DB,auth:CoreAuth,origins:ReadonlySet<str
   if(req.method!=="POST")return json(405,{error:"METHOD_NOT_ALLOWED"});
   const actor=await radarActor(req,auth,origins);
   if(!actor)return json(403,{error:"AUTH_REQUIRED"});
-  let body:any;
-  try{const raw=await req.text();if(raw.length>1024)return json(413,{error:"BODY_TOO_LARGE"});body=JSON.parse(raw);}catch{return json(400,{error:"INVALID_BODY"});}
+  const parsed=await readRadarJson(req,1024);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
+  const body=parsed.body as any;
   if(body?.action==="list"){
    const rows=await db.unsafe(`SELECT f.establishment_id AS id,e.published AS available,
    CASE WHEN e.published THEN e.name END AS name,CASE WHEN e.published THEN e.category END AS category,

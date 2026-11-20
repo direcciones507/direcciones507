@@ -1,4 +1,23 @@
-export const countries={
+import {territoryCatalog} from './territory-catalog.js';
+const labels={PA:'Provincia / comarca',CO:'Departamento / distrito capital',CR:'Provincia',GT:'Departamento',SV:'Departamento',HN:'Departamento',NI:'Departamento / región',MX:'Estado / entidad federativa'};
+// Preserve stable city options and add verified ADM1 views only when all eight countries are available.
+export function withTerritoryCatalog(base,catalog){
+ if(catalog?.version!==1||catalog?.level!=='ADM1'||!catalog.countries)return base;
+ const result={};
+ for(const [code,country] of Object.entries(base)){
+  const item=catalog.countries[code];
+  if(!item?.source?.attribution||!item.source.license||!Array.isArray(item.regions)||!item.regions.length)return base;
+  const ids=new Set(),regions=[];
+  for(const region of item.regions){
+   const b=region.bounds;
+   if(typeof region.id!=='string'||!region.id||ids.has(region.id)||typeof region.name!=='string'||!region.name.trim()||!Array.isArray(b)||b.length!==2||!b.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite))||b[0][0]<-180||b[1][0]>180||b[0][1]<-85||b[1][1]>85||b[0][0]>=b[1][0]||b[0][1]>=b[1][1])return base;
+   ids.add(region.id);regions.push({...region,kind:'region',label:region.name+' · '+labels[code]});
+  }
+  result[code]={...country,views:[...country.views,...regions],territorySource:item.source};
+ }
+ return result;
+}
+const baseCountries={
  PA:{name:'Panamá',bounds:[[-83.1,7.1],[-77,9.8]],views:[{name:'Ciudad de Panamá',bounds:[[-79.65,8.87],[-79.40,9.12]]},{name:'David',bounds:[[-82.49,8.36],[-82.36,8.50]]},{name:'Santiago',bounds:[[-81.04,8.04],[-80.91,8.16]]},{name:'Colón',bounds:[[-79.98,9.28],[-79.82,9.42]]}]},
  CO:{name:'Colombia',bounds:[[-79,-4.3],[-66.8,12.5]],views:[{name:'Bogotá',bounds:[[-74.25,4.5],[-73.98,4.85]]},{name:'Medellín',bounds:[[-75.7,6.10],[-75.45,6.4]]}]},
  CR:{name:'Costa Rica',bounds:[[-86,8],[-82.5,11.3]],views:[{name:'San José',bounds:[[-84.22,9.86],[-83.96,10.03]]}]},
@@ -8,6 +27,7 @@ export const countries={
  NI:{name:'Nicaragua',bounds:[[-87.8,10.7],[-82.7,15.1]],views:[{name:'Managua',bounds:[[-86.42,12.02],[-86.12,12.24]]},{name:'Granada',bounds:[[-86.03,11.87],[-85.88,12.01]]}]},
  MX:{name:'México',bounds:[[-118.5,14.4],[-86.7,32.8]],views:[{name:'Ciudad de México',bounds:[[-99.35,19.2],[-98.95,19.6]]}]}
 };
+export const countries=withTerritoryCatalog(baseCountries,territoryCatalog);
 export const activityLabels={available:'Poca afluencia',queue:'Afluencia media',full:'Alta afluencia',incident:'Incidencia',unknown:'Pendiente de actualización'};
 export const categoryLabel=c=>({shop:'Comercio',restaurant:'Restaurante',cafe:'Cafetería',health:'Salud',services:'Servicios',hotel:'Alojamiento',tourism:'Turismo',other:'Otra'})[c]||String(c||'Establecimiento');
 export function normalizeBounds(input){let [w,s,e,n]=input;const wrap=x=>((x+180)%360+360)%360-180;if(e-w>=359.9){w=-180;e=180;}else{w=wrap(w);e=wrap(e);}return [w,Math.max(-85,s),e,Math.min(85,n)];}
@@ -28,7 +48,7 @@ export function searchContext(text,country){
  const clean=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
  const aliases={cafe:'cafe',cafes:'cafe',cafeteria:'cafe',cafeterias:'cafe',restaurante:'restaurant',restaurantes:'restaurant',hotel:'hotel',hoteles:'hotel',comercio:'shop',comercios:'shop',servicio:'services',servicios:'services'};
  let query=text.trim(),view=null;
- for(const candidate of countries[country]?.views||[]){const suffix=' en '+candidate.name;if(clean(query).endsWith(clean(suffix))){query=query.slice(0,query.length-suffix.length).trim();view=candidate;break;}}
+ for(const candidate of countries[country]?.views||[]){const suffixes=[candidate.label,candidate.name].filter(Boolean).map(name=>' en '+name);const suffix=suffixes.find(s=>clean(query).endsWith(clean(s)));if(suffix){query=query.slice(0,query.length-suffix.length).trim();view=candidate;break;}}
  return {query:aliases[clean(query)]||query,view};
 }
 

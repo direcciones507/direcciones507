@@ -43,5 +43,5 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).hr
  const [input,output]=process.argv.slice(2);
  if(!input||!output)throw Error('Usage: node build-territory-catalog.mjs <reviewed-input.json> <output.json>');
  const result=buildTerritoryCatalog(JSON.parse(readFileSync(input,'utf8')));
- writeFileSync(output,JSON.stringify(result,null,2)+'\n',{flag:'wx'});
+ const payload=JSON.stringify(result,null,2);writeFileSync(output,output.endsWith('.js')?'export const territoryCatalog='+payload+';\n':payload+'\n',{flag:'wx'});
 }

@@ -55,3 +55,14 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 #placeGps[aria-busy="true"]::before{content:"";display:inline-block;width:1em;height:1em;margin-inline-end:.5em;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;vertical-align:-.15em;animation:radar-location-wait .8s linear infinite}
 @keyframes radar-location-wait{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){#placeGps[aria-busy="true"]::before{animation:none}}
+
+/* Preserve Leaflet's internal paint/hit-test order inside an isolated map. */
+#map.raster-map{isolation:isolate;z-index:0}
+.raster-map .leaflet-tile-pane{z-index:200}
+.raster-map .leaflet-overlay-pane{z-index:400}
+.raster-map .leaflet-shadow-pane{z-index:500}
+.raster-map .leaflet-marker-pane{z-index:600}
+.raster-map .leaflet-tooltip-pane{z-index:650}
+.raster-map .leaflet-popup-pane{z-index:700}
+.raster-map .leaflet-control-container{z-index:800}
+.raster-map .leaflet-marker-icon.leaflet-interactive,.raster-map .raster-pin,.raster-map .raster-cluster{pointer-events:auto;touch-action:manipulation}

@@ -1,17 +1,17 @@
 import {validateRegistrationProfile} from './registration';
 import {validateBusiness} from './business';
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
-export function createCommercialManagement(db:Database){return {
+export function createCommercialManagement(db:Database,catalog?:{lookup(id:string,activeOnly?:boolean):Promise<string|undefined>}){return {
  async inspect(id:string,account:string){
   const rows=await db.unsafe(`SELECT e.id,e.name,e.category,p.profile,d.quantity,d.unit FROM radar.establishments e
    JOIN radar.verified_owners o ON o.establishment_id=e.id AND o.account_ref=$2::uuid
    LEFT JOIN radar.registration_profiles p ON p.establishment_id=e.id
    LEFT JOIN radar.business_details d ON d.establishment_id=e.id AND d.updated_by=o.account_ref
-   WHERE e.id=$1::uuid AND e.published`,[id,account]);return rows[0]??null;
+   WHERE e.id=$1::uuid AND e.published`,[id,account]);const item=rows[0];if(!item)return null;const configuredUnit=await catalog?.lookup(item.category);return configuredUnit?{...item,configuredUnit}:item;
  },
  async update(id:string,account:string,input:unknown,availability?:unknown){
   const item=await this.inspect(id,account);if(!item)return 'OWNER_REQUIRED';
-  const profile=validateRegistrationProfile(input,item.category);if(!profile)return 'INVALID_PROFILE';
+  const profile=validateRegistrationProfile(input,item.category,item.configuredUnit);if(!profile)return 'INVALID_PROFILE';
   const capacity=availability===undefined?null:validateBusiness(availability&&typeof availability==='object'?{...availability,hours:profile.hours}:null);
   if(availability!==undefined&&!capacity)return 'INVALID_PROFILE';
   const rows=await db.unsafe(`WITH owner AS MATERIALIZED (

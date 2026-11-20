@@ -3,6 +3,7 @@ import type {CoreAuth} from './auth';
 import {createBusinessRoutes,createBusinessStore} from './business';
 import {createModerationRoutes} from './moderation';
 import {createModerationStore} from './moderation-repository';
+import {createCategoryStore} from './category-catalog';
 import {createCommercialManagement} from './commercial-management';
 type Database=Parameters<typeof createBusinessStore>[0];
 const origin='https://direcciones.lat';
@@ -28,10 +29,16 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
   const parsed=await readRadarJson(req,(management?8192:2048));if(!parsed.ok)return json(parsed.status,{error:parsed.error});
   const body=parsed.body as any;
   try{
+   if(admin&&['categories_list','categories_save'].includes(body?.action)){
+    if(env.RADAR_CATEGORY_CATALOG_ENABLED!=='true')return json(503,{error:'CATEGORY_CATALOG_DISABLED'});
+    const store=createCategoryStore(db);
+    if(body.action==='categories_list')return json(200,await store.list());
+    return await store.save(user.id,body.entry)?json(200,{ok:true}):json(400,{error:'INVALID_CATEGORY'});
+   }
    if(management){
     if(env.RADAR_REGISTRATION_PROFILES_ENABLED!=='true')return json(503,{error:'PROFILE_MANAGEMENT_DISABLED'});
     if(!body||!['inspect','update'].includes(body.action)||typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ACTION'});
-    const store=createCommercialManagement(db);
+    const store=createCommercialManagement(db,env.RADAR_CATEGORY_CATALOG_ENABLED==="true"?createCategoryStore(db):undefined);
     if(body.action==='inspect'){const item=await store.inspect(body.id,user.id);return item?json(200,{item}):json(403,{error:'OWNER_REQUIRED'});}
     const result=await store.update(body.id,user.id,body.profile,body.availability);
     return result==='UPDATED'?json(200,{ok:true}):json(result==='INVALID_PROFILE'?400:403,{error:result});
@@ -106,13 +113,51 @@ export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>
    const next=doc.createElement('button');next.type='button';next.className='btn';next.textContent='Siguiente';next.disabled=!data.hasMore;next.onclick=()=>{offset+=100;load();};out.append(previous,next);
   }catch{out.replaceChildren(text('p','No pudimos cargar Radar. Pulsa Radar para reintentar.'));}
  };
+ const categoryButton=doc.getElementById('radarCategoryButton'),categoryRows=doc.getElementById('radarCategoryRows');
+ if(categoryButton&&categoryRows){
+  const loadCategories=async()=>{
+   categoryRows.replaceChildren(text('p','Cargando categorías…'));
+   try{
+    const response=await send({action:'categories_list'});if(!response.ok)throw Error();const data=await response.json();
+    if(!Array.isArray(data.groups)||!Array.isArray(data.categories))throw Error();
+    categoryRows.replaceChildren(text('h3','Categorías Radar'));
+    const editor=(kind:string,item:any={})=>{
+     const form=doc.createElement('form');form.className='tile';
+     const fields:Record<string,any>={};
+     const field=(key:string,label:string,val:any,choices?:any[])=>{
+      const l=text('label',label),n=doc.createElement(choices?'select':'input');n.name=key;
+      if(choices)for(const [id,title] of choices){const o=text('option',title);o.value=id;n.append(o);}
+      n.value=String(val??'');l.append(n);form.append(l);fields[key]=n;return n;
+     };
+     const id=field('id','Código estable',item.id);id.required=true;id.maxLength=64;id.pattern='[a-z][a-z0-9-]{0,63}';id.readOnly=Boolean(item.id);
+     const label=field('label','Nombre',item.label);label.required=true;label.maxLength=100;
+     const order=field('sortOrder','Orden',item.sortOrder??0);order.type='number';order.min='0';order.max='10000';order.step='1';order.required=true;
+     field('active','Estado',String(item.active??true),[['true','Activa'],['false','Inactiva']]);
+     if(kind==='group'){const icon=field('icon','Icono',item.icon??'layers');icon.required=true;icon.maxLength=64;icon.pattern='[a-z][a-z0-9-]{0,63}';}
+     else{field('groupId','Grupo',item.groupId??data.groups[0]?.id??'',data.groups.map((g:any)=>[g.id,g.label]));field('capacityUnit','Capacidad',item.capacityUnit??'units',[['tables','Mesas'],['rooms','Habitaciones'],['places','Cupos'],['units','Unidades']]);}
+     const save=text('button','Guardar');save.type='submit';save.className='btn';const status=text('p','');status.setAttribute('role','status');form.append(save,status);
+     form.onsubmit=async(e:any)=>{e.preventDefault();if(!form.reportValidity())return;save.disabled=true;
+      try{const entry:any={kind,id:id.value.trim(),label:label.value.trim(),sortOrder:Number(order.value),active:fields.active.value==='true'};
+       if(kind==='group')entry.icon=fields.icon.value.trim();else{entry.groupId=fields.groupId.value;entry.capacityUnit=fields.capacityUnit.value;}
+       const result=await send({action:'categories_save',entry});if(!result.ok)throw Error();await loadCategories();
+      }catch{status.textContent='No se guardó. Revisa los datos y vuelve a consultar.';save.disabled=false;}
+     };return form;
+    };
+    const addGroup=text('button','Nueva categoría principal');addGroup.type='button';addGroup.onclick=()=>{addGroup.disabled=true;categoryRows.append(editor('group'));};categoryRows.append(addGroup);
+    if(data.groups.length){const addCategory=text('button','Nueva subcategoría');addCategory.type='button';addCategory.onclick=()=>{addCategory.disabled=true;categoryRows.append(editor('category'));};categoryRows.append(addCategory);}
+    for(const group of data.groups){const section=doc.createElement('details');section.append(text('summary',group.label+(group.active?'':' · Inactiva')),editor('group',group));for(const item of data.categories.filter((c:any)=>c.groupId===group.id)){const detail=doc.createElement('details');detail.append(text('summary',item.label+(item.active?'':' · Inactiva')),editor('category',item));section.append(detail);}categoryRows.append(section);}
+   }catch{categoryRows.replaceChildren(text('p','El catálogo no está disponible. No se modificaron datos.'));}
+  };
+  categoryButton.onclick=()=>{categoryRows.hidden=!categoryRows.hidden;if(!categoryRows.hidden)return loadCategories();};
+ }
  const search=doc.getElementById('radarAdminSearch'),filter=doc.getElementById('radarAdminFilter');
  if(filter)filter.onclick=()=>{query=search.value.trim();offset=0;load();};
  tile.onclick=()=>{offset=0;return load();};doc.getElementById('radarClose').onclick=()=>view.classList.add('hidden');
 }
 export function withCoreRadarAdmin(html:string,env:Record<string,string|undefined>){
  if(!coreRadarAdminEnabled(env))return html;
+ const categoryMarkup=env.RADAR_CATEGORY_CATALOG_ENABLED==='true'?'<button type="button" id="radarCategoryButton" class="btn">Categorías Radar</button><div id="radarCategoryRows" hidden aria-live="polite"></div>':'';
  return html.replace('<button id="statsTile"','<button id="radarTile" class="tile action"><b>Radar</b><span class="muted">Establecimientos y verificación voluntaria</span></button><button id="statsTile"')
-  .replace('</main>','<section id="radarView" class="card list hidden"><div class="listhead"><h2>Radar</h2><button type="button" id="radarClose" class="btn">Cerrar</button></div><p>La verificación es manual e independiente de pagos. No publicar videos ni documentos de comprobación. Listas limitadas a 100 registros por sección.</p><label>Buscar establecimiento<input id="radarAdminSearch" type="search" maxlength="100"></label><button type="button" id="radarAdminFilter" class="btn">Buscar</button><div id="radarAdminRows" class="rows" aria-live="polite"></div></section></main>')
+  .replace('</main>','<section id="radarView" class="card list hidden"><div class="listhead"><h2>Radar</h2><button type="button" id="radarClose" class="btn">Cerrar</button></div><p>La verificación es manual e independiente de pagos. No publicar videos ni documentos de comprobación. Listas limitadas a 100 registros por sección.</p>'+categoryMarkup+'<label>Buscar establecimiento<input id="radarAdminSearch" type="search" maxlength="100"></label><button type="button" id="radarAdminFilter" class="btn">Buscar</button><div id="radarAdminRows" class="rows" aria-live="polite"></div></section></main>')
   .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')();</script></body>');
 }

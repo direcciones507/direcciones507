@@ -3,7 +3,7 @@ import {categoryRegistrationFields,capacityUnit} from "./ui/registration-form.js
 import {countries,validCoordinates,type Country} from "./domain";
 export type RegistrationProfile={province:string;locality:string;description:string;phone:string;whatsapp?:string;hours:Record<string,string>;socials:string[];extras:Record<string,string>;capacity?:{total:number;unit:string}};
 export type EstablishmentDraft={name:string;category:string;country:Country;latitude:number;longitude:number;registrationKind?:"owner";profile?:RegistrationProfile};
-export function validateRegistration(input:unknown):EstablishmentDraft|null{
+export function validateRegistration(input:unknown,configuredUnit?:string):EstablishmentDraft|null{
  if(!input||typeof input!=="object"||Array.isArray(input))return null;
  const d=input as Record<string,unknown>;
  if(typeof d.name!=="string"||typeof d.category!=="string"||typeof d.country!=="string")return null;
@@ -13,10 +13,10 @@ export function validateRegistration(input:unknown):EstablishmentDraft|null{
  const base={name,category,country,latitude:d.latitude,longitude:d.longitude};
  if(d.registrationKind!==undefined&&!['user','owner'].includes(String(d.registrationKind)))return null;
  if(d.registrationKind!=='owner')return d.profile===undefined?base:null;
- const profile=validateRegistrationProfile(d.profile,category);return profile?{...base,registrationKind:'owner',profile}:null;
+ const profile=validateRegistrationProfile(d.profile,category,configuredUnit);return profile?{...base,registrationKind:'owner',profile}:null;
 }
 
-export function validateRegistrationProfile(input:unknown,category:string):RegistrationProfile|null{
+export function validateRegistrationProfile(input:unknown,category:string,configuredUnit?:string):RegistrationProfile|null{
  if(!input||typeof input!=='object'||Array.isArray(input))return null;
  const p=input as Record<string,any>,text=(key:string,max:number)=>typeof p[key]==='string'&&p[key].trim().length<=max?p[key].trim():null;
  const province=text('province',100),locality=text('locality',160),description=text('description',1200),phone=text('phone',32);
@@ -30,7 +30,7 @@ export function validateRegistrationProfile(input:unknown,category:string):Regis
  if(Object.keys(p.extras).some(key=>!keys.includes(key)))return null;
  const extras:Record<string,string>={};for(const key of keys){const value=p.extras[key]??'';if(typeof value!=='string'||value.trim().length>250)return null;if(value.trim())extras[key]=value.trim();}
  let capacity:RegistrationProfile['capacity'];
- if(p.capacity!==undefined){const c=p.capacity;if(!c||typeof c!=='object'||Array.isArray(c)||!Number.isInteger(c.total)||c.total<0||c.total>100000||c.unit!==capacityUnit(category))return null;capacity={total:c.total,unit:c.unit};}
+ if(p.capacity!==undefined){const c=p.capacity;if(!c||typeof c!=='object'||Array.isArray(c)||!Number.isInteger(c.total)||c.total<0||c.total>100000||c.unit!==(configuredUnit??capacityUnit(category)))return null;capacity={total:c.total,unit:c.unit};}
  const profile={province,locality,description,phone,...(whatsapp?{whatsapp}:{}),hours:business.hours,socials,extras,...(capacity?{capacity}:{})};
  return new TextEncoder().encode(JSON.stringify(profile)).byteLength<=8000?profile:null;
 }

@@ -38,7 +38,7 @@ $('territory').onchange=()=>{const view=countries[state.country].views[Number($(
 $('filtersButton').onclick=()=>{const open=$('filters').hidden;$('filters').hidden=!open;$('filtersButton').setAttribute('aria-expanded',String(open));state.map?.resize();};
 $('category').onchange=render; $('activity').onchange=render;
 $('resetFilters').onclick=()=>{$('searchInput').value='';$('category').value='';$('activity').value='';setCountry(state.country);};
-$('searchForm').onsubmit=e=>{e.preventDefault();const context=searchContext($('searchInput').value,state.country);if(context.view){state.bounds=context.view.bounds;if(state.map){state.resetZoom=true;state.map.fitBounds(context.view.bounds,{padding:30,duration:reduced.matches?0:650});}}scheduleLoad(0);};
+$('searchForm').onsubmit=e=>{e.preventDefault();const context=searchContext($('searchInput').value,state.country);if(context.view){$('territory').value=String(countries[state.country].views.indexOf(context.view));state.bounds=context.view.bounds;if(state.map){state.resetZoom=true;state.map.fitBounds(context.view.bounds,{padding:30,duration:reduced.matches?0:650});}}scheduleLoad(0);};
 $('searchInput').addEventListener('input',()=>{if(!$('searchInput').value)scheduleLoad(0);});
 $('refreshButton').onclick=()=>scheduleLoad(0);
 $('expandButton').onclick=()=>{const expanded=document.querySelector('.map-shell').classList.toggle('expanded');$('expandButton').setAttribute('aria-pressed',String(expanded));$('expandButton').setAttribute('aria-label',expanded?'Reducir área del mapa':'Ampliar área del mapa');document.body.style.overflow=expanded?'hidden':'';state.map?.resize();};

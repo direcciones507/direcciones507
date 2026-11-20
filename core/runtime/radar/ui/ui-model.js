@@ -22,7 +22,7 @@ export function freshProperties(input={},now=Date.now()){
 }
 export const normalZoomStep=.6;
 export function mapFeatures(rows,zoom,revealZoom){return rows.filter(f=>f.properties.pin!=='normal'||zoom>=revealZoom);}
-export function priorityFeatures(rows){return rows.filter(f=>f.properties.pin==='live'||f.properties.pin==='featured');}
+export function priorityFeatures(rows){return rows.filter(f=>f.properties.pin==='live'||f.properties.pin==='featured').sort((a,b)=>Number(b.properties.pin==='live')-Number(a.properties.pin==='live'));}
 export function featuredGroups(rows){const groups=new Map();for(const f of rows){if(!f.properties.isFeatured)continue;const key=f.properties.category;const group=groups.get(key)||[];group.push(f);groups.set(key,group);}return groups;}
 export function searchContext(text,country){
  const clean=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
@@ -54,12 +54,10 @@ export function nearbyRows(features,lat,lng,radius,category,country,now=Date.now
  .filter(row=>Number.isFinite(row.km)&&row.km<=radius).sort((a,b)=>a.km-b.km||a.feature.id.localeCompare(b.feature.id)).slice(0,100);
 }
 
-// Real, current reports only. Commercial pin type does not determine community activity.
-export function pulseRows(features,country,activity='',now=Date.now()){
- const valid=new Set(['available','queue','full','incident']);
- if(activity&&!valid.has(activity))return [];
+// Commercial live campaigns only; community activity is supplementary.
+export function pulseRows(features,country,category='',now=Date.now()){
  return features.filter(f=>f?.geometry?.type==='Point'&&typeof f.id==='string'&&f.properties?.country===country)
  .map(f=>({...f,properties:freshProperties(f.properties,now)}))
- .filter(f=>valid.has(f.properties.activity)&&(!activity||f.properties.activity===activity)&&['community','verified_owner'].includes(f.properties.source))
- .sort((a,b)=>Number(b.properties.reportedAt)-Number(a.properties.reportedAt)||a.id.localeCompare(b.id)).slice(0,100);
+ .filter(f=>f.properties.pin==='live'&&(!category||f.properties.category===category))
+ .sort((a,b)=>Number(a.properties.liveUntil)-Number(b.properties.liveUntil)||a.id.localeCompare(b.id)).slice(0,100);
 }

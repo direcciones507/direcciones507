@@ -66,7 +66,9 @@ jobs:
         working-directory: core/runtime
         run: bun install --frozen-lockfile
       - name: Validate new Radar flows in isolated browser
-        run: node core/runtime/tests/radar-community-browser.mjs
+        run: |
+          node core/runtime/tests/radar-community-browser.mjs
+          node core/runtime/tests/radar-core-commercial-browser.mjs
         env:
           PLAYWRIGHT_MODULE: ${{ github.workspace }}/core/runtime/node_modules/playwright
           RADAR_BROWSER_EXECUTABLE: /usr/bin/google-chrome

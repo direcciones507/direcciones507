@@ -47,3 +47,32 @@ test('declared capacity is optional, category-specific and does not grant verifi
 });
 
 test('commercial WhatsApp is optional and validated independently',()=>{const candidate={...input,profile:{...profile,whatsapp:'+50760000000'}};assert.equal(validateRegistration(candidate)?.profile?.whatsapp,'+50760000000');assert.equal(validateRegistration({...candidate,profile:{...profile,whatsapp:'https://evil.test'}}),null);assert.equal(validateRegistration({...candidate,profile:{...profile,whatsapp:''}})?.profile?.whatsapp,undefined);});
+
+test('private business identity requires a valid legal name and tax identifier only when gated',()=>{
+ const ownerPrivate={legalName:'Empresa Panamá, S.A.',taxId:'12345-1-67890'};
+ assert.equal(validateRegistration(input,undefined,true),null);
+ const candidate=validateRegistration({...input,ownerPrivate},undefined,true);
+ assert.deepEqual(candidate?.ownerPrivate,ownerPrivate);
+ assert.deepEqual(candidate?.profile,profile);
+ assert.equal((candidate?.profile as any).taxId,undefined);
+ assert.equal(validateRegistration({...input,ownerPrivate:{...ownerPrivate,taxId:' '}},undefined,true),null);
+ assert.equal(validateRegistration({...input,ownerPrivate:{...ownerPrivate,legalName:' '}},undefined,true),null);
+ assert.equal(validateRegistration({...input,ownerPrivate},undefined,false)?.ownerPrivate,undefined);
+});
+test('separate private owner data is inserted atomically and does not grant ownership',async()=>{
+ const pg=new PGlite();
+ try{
+  await pg.exec('CREATE SCHEMA ad507; CREATE TABLE ad507.users(id uuid PRIMARY KEY)');
+  for(const path of ['schema.sql','ownership.sql','business-details.sql','registration-profiles.sql','owner-private-declarations.sql'])await pg.exec(readFileSync(new URL('../radar/'+path,import.meta.url),'utf8'));
+  await pg.query('INSERT INTO ad507.users(id) VALUES($1)',[account]);
+  const db={unsafe:async(q:string,p:any[])=>(await pg.query(q,p)).rows as any[]};
+  const repo=createRadarRepository(db,true,undefined,true,true,true),privateData={legalName:'Empresa Panamá S.A.',taxId:'12345-987'};
+  const draft=validateRegistration({...input,ownerPrivate:privateData},undefined,true)!;
+  const id=await repo.register!(draft,account);assert.ok(id);
+  const priv=(await pg.query('SELECT legal_name,tax_identifier FROM radar.owner_private_declarations WHERE establishment_id=$1',[id])).rows[0] as any;
+  assert.equal(priv.legal_name,privateData.legalName);assert.equal(priv.tax_identifier,privateData.taxId);
+  const pub=(await pg.query('SELECT profile FROM radar.registration_profiles WHERE establishment_id=$1',[id])).rows[0] as any;
+  assert.equal(pub.profile.taxId,undefined);assert.equal(pub.profile.legalName,undefined);
+  assert.equal((await pg.query('SELECT * FROM radar.verified_owners')).rows.length,0);
+ }finally{await pg.close();}
+},20000);

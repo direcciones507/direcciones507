@@ -62,7 +62,7 @@ try{
   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).registrationKind),registrationKind);
   assert.equal(await page.locator('#ownerRegistrationFields').isVisible(),registrationKind==='owner');
   await page.locator('#addDialog [data-close]').click();await page.locator('#accountButton').click();
-  await page.waitForURL(latam+'/panel');assert.equal(logoutPosts,0);
+  await page.waitForURL(latam+'/panel#radarAccountSection');assert.equal(logoutPosts,0);
   assert.ok((await context.cookies(radar)).some(c=>c.name==='__Secure-ad507_radar_session'&&c.httpOnly&&c.secure));
   await context.close();console.log('PASS: isolated Radar -> shared LATAM email card -> Continue -> Radar pending add action -> CORE account; no real accounts or writes.');
  }

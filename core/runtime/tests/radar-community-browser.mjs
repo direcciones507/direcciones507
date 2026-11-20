@@ -73,7 +73,7 @@ try{
  await page.getByRole('button',{name:'Desactivar alerta',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('#alertsStatus').textContent.includes('Todavía no tienes alertas'));
  assert(!subscribed,'Alert unsubscribe');await page.locator('#alertsDialog [data-close]').click();
- await page.locator('#personalTools>summary').click();
+ assert(await page.locator('#personalTools').getAttribute('open')!==null,'Tools menu lost its open state');
  await page.locator('#favoritesButton').click();await page.getByRole('button',{name:'Quitar favorito',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('#favoritesStatus').textContent.includes('Todavía no tienes favoritos'));
  assert(!saved,'Favorite removal');await page.locator('#favoritesDialog [data-close]').click();

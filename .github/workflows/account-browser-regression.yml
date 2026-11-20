@@ -34,3 +34,15 @@ jobs:
       - run: node core/runtime/tests/commercial-browser-regression.mjs
         env:
           PLAYWRIGHT_MODULE: /tmp/ad507-browser/node_modules/playwright
+
+      - name: Validate Radar mobile, tablet, desktop and reduced motion
+        run: node core/runtime/tests/radar-browser-regression.mjs
+        env:
+          PLAYWRIGHT_MODULE: /tmp/ad507-browser/node_modules/playwright
+      - name: Save Radar visual review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-visual-review
+          path: /tmp/radar-review
+          if-no-files-found: ignore

@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "country": "PA",
+  "level": "ADM1",
+  "status": "CAMERA_EXTENTS_REVIEW_REQUIRED",
+  "source": {
+    "provider": "OpenStreetMap contributors via hyperknot/country-levels-export",
+    "commit": "536b86946e69d407d544405d6b1a18c6e20eb651",
+    "sourceUrl": "https://github.com/hyperknot/country-levels-export/tree/536b86946e69d407d544405d6b1a18c6e20eb651",
+    "attribution": "© OpenStreetMap contributors",
+    "license": "ODbL-1.0",
+    "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "copyrightUrl": "https://www.openstreetmap.org/copyright",
+    "transformation": "Compute bounding rectangles of the source polygons, round outward, use naming of Panama 2025 reference. This separate derived database is distributed under ODbL-1.0."
+  },
+  "reference": "panama-adm1-reference.json",
+  "regions": [
+    {
+      "id": "PA-1",
+      "name": "Bocas del Toro",
+      "bounds": [
+        [
+          -82.93601,
+          8.816
+        ],
+        [
+          -82.005,
+          9.622
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-1.geojson",
+      "sourceName": "Bocas del Toro"
+    },
+    {
+      "id": "PA-4",
+      "name": "Chiriquí",
+      "bounds": [
+        [
+          -83.051,
+          7.464
+        ],
+        [
+          -81.512,
+          8.92201
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-4.geojson",
+      "sourceName": "Chiriquí"
+    },
+    {
+      "id": "PA-2",
+      "name": "Coclé",
+      "bounds": [
+        [
+          -80.835,
+          8.09099
+        ],
+        [
+          -80.043,
+          9.059
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-2.geojson",
+      "sourceName": "Coclé"
+    },
+    {
+      "id": "PA-3",
+      "name": "Colón",
+      "bounds": [
+        [
+          -80.875,
+          8.624
+        ],
+        [
+          -79.08,
+          9.64
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-3.geojson",
+      "sourceName": "Colón"
+    },
+    {
+      "id": "PA-EM",
+      "name": "Comarca Emberá-Wounaán",
+      "bounds": [
+        [
+          -78.314,
+          7.593
+        ],
+        [
+          -77.284,
+          8.756
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-EM.geojson",
+      "sourceName": "Comarca Emberá-Wounaan"
+    },
+    {
+      "id": "PA-KY",
+      "name": "Comarca Kuna Yala",
+      "bounds": [
+        [
+          -79.27501,
+          8.55
+        ],
+        [
+          -77.364,
+          9.587
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-KY.geojson",
+      "sourceName": "Comarca Guna Yala"
+    },
+    {
+      "id": "PA-NB",
+      "name": "Comarca Ngäbe-Buglé",
+      "bounds": [
+        [
+          -82.423,
+          8.251
+        ],
+        [
+          -81.138,
+          9.186
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-NB.geojson",
+      "sourceName": "Comarca Ngäbe Buglé"
+    },
+    {
+      "id": "PA-5",
+      "name": "Darién",
+      "bounds": [
+        [
+          -78.50101,
+          7.223
+        ],
+        [
+          -77.159,
+          9.08201
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-5.geojson",
+      "sourceName": "Darién"
+    },
+    {
+      "id": "PA-6",
+      "name": "Herrera",
+      "bounds": [
+        [
+          -80.964,
+          7.54
+        ],
+        [
+          -80.387,
+          8.14601
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-6.geojson",
+      "sourceName": "Herrera"
+    },
+    {
+      "id": "PA-7",
+      "name": "Los Santos",
+      "bounds": [
+        [
+          -80.736,
+          7.23
+        ],
+        [
+          -79.99299,
+          8.004
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-7.geojson",
+      "sourceName": "Los Santos"
+    },
+    {
+      "id": "PA-8",
+      "name": "Panamá",
+      "bounds": [
+        [
+          -79.699,
+          8.194
+        ],
+        [
+          -78.057,
+          9.481
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-8.geojson",
+      "sourceName": "Panamá"
+    },
+    {
+      "id": "PA-10",
+      "name": "Panamá Oeste",
+      "bounds": [
+        [
+          -80.179,
+          8.407
+        ],
+        [
+          -79.56,
+          9.186
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-10.geojson",
+      "sourceName": "Panamá Oeste"
+    },
+    {
+      "id": "PA-9",
+      "name": "Veraguas",
+      "bounds": [
+        [
+          -81.89,
+          7.204
+        ],
+        [
+          -80.61199,
+          8.888
+        ]
+      ],
+      "sourceFile": "https://raw.githubusercontent.com/hyperknot/country-levels-export/536b86946e69d407d544405d6b1a18c6e20eb651/geojson/high/iso2/PA/PA-9.geojson",
+      "sourceName": "Veraguas"
+    }
+  ]
+}

@@ -64,6 +64,9 @@ test('Radar identity uses its own favicon and canonical metadata without opening
  expect(html).toContain('rel="icon" type="image/svg+xml" href="/radar/ui/favicon.svg"');
  expect(html).toContain('property="og:url" content="https://radar.direcciones.lat/"');
  expect(html).toContain('property="og:title"');
+ const structured=html.match(/<script type="application\/ld\+json">([^<]+)<\/script>/);
+ expect(structured).not.toBeNull();
+ expect(JSON.parse(structured![1])).toEqual({"@context":"https://schema.org","@type":"WebSite",name:"Radar · Direcciones LATAM",alternateName:"Radar de Direcciones507 y Direcciones LATAM",url:radarOrigin+'/',description:"Explora establecimientos y consulta la actividad de tu ciudad con Radar de Direcciones507 y Direcciones LATAM.",inLanguage:"es"});
  expect(result?.headers.get('x-robots-tag')).toBe('noindex, nofollow');
  const icon=await radarPresentation(new Request(radarOrigin+'/radar/ui/favicon.svg'),env);
  expect(icon?.status).toBe(200);

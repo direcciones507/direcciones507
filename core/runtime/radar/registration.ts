@@ -2,8 +2,15 @@ import {validateBusiness} from "./business";
 import {categoryRegistrationFields,capacityUnit} from "./ui/registration-form.js";
 import {countries,validCoordinates,type Country} from "./domain";
 export type RegistrationProfile={province:string;locality:string;description:string;phone:string;whatsapp?:string;hours:Record<string,string>;socials:string[];extras:Record<string,string>;capacity?:{total:number;unit:string}};
-export type EstablishmentDraft={name:string;category:string;country:Country;latitude:number;longitude:number;registrationKind?:"owner";profile?:RegistrationProfile};
-export function validateRegistration(input:unknown,configuredUnit?:string):EstablishmentDraft|null{
+export type PrivateOwnerDeclaration={legalName:string;taxId:string};
+export function validatePrivateOwner(input:unknown):PrivateOwnerDeclaration|null{
+ if(!input||typeof input!=='object'||Array.isArray(input))return null;
+ const p=input as Record<string,unknown>,legalName=typeof p.legalName==='string'?p.legalName.trim():'',taxId=typeof p.taxId==='string'?p.taxId.trim():'';
+ if(legalName.length<2||legalName.length>160||taxId.length<3||taxId.length>48||! /^[A-Za-zÀ-ÿ0-9 .,'&()/-]+$/.test(legalName)||!/^[A-Za-z0-9./ -]+$/.test(taxId))return null;
+ return {legalName,taxId};
+}
+export type EstablishmentDraft={name:string;category:string;country:Country;latitude:number;longitude:number;registrationKind?:"owner";profile?:RegistrationProfile;ownerPrivate?:PrivateOwnerDeclaration};
+export function validateRegistration(input:unknown,configuredUnit?:string,privateOwnerRequired=false):EstablishmentDraft|null{
  if(!input||typeof input!=="object"||Array.isArray(input))return null;
  const d=input as Record<string,unknown>;
  if(typeof d.name!=="string"||typeof d.category!=="string"||typeof d.country!=="string")return null;
@@ -13,7 +20,9 @@ export function validateRegistration(input:unknown,configuredUnit?:string):Estab
  const base={name,category,country,latitude:d.latitude,longitude:d.longitude};
  if(d.registrationKind!==undefined&&!['user','owner'].includes(String(d.registrationKind)))return null;
  if(d.registrationKind!=='owner')return d.profile===undefined?base:null;
- const profile=validateRegistrationProfile(d.profile,category,configuredUnit);return profile?{...base,registrationKind:'owner',profile}:null;
+ const profile=validateRegistrationProfile(d.profile,category,configuredUnit);const ownerPrivate=privateOwnerRequired?validatePrivateOwner(d.ownerPrivate):null;
+ if(!profile||privateOwnerRequired&&!ownerPrivate)return null;
+ return {...base,registrationKind:'owner',profile,...(ownerPrivate?{ownerPrivate}:{})};
 }
 
 export function validateRegistrationProfile(input:unknown,category:string,configuredUnit?:string):RegistrationProfile|null{

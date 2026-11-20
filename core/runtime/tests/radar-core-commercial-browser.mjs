@@ -22,7 +22,7 @@ const style='<style>*{box-sizing:border-box}body{font:16px system-ui;margin:16px
 const admin=withCoreRadarAdmin('<html><head>'+style+'</head><body><main><button id="statsTile">Estadísticas</button></main></body></html>',env);
 const items={available:true,managementAvailable:true,items:[{id,name:'Comercio sintético',country:'PA',category:'shop',authorized:true}]};
 const client='<html><head>'+style+'</head><body><main>'+radarAccountSection+'</main><script>'+radarAccountScript+';renderRadarAccount('+JSON.stringify(items)+');</script></body></html>';
-const server=createServer((req,res)=>{res.setHeader('content-type','text/html');res.end(req.url==='/admin'?admin:client);});
+const server=createServer((req,res)=>{res.setHeader('content-type','text/html; charset=utf-8');res.end(req.url==='/admin'?admin:client);});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
 let browser;const errors=[],calls=[];
 try{

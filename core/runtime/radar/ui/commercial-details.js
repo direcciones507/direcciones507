@@ -26,3 +26,9 @@ export function renderCommercialDetails(target,p,doc=document){
  if(Number.isInteger(capacity?.total)&&capacity.total>=0&&Object.hasOwn(unitNames,capacity.unit))target.append(node('p','Capacidad total: '+capacity.total+' '+unitNames[capacity.unit]));
  if(Number.isInteger(details.quantity)&&details.quantity>=0)target.append(node('p',details.quantity+' '+({tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'}[details.unit]||'unidades')+' disponibles'));
 }
+
+export function commercialWhatsapp(p,doc=document){
+ const number=p.registrationProfile?.whatsapp;if(typeof number!=='string'||!/^\+[1-9][0-9]{6,14}$/.test(number))return null;
+ const a=doc.createElement('a');a.href='https://wa.me/'+number.slice(1);a.target='_blank';a.rel='noopener noreferrer';a.className='commercial-whatsapp';a.setAttribute('aria-label','Contactar por WhatsApp');a.title='WhatsApp';
+ const svg=doc.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 32 32');svg.setAttribute('aria-hidden','true');const path=doc.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('fill','currentColor');path.setAttribute('d','M16 3a13 13 0 0 0-11 20L3 29l6-2A13 13 0 1 0 16 3zm0 2a11 11 0 1 1-6 20l-4 1 1-4A11 11 0 0 1 16 5zm-5 5c-2 0-3 2-2 5 2 5 7 8 11 8 2 0 4-2 3-3l-4-2-2 2c-3-1-5-3-6-5l2-2-2-3z');svg.append(path);a.append(svg);return a;
+}

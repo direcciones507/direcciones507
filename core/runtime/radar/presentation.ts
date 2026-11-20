@@ -14,18 +14,9 @@ export async function radarPresentation(req:Request,env:Record<string,string|und
  if(req.method!=='GET'&&req.method!=='HEAD')return new Response(null,{status:405,headers:{allow:'GET, HEAD'}});
  const tiles=tileUrl(env);
  if(asset!==null){if(!assets.has(asset))return new Response(null,{status:404});const type=asset.endsWith('.woff')?'font/woff':asset.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8';return new Response(req.method==='HEAD'?null:readFileSync(new URL(asset,uiRoot)),{headers:headers(type,tiles)});}
- if(account){
-  // Reuse the actual shared LATAM card, fields, legal acceptance, Google/email and recovery scripts.
-  // The surrounding commercial page stays in its source DOM for those scripts, hidden in this embedded entry.
-  const {commercialEntryHtml}=await import('../user-panel');
-  let html=commercialEntryHtml(true,new URL('https://direcciones.lat/?access=1'));
-  html=html.replace('</head>',`<style>body>header,body>main,body>footer,#natalieLauncher,#modalPoliticas{display:none!important}body{background:#071321!important}#latamAccess{width:calc(100% - 20px)!important;max-width:500px!important;max-height:calc(100dvh - 20px)!important;margin:auto!important}#latamAccess::backdrop{background:transparent!important}</style></head>`);
-  // OAuth must navigate the top-level tab; Google does not allow sign-in inside an iframe.
-  const nonce=crypto.randomUUID().replaceAll('-','');
-  html=html.replace('</body>',`<script>document.getElementById('latamGoogleAccess')?.setAttribute('target','_top');</script></body>`).replaceAll('<script>','<script nonce="'+nonce+'">');
-  return new Response(req.method==='HEAD'?null:html,{headers:{...headers('text/html; charset=utf-8',tiles),'cache-control':'no-store','content-security-policy':`default-src 'self'; font-src 'self'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'`}});
- }
+ if(account)return new Response(null,{status:302,headers:{location:'https://direcciones.lat/auth/radar','cache-control':'no-store','referrer-policy':'no-referrer'}});
  const escape=(s:string)=>s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
  const html=readFileSync(new URL('index.html',uiRoot),'utf8').replace('</head>',`<meta name="radar-tiles" content="${escape(tiles)}"><meta name="radar-anonymous-reports" content="${env.RADAR_ANONYMOUS_REPORTS_ENABLED==='true'}"><meta name="radar-activity-validation" content="${env.RADAR_ACTIVITY_VALIDATION_ENABLED==='true'}"><meta name="radar-favorites" content="${env.RADAR_FAVORITES_ENABLED==='true'}"><meta name="radar-contributions" content="${env.RADAR_CONTRIBUTIONS_ENABLED==='true'}"><meta name="radar-reputation" content="${env.RADAR_REPUTATION_ENABLED==='true'}"><meta name="radar-alerts" content="${env.RADAR_ALERTS_ENABLED==='true'&&env.RADAR_FAVORITES_ENABLED==='true'}"></head>`);
  return new Response(req.method==='HEAD'?null:html,{headers:headers('text/html; charset=utf-8',tiles)});
 }
+

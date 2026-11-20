@@ -17,12 +17,10 @@ test('asset allowlist rejects file probes and methods',async()=>{
  expect((await radarPresentation(new Request(radarOrigin+'/radar/ui/missing.js'),{RADAR_ENABLED:'true'}))?.status).toBe(404);
  expect((await radarPresentation(new Request(radarOrigin+'/',{method:'POST'}),{RADAR_ENABLED:'true'}))?.status).toBe(405);
 });
-test('shared account card is reused with top-level OAuth and no alternative login form',async()=>{
+test('account entry redirects to the existing LATAM access without rendering another card',async()=>{
  const result=await radarPresentation(new Request(radarOrigin+'/radar/account?access=1'),{RADAR_ENABLED:'true'});
- expect(result?.status).toBe(200);const html=await result!.text();
- for(const id of ['latamAccess','latamAccessEmail','latamAccessPassword','latamGoogleAccess','latamRegistrationTerms'])expect(html).toContain(id);
- expect(html).toContain("setAttribute('target','_top')");expect(html).toContain('/v1/auth/email/');
- expect(result?.headers.get('content-security-policy')).toContain("frame-ancestors 'self'");
+ expect(result?.status).toBe(302);expect(result?.headers.get('location')).toBe('https://direcciones.lat/auth/radar');
+ expect(await result!.text()).toBe('');
 });
 test('public links remain confined to approved HTTPS hosts',()=>{
  expect(safeAddress('https://direcciones.lat/negocio')).toBe('https://direcciones.lat/negocio');
@@ -38,3 +36,4 @@ test('map bounds wrap longitude and constrain latitude before API requests',()=>
  expect(normalizeBounds([-200,-89,200,89])).toEqual([-180,-85,180,85]);
  expect(normalizeBounds([170,-1,190,1])).toEqual([170,-1,-170,1]);
 });
+

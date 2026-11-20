@@ -13,7 +13,7 @@ type Payload = { uid: string; email: string; sid: string; exp: number; origin?: 
 const hash = (s: string) => createHash('sha256').update(s).digest('hex');
 const random = () => randomBytes(32).toString('base64url');
 const encoder = new TextEncoder();
-const routes = new Set(['/v1/auth/email/register','/v1/auth/email/login','/v1/auth/email/verify','/v1/auth/email/forgot','/v1/auth/email/reset','/auth/google/login', '/auth/google/callback', '/auth/logout', '/v1/auth/me', '/v1/admin/session-check']);
+const routes = new Set(['/v1/auth/email/register','/v1/auth/email/login','/v1/auth/email/verify','/v1/auth/email/forgot','/v1/auth/email/reset','/auth/radar', '/auth/google/login', '/auth/google/callback', '/auth/logout', '/v1/auth/me', '/v1/admin/session-check']);
 
 function cookie(name: string, value: string, age: number) {
   return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${age}`;
@@ -65,9 +65,27 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     ?config({...env,AD507_GOOGLE_REDIRECT_URI:env.AD507_GOOGLE_REDIRECT_URI_LATAM,AD507_AUTH_SUCCESS_URL:env.AD507_AUTH_SUCCESS_URL_LATAM??'/panel',AD507_PUBLIC_BASE_URL:'https://direcciones.lat'}):null;
   const latam=primary&&primary.origin!=='https://direcciones.lat'&&latamCandidate?.origin==='https://direcciones.lat'?latamCandidate:null;
   const cfg=primary;
-  const radarCandidate=env.RADAR_ENABLED==='true' && env.AD507_RADAR_DOMAIN_VERIFIED==='true' && env.AD507_GOOGLE_REDIRECT_URI_RADAR
-    ?config({...env,AD507_GOOGLE_REDIRECT_URI:env.AD507_GOOGLE_REDIRECT_URI_RADAR,AD507_AUTH_SUCCESS_URL:'/',AD507_PUBLIC_BASE_URL:'https://radar.direcciones.lat'}):null;
-  const radar=primary&&radarCandidate?.origin==='https://radar.direcciones.lat'?radarCandidate:null;
+  const radarOrigin='https://radar.direcciones.lat';
+  const latamAuth=primary?.origin==='https://direcciones.lat'?primary:latam;
+  const radar=env.RADAR_ENABLED==='true'&&env.AD507_RADAR_DOMAIN_VERIFIED==='true'?latamAuth:null;
+  const radarSessionName='__Secure-ad507_radar_session';
+  const radarReturnName='__Host-ad507_radar_return';
+  const clearRadarReturn=()=>cookie(radarReturnName,'',0);
+  const sharedRadarCookie=async(payload:Payload)=>cookie(radarSessionName,await sign({...payload,origin:radarOrigin},radar!.secret),Math.max(0,Math.min(28800,Math.floor(payload.exp-Date.now()/1000))))+'; Domain=direcciones.lat';
+  const radarRedirect=(cookies:string[]=[])=>{const headers=new Headers({location:radarOrigin+'/','cache-control':'no-store','referrer-policy':'no-referrer'});for(const value of cookies)headers.append('set-cookie',value);return new Response(null,{status:302,headers});};
+  async function radarReturn(req:Request){
+    if(!radar||new URL(req.url).origin!==radar.origin)return false;
+    const value=readCookie(req,radarReturnName);if(!value)return false;
+    const [nonce,expires,sig,extra]=value.split('.');const exp=Number(expires);
+    if(extra||!/^[A-Za-z0-9_-]{43}$/.test(nonce??'')||!Number.isInteger(exp)||exp<=Date.now()/1000||exp>Date.now()/1000+600)return false;
+    const expected=await signature('radar-return|'+radar.origin+'|'+nonce+'|'+expires,radar.secret),supplied=Buffer.from(sig??'','base64url');
+    return supplied.length===expected.length&&timingSafeEqual(expected,supplied);
+  }
+  async function radarReturnCookie(){
+    const nonce=random(),expires=Math.floor(Date.now()/1000)+600;
+    const sig=(await signature('radar-return|'+radar!.origin+'|'+nonce+'|'+expires,radar!.secret)).toString('base64url');
+    return cookie(radarReturnName,nonce+'.'+expires+'.'+sig,600);
+  }
   const forRequest=(req:Request)=>{
     const host=new URL(req.url).hostname;
     if(host==='radar.direcciones.lat')return radar;
@@ -75,7 +93,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   };
   // Preserve hashes of already-issued primary-domain states; bind LATAM states to LATAM.
   const accountCountries=new Set(['PA','CO','CR','GT','SV','HN','NI','MX']);
-  const stateHash=(state:string,origin:string,admin=false,country='')=>hash((admin?'admin|':country?'client:'+country+'|':'')+(origin===primary?.origin?state:origin+'|'+state));
+  const stateHash=(state:string,origin:string,admin=false,country='',returnRadar=false)=>hash((returnRadar?'radar|':'')+(admin?'admin|':country?'client:'+country+'|':'')+(origin===primary?.origin?state:origin+'|'+state));
   const sessionOrigin=(p:Payload,origin:string)=>p.origin===origin||(p.origin===undefined&&origin===primary?.origin);
   const respond = (status: number, body: Record<string, unknown>, cookies: string[] = []) => {
     const headers = new Headers({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
@@ -89,10 +107,11 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     const cfg=forRequest(req);
     if (!cfg) return null;
     const url = new URL(req.url);
-    if (url.host !== new URL(cfg.origin).host || (url.protocol !== 'https:' && req.headers.get('x-forwarded-proto') !== 'https')) return null;
-    const token = readCookie(req, 'ad507_session');
+    const isRadar=url.origin===radarOrigin&&!!radar;
+    if ((!isRadar&&url.host !== new URL(cfg.origin).host) || (url.protocol !== 'https:' && req.headers.get('x-forwarded-proto') !== 'https')) return null;
+    const token = readCookie(req, isRadar?radarSessionName:'ad507_session');
     const p = token ? await verify(token, cfg.secret) : null;
-    if (!p || !sessionOrigin(p,cfg.origin)) return null;
+    if (!p || !sessionOrigin(p,isRadar?radarOrigin:cfg.origin)) return null;
     const rows = await sql.unsafe(`SELECT u.id::text AS id,u.email,u.display_name,
       COALESCE(array_agg(ur.role ORDER BY ur.role) FILTER (WHERE ur.role IS NOT NULL),'{}') AS roles
       FROM ad507.auth_sessions s JOIN ad507.users u ON u.id=s.user_id
@@ -110,7 +129,19 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
     const callback = url.pathname === '/auth/google/callback';
     if (!cfg) return respond(503, { ok: false, error: 'AUTH_NOT_CONFIGURED' }, callback ? [clearState()] : []);
     // Railway terminates TLS before Bun; never derive redirects from proxy input.
-    if (url.host !== new URL(cfg.origin).host || (url.protocol !== 'https:' && req.headers.get('x-forwarded-proto') !== 'https')) return respond(400, { ok: false, error: 'AUTH_ORIGIN_DENIED' });
+    const isRadar=url.origin===radarOrigin&&!!radar;
+    if ((!isRadar&&url.host !== new URL(cfg.origin).host) || (url.protocol !== 'https:' && req.headers.get('x-forwarded-proto') !== 'https')) return respond(400, { ok: false, error: 'AUTH_ORIGIN_DENIED' });
+    if(isRadar&&!['/v1/auth/me','/v1/admin/session-check','/auth/logout'].includes(url.pathname)){
+      if(req.method==='GET'&&['/auth/radar','/auth/google/login'].includes(url.pathname))return new Response(null,{status:302,headers:{location:'https://direcciones.lat/auth/radar','cache-control':'no-store','referrer-policy':'no-referrer'}});
+      return respond(404,{ok:false,error:'AUTH_ORIGIN_DENIED'});
+    }
+    if(url.pathname==='/auth/radar'){
+      if(!radar||url.origin!==radar.origin||req.method!=='GET'||url.search)return respond(400,{ok:false,error:'REDIRECT_OVERRIDE_DENIED'});
+      const user=await currentUser(req);
+      const token=readCookie(req,'ad507_session'),payload=token?await verify(token,cfg.secret):null;
+      if(user&&payload)return radarRedirect([await sharedRadarCookie(payload),clearRadarReturn()]);
+      return new Response(null,{status:302,headers:[['location','https://direcciones.lat/?access=1'],['set-cookie',await radarReturnCookie()],['cache-control','no-store'],['referrer-policy','no-referrer']]});
+    }
     const emailRoute=url.pathname.startsWith('/v1/auth/email/');
     if(emailRoute){
       try {
@@ -191,7 +222,11 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         const sid=random(),exp=Math.floor(Date.now()/1000)+28800;
         await sql.unsafe("INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))",[hash(sid),user.id,exp]);
         const signed=await sign({uid:user.id,email:user.email,sid,exp,origin:cfg.origin},cfg.secret);
-        return new Response(JSON.stringify({ok:true}),{status:200,headers:{'content-type':'application/json','set-cookie':cookie('ad507_session',signed,28800),'cache-control':'no-store'}});
+        const returning=await radarReturn(req);
+        const headers=new Headers({'content-type':'application/json','cache-control':'no-store'});
+        headers.append('set-cookie',cookie('ad507_session',signed,28800));
+        if(returning){headers.append('set-cookie',await sharedRadarCookie({uid:user.id,email:user.email,sid,exp,origin:cfg.origin}));headers.append('set-cookie',clearRadarReturn());}
+        return new Response(JSON.stringify(returning?{ok:true,redirect:radarOrigin+'/'}:{ok:true}),{status:200,headers});
       }
       }
       catch {return respond(503,{ok:false,error:'EMAIL_AUTH_UNAVAILABLE'});}
@@ -203,8 +238,9 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         const adminReturn=url.searchParams.get('returnTo')==='/admin';
         const country=url.searchParams.get('country')??'';
         if (url.search && (url.searchParams.size!==1 || !(adminReturn || accountCountries.has(country)))) return respond(400, { ok: false, error: 'REDIRECT_OVERRIDE_DENIED' });
+        const returning=!adminReturn&&await radarReturn(req);
         const state = random(), binding = random(), verifier = random();
-        await sql.unsafe("INSERT INTO ad507.oauth_transactions(state_hash,binding_hash,verifier,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')", [stateHash(state,cfg.origin,adminReturn,country), hash(binding), verifier]);
+        await sql.unsafe("INSERT INTO ad507.oauth_transactions(state_hash,binding_hash,verifier,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')", [stateHash(state,cfg.origin,adminReturn,country,returning), hash(binding), verifier]);
         const target = new URL('https://accounts.google.com/o/oauth2/v2/auth');
         for (const [k, v] of Object.entries({ client_id: cfg.clientId, redirect_uri: cfg.redirect, response_type: 'code', scope: 'openid email profile', state, prompt: 'select_account', code_challenge: Buffer.from(hash(verifier), 'hex').toString('base64url'), code_challenge_method: 'S256' })) target.searchParams.set(k, v);
         return new Response(null, { status: 302, headers: [['location',target.toString()],['set-cookie',cookie('ad507_oauth_state',binding,600)],['set-cookie',adminReturn?cookie('ad507_oauth_admin',binding,600):clearAdminReturn()],['set-cookie',country?cookie('ad507_oauth_country',binding+'|'+country,600):clearCountryReturn()],['cache-control','no-store'],['referrer-policy','no-referrer']] });
@@ -212,6 +248,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       if (callback) {
         const state = url.searchParams.get('state'), binding = readCookie(req, 'ad507_oauth_state');
         const adminReturn=!!binding&&readCookie(req,'ad507_oauth_admin')===binding;
+        const returning=!adminReturn&&await radarReturn(req);
         const countryContext=readCookie(req,'ad507_oauth_country');
         const countryReturn=binding&&countryContext?.startsWith(binding+'|')?countryContext.slice(binding.length+1):'';
         const fail = (status: number, error: string) => {
@@ -224,7 +261,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         if (url.searchParams.getAll('state').length !== 1 || !state || !binding || !/^[A-Za-z0-9_-]{43}$/.test(state) || !/^[A-Za-z0-9_-]{43}$/.test(binding)) return fail(400, 'INVALID_OAUTH_STATE');
         if(countryContext&&(!accountCountries.has(countryReturn)||adminReturn))return fail(400,'INVALID_OAUTH_STATE');
         // Atomic database consumption works across replicas and even when Google fails.
-        const consumed = await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier", [stateHash(state,cfg.origin,adminReturn,countryReturn), hash(binding)]);
+        const consumed = await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier", [stateHash(state,cfg.origin,adminReturn,countryReturn,returning), hash(binding)]);
         if (consumed.length !== 1) return fail(400, 'INVALID_OAUTH_STATE');
         const code = url.searchParams.get('code');
         if (url.searchParams.has('error') || url.searchParams.getAll('code').length !== 1 || !code || code.length > 4096) return fail(400, 'OAUTH_DENIED');
@@ -257,14 +294,17 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         const sid = random(), exp = Math.floor(Date.now() / 1000) + 28800;
         await sql.unsafe('INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))', [hash(sid), user.id, exp]);
         const signed = await sign({ uid: user.id, email: user.email, sid, exp, origin:cfg.origin }, cfg.secret);
-        return new Response(null, { status: 302, headers: [['location', adminReturn?cfg.origin+'/admin':countryReturn?cfg.origin+'/panel?country='+countryReturn:cfg.success], ['set-cookie', cookie('ad507_session', signed, 28800)], ['set-cookie', clearState()], ['set-cookie',clearAdminReturn()], ['set-cookie',clearCountryReturn()], ['cache-control', 'no-store'], ['referrer-policy', 'no-referrer']] });
+        const headers=new Headers({location:returning?radarOrigin+'/':adminReturn?cfg.origin+'/admin':countryReturn?cfg.origin+'/panel?country='+countryReturn:cfg.success,'cache-control':'no-store','referrer-policy':'no-referrer'});
+        for(const value of [cookie('ad507_session',signed,28800),clearState(),clearAdminReturn(),clearCountryReturn()])headers.append('set-cookie',value);
+        if(returning){headers.append('set-cookie',await sharedRadarCookie({uid:user.id,email:user.email,sid,exp,origin:cfg.origin}));headers.append('set-cookie',clearRadarReturn());}
+        return new Response(null,{status:302,headers});
       }
       if (url.pathname === '/auth/logout') {
-        if (req.headers.get('origin') !== cfg.origin || req.headers.get('sec-fetch-site') === 'cross-site') return respond(403, { ok: false, error: 'CSRF_DENIED' });
-        const token = readCookie(req, 'ad507_session');
+        if (req.headers.get('origin') !== (isRadar?radarOrigin:cfg.origin) || req.headers.get('sec-fetch-site') === 'cross-site') return respond(403, { ok: false, error: 'CSRF_DENIED' });
+        const token = readCookie(req, isRadar?radarSessionName:'ad507_session');
         const p = token ? await verify(token, cfg.secret) : null;
-        if (p && sessionOrigin(p,cfg.origin)) await sql.unsafe('UPDATE ad507.auth_sessions SET revoked_at=now() WHERE session_hash=$1 AND user_id=$2::uuid AND revoked_at IS NULL', [hash(p.sid), p.uid]);
-        return new Response(null, { status: 204, headers: { 'set-cookie': cookie('ad507_session', '', 0), 'cache-control': 'no-store' } });
+        if (p && sessionOrigin(p,isRadar?radarOrigin:cfg.origin)) await sql.unsafe('UPDATE ad507.auth_sessions SET revoked_at=now() WHERE session_hash=$1 AND user_id=$2::uuid AND revoked_at IS NULL', [hash(p.sid), p.uid]);
+        return new Response(null, { status: 204, headers: { 'set-cookie': isRadar?cookie(radarSessionName,'',0)+'; Domain=direcciones.lat':cookie('ad507_session', '', 0), 'cache-control': 'no-store' } });
       }
       const user = await currentUser(req);
       if (!user) return respond(401, { ok: false, error: 'UNAUTHENTICATED' });
@@ -276,3 +316,4 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   }
   return { configured: !!cfg, handle, currentUser };
 }
+

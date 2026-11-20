@@ -10,3 +10,10 @@ test('commercial form collects every public field and restores a pending draft w
 test('incomplete hours cannot silently disappear from a commercial submission',()=>{
  const f=form();f.nodes.businessOpen_monday.value='08:00';assert.throws(()=>collectOwnerRegistration(f),/Completa apertura/);
 });
+
+test('capacity is collected and restored separately from availability',()=>{
+ const f=form();f.nodes.businessCapacity={value:'12',dataset:{unit:'tables'}};
+ const p=collectOwnerRegistration(f);assert.deepEqual(p.capacity,{total:12,unit:'tables'});
+ const other=form();other.nodes.businessCapacity={value:'',dataset:{unit:'tables'}};restoreOwnerRegistration(other,p);assert.equal(other.nodes.businessCapacity.value,'12');
+ f.nodes.businessCapacity.value='-1';assert.throws(()=>collectOwnerRegistration(f),/capacidad total/);
+});

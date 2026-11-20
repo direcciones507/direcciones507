@@ -22,5 +22,7 @@ export function renderCommercialDetails(target,p,doc=document){
    const value=hours[day];if(value==='closed'||typeof value==='string'&&/^(?:[01]\d|2[0-3]):[0-5]\d-(?:[01]\d|2[0-3]):[0-5]\d$/.test(value))target.append(node('p',label+': '+(value==='closed'?'Cerrado':value.replace('-',' – '))));
   }
  }
+ const capacity=profile.capacity,unitNames={tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'};
+ if(Number.isInteger(capacity?.total)&&capacity.total>=0&&Object.hasOwn(unitNames,capacity.unit))target.append(node('p','Capacidad total: '+capacity.total+' '+unitNames[capacity.unit]));
  if(Number.isInteger(details.quantity)&&details.quantity>=0)target.append(node('p',details.quantity+' '+({tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'}[details.unit]||'unidades')+' disponibles'));
 }

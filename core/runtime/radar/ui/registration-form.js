@@ -29,18 +29,23 @@ export function setRegistrationKind(form,kind){
  const fields=form.querySelector('#ownerRegistrationFields');if(fields){fields.hidden=kind!=='owner';fields.disabled=kind!=='owner';}
  // This changes required controls only, never any authentication or authorization state.
 }
+export function capacityUnit(category){return ['restaurant','cafe','bar'].includes(category)?'tables':category==='hotel'?'rooms':['tourism','health','services','entertainment','education','sports'].includes(category)?'places':'units';}
 export function renderCategoryRegistrationFields(container,category,doc=document){
  container.replaceChildren();
  for(const [key,title] of (Object.hasOwn(categoryRegistrationFields,category)?categoryRegistrationFields[category]:categoryRegistrationFields.other)){const label=doc.createElement('label'),input=doc.createElement('input');label.textContent=title;input.name='businessExtra_'+key;input.maxLength=250;label.append(input);container.append(label);}
+ const unit=capacityUnit(category),label=doc.createElement('label'),input=doc.createElement('input');label.textContent='Capacidad total · '+({tables:'Mesas',rooms:'Habitaciones',places:'Cupos',units:'Unidades'}[unit])+' (opcional)';input.name='businessCapacity';input.type='number';input.min='0';input.max='100000';input.step='1';input.dataset.unit=unit;label.append(input);container.append(label);
+ const help=doc.createElement('p');help.className='muted';help.textContent='Capacidad habitual del comercio, no disponibilidad en tiempo real.';container.append(help);
 }
 export function collectOwnerRegistration(form){
  const value=name=>String(form.elements.namedItem(name)?.value||'').trim(),hours={};
  for(const [key,label] of days){const start=value('businessOpen_'+key),end=value('businessClose_'+key);if(form.elements.namedItem('businessClosed_'+key)?.checked)hours[key]='closed';else if(start||end){if(!start||!end)throw Error('Completa apertura y cierre de '+label+'.');hours[key]=start+'-'+end;}}
  const extras={};for(const input of form.querySelectorAll('[name^="businessExtra_"]'))if(input.value.trim())extras[input.name.slice('businessExtra_'.length)]=input.value.trim();
- return {province:value('businessProvince'),locality:value('businessLocality'),description:value('businessDescription'),phone:value('businessPhone'),hours,socials:value('businessSocials').split(/\r?\n/).map(v=>v.trim()).filter(Boolean),extras};
+ const capacityInput=form.elements.namedItem('businessCapacity'),raw=value('businessCapacity');let capacity;
+ if(raw!==''){const total=Number(raw);if(!Number.isInteger(total)||total<0||total>100000)throw Error('Indica una capacidad total entre 0 y 100000.');capacity={total,unit:capacityInput.dataset.unit};}
+ return {...(capacity?{capacity}:{}),province:value('businessProvince'),locality:value('businessLocality'),description:value('businessDescription'),phone:value('businessPhone'),hours,socials:value('businessSocials').split(/\r?\n/).map(v=>v.trim()).filter(Boolean),extras};
 }
 export function restoreOwnerRegistration(form,profile){
- if(!profile)return;for(const [key,name] of [['province','businessProvince'],['locality','businessLocality'],['description','businessDescription'],['phone','businessPhone']])form.elements.namedItem(name).value=profile[key]||'';
+ if(!profile)return;const capacity=form.elements.namedItem('businessCapacity');if(capacity)capacity.value=profile.capacity?.unit===capacity.dataset.unit&&Number.isInteger(profile.capacity?.total)?String(profile.capacity.total):'';for(const [key,name] of [['province','businessProvince'],['locality','businessLocality'],['description','businessDescription'],['phone','businessPhone']])form.elements.namedItem(name).value=profile[key]||'';
  form.elements.namedItem('businessSocials').value=Array.isArray(profile.socials)?profile.socials.join('\n'):'';
  for(const [key] of days){const h=profile.hours?.[key],parts=typeof h==='string'&&h!=='closed'?h.split('-'):[];form.elements.namedItem('businessClosed_'+key).checked=h==='closed';form.elements.namedItem('businessOpen_'+key).value=parts[0]||'';form.elements.namedItem('businessClose_'+key).value=parts[1]||'';}
  for(const input of form.querySelectorAll('[name^="businessExtra_"]'))input.value=profile.extras?.[input.name.slice('businessExtra_'.length)]||'';

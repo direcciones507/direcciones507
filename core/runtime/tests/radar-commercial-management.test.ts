@@ -58,3 +58,9 @@ test('retired public ADMIN never reappears when gates are closed; privacy resolv
  const fallback=await (await radarPresentation(request,{RADAR_ENABLED:'true'}))!.text();assert.ok(!fallback.includes('id="ownerForm"'));
  const source=readFileSync(new URL('../radar/ui/radar.js',import.meta.url),'utf8');assert.ok(!source.includes('Administrar o reclamar esta ficha'));
 });
+
+test('public card does not confuse declared total capacity with availability',()=>{
+ const nodes:any[]=[],doc:any={createElement:(tag:string)=>({tag,textContent:''})},target={append:(n:any)=>nodes.push(n)};
+ renderCommercialDetails(target,{registrationProfile:{capacity:{total:12,unit:'tables'}},details:null},doc);
+ assert.ok(nodes.find(n=>n.textContent==='Capacidad total: 12 mesas'));assert.ok(!nodes.some(n=>n.textContent.includes('disponibles')));
+});

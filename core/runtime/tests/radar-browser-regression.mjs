@@ -48,7 +48,7 @@ try{
   await page.locator('#filtersButton').click();
   const normalVisible=()=>page.evaluate(()=>document.querySelectorAll('.raster-pin.pin-normal').length+[...document.querySelectorAll('.raster-cluster')].reduce((n,e)=>n+Number(e.dataset.normalCount||0),0));
   await page.locator('.raster-pin,.raster-cluster').first().waitFor();
-  assert(await normalVisible()===0,'Normal visible before zoom '+name);
+  assert(await normalVisible()>0,'Normal pins must be visible before zoom '+name);
   assert(await page.locator('.raster-pin.pin-live,.raster-cluster.pin-live').count()===1,'Live missing '+name);
   const group=page.locator('.raster-cluster.pin-live').first();
   if(await group.count()){
@@ -73,8 +73,8 @@ try{
    const expected=await choice.innerText();await choice.click();await page.locator('#detail').waitFor();assert(await page.locator('#detail h3').innerText()===expected,'Wrong grouped normal detail');
   }
   await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
-  await page.locator('.leaflet-control-zoom-out').click();await page.waitForFunction(()=>!document.querySelector('.raster-pin.pin-normal,.raster-cluster:not([data-normal-count="0"])'));
-  assert(await normalVisible()===0,'Normal pins remained after zoom out '+name);
+  await page.locator('.leaflet-control-zoom-out').click();await page.waitForFunction(()=>document.querySelector('.raster-pin.pin-normal,.raster-cluster:not([data-normal-count="0"])'));
+  assert(await normalVisible()>0,'Normal pins hidden after zoom out '+name);
   await page.locator('.leaflet-control-zoom-in').click();await page.waitForFunction(()=>document.querySelector('.raster-pin.pin-normal,.raster-cluster:not([data-normal-count="0"])'));
   const before=await page.locator('#searchInput').inputValue();
   await page.locator('#howButton').click();await page.locator('#howDialog').waitFor();

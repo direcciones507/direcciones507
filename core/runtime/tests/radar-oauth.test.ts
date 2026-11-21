@@ -75,7 +75,8 @@ test('return cannot be changed, tampered with, or detached from the OAuth transa
  const {auth}=setup();expect((await auth.handle(request('/auth/radar?returnTo=https://evil.example')))!.status).toBe(400);
  const marker=await intent(auth);const start=(await auth.handle(request('/auth/google/login',marker)))!;
  const state=new URL(start.headers.get('location')!).searchParams.get('state');
- expect((await auth.handle(request('/auth/google/callback?code=x&state='+state,cookies(start))))!.status).toBe(400);
+ const tamperedState=state!.slice(0,-1)+(state!.endsWith('A')?'B':'A');
+ expect((await auth.handle(request('/auth/google/callback?code=x&state='+tamperedState,cookies(start))))!.status).toBe(400);
  const tampered=marker.slice(0,-1)+(marker.endsWith('a')?'b':'a');const login=(await auth.handle(request('/v1/auth/email/login',tampered,{email:user.email,password})))!;
  expect((await login.json()).redirect).toBeUndefined();expect(named(login,'__Secure-ad507_radar_session')).toBeUndefined();
 });

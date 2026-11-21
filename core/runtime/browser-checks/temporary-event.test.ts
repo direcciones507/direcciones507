@@ -38,15 +38,15 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   await page.getByRole('button',{name:'Cerrar código QR'}).click();
   expect(await page.locator('.qr-modal').isVisible()).toBe(false);
   expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
-  for(const expected of ['2 / 3','3 / 3','1 / 3','2 / 3']){await page.clock.runFor(5000);expect(await page.locator('.photo-counter').textContent()).toBe(expected);}
+  for(const expected of ['2 / 3','3 / 3','1 / 3','2 / 3']){await page.clock.runFor(3000);expect(await page.locator('.photo-counter').textContent()).toBe(expected);}
   await page.locator('.photo-next').tap();expect(await page.locator('#continuousGallery').isVisible()).toBe(true);
   expect(await page.locator('.cg-count').textContent()).toBe('2 / 3');
   expect(await page.locator('.cg-prev,.cg-next,.cg-controls').count()).toBe(0);
   await page.keyboard.press('ArrowRight');expect(await page.locator('.cg-count').textContent()).toBe('3 / 3');
   await page.clock.runFor(10000);expect(await page.locator('.photo-counter').textContent()).toBe('2 / 3');
   await page.getByRole('button',{name:'Cerrar visor de fotografías'}).tap();expect(await page.locator('#continuousGallery').isVisible()).toBe(false);
-  await page.clock.runFor(5000);expect(await page.locator('.photo-counter').textContent()).toBe('3 / 3');
-  await page.clock.runFor(5000);expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
+  await page.clock.runFor(3000);expect(await page.locator('.photo-counter').textContent()).toBe('3 / 3');
+  await page.clock.runFor(3000);expect(await page.locator('.photo-counter').textContent()).toBe('1 / 3');
   const draftUrl=server.url+'panel/evento/nuevo?draft='+(await sql.unsafe('SELECT id FROM ad507.temporary_events'))[0].id;
   await page.goto(draftUrl);await page.waitForFunction(()=>document.querySelector<HTMLInputElement>('[name=title]')?.value==='Fiesta de Santiago');
   await page.waitForFunction(()=>document.getElementById('event-quote')?.textContent?.includes('USD 12.99'));

@@ -49,6 +49,6 @@ test('old administration and claim forms are retired at source and never return 
  }
  const js=readFileSync(new URL('../radar/ui/radar.js',import.meta.url),'utf8');
  for(const legacy of ['pendingItems','openBusiness','ownershipRequests','Administrar o reclamar'])assert.ok(!js.includes(legacy));
- assert.ok(js.includes("location.assign('https://direcciones.lat/panel')"));assert.ok(!js.includes('¿Deseas cerrarla en Radar?'));
+ assert.ok(js.includes("location.assign('https://direcciones.lat/auth/radar?panel=1')"));assert.ok(!js.includes("location.assign('https://direcciones.lat/panel')"));assert.ok(!js.includes('¿Deseas cerrarla en Radar?'));
  const editor=readFileSync(new URL('../radar/commercial-editor.ts',import.meta.url),'utf8');assert.ok(editor.includes('disponibles ahora'));assert.ok(editor.includes('const availability={quantity:'));
 });

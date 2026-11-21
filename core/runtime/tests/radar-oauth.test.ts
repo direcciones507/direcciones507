@@ -47,6 +47,32 @@ test('an already authenticated LATAM account returns without another login or ac
  expect(result.headers.get('location')).toBe(radar+'/');expect(sessions.size).toBe(1);
  expect(await auth.currentUser(request('/v1/auth/me',cookies(result),undefined,radar))).not.toBeNull();
 });
+test('valid Radar session bridges to LATAM panel without another Google login or account',async()=>{
+ const {auth,sessions}=setup();
+ const existing=(await auth.handle(request('/v1/auth/email/login','',{email:user.email,password})))!;
+ const handoff=(await auth.handle(request('/auth/radar',cookies(existing))))!;
+ const radarCookie=named(handoff,'__Secure-ad507_radar_session').split(';')[0];
+ const requested=(await auth.handle(request('/auth/radar?panel=1',radarCookie)))!;
+ expect(requested.status).toBe(302);
+ expect(requested.headers.get('location')).toBe(latam+'/panel#radarAccountSection');
+ const canonical=named(requested,'ad507_session');
+ expect(canonical).toContain('HttpOnly');expect(canonical).toContain('Secure');
+ expect(canonical).not.toContain('Domain=');
+ expect((await auth.currentUser(request('/v1/auth/me',canonical.split(';')[0])))?.id).toBe(user.id);
+ expect(sessions.size).toBe(1);
+ const resume=(await auth.handle(request('/auth/radar',radarCookie)))!;
+ expect(resume.headers.get('location')).toBe(radar+'/');
+});
+test('Radar panel handoff refuses arbitrary redirect and invalid Radar identity',async()=>{
+ const {auth}=setup();
+ for(const path of ['/auth/radar?panel=0','/auth/radar?panel=1&returnTo=https://evil.example','/auth/radar?returnTo=https://evil.example']){
+  const denied=(await auth.handle(request(path)))!;expect(denied.status).toBe(400);expect(denied.headers.has('location')).toBe(false);
+ }
+ const guest=(await auth.handle(request('/auth/radar?panel=1','__Secure-ad507_radar_session=invalid')))!
+ expect(guest.status).toBe(302);
+ expect(guest.headers.get('location')).toBe(latam+'/commercial/international?access=1&radar=1');
+ expect(guest.headers.getSetCookie().some(v=>v.startsWith('ad507_session='))).toBe(false);
+});
 test('Google uses the existing LATAM callback and restores Radar with no tokens in the return URL',async()=>{
  const {auth}=setup();const marker=await intent(auth);
  const start=(await auth.handle(request('/auth/google/login?country=PA',marker)))!;const target=new URL(start.headers.get('location')!);

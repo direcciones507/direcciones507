@@ -45,13 +45,16 @@ test.skipIf(!external)('synthetic 1k/10k/100k real tables, paginated country rea
    const bytes=(await db.unsafe("SELECT pg_total_relation_size('ad507.addresses')::float8 AS bytes,pg_indexes_size('ad507.addresses')::float8 AS indexes"))[0];
    const explain=(await db.unsafe("EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) SELECT id FROM ad507.addresses WHERE country_code='PA' ORDER BY updated_at DESC,id DESC LIMIT 50"))[0]['QUERY PLAN'][0];
    results.push({size,insertMs,query:{p50:percentile(times,.5),p95:percentile(times,.95),p99:percentile(times,.99)},lookup:{p50:percentile(pointTimes,.5),p95:percentile(pointTimes,.95),p99:percentile(pointTimes,.99)},addressBytes:bytes.bytes,indexBytes:bytes.indexes,explain});
+   console.info('LATAM_PAGE_PROBE '+JSON.stringify({size,insertMs,queryP95:percentile(times,.95),lookupP95:percentile(pointTimes,.95),totalElapsedMs:performance.now()-started}));
    if(percentile(times,.95)>500||performance.now()-started>30000)throw Error('PERFORMANCE_STOP_THRESHOLD');
   }
   const concurrent=[];
   for(const concurrency of [10,25,50]){
    const t=performance.now(),times:number[]=[];
    await Promise.all(Array.from({length:concurrency},async()=>{for(let n=0;n<3;n++){const at=performance.now();await adminAddressPage(db!,new URLSearchParams('country=PA'),'addresses');times.push(performance.now()-at);}}));
-   const elapsed=performance.now()-t;concurrent.push({concurrency,queries:times.length,elapsedMs:elapsed,qps:times.length/(elapsed/1000),p50:percentile(times,.5),p95:percentile(times,.95),p99:percentile(times,.99)});
+   const elapsed=performance.now()-t,probe={concurrency,queries:times.length,elapsedMs:elapsed,qps:times.length/(elapsed/1000),p50:percentile(times,.5),p95:percentile(times,.95),p99:percentile(times,.99)};concurrent.push(probe);
+   // Diagnostic evidence is printed even if the same strict performance limit stops CI.
+   console.info('LATAM_CONCURRENCY_PROBE '+JSON.stringify({...probe,totalElapsedMs:performance.now()-started,poolMax:2}));
    if(percentile(times,.95)>1000||performance.now()-started>40000)throw Error('PERFORMANCE_STOP_THRESHOLD');
   }
   const connections=(await control.unsafe("SELECT count(*)::int AS count FROM pg_stat_activity WHERE datname=$1",[name]))[0].count;expect(connections).toBeLessThanOrEqual(2);

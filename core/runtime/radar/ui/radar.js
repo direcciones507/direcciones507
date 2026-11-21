@@ -237,6 +237,18 @@ let placeGpsSequence=0;
 $('addDialog').addEventListener('close',()=>{++placeGpsSequence;$('placeGps').disabled=false;$('placeGps').removeAttribute('aria-busy');$('placeGps').textContent='Usar mi ubicación';});
 $('placeGps').onclick=()=>{const seq=++placeGpsSequence,button=$('placeGps');button.disabled=true;button.setAttribute('aria-busy','true');button.textContent='Buscando ubicación…';$('addStatus').textContent='Buscando tu ubicación. Permite el acceso al GPS y espera un momento.';const done=()=>{if(seq!==placeGpsSequence||!$('addDialog').open)return false;button.disabled=false;button.removeAttribute('aria-busy');button.textContent='Usar mi ubicación';return true;};gps(p=>{if(!done())return;coordinates(p.longitude,p.latitude);$('addStatus').textContent='Ubicación obtenida. Elige en el mapa para comprobar y ajustar el PIN.';},m=>{if(done())$('addStatus').textContent=m;});};
 $('addButton').onclick=()=>show('registrationChoiceDialog');
+function getRadarLogoutButton(){
+ let button=$('radarLogoutButton');
+ // A cached Radar shell can be older than the new JS: ensure the control exists.
+ if(!button){
+  const account=$('accountButton');if(!account)return null;
+  button=document.createElement('button');
+  button.id='radarLogoutButton';button.type='button';
+  button.className='button subtle';button.textContent='Cerrar sesión';button.hidden=true;
+  account.after(button);
+ }
+ return button;
+}
 function checkSession(){
  if(state.sessionRequest)return state.sessionRequest;
  state.sessionRequest=(async()=>{
@@ -245,7 +257,7 @@ function checkSession(){
    state.session=response.ok?(await response.json()).user:null;
   }catch{state.session=null;}
   $('accountButton').textContent=state.session?'Mi panel':'Ingresar';
-  const logoutButton=$('radarLogoutButton');if(logoutButton)logoutButton.hidden=!state.session;
+  const logoutButton=getRadarLogoutButton();if(logoutButton)logoutButton.hidden=!state.session;
   $('adminButton').hidden=!state.session?.roles?.includes('ADMIN');
   return state.session;
  })().finally(()=>{state.sessionRequest=null;});
@@ -256,7 +268,7 @@ function resumeAction(action){if(!action)return;if(alertsEnabled&&action.type===
  if(action.type==='add'){setRegistrationKind($('addForm'),registrationKind(action)||'user');$('addDialog').querySelector('h2').textContent=registrationKind(action)==='owner'?'Registrar mi comercio':'Agregar establecimiento';if(action.draft){$('placeName').value=action.draft.name||'';$('placeCategory').value=action.draft.category||'shop';$('placeCountry').value=action.draft.country||state.country;updateRegistrationTerritoryLabels();coordinates(Number(action.draft.longitude),Number(action.draft.latitude));}renderCategoryRegistrationFields($('businessCategoryFields'),$('placeCategory').value);if(registrationKind(action)==='owner')restoreOwnerRegistration($('addForm'),action.draft?.profile);setOwnerPrivateEnabled($('addForm'),ownerPrivateEnabled&&registrationKind(action)==='owner',$('placeCountry').value);$('addStatus').textContent='';show('addDialog');}if(action.type==='business'){clearAction();location.assign('https://direcciones.lat/auth/radar?panel=1');return;}if(action.type==='report'){state.pending=action;$('reportName').textContent=action.name||'Establecimiento seleccionado';$('reportStatus').textContent='';show('reportDialog');if(action.reportState){const n=$('reportForm').querySelector(`input[value="${['available','queue','full','incident'].includes(action.reportState)?action.reportState:'available'}"]`);n.checked=true;}}}
 function openAccount(){location.assign('https://direcciones.lat/auth/radar');}
 $('accountButton').onclick=async()=>{if(await checkSession()){location.assign('https://direcciones.lat/auth/radar?panel=1');}else{clearAction();openAccount();}};
-const radarLogoutControl=$('radarLogoutButton');
+const radarLogoutControl=getRadarLogoutButton();
 if(radarLogoutControl)radarLogoutControl.onclick=async()=>{
  const button=radarLogoutControl;button.disabled=true;
  try{

@@ -3,11 +3,30 @@ import {validateBusiness} from './business';
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
 export function createCommercialManagement(db:Database,catalog?:{lookup(id:string,activeOnly?:boolean):Promise<string|undefined>}){return {
  async inspect(id:string,account:string){
-  const rows=await db.unsafe(`SELECT e.id,e.name,e.category,p.profile,d.quantity,d.unit FROM radar.establishments e
-   JOIN radar.verified_owners o ON o.establishment_id=e.id AND o.account_ref=$2::uuid
+  const rows=await db.unsafe(`SELECT e.id,e.name,e.category,p.profile,d.quantity,d.unit,
+   (o.account_ref IS NOT NULL) AS verified
+   FROM radar.establishments e
+   LEFT JOIN radar.verified_owners o ON o.establishment_id=e.id AND o.account_ref=$2::uuid
    LEFT JOIN radar.registration_profiles p ON p.establishment_id=e.id
    LEFT JOIN radar.business_details d ON d.establishment_id=e.id AND d.updated_by=o.account_ref
-   WHERE e.id=$1::uuid AND e.published`,[id,account]);const item=rows[0];if(!item)return null;const configuredUnit=await catalog?.lookup(item.category);return configuredUnit?{...item,configuredUnit}:item;
+   WHERE e.id=$1::uuid AND e.published AND
+   (o.account_ref IS NOT NULL OR p.submitted_by=$2::uuid)`,[id,account]);
+  const item=rows[0];if(!item)return null;const configuredUnit=await catalog?.lookup(item.category);
+  return {...item,...(configuredUnit?{configuredUnit}:{}),...(item.verified?{}:{quantity:null,unit:null})};
+ },
+ async updateSubmitted(id:string,account:string,input:unknown){
+  const item=await this.inspect(id,account);if(!item||item.verified||!item.profile)return 'OWNER_REQUIRED';
+  const profile=validateRegistrationProfile(input,item.category,item.configuredUnit);if(!profile)return 'INVALID_PROFILE';
+  const rows=await db.unsafe(`WITH saved AS (
+   UPDATE radar.registration_profiles p SET profile=$3::text::jsonb
+   FROM radar.establishments e WHERE p.establishment_id=e.id
+   AND e.id=$1::uuid AND e.published AND p.submitted_by=$2::uuid
+   AND NOT EXISTS(SELECT 1 FROM radar.verified_owners o WHERE o.establishment_id=e.id)
+   RETURNING e.id
+  ) INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata)
+   SELECT $2::uuid,'USER','RADAR_SUBMITTED_PROFILE_UPDATED','radar_establishment',id::text,
+   '{"publicProfileUpdated":true,"ownershipGranted":false}'::jsonb FROM saved RETURNING entity_id`,[id,account,JSON.stringify(profile)]);
+  return rows.length===1?'UPDATED':'OWNER_REQUIRED';
  },
  async updateAvailability(id:string,account:string,quantity:unknown){
   if(quantity!==null&&(!Number.isInteger(quantity)||Number(quantity)<0||Number(quantity)>100000))return 'INVALID_QUANTITY';

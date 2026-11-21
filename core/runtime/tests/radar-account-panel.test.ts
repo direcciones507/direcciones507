@@ -13,7 +13,7 @@ test('community submissions are included in the account query without granting o
  const db={unsafe:async(q:string,p:any[])=>{statements.push(q);assert.deepEqual(p,['00000000-0000-4000-8000-000000000002']);return [{name:'Barrio Centro',authorized:false,requested:false,declared:false,submitted:true}];}};
  const result=await radarAccountData(db,'00000000-0000-4000-8000-000000000002',env);
  assert.equal(result?.items?.[0]?.submitted,true);
- assert.match(statements[0],/e\\.account_ref=\\$1::text/);
+ assert.ok(statements[0].includes('e.account_ref=$1::text'));
  assert.match(statements[0],/AS submitted/);
  const u=ui();renderRadarAccount(result,u.doc);
  assert.match(u.nodes.radarAccountItems.children[0].children[2].textContent,/Agregado como usuario/);

@@ -1,5 +1,6 @@
 import {createBusinessStore} from './business';
 import {commercialFieldsScript,openCommercialEditor} from './commercial-editor';
+import {categoryRegistrationFields} from './ui/registration-form.js';
 type Database=Parameters<typeof createBusinessStore>[0];
 export async function radarAccountData(db:Database,account:string,env:Record<string,string|undefined>){
  if(!['RADAR_ENABLED','RADAR_OWNERSHIP_ENABLED','RADAR_BUSINESS_DETAILS_ENABLED'].every(key=>env[key]==='true'))return null;

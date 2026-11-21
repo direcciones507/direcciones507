@@ -53,7 +53,8 @@ export function freshProperties(input={},now=Date.now()){
  return p;
 }
 export const normalZoomStep=.6;
-export function mapFeatures(rows,zoom,revealZoom){return rows.filter(f=>f.properties.pin!=='normal'||zoom>=revealZoom);}
+// All registered establishments remain discoverable at any zoom; normal pins cluster on the map.
+export function mapFeatures(rows,zoom,revealZoom){return rows;}
 export function priorityFeatures(rows){return rows.filter(f=>f.properties.pin==='live'||f.properties.pin==='featured').sort((a,b)=>Number(b.properties.pin==='live')-Number(a.properties.pin==='live'));}
 export function featuredGroups(rows){const groups=new Map();for(const f of rows){if(!f.properties.isFeatured)continue;const key=f.properties.category;const group=groups.get(key)||[];group.push(f);groups.set(key,group);}return groups;}
 export function searchContext(text,country){

@@ -12,9 +12,9 @@ test("pulse category filter and expiry",()=>{
  expect(pulseRows(rows,"PA","hotel",now).map(r=>r.id)).toEqual(["hotel"]);
  expect(pulseRows(rows,"PA","",now+2000)).toEqual([]);
 });
-test("commercial priority and progressive normal visibility",()=>{
+test("commercial priority and normal visibility at every zoom",()=>{
  const rows=[{properties:{pin:"normal"}},{properties:{pin:"featured"}},{properties:{pin:"live"}}];
  expect(priorityFeatures(rows).map(r=>r.properties.pin)).toEqual(["live","featured"]);
- expect(mapFeatures(rows,12,12.6).map(r=>r.properties.pin)).toEqual(["featured","live"]);
+ expect(mapFeatures(rows,12,12.6).map(r=>r.properties.pin)).toEqual(["normal","featured","live"]);
  expect(mapFeatures(rows,13,12.6)).toHaveLength(3);
 });

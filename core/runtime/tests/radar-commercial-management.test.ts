@@ -50,7 +50,7 @@ test('public profile rendering uses one effective schedule, safe links and serve
  const nodes:any[]=[],doc:any={createElement:(tag:string)=>({tag,textContent:''})},target={append:(n:any)=>nodes.push(n)};
  renderCommercialDetails(target,{verifiedOwner:true,registrationProfile:{...profile,description:'<script>unsafe()</script>',socials:['javascript:alert(1)','https://user:pass@example.test/','https://example.test/']},details:{hours:{monday:'closed'},quantity:0,unit:'tables'}},doc);
  assert.equal(nodes.filter(n=>n.tag==='h4').length,1);assert.ok(nodes.find(n=>n.textContent==='Lunes: Cerrado'));assert.ok(!nodes.find(n=>n.textContent.includes('08:00')));
- assert.equal(nodes.filter(n=>n.tag==='a').length,2);assert.ok(nodes.find(n=>n.href==='tel:+50760000000'));assert.ok(nodes.find(n=>n.textContent==='<script>unsafe()</script>'));assert.ok(nodes.find(n=>n.textContent==='0 mesas disponibles'));
+ assert.equal(nodes.filter(n=>n.tag==='a').length,1);assert.ok(!nodes.find(n=>String(n.href||'').startsWith('tel:')));assert.ok(nodes.find(n=>n.textContent==='<script>unsafe()</script>'));assert.ok(nodes.find(n=>n.textContent==='0 mesas disponibles'));
 });
 test('retired public ADMIN never reappears when gates are closed; privacy resolves to CORE',async()=>{
  const request=new Request('https://radar.direcciones.lat/');

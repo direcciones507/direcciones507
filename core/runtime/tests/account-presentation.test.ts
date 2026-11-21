@@ -29,3 +29,20 @@ test('anonymous shared panel stays on the panel behind Railway TLS and retains o
   expect(await response!.text()).toContain('const commercialInitialCountry='+JSON.stringify(expected)+';');
  }
 });
+
+
+test('Radar establishments are placed before addresses, new direction form, and event entry on both account panels',()=>{
+ for(const host of ['direcciones507.com','cuenta.direcciones507.com','direcciones.lat']){
+  const html=userPanelPresentation(new URL('https://'+host+'/panel'));
+  const position=(id:string)=>html.indexOf('id="'+id+'"');
+  const radar=position('radarAccountSection');
+  expect(radar).toBeGreaterThan(position('identity'));
+  expect(radar).toBeLessThan(position('addressSection'));
+  expect(radar).toBeLessThan(position('requestDetail'));
+  expect(radar).toBeLessThan(position('actions'));
+  expect(position('actions')).toBeLessThan(position('orderSection'));
+  expect(html.match(/id="radarAccountSection"/g)).toHaveLength(1);
+  expect(html).toContain('id="radarAccountItems"');
+  expect(html).toContain('id="toggleNewRequest"');
+ }
+});

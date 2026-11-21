@@ -42,7 +42,8 @@ try{
  await page.locator('#radarAdminSearch').fill('Comercio');await Promise.all([page.waitForResponse(r=>r.url().endsWith('/v1/admin/radar')),page.getByRole('button',{name:'Buscar',exact:true}).click()]);await page.getByRole('checkbox').waitFor();
  assert.ok(calls.some(c=>c.q==='Comercio'&&c.offset===0));
  await page.route('**/v1/user/radar/business',async route=>{
-  const body=route.request().postDataJSON();calls.push(body);await route.fulfill({json:body.action==='inspect'?{item:{name:'Comercio sintético',category:'restaurant',configuredUnit:'tables',verified:true,profile:{province:'Panamá',locality:'Santiago',description:'Original',phone:'',socials:[],extras:{},hours:{}}}}:{ok:true}});
+  const body=route.request().postDataJSON();calls.push(body);
+  await route.fulfill({status:body.action==='register'?201:200,json:body.action==='catalog'?{dynamic:false}:body.action==='register'?{id:'00000000-0000-4000-8000-000000000055',status:'published'}:body.action==='inspect'?{item:{name:'Comercio sintético',category:'restaurant',configuredUnit:'tables',verified:true,profile:{province:'Panamá',locality:'Santiago',description:'Original',phone:'',socials:[],extras:{},hours:{}}}}:{ok:true}});
  });
  for(const width of [390,820]){
   await page.setViewportSize({width,height:900});
@@ -63,5 +64,27 @@ try{
   await page.getByRole('button',{name:'Cerrar edición',exact:true}).click();
   assert.equal(await page.getByRole('button',{name:'Editar mi negocio',exact:true}).isEnabled(),true);
  }
- assert.deepEqual(errors,[]);console.log('CORE commercial browser: named review, explicit confirmation, pagination, search and owner editor passed. Synthetic writes only.');
+ await page.setViewportSize({width:390,height:900});
+ await page.goto(origin+'/panel');
+ await page.getByRole('button',{name:'Agregar mi local',exact:true}).click();
+ await page.locator('#radarOwnerCreateForm').waitFor({state:'visible'});
+ await page.locator('#radarOwnerCreateForm [name=name]').fill('Local de prueba en Mi panel');
+ await page.locator('#radarOwnerCreateForm [name=category]').selectOption('restaurant');
+ await page.locator('#radarOwnerCreateForm [name=latitude]').fill('8.9824');
+ await page.locator('#radarOwnerCreateForm [name=longitude]').fill('-79.5199');
+ await page.locator('#radarOwnerCreateForm [name=businessProvince]').fill('Panamá');
+ await page.locator('#radarOwnerCreateForm [name=businessLocality]').fill('Santiago');
+ await page.locator('#radarOwnerCreateForm [name=businessDescription]').fill('Restaurante en prueba aislada');
+ await page.locator('#radarOwnerCreateForm [name=businessCapacity]').fill('10');
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.getByRole('button',{name:'Guardar mi local',exact:true}).click();
+ await page.getByText('Local publicado correctamente.',{exact:false}).waitFor();
+ const registered=calls.find(c=>c.action==='register');
+ assert.equal(registered.draft.registrationKind,'owner');
+ assert.equal(registered.draft.profile.capacity.total,10);
+ assert.equal(registered.draft.profile.capacity.unit,'tables');
+ assert(!('accountRef' in registered.draft)&&!('verified' in registered.draft),'Owner cannot grant privileges');
+ assert.equal(new URL(page.url()).pathname,'/panel');
+ await page.getByRole('link',{name:'Continuar en Radar',exact:true}).waitFor();
+ assert.deepEqual(errors,[]);console.log('CORE commercial browser: owner creates locally in panel, edits existing business and returns to Radar by link. Synthetic writes only.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

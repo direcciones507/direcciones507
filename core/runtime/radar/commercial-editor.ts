@@ -24,7 +24,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   const unitLabel=text('label','Unidad'),unit=doc.createElement('select');unit.name='unit';unit.setAttribute('aria-label','Unidad');
   for(const [value,label] of [['tables','Mesas'],['rooms','Habitaciones'],['places','Cupos'],['units','Unidades']]){const option=text('option',label);option.value=value;unit.append(option);}
   unit.value=item.unit||'units';unitLabel.append(unit);form.append(unitLabel);
-  if(!verified){quantity.closest?.('label')?.remove?.();unitLabel.remove?.();form.append(text('p','Podrás actualizar disponibilidad cuando ADMIN apruebe la titularidad. Mientras tanto puedes corregir tu información pública.'));}
+  if(!verified)form.append(text('p','Puedes administrar este comercio. La verificación voluntaria solo agrega el distintivo de negocio verificado.'));
   const definitions:any={restaurant:[['cuisine','Tipo de cocina'],['services','Servicios']],hotel:[['accommodation','Alojamiento'],['services','Servicios']],shop:[['products','Productos']],services:[['services','Servicios']],tourism:[['experiences','Experiencias'],['access','Acceso']]};
   const extraFields=definitions[item.category]||[['services','Servicios']];
   for(const [key,label] of extraFields)field('extra_'+key,label,profile.extras?.[key]);
@@ -47,7 +47,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
     for(const [key] of days){if(fields[key+'Mode'].value==='closed')hours[key]='closed';else if(fields[key+'Mode'].value==='open')hours[key]=fields[key+'Start'].value+'-'+fields[key+'End'].value;}
     for(const [key] of extraFields)if(fields['extra_'+key].value.trim())extras[key]=fields['extra_'+key].value.trim();
     const profile={...(total.value===''?{}:{capacity:{total:Number(total.value),unit:effectiveUnit}}),province:fields.province.value.trim(),locality:fields.locality.value.trim(),description:fields.description.value.trim(),phone:fields.phone.value.trim(),whatsapp:whatsapp.value.trim(),socials:fields.socials.value.split(/\r?\n/).map((v:string)=>v.trim()).filter(Boolean),hours,extras};
-    const result=await send({action:'update',id,profile,...(verified?{availability:{quantity:quantity.value===''?null:Number(quantity.value),unit:unit.value}}:{})});if(!result.ok)throw Error();status.textContent=verified?'Cambios guardados en tu ficha comercial.':'Información pública actualizada. La titularidad continúa pendiente de verificación.';
+    const result=await send({action:'update',id,profile,availability:{quantity:quantity.value===''?null:Number(quantity.value),unit:unit.value}});if(!result.ok)throw Error();status.textContent=verified?'Cambios guardados en tu ficha comercial.':'Datos y disponibilidad guardados. El distintivo verificado sigue pendiente.';
    }catch{status.textContent='No se guardaron los cambios. Revisa los datos y tu autorización antes de reintentar.';}
    finally{save.disabled=false;close.disabled=false;}
   };

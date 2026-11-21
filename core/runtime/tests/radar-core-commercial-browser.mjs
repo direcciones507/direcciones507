@@ -20,7 +20,7 @@ const env={RADAR_ENABLED:'true',RADAR_OWNERSHIP_ENABLED:'true',RADAR_BUSINESS_DE
 const id='00000000-0000-4000-8000-000000000001',account='00000000-0000-4000-8000-000000000002';
 const style='<style>*{box-sizing:border-box}body{font:16px system-ui;margin:16px}.hidden{display:none}label{display:block;margin:8px 0}input,textarea,select{display:block;max-width:100%;width:100%}button{margin:6px;min-height:42px}article{overflow-wrap:anywhere}main{max-width:900px;margin:auto}</style>';
 const admin=withCoreRadarAdmin('<html><head>'+style+'</head><body><main><button id="statsTile">Estadísticas</button></main></body></html>',env);
-const items={available:true,managementAvailable:true,items:[{id,name:'Comercio sintético',country:'PA',category:'shop',authorized:true}]};
+const items={available:true,managementAvailable:true,items:[{id,name:'Comercio sintético',country:'PA',category:'restaurant',authorized:true,canManage:true}]};
 const client='<html><head>'+style+'</head><body><main>'+radarAccountSection+'</main><script>'+radarAccountScript+';renderRadarAccount('+JSON.stringify(items)+');</script></body></html>';
 const server=createServer((req,res)=>{res.setHeader('content-type','text/html; charset=utf-8');res.end(req.url==='/admin'?admin:client);});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
@@ -42,12 +42,26 @@ try{
  await page.locator('#radarAdminSearch').fill('Comercio');await Promise.all([page.waitForResponse(r=>r.url().endsWith('/v1/admin/radar')),page.getByRole('button',{name:'Buscar',exact:true}).click()]);await page.getByRole('checkbox').waitFor();
  assert.ok(calls.some(c=>c.q==='Comercio'&&c.offset===0));
  await page.route('**/v1/user/radar/business',async route=>{
-  const body=route.request().postDataJSON();calls.push(body);await route.fulfill({json:body.action==='inspect'?{item:{name:'Comercio sintético',category:'shop',verified:true,profile:{province:'Panamá',locality:'Santiago',description:'Original',phone:'',socials:[],extras:{},hours:{}}}}:{ok:true}});
+  const body=route.request().postDataJSON();calls.push(body);await route.fulfill({json:body.action==='inspect'?{item:{name:'Comercio sintético',category:'restaurant',configuredUnit:'tables',verified:true,profile:{province:'Panamá',locality:'Santiago',description:'Original',phone:'',socials:[],extras:{},hours:{}}}}:{ok:true}});
  });
- await page.goto(origin+'/panel');await page.getByRole('button',{name:'Editar ficha comercial',exact:true}).click();
- try{await page.getByLabel('Descripción pública',{exact:true}).fill('Descripción actualizada',{timeout:5000});}catch(error){console.error('Synthetic editor diagnostics:',JSON.stringify({calls:calls.filter(c=>c.action==='inspect'),errors,html:await page.locator('#radarAccountItems').innerHTML()}));throw error;}await page.getByLabel('Cantidad disponible (opcional)',{exact:true}).fill('7');await page.getByLabel('Unidad',{exact:true}).selectOption('tables');await page.getByRole('button',{name:'Guardar cambios',exact:true}).click();
- await page.getByText('Cambios guardados en tu ficha comercial.',{exact:true}).waitFor();assert.equal(calls.find(c=>c.action==='update').profile.description,'Descripción actualizada');
- assert.deepEqual(calls.find(c=>c.action==='update').availability,{quantity:7,unit:'tables'});
- await page.getByRole('button',{name:'Cerrar edición',exact:true}).click();assert.equal(await page.getByRole('button',{name:'Editar ficha comercial',exact:true}).isEnabled(),true);
+ for(const width of [390,820]){
+  await page.setViewportSize({width,height:900});
+  await page.goto(origin+'/panel');await page.getByRole('button',{name:'Editar mi negocio',exact:true}).click();
+  await page.getByLabel('Descripción pública',{exact:true}).fill('Descripción actualizada',{timeout:5000});
+  await page.getByLabel('WhatsApp comercial público (opcional)',{exact:true}).fill('+50760000000');
+  await page.getByLabel('Mesas totales',{exact:true}).fill('12');
+  await page.getByLabel('Mesas disponibles ahora',{exact:true}).fill('7');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await page.getByRole('button',{name:'Guardar cambios',exact:true}).click();
+  await page.getByText('Cambios guardados en tu ficha comercial.',{exact:true}).waitFor();
+  await page.getByText('Capacidad total: 12 mesas',{exact:true}).waitFor();
+  await page.getByText('Disponibilidad ahora: 7 mesas',{exact:true}).waitFor();
+  await page.getByText('WhatsApp: +50760000000',{exact:true}).waitFor();
+  const update=calls.filter(c=>c.action==='update').at(-1);
+  assert.equal(update.profile.description,'Descripción actualizada');
+  assert.deepEqual(update.availability,{quantity:7,unit:'tables'});
+  await page.getByRole('button',{name:'Cerrar edición',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Editar mi negocio',exact:true}).isEnabled(),true);
+ }
  assert.deepEqual(errors,[]);console.log('CORE commercial browser: named review, explicit confirmation, pagination, search and owner editor passed. Synthetic writes only.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

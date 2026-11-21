@@ -5,7 +5,6 @@ on:
 
 permissions:
   contents: read
-  actions: write
 
 concurrency:
   group: "ad507-auto-sync"
@@ -80,14 +79,13 @@ jobs:
 
           echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
 
-      - name: Regenerate and publish complete AD507 site
+      - name: Report missing routes for manual review
         if: steps.detect.outputs.missing == '1'
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           echo "Se detectó al menos una ruta AD507 pública ausente."
-          echo "Activando el generador general existente para reconstruir el artefacto completo."
-          gh workflow run generate.yml --repo "$GITHUB_REPOSITORY"
+          echo "No se generó ni publicó ningún archivo. Requiere revisión y autorización independiente."
+          echo "### Revisión manual necesaria" >> "$GITHUB_STEP_SUMMARY"
+          echo "Se detectó al menos una ruta AD507 ausente. No se invocó otro workflow ni se publicó el sitio." >> "$GITHUB_STEP_SUMMARY"
 
       - name: No publication required
         if: steps.detect.outputs.missing != '1'

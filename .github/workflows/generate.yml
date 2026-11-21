@@ -1,9 +1,8 @@
 name: Generate AD507 Pages
 
 on:
-  push:
-    branches:
-      - main
+  # Keep disabled in GitHub. A future enablement AND execution require approval.
+  # Homepage-only updates belong in a reviewed PR against gh-pages.
   workflow_dispatch:
 
 permissions:

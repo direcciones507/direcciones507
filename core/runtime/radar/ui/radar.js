@@ -254,7 +254,8 @@ for(const b of $('validationVote').querySelectorAll('button'))b.onclick=async()=
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();scheduleLoad(0);}});
 countryOptions();updateRegistrationTerritoryLabels();territoryOptions();state.bounds=countries.PA.bounds;
 const stored=readStorage();if(stored&&Date.now()-stored.savedAt<30*60*1000&&['add','report','business','favorite-add','favorites-list','contributions-list','reputation-summary','alerts-list'].includes(stored.type)){state.pending=stored;if(countries[stored.country])setCountry(stored.country,false);checkSession().then(user=>{if(user)resumeAction(stored);});}else clearAction();
-fetch('/radar/preview-info',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.preview)$('previewNotice').hidden=false;}).catch(()=>{});
+// Only the isolated local preview serves this endpoint. Never request it from production.
+if(['localhost','127.0.0.1'].includes(location.hostname))fetch('/radar/preview-info',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.preview)$('previewNotice').hidden=false;}).catch(()=>{});
 checkSession();scheduleLoad(0);
 // Default to exploration on a fresh visit; respect explicit anchors and restored history.
 const navigation=performance.getEntriesByType('navigation')[0];

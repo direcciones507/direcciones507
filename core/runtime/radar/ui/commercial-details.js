@@ -6,9 +6,7 @@ export function renderCommercialDetails(target,p,doc=document){
  const area=[profile.province,profile.locality].filter(v=>typeof v==='string'&&v.trim()).join(' · ');
  if(area)target.append(node('p',area));
  if(typeof profile.description==='string'&&profile.description)target.append(node('p',profile.description));
- if(typeof profile.phone==='string'&&/^[+0-9 ()-]{5,32}$/.test(profile.phone)){
-  const a=node('a','Llamar · '+profile.phone);a.href='tel:'+profile.phone.replace(/[^+0-9]/g,'');a.className='button subtle';target.append(a);
- }
+ // Phone numbers remain in the contact profile; the public card shows only the optional WhatsApp icon.
  const labels={cuisine:'Tipo de cocina',services:'Servicios',accommodation:'Alojamiento',products:'Productos',experiences:'Experiencias',access:'Acceso'};
  for(const [key,label] of Object.entries(labels))if(typeof profile.extras?.[key]==='string'&&profile.extras[key])target.append(node('p',label+': '+profile.extras[key]));
  for(const value of Array.isArray(profile.socials)?profile.socials.slice(0,8):[]){try{

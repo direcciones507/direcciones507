@@ -3,7 +3,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
  const text=(tag:string,value:string)=>{const n=doc.createElement(tag);n.textContent=value;return n;};
  const form=doc.createElement('form'),status=text('p','Consultando tu autorización…');status.setAttribute('role','status');form.setAttribute('style','grid-column:1/-1;flex:1 0 100%;width:100%;min-width:0');row.append(form,status);
  try{
-  const response=await send({action:'inspect',id});if(!response.ok)throw Error();const {item}=await response.json();const profile=item.profile||{};
+  const response=await send({action:'inspect',id});if(!response.ok)throw Error();const {item}=await response.json();const profile=item.profile||{},verified=item.verified===true;
   form.append(text('h4','Editar información de '+item.name));
   const fields:Record<string,any>={};
   const field=(key:string,label:string,value:string,tag='input',max=250,required=false)=>{
@@ -24,6 +24,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   const unitLabel=text('label','Unidad'),unit=doc.createElement('select');unit.name='unit';unit.setAttribute('aria-label','Unidad');
   for(const [value,label] of [['tables','Mesas'],['rooms','Habitaciones'],['places','Cupos'],['units','Unidades']]){const option=text('option',label);option.value=value;unit.append(option);}
   unit.value=item.unit||'units';unitLabel.append(unit);form.append(unitLabel);
+  if(!verified){quantity.closest?.('label')?.remove?.();unitLabel.remove?.();form.append(text('p','Podrás actualizar disponibilidad cuando ADMIN apruebe la titularidad. Mientras tanto puedes corregir tu información pública.'));}
   const definitions:any={restaurant:[['cuisine','Tipo de cocina'],['services','Servicios']],hotel:[['accommodation','Alojamiento'],['services','Servicios']],shop:[['products','Productos']],services:[['services','Servicios']],tourism:[['experiences','Experiencias'],['access','Acceso']]};
   const extraFields=definitions[item.category]||[['services','Servicios']];
   for(const [key,label] of extraFields)field('extra_'+key,label,profile.extras?.[key]);
@@ -46,7 +47,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
     for(const [key] of days){if(fields[key+'Mode'].value==='closed')hours[key]='closed';else if(fields[key+'Mode'].value==='open')hours[key]=fields[key+'Start'].value+'-'+fields[key+'End'].value;}
     for(const [key] of extraFields)if(fields['extra_'+key].value.trim())extras[key]=fields['extra_'+key].value.trim();
     const profile={...(total.value===''?{}:{capacity:{total:Number(total.value),unit:effectiveUnit}}),province:fields.province.value.trim(),locality:fields.locality.value.trim(),description:fields.description.value.trim(),phone:fields.phone.value.trim(),whatsapp:whatsapp.value.trim(),socials:fields.socials.value.split(/\r?\n/).map((v:string)=>v.trim()).filter(Boolean),hours,extras};
-    const result=await send({action:'update',id,profile,availability:{quantity:quantity.value===''?null:Number(quantity.value),unit:unit.value}});if(!result.ok)throw Error();status.textContent='Cambios guardados en tu ficha comercial.';
+    const result=await send({action:'update',id,profile,...(verified?{availability:{quantity:quantity.value===''?null:Number(quantity.value),unit:unit.value}}:{})});if(!result.ok)throw Error();status.textContent=verified?'Cambios guardados en tu ficha comercial.':'Información pública actualizada. La titularidad continúa pendiente de verificación.';
    }catch{status.textContent='No se guardaron los cambios. Revisa los datos y tu autorización antes de reintentar.';}
    finally{save.disabled=false;close.disabled=false;}
   };

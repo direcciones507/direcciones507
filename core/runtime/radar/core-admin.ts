@@ -54,7 +54,10 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
      const result=await store.updateAvailability(body.id,user.id,body.quantity);
      return result==='UPDATED'?json(200,{ok:true}):json(result==='INVALID_QUANTITY'?400:403,{error:result});
     }
-    const result=await store.update(body.id,user.id,body.profile,body.availability);
+    const allowed=await store.inspect(body.id,user.id);
+    if(!allowed)return json(403,{error:'OWNER_REQUIRED'});
+    // Commercial availability is available to the original declarant; verification is separate.
+    const result=allowed.verified?await store.update(body.id,user.id,body.profile,body.availability):await store.updateSubmitted(body.id,user.id,body.profile,body.availability);
     return result==='UPDATED'?json(200,{ok:true}):json(result==='INVALID_PROFILE'?400:403,{error:result});
    }
    if(admin&&body?.action==='overview'){

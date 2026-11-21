@@ -6,7 +6,7 @@ export async function radarAccountData(db:Database,account:string,env:Record<str
  try{return {available:true,items:await createBusinessStore(db,env.RADAR_REGISTRATION_PROFILES_ENABLED==='true').mine(account),...(env.RADAR_CORE_ADMIN_ENABLED==='true'?{verificationAvailable:true,...(env.RADAR_REGISTRATION_PROFILES_ENABLED==='true'?{managementAvailable:true}:{})}:{})};}
  catch{return {available:false,items:[]};} // Radar must not take the existing account panel offline.
 }
-export const radarAccountSection='<section id="radarAccountSection" class="card hidden"><h2>Mis establecimientos en Radar</h2><p><a href="https://radar.direcciones.lat/">Volver a Radar</a></p><p>Registrar un establecimiento no concede titularidad. Las solicitudes pendientes no permiten administrarlo.</p><div id="radarAccountItems" aria-live="polite"></div></section>';
+export const radarAccountSection='<section id="radarAccountSection" class="card hidden"><h2>Mis establecimientos en Radar</h2><p><a href="https://radar.direcciones.lat/">Volver a Radar</a></p><p>Si registraste tu comercio, puedes editar su ficha y disponibilidad. La verificación voluntaria solo concede el distintivo de negocio verificado.</p><div id="radarAccountItems" aria-live="polite"></div></section>';
 export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unknown)=>fetch('/v1/user/radar/verification',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)})){
  const section=doc.getElementById('radarAccountSection'),out=doc.getElementById('radarAccountItems');if(!section||!out)return;
  out.replaceChildren();section.classList.toggle('hidden',!data);if(!data)return;
@@ -18,11 +18,13 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
  if(!items.length){out.append(text('p','Todavía no tienes establecimientos vinculados ni solicitudes pendientes en Radar.'));return;}
  for(const item of items){
   const row=doc.createElement('article');row.className='row';
-  row.append(text('h3',String(item.name||'Establecimiento')),text('p',String(item.category||'')+' · '+String(item.country||'')),text('p',item.authorized===true?'Administración autorizada':item.requested===true?'Solicitud pendiente · Sin permisos de administración':item.declared===true?'Comercio declarado · Sin permisos de administración':item.submitted===true?'Agregado como usuario · Sin permisos de administración':'Vinculado a tu cuenta · Sin permisos de administración'));
-  if(data.managementAvailable===true&&item.authorized===true){
-   const edit=doc.createElement('button');edit.type='button';edit.textContent='Editar ficha comercial';
+  row.append(text('h3',String(item.name||'Establecimiento')),text('p',String(item.category||'')+' · '+String(item.country||'')),text('p',item.authorized===true?'Administración autorizada':item.requested===true?'Verificación pendiente · Comercio editable':item.declared===true?'Comercio registrado · Verificación opcional':item.submitted===true?'Agregado como usuario · Sin permisos de administración':'Vinculado a tu cuenta · Sin permisos de administración'));
+  if(data.managementAvailable===true&&(item.authorized===true||item.declared===true&&item.submitted===true)){
+   const edit=doc.createElement('button');edit.type='button';edit.textContent=item.authorized===true?'Editar ficha comercial':'Editar datos de mi comercio';
    edit.onclick=async()=>{edit.disabled=true;await openCommercialEditor(row,item.id,doc,undefined,()=>{edit.disabled=false;});};row.append(edit);
-   // A verified owner may update availability without opening the full profile editor.
+  }
+  if(data.managementAvailable===true&&(item.authorized===true||item.declared===true&&item.submitted===true)){
+   // Declared business submitters may manage their availability without a verified badge.
    const quick=doc.createElement('button');quick.type='button';quick.textContent='Actualizar disponibilidad ahora';
    const panel=doc.createElement('div'),status=text('p','');status.setAttribute('role','status');panel.hidden=true;
    const sendAvailability=async(body:any)=>fetch('/v1/user/radar/business',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
@@ -33,7 +35,7 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
      const response=await sendAvailability({action:'inspect',id:item.id});if(!response.ok)throw Error();
      const data=(await response.json()).item;if(!data||typeof data!=='object')throw Error();
      const names:any={tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'};
-     const type=names[data.unit]||names[data.configuredUnit]||names.units;
+     const type=names[data.configuredUnit]||names[data.profile?.capacity?.unit]||names[data.unit]||names.units;
      const capacity=data.profile?.capacity?.total;
      const form=doc.createElement('form');form.style.cssText='display:flex;flex-wrap:wrap;align-items:end;gap:10px;width:100%';
      const label=text('label','Cantidad disponible ahora ('+type+')');const number=doc.createElement('input');number.type='number';number.inputMode='numeric';number.min='0';number.max=String(Number.isInteger(capacity)?Math.min(capacity,100000):100000);number.step='1';number.required=true;number.style.cssText='display:block;width:min(240px,100%);max-width:100%';
@@ -48,16 +50,16 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
       finally{save.disabled=clear.disabled=false;}
      };
      form.onsubmit=e=>{e.preventDefault();if(form.reportValidity())void submit(Number(number.value));};clear.onclick=()=>void submit(null);
-    }catch{status.textContent='No se pudo consultar la ficha. Actualiza la página y comprueba tu titularidad.';panel.hidden=false;}
+    }catch{status.textContent='No se pudo consultar la ficha. Actualiza la página e inténtalo nuevamente.';panel.hidden=false;}
     finally{quick.disabled=false;}
    };
    row.append(quick,panel);
   }
-  if(item.authorized!==true&&item.declared===true)row.append(text('p','Puedes consultar tu comercio aquí. La edición de la ficha, horarios y capacidad (mesas, habitaciones o cupos) está reservada actualmente a propietarios autorizados.'));
-  if(data.verificationAvailable===true&&item.declared===true&&item.authorized!==true){
+  if(item.authorized!==true&&item.declared===true)row.append(text('p','Puedes editar tus datos comerciales, horarios y disponibilidad desde esta cuenta. La verificación voluntaria solo agrega el distintivo de negocio verificado.'));
+  if(data.verificationAvailable===true&&item.declared===true){
    row.append(text('p','Verificación voluntaria gratuita e independiente de pagos. Tras solicitarla, contacta a Direcciones por WhatsApp para coordinar un video continuo de fachada, letrero, aviso de operaciones e interior. No muestres cédulas ni datos tributarios en el video. La revisión es manual y puede tardar 48–72 horas.'));
-   const contact=doc.createElement('a');contact.href='https://wa.me/50765996532?text='+encodeURIComponent('Hola, Direcciones. Solicité la verificación de mi establecimiento en Radar: '+String(item.name||'Establecimiento')+'. Quisiera coordinar el envío del video de evidencia.');contact.target='_blank';contact.rel='noopener noreferrer';contact.textContent='Contactar a Direcciones por WhatsApp (+507 6599-6532)';contact.hidden=item.requested!==true;row.append(contact);
-   if(item.requested!==true){
+   const contact=doc.createElement('a');contact.href='https://wa.me/50765996532?text='+encodeURIComponent('Hola, Direcciones. Solicité la verificación de mi establecimiento en Radar: '+String(item.name||'Establecimiento')+'. Quisiera coordinar el envío del video de evidencia.');contact.target='_blank';contact.rel='noopener noreferrer';contact.textContent='Contactar a Direcciones por WhatsApp (+507 6599-6532)';contact.hidden=false;row.append(contact);
+   if(item.requested!==true&&item.authorized!==true){
     const button=doc.createElement('button');button.type='button';button.textContent='Solicitar verificación';
     const status=text('p','');status.setAttribute('role','status');
     button.onclick=async()=>{

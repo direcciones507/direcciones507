@@ -28,7 +28,7 @@ function ui(){
 }
 test('list renders untrusted names as text and never grants controls to pending requests',()=>{
  const u=ui();renderRadarAccount({available:true,items:[{name:'<img src=x onerror=alert(1)>',category:'shop',country:'PA',authorized:false,requested:true},{name:'Approved',authorized:true}]},u.doc);
- const rows=u.nodes.radarAccountItems.children;assert.equal(rows[0].children[0].textContent,'<img src=x onerror=alert(1)>');assert.match(rows[0].children[2].textContent,/Sin permisos/);assert.equal(rows[1].children[2].textContent,'Administración autorizada');assert.equal(rows[0].children.length,3);
+ const rows=u.nodes.radarAccountItems.children;assert.equal(rows[0].children[0].textContent,'<img src=x onerror=alert(1)>');assert.match(rows[0].children[2].textContent,/Verificación pendiente/);assert.equal(rows[1].children[2].textContent,'Administración autorizada');assert.equal(rows[0].children.length,3);
  renderRadarAccount(undefined,u.doc);assert.equal(u.nodes.hidden,true);assert.equal(u.nodes.radarAccountItems.children.length,0);
 });
 

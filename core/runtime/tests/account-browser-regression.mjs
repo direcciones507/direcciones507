@@ -33,7 +33,7 @@ try{
     if(path==='/v1/radar/map')return route.fulfill({json:{type:'FeatureCollection',features:[]}});
     if(path==='/auth/logout'){logoutPosts++;return route.fulfill({status:204,headers:{'set-cookie':'__Secure-ad507_radar_session=; Max-Age=0; Path=/; Secure; HttpOnly; Domain=direcciones.lat; SameSite=Lax'}});}
    }else{
-    if(path==='/auth/radar')return route.fulfill({status:302,headers:{location:loginPosts?radar+'/':latam+'/commercial/international?access=1&radar=1'}});
+    if(path==='/auth/radar')return route.fulfill({status:302,headers:{location:url.searchParams.get('panel')==='1'?latam+'/panel#radarAccountSection':loginPosts?radar+'/':latam+'/commercial/international?access=1&radar=1'}});
     if(path==='/panel')return route.fulfill({contentType:'text/html; charset=utf-8',body:fixtures.plan.html});
     if(path==='/'||path==='/commercial/international')return route.fulfill({contentType:'text/html',body:fixtures.commercial.html});
     if(path==='/v1/user/panel')return route.fulfill({status:401,json:{error:'UNAUTHENTICATED'}});

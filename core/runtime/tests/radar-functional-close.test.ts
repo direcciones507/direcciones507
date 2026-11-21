@@ -31,14 +31,14 @@ test('CORE replaces legacy capacity controls and rolls capacity back with the pr
  const {pg,db}=await fixture();try{
   await pg.query('INSERT INTO radar.verified_owners(establishment_id,account_ref) VALUES($1,$2)',[id,owner]);
   const store=createCommercialManagement(db);
-  assert.equal(await store.update(id,owner,profile,{quantity:12,unit:'rooms'}),'UPDATED');
-  const item=await store.inspect(id,owner);assert.equal(item.quantity,12);assert.equal(item.unit,'rooms');
-  assert.equal(await store.update(id,owner,profile,{quantity:-1,unit:'rooms'}),'INVALID_PROFILE');
-  assert.equal(await store.update(id,owner,profile,{quantity:1.5,unit:'rooms'}),'INVALID_PROFILE');
+  assert.equal(await store.update(id,owner,profile,{quantity:12,unit:'units'}),'UPDATED');
+  const item=await store.inspect(id,owner);assert.equal(item.quantity,12);assert.equal(item.unit,'units');
+  assert.equal(await store.update(id,owner,profile,{quantity:-1,unit:'units'}),'INVALID_PROFILE');
+  assert.equal(await store.update(id,owner,profile,{quantity:1.5,unit:'units'}),'INVALID_PROFILE');
   assert.equal(await store.update(id,owner,profile,{quantity:1,unit:'invented'}),'INVALID_PROFILE');
   await pg.exec("CREATE FUNCTION ad507.fail_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic failure'; END $$;CREATE TRIGGER fail_audit BEFORE INSERT ON ad507.audit_log FOR EACH ROW EXECUTE FUNCTION ad507.fail_audit();");
-  await assert.rejects(()=>store.update(id,owner,{...profile,description:'Must roll back'},{quantity:0,unit:'tables'}));
-  const unchanged=await store.inspect(id,owner);assert.equal(unchanged.quantity,12);assert.equal(unchanged.unit,'rooms');assert.equal(unchanged.profile.description,profile.description);
+  await assert.rejects(()=>store.update(id,owner,{...profile,description:'Must roll back'},{quantity:0,unit:'units'}));
+  const unchanged=await store.inspect(id,owner);assert.equal(unchanged.quantity,12);assert.equal(unchanged.unit,'units');assert.equal(unchanged.profile.description,profile.description);
  }finally{await pg.close();}
 },20000);
 test('old administration and claim forms are retired at source and never return when gates close',async()=>{
@@ -49,6 +49,6 @@ test('old administration and claim forms are retired at source and never return 
  }
  const js=readFileSync(new URL('../radar/ui/radar.js',import.meta.url),'utf8');
  for(const legacy of ['pendingItems','openBusiness','ownershipRequests','Administrar o reclamar'])assert.ok(!js.includes(legacy));
- assert.ok(js.includes("location.assign('https://direcciones.lat/panel')"));assert.ok(!js.includes('¿Deseas cerrarla en Radar?'));
- const editor=readFileSync(new URL('../radar/commercial-editor.ts',import.meta.url),'utf8');assert.ok(editor.includes('Cantidad disponible'));assert.ok(editor.includes('availability:{quantity:'));
+ assert.ok(js.includes("location.assign('https://direcciones.lat/auth/radar?panel=1')"));assert.ok(!js.includes("location.assign('https://direcciones.lat/panel')"));assert.ok(!js.includes('¿Deseas cerrarla en Radar?'));
+ const editor=readFileSync(new URL('../radar/commercial-editor.ts',import.meta.url),'utf8');assert.ok(editor.includes('disponibles ahora'));assert.ok(editor.includes('const availability={quantity:'));
 });

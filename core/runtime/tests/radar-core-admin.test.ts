@@ -72,7 +72,7 @@ test('manual verification and revocation audit atomically; audit failure rolls b
 },20000);
 
 function ui(){
- const nodes:any={};const doc:any={getElementById:(id:string)=>nodes[id],createElement:(tag:string)=>({tag,children:[] as any[],textContent:'',disabled:false,checked:false,classList:{add(){},remove(){},toggle(){}},setAttribute(){},append(...v:any[]){this.children.push(...v);},replaceChildren(...v:any[]){this.children=v;}})};
+ const nodes:any={};const doc:any={getElementById:(id:string)=>nodes[id],createElement:(tag:string)=>({tag,children:[] as any[],textContent:'',disabled:false,checked:false,style:{},classList:{add(){},remove(){},toggle(){}},setAttribute(){},append(...v:any[]){this.children.push(...v);},replaceChildren(...v:any[]){this.children=v;}})};
  for(const id of ['radarTile','radarView','radarAdminRows','radarClose','radarAccountSection','radarAccountItems'])nodes[id]=doc.createElement('div');
  return {doc,nodes};
 }

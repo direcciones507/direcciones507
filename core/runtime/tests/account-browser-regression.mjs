@@ -65,11 +65,15 @@ try{
     throw error;
    }
    assert.equal(await page.locator('#accountButton').innerText(),'Mi panel');
-   assert.equal(await page.locator('#radarLogoutButton').isVisible(),true);
    assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).type),'add');
    assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).registrationKind),'user');
    assert.equal(await page.locator('#ownerRegistrationFields').isVisible(),false);
-   await page.locator('#addDialog [data-close]').click();await page.locator('#accountButton').click();
+   // A modal dialog makes controls outside it inert. Close it before checking the header.
+   await page.locator('#addDialog [data-close]').click();
+   const logoutView=await page.locator('#radarLogoutButton').evaluate(el=>({hidden:el.hidden,display:getComputedStyle(el).display}));
+   assert.equal(logoutView.hidden,false,'Authenticated Radar logout must be unhidden: '+JSON.stringify(logoutView));
+   assert.equal(await page.locator('#radarLogoutButton').isVisible(),true);
+   await page.locator('#accountButton').click();
    await page.waitForURL(latam+'/panel?radar=1#radarAccountSection');
   }
   assert.equal(loginPosts,1);assert.equal(logoutPosts,0);

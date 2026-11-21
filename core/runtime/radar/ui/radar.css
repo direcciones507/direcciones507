@@ -202,3 +202,9 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 .owner-privacy-content p{font-size:13px;line-height:1.5;margin:0 0 8px}
 .owner-privacy-content p:last-child{margin-bottom:0}
 @media(max-width:600px){.dialog .owner-private-fields{padding:8px 6px;margin:10px 0;border-radius:8px}.owner-privacy-content{width:min(310px,calc(100vw - 40px))}}
+
+/* Map pin card: centered, compact by default and scrollable only when expanded. */
+.map-area>.detail{top:50%;left:50%;right:auto;bottom:auto;transform:translate(-50%,-50%);width:min(340px,calc(100% - 24px));max-height:calc(100% - 28px);animation:none;overflow-y:auto;overscroll-behavior:contain}
+.map-area>.detail:has(.detail-options:not([open])){max-height:calc(100% - 28px)}
+.map-area>.detail .detail-options[open] .detail-options-content{max-height:min(50vh,430px);overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:600px){.map-area>.detail{top:50%;left:50%;bottom:auto;width:calc(100% - 28px);max-height:calc(100% - 24px);padding:12px 14px}}

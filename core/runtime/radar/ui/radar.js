@@ -111,10 +111,10 @@ function detail(f,focus=true){
  const options=el('details','detail-options');options.open=optionsOpen;
  const summary=el('summary','button subtle','Más opciones');summary.append(el('span','disclosure-arrow','⌄'));summary.lastChild.setAttribute('aria-hidden','true');options.append(summary);
  const content=el('div','detail-options-content');
- if(p.source)content.append(el('p','',p.source==='verified_owner'?'Reporte de propietario verificado':'Reporte de la comunidad'));else content.append(el('p','','Aún no hay actividad reciente para este establecimiento.'));
+ if(p.source)content.append(el('p','',p.source==='verified_owner'?'Reporte de propietario verificado':'Reporte de la comunidad'));
  if(p.pin==='live'&&p.liveUntil)content.append(el('p','','En vivo hasta '+new Intl.DateTimeFormat('es',{dateStyle:'medium',timeStyle:'short'}).format(new Date(Number(p.liveUntil)))));
  appendBusinessDetails(content,p);
- content.append(el('p','detail-coords',`${f.geometry.coordinates[1].toFixed(5)}, ${f.geometry.coordinates[0].toFixed(5)}`));
+ // The map pin conveys coordinates; do not display raw GPS numbers in the public card.
  const actions=el('div','detail-actions'),link=safeAddress(p.digitalAddressUrl);
  if(link){const a=el('a','button subtle','Ver dirección digital');a.href=link;a.target='_blank';a.rel='noopener noreferrer';actions.append(a);}
  const b=el('button','button primary','Reportar actividad');b.onclick=()=>beginAction({type:'report',id:f.id,name:p.name});actions.append(b);

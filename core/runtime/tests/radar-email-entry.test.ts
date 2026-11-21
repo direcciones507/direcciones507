@@ -7,7 +7,7 @@ test('verification and recovery stay on canonical HTTPS behind Railway and prese
  for(const [path,action]of [['/verificar-correo','verify'],['/recuperar-contrasena','reset']]){
   const r=accountEmailEntry(new Request('http://direcciones.lat:8080'+path+'?'+query,{headers:{'x-forwarded-proto':'https','x-forwarded-host':'evil.example'}}))!;
   assert.equal(r.status,302);const target=new URL(r.headers.get('location')!);
-  assert.equal(target.origin,'https://direcciones.lat');assert.equal(target.pathname,'/');assert.equal(target.searchParams.get('token'),token);assert.equal(target.searchParams.get('email'),email);assert.equal(target.searchParams.get('action'),action);assert.equal(target.searchParams.get('radar'),proof);assert.equal(target.searchParams.has('returnTo'),false);
+  assert.equal(target.origin,'https://direcciones.lat');assert.equal(target.pathname,'/commercial/international');assert.equal(target.searchParams.get('token'),token);assert.equal(target.searchParams.get('email'),email);assert.equal(target.searchParams.get('action'),action);assert.equal(target.searchParams.get('radar'),proof);assert.equal(target.searchParams.has('returnTo'),false);
   assert.equal(r.headers.get('cache-control'),'no-store');assert.equal(r.headers.get('referrer-policy'),'no-referrer');
  }
 });

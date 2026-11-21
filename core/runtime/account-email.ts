@@ -28,8 +28,10 @@ export function accountEmailEntry(req:Request):Response|null{
  if(req.method!=='GET'||url.hostname!=='direcciones.lat'||!['/verificar-correo','/recuperar-contrasena'].includes(url.pathname))return null;
  const token=url.searchParams.get('token'),email=url.searchParams.get('email');
  if(!token||!email||!/^[A-Za-z0-9_-]{43}$/.test(token)||email.length>320)return new Response('Enlace inválido',{status:400,headers:{'cache-control':'no-store'}});
- const next=new URL('/','https://direcciones.lat');
+ const radarContext=url.searchParams.get('radar');
+ const radarEmailEntry=!!radarContext&&/^[A-Za-z0-9_-]{43}$/.test(radarContext);
+ const next=new URL(radarEmailEntry?'/commercial/international':'/','https://direcciones.lat');
  next.searchParams.set('token',token);next.searchParams.set('email',email);next.searchParams.set('action',url.pathname==='/recuperar-contrasena'?'reset':'verify');
- const radarContext=url.searchParams.get('radar');if(radarContext&&/^[A-Za-z0-9_-]{43}$/.test(radarContext))next.searchParams.set('radar',radarContext);
+ if(radarEmailEntry)next.searchParams.set('radar',radarContext!);
  return new Response(null,{status:302,headers:{location:next.toString(),'cache-control':'no-store','referrer-policy':'no-referrer'}});
 }

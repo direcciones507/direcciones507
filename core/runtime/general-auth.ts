@@ -150,7 +150,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       const user=await currentUser(req);
       const token=readCookie(req,'ad507_session'),payload=token?await verify(token,cfg.secret):null;
       if(user&&payload)return radarRedirect([await sharedRadarCookie(payload),clearRadarReturn()]);
-      return new Response(null,{status:302,headers:[['location','https://direcciones.lat/?access=1'],['set-cookie',await radarReturnCookie()],['cache-control','no-store'],['referrer-policy','no-referrer']]});
+      return new Response(null,{status:302,headers:[['location','https://direcciones.lat/commercial/international?access=1&radar=1'],['set-cookie',await radarReturnCookie()],['cache-control','no-store'],['referrer-policy','no-referrer']]});
     }
     const emailRoute=url.pathname.startsWith('/v1/auth/email/');
     if(emailRoute){
@@ -251,8 +251,9 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       if (url.pathname === '/auth/google/login') {
         const adminReturn=url.searchParams.get('returnTo')==='/admin';
         const country=url.searchParams.get('country')??'';
-        if (url.search && (url.searchParams.size!==1 || !(adminReturn || accountCountries.has(country)))) return respond(400, { ok: false, error: 'REDIRECT_OVERRIDE_DENIED' });
-        const returning=!adminReturn&&await radarReturn(req);
+        const radarLogin=!!radar&&cfg.origin===radar.origin&&url.searchParams.get('radar')==='1';
+        if (url.search && (url.searchParams.size!==1 || !(adminReturn || accountCountries.has(country) || radarLogin))) return respond(400, { ok: false, error: 'REDIRECT_OVERRIDE_DENIED' });
+        const returning=!adminReturn&&(radarLogin||await radarReturn(req));
         const state = random(), binding = random(), verifier = random();
         await sql.unsafe("INSERT INTO ad507.oauth_transactions(state_hash,binding_hash,verifier,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')", [stateHash(state,cfg.origin,adminReturn,country,returning), hash(binding), verifier]);
         const target = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -262,7 +263,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       if (callback) {
         const state = url.searchParams.get('state'), binding = readCookie(req, 'ad507_oauth_state');
         const adminReturn=!!binding&&readCookie(req,'ad507_oauth_admin')===binding;
-        const returning=!adminReturn&&await radarReturn(req);
+        let returning=!adminReturn&&await radarReturn(req);
         const countryContext=readCookie(req,'ad507_oauth_country');
         const countryReturn=binding&&countryContext?.startsWith(binding+'|')?countryContext.slice(binding.length+1):'';
         const fail = (status: number, error: string) => {
@@ -275,7 +276,12 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         if (url.searchParams.getAll('state').length !== 1 || !state || !binding || !/^[A-Za-z0-9_-]{43}$/.test(state) || !/^[A-Za-z0-9_-]{43}$/.test(binding)) return fail(400, 'INVALID_OAUTH_STATE');
         if(countryContext&&(!accountCountries.has(countryReturn)||adminReturn))return fail(400,'INVALID_OAUTH_STATE');
         // Atomic database consumption works across replicas and even when Google fails.
-        const consumed = await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier", [stateHash(state,cfg.origin,adminReturn,countryReturn,returning), hash(binding)]);
+        let consumed = await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier", [stateHash(state,cfg.origin,adminReturn,countryReturn,returning), hash(binding)]);
+        // The recorded, one-use OAuth state retains the fixed Radar return even if its short-lived entry cookie expired.
+        if(consumed.length===0&&!returning&&!adminReturn&&radar&&cfg.origin===radar.origin){
+          consumed=await sql.unsafe("UPDATE ad507.oauth_transactions SET consumed_at=now() WHERE state_hash=$1 AND binding_hash=$2 AND consumed_at IS NULL AND expires_at>now() RETURNING verifier",[stateHash(state,cfg.origin,false,countryReturn,true),hash(binding)]);
+          if(consumed.length===1)returning=true;
+        }
         if (consumed.length !== 1) return fail(400, 'INVALID_OAUTH_STATE');
         const code = url.searchParams.get('code');
         if (url.searchParams.has('error') || url.searchParams.getAll('code').length !== 1 || !code || code.length > 4096) return fail(400, 'OAUTH_DENIED');

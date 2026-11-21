@@ -19,9 +19,11 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
  for(const item of items){
   const row=doc.createElement('article');row.className='row';
   row.append(text('h3',String(item.name||'Establecimiento')),text('p',String(item.category||'')+' · '+String(item.country||'')),text('p',item.authorized===true?'Administración autorizada':item.requested===true?'Solicitud pendiente · Sin permisos de administración':item.declared===true?'Comercio declarado · Sin permisos de administración':item.submitted===true?'Agregado como usuario · Sin permisos de administración':'Vinculado a tu cuenta · Sin permisos de administración'));
-  if(data.managementAvailable===true&&item.authorized===true){
-   const edit=doc.createElement('button');edit.type='button';edit.textContent='Editar ficha comercial';
+  if(data.managementAvailable===true&&(item.authorized===true||item.declared===true&&item.submitted===true)){
+   const edit=doc.createElement('button');edit.type='button';edit.textContent=item.authorized===true?'Editar ficha comercial':'Editar datos de mi comercio';
    edit.onclick=async()=>{edit.disabled=true;await openCommercialEditor(row,item.id,doc,undefined,()=>{edit.disabled=false;});};row.append(edit);
+  }
+  if(data.managementAvailable===true&&item.authorized===true){
    // A verified owner may update availability without opening the full profile editor.
    const quick=doc.createElement('button');quick.type='button';quick.textContent='Actualizar disponibilidad ahora';
    const panel=doc.createElement('div'),status=text('p','');status.setAttribute('role','status');panel.hidden=true;
@@ -53,11 +55,11 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
    };
    row.append(quick,panel);
   }
-  if(item.authorized!==true&&item.declared===true)row.append(text('p','Puedes consultar tu comercio aquí. La edición de la ficha, horarios y capacidad (mesas, habitaciones o cupos) está reservada actualmente a propietarios autorizados.'));
-  if(data.verificationAvailable===true&&item.declared===true&&item.authorized!==true){
+  if(item.authorized!==true&&item.declared===true)row.append(text('p','Puedes corregir los datos públicos que registraste. Actualizar la disponibilidad y administrar como propietario requiere verificación aprobada.'));
+  if(data.verificationAvailable===true&&item.declared===true){
    row.append(text('p','Verificación voluntaria gratuita e independiente de pagos. Tras solicitarla, contacta a Direcciones por WhatsApp para coordinar un video continuo de fachada, letrero, aviso de operaciones e interior. No muestres cédulas ni datos tributarios en el video. La revisión es manual y puede tardar 48–72 horas.'));
-   const contact=doc.createElement('a');contact.href='https://wa.me/50765996532?text='+encodeURIComponent('Hola, Direcciones. Solicité la verificación de mi establecimiento en Radar: '+String(item.name||'Establecimiento')+'. Quisiera coordinar el envío del video de evidencia.');contact.target='_blank';contact.rel='noopener noreferrer';contact.textContent='Contactar a Direcciones por WhatsApp (+507 6599-6532)';contact.hidden=item.requested!==true;row.append(contact);
-   if(item.requested!==true){
+   const contact=doc.createElement('a');contact.href='https://wa.me/50765996532?text='+encodeURIComponent('Hola, Direcciones. Solicité la verificación de mi establecimiento en Radar: '+String(item.name||'Establecimiento')+'. Quisiera coordinar el envío del video de evidencia.');contact.target='_blank';contact.rel='noopener noreferrer';contact.textContent='Contactar a Direcciones por WhatsApp (+507 6599-6532)';contact.hidden=false;row.append(contact);
+   if(item.requested!==true&&item.authorized!==true){
     const button=doc.createElement('button');button.type='button';button.textContent='Solicitar verificación';
     const status=text('p','');status.setAttribute('role','status');
     button.onclick=async()=>{

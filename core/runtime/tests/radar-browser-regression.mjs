@@ -28,7 +28,7 @@ try{
   await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).click();await page.locator('#detail').waitFor();assert((await page.locator('#detail h3').innerText())==='Café del Istmo','Wrong detail');
   assert(await page.locator('#detail .detail-options').getAttribute('open')===null,'Actions initially expanded '+name);
   assert(await page.getByRole('button',{name:'Reportar actividad',exact:true}).isHidden(),'Actions leak from collapsed card '+name);
-  assert(await page.evaluate(()=>{const card=document.querySelector('#detail').getBoundingClientRect(),map=document.querySelector('.map-area').getBoundingClientRect();return card.width<=300&&card.height<map.height*.7&&card.left>=map.left&&card.right<=map.right;}),'Card covers map '+name);
+  assert(await page.evaluate(()=>{const card=document.querySelector('#detail').getBoundingClientRect(),map=document.querySelector('.map-area').getBoundingClientRect();return card.width<=340&&card.height<map.height*.7&&card.left>=map.left&&card.right<=map.right&&Math.abs((card.left+card.right)/2-(map.left+map.right)/2)<3&&Math.abs((card.top+card.bottom)/2-(map.top+map.bottom)/2)<3;}),'Card not compact and centered '+name);
   await page.locator('.map-area').scrollIntoViewIfNeeded();
   await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-map.png`});
   await page.locator('#detail .detail-options>summary').click();

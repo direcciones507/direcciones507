@@ -1,7 +1,10 @@
 import {canOfferAnalytics} from './analytics-summary-view';
 /** Fixed public destinations only; never accept a return URL from client input. */
 export function panelLogoutDestination(href: string, selectedCountry?: string): string {
-  const current = new URL(href), target = new URL(current.hostname === 'direcciones.lat' && current.searchParams.get('origin') !== '507' ? 'https://direcciones.lat/' : 'https://direcciones507.com/');
+  const current = new URL(href);
+  // Only the fixed, first-party Radar return hint changes the logout destination.
+  if (current.hostname === 'direcciones.lat' && current.searchParams.get('radar') === '1') return 'https://radar.direcciones.lat/';
+  const target = new URL(current.hostname === 'direcciones.lat' && current.searchParams.get('origin') !== '507' ? 'https://direcciones.lat/' : 'https://direcciones507.com/');
   const country = selectedCountry || current.searchParams.get('country');
   if (country && ['PA','CO','CR','GT','SV','HN','NI','MX'].includes(country)) target.searchParams.set('country', country);
   return target.href;

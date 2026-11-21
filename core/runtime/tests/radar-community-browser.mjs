@@ -41,7 +41,7 @@ try{
   }
   return route.fulfill({status:404,json:{error:'ISOLATED_TEST'}});
  });
- await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#resultCount')?.textContent==='3'&&document.querySelector('#accountButton')?.textContent==='Mi cuenta');
+ await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#resultCount')?.textContent==='3'&&document.querySelector('#accountButton')?.textContent==='Mi panel');
  await page.locator('#map').scrollIntoViewIfNeeded();await page.locator('.leaflet-container').waitFor();
  await page.locator('#results .result-card').filter({hasText:'Café del Istmo'}).click();
  await page.locator('#detail .detail-options>summary').click();
@@ -80,13 +80,18 @@ try{
  assert(!saved,'Favorite removal');await page.locator('#favoritesDialog [data-close]').click();
  assert(calls.every(c=>!c.body||!('latitude' in c.body)&&!('longitude' in c.body)&&!('accountRef' in c.body)),'Unexpected precise position or account override in writes');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Horizontal overflow');
- // A declared owner uses the existing free publication endpoint, not a permission grant.
- await page.locator('#addButton').click();await page.getByRole('button',{name:'Soy propietario de un comercio',exact:true}).click();
+ // Community visitors still register directly on Radar without commercial edit privileges.
+ await page.locator('#addButton').click();await page.getByRole('button',{name:'Soy usuario',exact:true}).click();
  await page.locator('#placeName').fill('Comercio sintético aislado');await page.locator('#placeCategory').selectOption('shop');
  await page.locator('#latitude').fill('8.9824');await page.locator('#longitude').fill('-79.5199');
- await page.locator('[name=businessProvince]').fill('Panamá');await page.locator('[name=businessLocality]').fill('Ciudad de Panamá');await page.locator('[name=businessDescription]').fill('Información comercial sintética');await page.locator('[name=businessPhone]').fill('+507 6000-0000');await page.locator('[name=businessSocials]').fill('https://example.test/');await page.locator('[name=businessExtra_products]').fill('Productos');
  await page.locator('#addForm button[type=submit]').click();await page.locator('#addDialog').waitFor({state:'hidden'});
- const registration=calls.find(c=>c.kind==='establishments')?.body;assert(registration?.registrationKind==='owner','Commercial choice lost');assert(registration.profile.description==='Información comercial sintética','Commercial description lost');assert(registration.profile.extras.products==='Productos','Category fields lost');assert(!('verified' in registration)&&!('accountRef' in registration),'Registration cannot confer ownership');
+ const registration=calls.find(c=>c.kind==='establishments')?.body;
+ assert(registration&&!('registrationKind' in registration)&&!('profile' in registration),'Community cannot claim owner powers');
+ assert(!('verified' in registration)&&!('accountRef' in registration),'Registration cannot confer ownership');
+ // An authenticated commercial owner is sent to CORE My panel, not another Radar form.
+ await page.route('https://direcciones.lat/auth/radar?panel=1&add=1',route=>route.fulfill({contentType:'text/html',body:'<h1>Panel de propietarios</h1>'}));
+ await page.locator('#addButton').click();await page.getByRole('button',{name:'Soy propietario de un comercio',exact:true}).click();
+ await page.waitForURL('https://direcciones.lat/auth/radar?panel=1&add=1');
  assert(!errors.length,'Page errors: '+errors.join('; '));
  console.log('Radar new features: isolated mobile interactions passed; no real writes.');
 }finally{await context?.close();await browser?.close();server.kill();}

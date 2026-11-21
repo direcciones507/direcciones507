@@ -22,6 +22,18 @@ test('CORE Radar admin fails closed for gates, hosts, origins, methods and non-a
  assert.equal((await createCoreRadarAdmin(db,{currentUser:async()=>({id:owner,roles:['CLIENT']})},env)(request({action:'overview'})))!.status,403);
  assert.equal(calls,0);
 });
+test('Panama ADMIN can load Radar only from its exact first-party origin and ADMIN role',async()=>{
+ const host='https://cuenta.direcciones507.com';
+ const db={unsafe:async(q:string,p:any[])=>[]};
+ const handler=createCoreRadarAdmin(db,admin,env);
+ const req=(url:string,requestOrigin:string)=>new Request(url+'/v1/admin/radar',{method:'POST',headers:{origin:requestOrigin,'content-type':'application/json'},body:JSON.stringify({action:'overview'})});
+ assert.equal((await handler(req(host,host)))!.status,200);
+ assert.equal((await handler(req(host,origin)))!.status,403);
+ assert.equal((await handler(req(origin,host)))!.status,403);
+ assert.equal((await handler(req('https://radar.direcciones.lat','https://radar.direcciones.lat')))!.status,403);
+ const noAdmin=createCoreRadarAdmin(db,{currentUser:async()=>({id:owner,roles:['CLIENT']})},env);
+ assert.equal((await noAdmin(req(host,host)))!.status,403);
+});
 test('CORE forwards verification claims using session identity and blocks admin actions on the user path',async()=>{
  const calls:any[]=[];const db={unsafe:async(q:string,p:any[])=>{calls.push({q,p});return [{establishment_id:id}];}};
  const handler=createCoreRadarAdmin(db,{currentUser:async()=>({id:owner,roles:['CLIENT']})},env);

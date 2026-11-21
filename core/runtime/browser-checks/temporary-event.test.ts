@@ -29,7 +29,7 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   expect(await page.locator('#event-after-save').isVisible()).toBe(true);expect(await page.locator('btn-yappy').count()).toBe(0);
   const preview=await page.locator('#event-preview-link').getAttribute('href');await page.clock.install();await page.goto(server.url+preview!.slice(1));
   expect(await page.getByText('Vista previa privada · Aún sin publicar').count()).toBe(1);expect(await page.locator('.photos img').count()).toBe(3);
-  await page.waitForFunction(()=>[...document.images].filter(i=>i.hasAttribute('src')).every(i=>i.complete&&i.naturalWidth>0));expect(await page.content()).not.toContain('PRIVATE_NAME');
+  await page.waitForFunction(()=>[...document.querySelectorAll<HTMLImageElement>('.photos img')].every(i=>i.complete&&i.naturalWidth>0));expect(await page.content()).not.toContain('PRIVATE_NAME');
   expect(await page.locator('.photo-progress span[aria-current="true"]').count()).toBe(1);
   expect(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor)).toBe('rgb(28, 49, 68)');
   expect(await page.evaluate(()=>document.querySelector('main')!.getBoundingClientRect().width)).toBeLessThanOrEqual(520);
@@ -63,7 +63,7 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   for(const width of [393,1440]){
    await page.setViewportSize({width,height:900});await page.route('https://example.test/**',r=>r.fulfill({body:image,contentType:'image/jpeg'}));
    const event={draft:{...fields,countryCode:'PA',timezone:'America/Panama',latitude:8.1,longitude:-80.9},slug:'fiesta-0123456789abcdef',status:'ACTIVE' as const,paymentConfirmedAt:new Date().toISOString(),photos:['https://example.test/1.jpg','https://example.test/2.jpg','https://example.test/3.jpg']};
-   await page.setContent(renderTemporaryEventPage(event));expect(await page.getByRole('link',{name:'Google Maps'}).count()).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+   await page.setContent(renderTemporaryEventPage(event));expect(await page.getByRole('link',{name:'Google Maps'}).count()).toBe(0);await page.locator('.directions-menu summary').click();expect(await page.getByRole('link',{name:'Google Maps'}).count()).toBe(1);expect(await page.getByRole('link',{name:'Waze'}).count()).toBe(1);expect(await page.getByRole('link',{name:'Uber'}).count()).toBe(1);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
    await page.setContent(renderTemporaryEventPage({...event,status:'EXPIRED'}));expect(await page.getByText('Este evento ha finalizado.').count()).toBe(1);expect(await page.locator('.actions a').count()).toBe(0);
   }
   expect(errors).toEqual([]);await context.close();await reduced.close();

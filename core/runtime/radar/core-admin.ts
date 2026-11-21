@@ -5,6 +5,7 @@ import {createModerationRoutes} from './moderation';
 import {createModerationStore} from './moderation-repository';
 import {createCategoryStore} from './category-catalog';
 import {createCommercialManagement} from './commercial-management';
+import {retireRadarPin} from './pin-retirement';
 type Database=Parameters<typeof createBusinessStore>[0];
 const origin='https://direcciones.lat';
 const adminOrigins=new Set([origin,'https://cuenta.direcciones507.com']);
@@ -46,7 +47,12 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
    }
    if(management){
     if(env.RADAR_REGISTRATION_PROFILES_ENABLED!=='true')return json(503,{error:'PROFILE_MANAGEMENT_DISABLED'});
-    if(!body||!['inspect','update','availability'].includes(body.action)||typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ACTION'});
+    if(!body||!['inspect','update','availability','retire'].includes(body.action)||typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ACTION'});
+    if(body.action==='retire'){
+     if(typeof body.confirmName!=='string'||!body.confirmName.trim()||body.confirmName.length>160)return json(400,{error:'CONFIRM_REQUIRED'});
+     const retired=await retireRadarPin(db,body.id,user.id,body.confirmName);
+     return retired?json(200,{ok:true,retired:true}):json(403,{error:'RETIRE_UNAVAILABLE'});
+    }
     const store=createCommercialManagement(db,env.RADAR_CATEGORY_CATALOG_ENABLED==="true"?createCategoryStore(db):undefined);
     if(body.action==='inspect'){const item=await store.inspect(body.id,user.id);return item?json(200,{item}):json(403,{error:'OWNER_REQUIRED'});}
     if(body.action==='availability'){

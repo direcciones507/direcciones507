@@ -92,6 +92,27 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
     row.append(button,status);
    }
   }
+  if(typeof item.id==='string'&&(item.submitted===true||item.declared===true||item.authorized===true)){
+   const retire=doc.createElement('button');retire.type='button';retire.textContent='Retirar mi PIN';retire.setAttribute('aria-label','Retirar mi PIN: '+String(item.name||'Establecimiento'));
+   const confirmation=doc.createElement('div');confirmation.hidden=true;confirmation.setAttribute('role','group');
+   const message=text('p','¿Retirar «'+String(item.name||'Establecimiento')+'» del mapa? Dejará de ser público. Esta acción no elimina tu cuenta ni otros PIN.');
+   const confirm=text('button','Sí, retirar este PIN');confirm.type='button';
+   const cancel=text('button','Cancelar');cancel.type='button';
+   const result=text('p','');result.setAttribute('role','status');
+   confirmation.append(message,confirm,cancel,result);
+   retire.onclick=()=>{confirmation.hidden=false;retire.disabled=true;};
+   cancel.onclick=()=>{confirmation.hidden=true;retire.disabled=false;result.textContent='';};
+   confirm.onclick=async()=>{
+    confirm.disabled=cancel.disabled=true;result.textContent='Retirando PIN…';
+    try{
+     const response=await fetch('/v1/user/radar/business',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({action:'retire',id:item.id,confirmName:String(item.name||'')})});
+     if(!response.ok){result.textContent='No se puede retirar este PIN desde tu cuenta. Si tiene una dirección o campaña vinculada, contacta a ADMIN.';return;}
+     row.replaceChildren(text('p','PIN retirado: '+String(item.name||'Establecimiento')+'. Ya no aparecerá en el mapa.'));
+    }catch{result.textContent='No se pudo completar el retiro. Revisa tu conexión y vuelve a intentar.';}
+    finally{confirm.disabled=cancel.disabled=false;}
+   };
+   row.append(retire,confirmation);
+  }
   out.append(row);
  }
 }

@@ -40,7 +40,7 @@ export function createRadarRepository(db:Database,ownershipEnabled=false,resolve
     e.digital_address_ref IS NOT NULL AS has_link,
     ${ownershipEnabled?"EXISTS(SELECT 1 FROM radar.verified_owners o WHERE o.establishment_id=e.id)":"false"} AS verified_owner,
     ${registrationProfilesEnabled?"(SELECT profile FROM radar.registration_profiles p WHERE p.establishment_id=e.id)":"NULL"} AS registration_profile,
-    ${businessEnabled?"(SELECT jsonb_build_object('hours',d.hours,'quantity',d.quantity,'unit',d.unit,'updatedAt',extract(epoch from d.updated_at)*1000) FROM radar.business_details d JOIN radar.verified_owners o ON o.establishment_id=d.establishment_id AND o.account_ref=d.updated_by WHERE d.establishment_id=e.id)":"NULL"} AS details,
+    ${businessEnabled?"(SELECT jsonb_build_object('hours',d.hours,'quantity',d.quantity,'unit',d.unit,'updatedAt',extract(epoch from d.updated_at)*1000) FROM radar.business_details d WHERE d.establishment_id=e.id AND (EXISTS(SELECT 1 FROM radar.verified_owners o WHERE o.establishment_id=e.id AND o.account_ref=d.updated_by) OR EXISTS(SELECT 1 FROM radar.registration_profiles p WHERE p.establishment_id=e.id AND p.submitted_by=d.updated_by)))":"NULL"} AS details,
     COALESCE(r.reports,'[]'::jsonb) AS reports
     FROM radar.establishments e
     LEFT JOIN LATERAL (SELECT jsonb_agg(jsonb_build_object('state',a.state,'source',a.source,'createdAt',extract(epoch from a.created_at)*1000)) AS reports

@@ -8,6 +8,17 @@ test('CORE account list uses authenticated account and preserves every feature g
  for(const key of Object.keys(env))assert.equal(await radarAccountData(db,'account',{...env,[key]:'false'}),null);
  assert.equal(calls.length,0);assert.deepEqual(await radarAccountData(db,'account',env),{available:true,items:[{name:'Synthetic',authorized:true}]});assert.deepEqual(calls,[['account']]);
 });
+test('community submissions are included in the account query without granting ownership',async()=>{
+ const statements:string[]=[];
+ const db={unsafe:async(q:string,p:any[])=>{statements.push(q);assert.deepEqual(p,['00000000-0000-4000-8000-000000000002']);return [{name:'Barrio Centro',authorized:false,requested:false,declared:false,submitted:true}];}};
+ const result=await radarAccountData(db,'00000000-0000-4000-8000-000000000002',env);
+ assert.equal(result?.items?.[0]?.submitted,true);
+ assert.match(statements[0],/e\\.account_ref=\\$1::uuid/);
+ assert.match(statements[0],/AS submitted/);
+ const u=ui();renderRadarAccount(result,u.doc);
+ assert.match(u.nodes.radarAccountItems.children[0].children[2].textContent,/Agregado como usuario/);
+ assert.equal(u.nodes.radarAccountItems.children[0].children.length,3);
+});
 test('Radar query failure cannot break the existing CORE account panel',async()=>{
  assert.deepEqual(await radarAccountData({unsafe:async()=>{throw Error('isolated failure');}},'account',env),{available:false,items:[]});
 });

@@ -267,7 +267,10 @@ try{
   assert.equal(await page.locator('#plan').inputValue(),'BUSINESS_PREMIUM');
   assert.deepEqual(await page.locator('#plan option').evaluateAll(options=>options.map(o=>o.value)),['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']);
   await page.locator('#plan').selectOption('BUSINESS_PREMIUM_PRO');
-  // Focused creation hides the picker until the current form is closed.\n  await page.locator('#panel-creation-close').click();\n  await page.locator('#toggleNewRequest').click();\n  await page.locator('#place').click();assert.equal(await page.locator('#coverField').isVisible(),true);
+  // Focused creation hides the picker until the current form is closed.
+  await page.locator('#panel-creation-close').click();
+  await page.locator('#toggleNewRequest').click();
+  await page.locator('#place').click();assert.equal(await page.locator('#coverField').isVisible(),true);
   for(const status of ['FAILED','FAILED','CANCELLED']){
    current='PENDING';retryAllowed=false;
    await page.goto('https://'+host+'/panel/payments/'+id+'?order='+order);
@@ -303,7 +306,9 @@ try{
   assert.equal(await page.locator('#orderSection').isVisible(),false);
   assert.equal((await page.locator('#plan option').allTextContents()).some(s=>s.includes('$')),false);
   assert.match(await page.locator('.temporary-event-cta').textContent(),/Gratis/);
-  // Leave focused request creation before navigating to the separate event flow.\n  await page.locator('#panel-creation-close').click();\n  await page.locator('.temporary-event-cta').click();await page.locator('#temporary-event-draft').waitFor({state:'visible'});
+  // Leave focused request creation before navigating to the separate event flow.
+  await page.locator('#panel-creation-close').click();
+  await page.locator('.temporary-event-cta').click();await page.locator('#temporary-event-draft').waitFor({state:'visible'});
   assert.equal(await page.locator('btn-yappy').count(),0);assert.equal(await page.locator('#event-alias').count(),0);assert.equal(await page.locator('#event-publish').count(),1);
   await page.goto('https://direcciones.lat/icons');
   for(const target of ['#btnHorario .accordion-icon-left i','#btnQR .accordion-icon-left i'])assert.equal(await page.locator(target).evaluate(e=>getComputedStyle(e).color),'rgb(238, 244, 252)');

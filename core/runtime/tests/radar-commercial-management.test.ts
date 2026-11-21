@@ -34,7 +34,7 @@ test('commercial editing requires exact ownership, preserves original author and
   await pg.query('DELETE FROM radar.verified_owners WHERE establishment_id=$1',[id]);assert.equal(await store.update(id,owner,profile),'OWNER_REQUIRED');
  }finally{await pg.close();}
 },20000);
-test('unverified registrant can edit their submitted public profile but not availability or others records',async()=>{
+test('registered business submitter manages public profile and availability without verified badge or access to others',async()=>{
  const pg=new PGlite();try{
   await pg.exec(`CREATE SCHEMA ad507;CREATE TABLE ad507.users(id uuid PRIMARY KEY);
    CREATE TABLE ad507.audit_log(actor_user_id uuid,actor_type text,action text,entity_type text,entity_id text,metadata jsonb);`);
@@ -52,10 +52,16 @@ test('unverified registrant can edit their submitted public profile but not avai
   assert.equal((await pg.query('SELECT count(*)::int AS n FROM radar.business_details')).rows[0].n,0);
   const auth={currentUser:async()=>({id:owner,roles:['CLIENT']})},handle=createCoreRadarAdmin(db,auth,env);
   const req=(data:any)=>new Request('https://direcciones.lat/v1/user/radar/business',{method:'POST',headers:{origin:'https://direcciones.lat'},body:JSON.stringify(data)});
-  assert.equal((await handle(req({action:'availability',id,quantity:5})))!.status,403);
-  assert.equal((await handle(req({action:'update',id,profile,availability:{quantity:5,unit:'tables'}})))!.status,403);
+  assert.equal((await handle(req({action:'availability',id,quantity:5})))!.status,200);
+  assert.equal((await store.inspect(id,owner)).quantity,5);
+  assert.equal((await handle(req({action:'update',id,profile,availability:{quantity:7,unit:'tables'}})))!.status,200);
+  assert.equal((await store.inspect(id,owner)).quantity,7);
   assert.equal((await handle(req({action:'update',id,profile:{...profile,description:'Actualizada'}})))!.status,200);
   assert.equal((await store.inspect(id,owner)).profile.description,'Actualizada');
+  assert.equal((await pg.query('SELECT count(*)::int AS n FROM radar.verified_owners')).rows[0].n,0);
+  const otherHandler=createCoreRadarAdmin(db,{currentUser:async()=>({id:other,roles:['CLIENT']})},env);
+  assert.equal((await otherHandler(req({action:'availability',id,quantity:9})))!.status,403);
+  assert.equal((await otherHandler(req({action:'update',id,profile})))!.status,403);
  }finally{await pg.close();}
 },20000);
 test('CORE editing gate, session identity, invalid actions and search pagination are enforced',async()=>{

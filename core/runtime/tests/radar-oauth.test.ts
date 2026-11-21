@@ -24,7 +24,7 @@ function setup(overrides={}){
 const request=(path:string,cookies='',body?:any,origin=latam)=>new Request(origin+path,{method:body?'POST':'GET',headers:{origin,cookie:cookies,...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
 function cookies(response:Response){return response.headers.getSetCookie().filter(v=>!v.includes('Max-Age=0')).map(v=>v.split(';')[0]).join('; ');}
 function named(response:Response,name:string){return response.headers.getSetCookie().find(v=>v.startsWith(name+'='))!;}
-async function intent(auth:ReturnType<typeof createGeneralAuth>){const result=(await auth.handle(request('/auth/radar')))!;expect(result.headers.get('location')).toBe(latam+'/?access=1');return cookies(result);}
+async function intent(auth:ReturnType<typeof createGeneralAuth>){const result=(await auth.handle(request('/auth/radar')))!;expect(result.headers.get('location')).toBe(latam+'/commercial/international?access=1&radar=1');return cookies(result);}
 test('Radar redirects to the existing LATAM access and never starts another OAuth',async()=>{
  const {auth}=setup();const result=(await auth.handle(request('/auth/google/login','',undefined,radar)))!;
  expect(result.status).toBe(302);expect(result.headers.get('location')).toBe(latam+'/auth/radar');expect(result.headers.has('set-cookie')).toBe(false);
@@ -57,6 +57,20 @@ test('Google uses the existing LATAM callback and restores Radar with no tokens 
  expect(await auth.currentUser(request('/v1/auth/me',cookies(finish),undefined,radar))).not.toBeNull();
  expect((await auth.handle(request(callback,jar)))!.status).toBe(400);
 });
+test('Google Radar return survives expiry of entry cookie while retaining one-use OAuth state',async()=>{
+ const {auth}=setup();
+ const start=(await auth.handle(request('/auth/google/login?radar=1')))!;
+ expect(start.status).toBe(302);
+ const state=new URL(start.headers.get('location')!).searchParams.get('state');
+ const callback='/auth/google/callback?code=test-code&state='+state;
+ // Only Google's state/binding cookies remain; the Radar entry cookie is no longer present.
+ const finish=(await auth.handle(request(callback,cookies(start))))!;
+ expect(finish.status).toBe(302);expect(finish.headers.get('location')).toBe(radar+'/');
+ expect(named(finish,'__Secure-ad507_radar_session')).toContain('Domain=direcciones.lat');
+ expect((await auth.handle(request(callback,cookies(start))))!.status).toBe(400);
+ expect((await auth.handle(request('/auth/google/login?radar=1&country=PA')))!.status).toBe(400);
+ expect((await auth.handle(request('/auth/google/login?returnTo=https://evil.example')))!.status).toBe(400);
+});
 test('return cannot be changed, tampered with, or detached from the OAuth transaction',async()=>{
  const {auth}=setup();expect((await auth.handle(request('/auth/radar?returnTo=https://evil.example')))!.status).toBe(400);
  const marker=await intent(auth);const start=(await auth.handle(request('/auth/google/login',marker)))!;
@@ -77,7 +91,7 @@ test('verified LATAM TLS proxy preserves Radar intent for email and Google',asyn
  const {auth}=setup();
  const proxy=(path:string,cookie='',body?:any)=>new Request('http://direcciones.lat:8080'+path,{method:body?'POST':'GET',headers:{origin:latam,cookie,'x-forwarded-proto':'https',...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
  const entry=(await auth.handle(proxy('/auth/radar')))!;
- expect(entry.status).toBe(302);expect(entry.headers.get('location')).toBe(latam+'/?access=1');
+ expect(entry.status).toBe(302);expect(entry.headers.get('location')).toBe(latam+'/commercial/international?access=1&radar=1');
  const marker=cookies(entry);
  const login=(await auth.handle(proxy('/v1/auth/email/login',marker,{email:user.email,password})))!;
  expect(login.status).toBe(200);expect((await login.json()).redirect).toBe(radar+'/');

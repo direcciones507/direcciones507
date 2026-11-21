@@ -54,7 +54,10 @@ test('valid Radar session bridges to LATAM panel without another Google login or
  const radarCookie=named(handoff,'__Secure-ad507_radar_session').split(';')[0];
  const requested=(await auth.handle(request('/auth/radar?panel=1',radarCookie)))!;
  expect(requested.status).toBe(302);
- expect(requested.headers.get('location')).toBe(latam+'/panel#radarAccountSection');
+ expect(requested.headers.get('location')).toBe(latam+'/panel?radar=1#radarAccountSection');
+ const ownerAdd=(await auth.handle(request('/auth/radar?panel=1&add=1',radarCookie)))!;
+ expect(ownerAdd.status).toBe(302);
+ expect(ownerAdd.headers.get('location')).toBe(latam+'/panel?radar=1&addLocal=1#radarAccountSection');
  const canonical=named(requested,'ad507_session');
  expect(canonical).toContain('HttpOnly');expect(canonical).toContain('Secure');
  expect(canonical).not.toContain('Domain=');
@@ -65,7 +68,7 @@ test('valid Radar session bridges to LATAM panel without another Google login or
 });
 test('Radar panel handoff refuses arbitrary redirect and invalid Radar identity',async()=>{
  const {auth}=setup();
- for(const path of ['/auth/radar?panel=0','/auth/radar?panel=1&returnTo=https://evil.example','/auth/radar?returnTo=https://evil.example']){
+ for(const path of ['/auth/radar?panel=0','/auth/radar?panel=1&returnTo=https://evil.example','/auth/radar?add=1','/auth/radar?panel=1&add=0','/auth/radar?returnTo=https://evil.example']){
   const denied=(await auth.handle(request(path)))!;expect(denied.status).toBe(400);expect(denied.headers.has('location')).toBe(false);
  }
  const guest=(await auth.handle(request('/auth/radar?panel=1','__Secure-ad507_radar_session=invalid')))!

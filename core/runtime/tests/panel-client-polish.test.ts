@@ -38,6 +38,8 @@ test('card actions precede photographs and account footer stays single and cente
 
 test('logout retains LATAM and selected country without allowing an external return URL',()=>{
  expect(panelLogoutDestination('https://direcciones.lat/panel?country=CO')).toBe('https://direcciones.lat/?country=CO');
+ expect(panelLogoutDestination('https://direcciones.lat/panel?radar=1&addLocal=1#radarAccountSection')).toBe('https://radar.direcciones.lat/');
+ expect(panelLogoutDestination('https://direcciones.lat/panel?radar=1&returnTo=https://evil.invalid')).toBe('https://radar.direcciones.lat/');
  expect(panelLogoutDestination('https://direcciones.lat/panel','CR')).toBe('https://direcciones.lat/?country=CR');
  expect(panelLogoutDestination('https://cuenta.direcciones507.com/panel','PA')).toBe('https://direcciones507.com/?country=PA');
  expect(panelLogoutDestination('https://direcciones.lat/panel?country=https://evil.test')).toBe('https://direcciones.lat/');

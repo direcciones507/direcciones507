@@ -1,4 +1,4 @@
-import {renderCommercialDetails,commercialWhatsapp} from './commercial-details.js';
+import {renderCommercialDetails,commercialWhatsapp,commercialOpenStatus} from './commercial-details.js';
 import {applyCategoryUnits,registrationIntent,registrationKind,registrationChoiceMarkup,ownerRegistrationMarkup,setRegistrationKind,renderCategoryRegistrationFields,collectOwnerRegistration,restoreOwnerRegistration,collectOwnerPrivate,setOwnerPrivateEnabled,restoreOwnerPrivate,registrationTerritoryLabels} from './registration-form.js';
 import {applyDynamicCategories,fillCategorySelect,pulseRows,nearbyBounds,nearbyRows,distanceKm,countries, activityLabels, categoryLabel, normalizeBounds, safeAddress, freshProperties, mapFeatures, priorityFeatures, featuredGroups, normalZoomStep,searchContext} from './ui-model.js';
 const $=id=>document.getElementById(id), reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -107,6 +107,7 @@ function detail(f,focus=true){
  const whatsapp=commercialWhatsapp(p);if(whatsapp)top.append(whatsapp);top.append(closeButton);d.append(top,el('h3','',p.name));
  if(['live','featured'].includes(p.pin))d.append(el('span','commercial-badge '+p.pin,p.pin==='featured'?'Destacado':'Pin en vivo'));
  d.append(el('p','detail-country',countries[p.country||state.country]?.name||state.country));
+ const hoursStatus=commercialOpenStatus(p);if(hoursStatus)d.append(el('span','detail-open-status',hoursStatus));
  const activity=el('div','detail-activity');activity.append(activityBadge(p),el('span','',relativeTime(p)));d.append(activity);
  const options=el('details','detail-options');options.open=optionsOpen;
  const summary=el('summary','button subtle','Más opciones');summary.append(el('span','disclosure-arrow','⌄'));summary.lastChild.setAttribute('aria-hidden','true');options.append(summary);

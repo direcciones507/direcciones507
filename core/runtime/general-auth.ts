@@ -146,11 +146,12 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       return respond(404,{ok:false,error:'AUTH_ORIGIN_DENIED'});
     }
     if(url.pathname==='/auth/radar'){
-      if(!radar||url.origin!==radar.origin||req.method!=='GET'||(url.search&&url.search!=='?panel=1'))return respond(400,{ok:false,error:'REDIRECT_OVERRIDE_DENIED'});
+      if(!radar||url.origin!==radar.origin||req.method!=='GET'||!['','?panel=1','?panel=1&add=1'].includes(url.search))return respond(400,{ok:false,error:'REDIRECT_OVERRIDE_DENIED'});
       const panelEntry=url.searchParams.get('panel')==='1';
+      const panelTarget=cfg.origin+'/panel?radar=1'+(url.searchParams.get('add')==='1'?'&addLocal=1':'')+'#radarAccountSection';
       const user=await currentUser(req);
       const token=readCookie(req,'ad507_session'),payload=token?await verify(token,cfg.secret):null;
-      if(user&&payload){if(panelEntry)return new Response(null,{status:302,headers:{location:cfg.origin+'/panel#radarAccountSection','cache-control':'no-store','referrer-policy':'no-referrer'}});return radarRedirect([await sharedRadarCookie(payload),clearRadarReturn()]);}
+      if(user&&payload){if(panelEntry)return new Response(null,{status:302,headers:{location:panelTarget,'cache-control':'no-store','referrer-policy':'no-referrer'}});return radarRedirect([await sharedRadarCookie(payload),clearRadarReturn()]);}
       // A valid Radar session may outlive the host-only LATAM session cookie.
       // Validate the same stored session and identity before issuing the canonical
       // LATAM cookie; never redirect a Radar-only visitor to the legacy Google panel.
@@ -160,7 +161,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         const radarUser=await currentUser(new Request(radarOrigin+'/v1/auth/me',{headers:{cookie:req.headers.get('cookie')??''}}));
         if(radarUser?.id===radarPayload.uid&&radarUser.email.toLowerCase()===radarPayload.email.toLowerCase()){
           const canonical=await sign({...radarPayload,origin:cfg.origin},cfg.secret);
-          return new Response(null,{status:302,headers:[['location',panelEntry?cfg.origin+'/panel#radarAccountSection':radarOrigin+'/'],['set-cookie',cookie('ad507_session',canonical,Math.max(0,Math.min(28800,Math.floor(radarPayload.exp-Date.now()/1000))))],['cache-control','no-store'],['referrer-policy','no-referrer']]});
+          return new Response(null,{status:302,headers:[['location',panelEntry?panelTarget:radarOrigin+'/'],['set-cookie',cookie('ad507_session',canonical,Math.max(0,Math.min(28800,Math.floor(radarPayload.exp-Date.now()/1000))))],['cache-control','no-store'],['referrer-policy','no-referrer']]});
         }
       }
       return new Response(null,{status:302,headers:[['location','https://direcciones.lat/commercial/international?access=1&radar=1'],['set-cookie',await radarReturnCookie()],['cache-control','no-store'],['referrer-policy','no-referrer']]});

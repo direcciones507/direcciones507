@@ -18,7 +18,7 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
  if(!items.length){out.append(text('p','Todavía no tienes establecimientos vinculados ni solicitudes pendientes en Radar.'));return;}
  for(const item of items){
   const row=doc.createElement('article');row.className='row';
-  row.append(text('h3',String(item.name||'Establecimiento')),text('p',String(item.category||'')+' · '+String(item.country||'')),text('p',item.authorized===true?'Administración autorizada':item.requested===true?'Solicitud pendiente · Sin permisos de administración':'Comercio declarado · Sin permisos de administración'));
+  row.append(text('h3',String(item.name||'Establecimiento')),text('p',String(item.category||'')+' · '+String(item.country||'')),text('p',item.authorized===true?'Administración autorizada':item.requested===true?'Solicitud pendiente · Sin permisos de administración':item.declared===true?'Comercio declarado · Sin permisos de administración':item.submitted===true?'Agregado como usuario · Sin permisos de administración':'Vinculado a tu cuenta · Sin permisos de administración'));
   if(data.managementAvailable===true&&item.authorized===true){
    const edit=doc.createElement('button');edit.type='button';edit.textContent='Editar ficha comercial';
    edit.onclick=async()=>{edit.disabled=true;await openCommercialEditor(row,item.id,doc,undefined,()=>{edit.disabled=false;});};row.append(edit);

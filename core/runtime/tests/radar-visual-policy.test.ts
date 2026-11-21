@@ -3,12 +3,12 @@ import {freshProperties,mapFeatures,priorityFeatures,featuredGroups,searchContex
 import {createRadarCampaignLookup} from '../radar/campaign-repository';
 const now=2e6;
 const feature=(properties:any,id='a')=>({id,properties:freshProperties(properties,now)});
-test('normal pins reveal after a small zoom; priorities stay visible with no six-pin cap',()=>{
+test('normal pins remain visible with clustering; priorities stay visible with no six-pin cap',()=>{
  const rows=Array.from({length:12},(_,i)=>feature({featuredUntil:now+1000},String(i)));
  rows.push(feature({activity:'available',reportedAt:now-1},'normal'));
- expect(mapFeatures(rows,12.2,12.8).length).toBe(12);
+ expect(mapFeatures(rows,12.2,12.8).length).toBe(13);
  expect(mapFeatures(rows,12.8,12.8).length).toBe(13);
- expect(mapFeatures(rows,12.1,12.8).length).toBe(12);
+ expect(mapFeatures(rows,12.1,12.8).length).toBe(13);
  expect(priorityFeatures(rows).some(f=>f.id==='normal')).toBe(false);
 });
 test('live expires back to featured, then normal regardless of owner availability',()=>{

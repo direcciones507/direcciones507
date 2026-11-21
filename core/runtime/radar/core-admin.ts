@@ -6,6 +6,9 @@ import {createModerationStore} from './moderation-repository';
 import {createCategoryStore} from './category-catalog';
 import {createCommercialManagement} from './commercial-management';
 import {retireRadarPin} from './pin-retirement';
+import {validateRegistration} from './registration';
+import {createRadarRepository} from './repository';
+import {createRadarAbuseChecks} from './abuse';
 type Database=Parameters<typeof createBusinessStore>[0];
 const origin='https://direcciones.lat';
 const adminOrigins=new Set([origin,'https://cuenta.direcciones507.com']);
@@ -47,6 +50,31 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
    }
    if(management){
     if(env.RADAR_REGISTRATION_PROFILES_ENABLED!=='true')return json(503,{error:'PROFILE_MANAGEMENT_DISABLED'});
+    if(body?.action==='catalog'){
+     if(env.RADAR_CATEGORY_CATALOG_ENABLED!=='true')return json(200,{dynamic:false});
+     return json(200,{dynamic:true,...await createCategoryStore(db).list()});
+    }
+    if(body?.action==='register'){
+     // Reuse the same CORE session, category validation, admission policy and
+     // Radar repository as the canonical map registration endpoint.
+     if(!body.draft||typeof body.draft!=='object'||Array.isArray(body.draft)||body.draft.registrationKind!=='owner')return json(400,{error:'INVALID_ESTABLISHMENT'});
+     if(new TextEncoder().encode(JSON.stringify(body.draft)).byteLength>4608)return json(413,{error:'INVALID_INPUT'});
+     const catalog=env.RADAR_CATEGORY_CATALOG_ENABLED==='true'?createCategoryStore(db):undefined;
+     const category=body.draft.category;
+     const unit=catalog&&typeof category==='string'?await catalog.lookup(category.trim(),true):undefined;
+     if(catalog&&!unit)return json(400,{error:'INVALID_CATEGORY'});
+     const draft=validateRegistration(body.draft,unit,env.RADAR_OWNER_PRIVATE_ENABLED==='true');
+     if(!draft||draft.registrationKind!=='owner')return json(400,{error:'INVALID_ESTABLISHMENT'});
+     if(!await createRadarAbuseChecks(db).registrationAllowed(user.id))return json(429,{error:'REGISTRATION_RATE_LIMIT'});
+     try{
+      const id=await createRadarRepository(db,true,undefined,true,true,env.RADAR_OWNER_PRIVATE_ENABLED==='true').register(draft,user.id);
+      return id?json(201,{id,status:'published'}):json(409,{error:'DUPLICATE'});
+     }catch(error){
+      if((error as {code?:string})?.code==='42P01')return json(503,{error:'OWNER_REGISTRATION_DISABLED'});
+      if((error as {code?:string})?.code==='P4290')return json(429,{error:'REGISTRATION_RATE_LIMIT'});
+      throw error;
+     }
+    }
     if(!body||!['inspect','update','availability','retire'].includes(body.action)||typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ACTION'});
     if(body.action==='retire'){
      if(typeof body.confirmName!=='string'||!body.confirmName.trim()||body.confirmName.length>160)return json(400,{error:'CONFIRM_REQUIRED'});

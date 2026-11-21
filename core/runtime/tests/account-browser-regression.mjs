@@ -267,7 +267,7 @@ try{
   assert.equal(await page.locator('#plan').inputValue(),'BUSINESS_PREMIUM');
   assert.deepEqual(await page.locator('#plan option').evaluateAll(options=>options.map(o=>o.value)),['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']);
   await page.locator('#plan').selectOption('BUSINESS_PREMIUM_PRO');
-  await page.locator('#place').click();assert.equal(await page.locator('#coverField').isVisible(),true);
+  // Focused creation hides the picker until the current form is closed.\n  await page.locator('#panel-creation-close').click();\n  await page.locator('#toggleNewRequest').click();\n  await page.locator('#place').click();assert.equal(await page.locator('#coverField').isVisible(),true);
   for(const status of ['FAILED','FAILED','CANCELLED']){
    current='PENDING';retryAllowed=false;
    await page.goto('https://'+host+'/panel/payments/'+id+'?order='+order);

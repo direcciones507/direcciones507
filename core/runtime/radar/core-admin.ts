@@ -7,6 +7,7 @@ import {createCategoryStore} from './category-catalog';
 import {createCommercialManagement} from './commercial-management';
 type Database=Parameters<typeof createBusinessStore>[0];
 const origin='https://direcciones.lat';
+const adminOrigins=new Set([origin,'https://cuenta.direcciones507.com']);
 export function coreRadarAdminEnabled(env:Record<string,string|undefined>){
  return ['RADAR_ENABLED','RADAR_OWNERSHIP_ENABLED','RADAR_BUSINESS_DETAILS_ENABLED','RADAR_CORE_ADMIN_ENABLED'].every(key=>env[key]==='true');
 }
@@ -19,11 +20,11 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
  return async(req:Request):Promise<Response|null>=>{
   const url=new URL(req.url),admin=url.pathname==='/v1/admin/radar',verification=url.pathname==='/v1/user/radar/verification',management=url.pathname==='/v1/user/radar/business';
   if(!admin&&!verification&&!management)return null;
-  if(url.hostname!=='direcciones.lat'||url.username||url.password||
+  if(!adminOrigins.has('https://'+url.hostname)||url.username||url.password||
    !(url.protocol==='https:'&&(!url.port||url.port==='443')||url.protocol==='http:'&&(!url.port||url.port==='8080')&&req.headers.get('x-forwarded-proto')==='https'))return json(403,{error:'FORBIDDEN'});
   if(!enabled)return json(503,{error:'RADAR_ADMIN_DISABLED'});
   if(req.method!=='POST')return json(405,{error:'METHOD_NOT_ALLOWED'});
-  if(req.headers.get('origin')!==origin)return json(403,{error:'FORBIDDEN'});
+  if(req.headers.get('origin')!=='https://'+url.hostname)return json(403,{error:'FORBIDDEN'});
   const user=await auth.currentUser(req);
   if(!user||admin&&!user.roles.includes('ADMIN'))return json(403,{error:'FORBIDDEN'});
   const parsed=await readRadarJson(req,(management?8192:2048));if(!parsed.ok)return json(parsed.status,{error:parsed.error});
@@ -78,7 +79,9 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
    if(verification&&body?.action!=='claim'||admin&&!['verify_owner','revoke_owner','publish'].includes(body?.action))return json(400,{error:'INVALID_ACTION'});
    const target=new URL(admin?'/v1/radar/admin/moderation':'/v1/radar/business',origin);
    // Internal fixed-path adapter retains authenticated request headers and body.
-   const adapted=new Request(target,{method:'POST',headers:req.headers,body:JSON.stringify(body)});
+   // The trusted internal adapter uses the canonical origin only after exact host, Origin and ADMIN checks.
+   const internalHeaders=new Headers(req.headers);internalHeaders.set('origin',origin);
+   const adapted=new Request(target,{method:'POST',headers:internalHeaders,body:JSON.stringify(body)});
    const result=admin?await moderation(adapted):await business(adapted);
    return result??json(404,{error:'NOT_FOUND'});
   }catch{return json(503,{error:'RADAR_ADMIN_UNAVAILABLE'});}

@@ -211,6 +211,13 @@ try{
     assert.equal(reviewContrast.phone,'rgb(32, 59, 89)');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),true);
 
+    // A selected plan opens the focused creation view. Close it before inspecting an existing request.
+    if(await page.locator('#panel').evaluate(el=>el.classList.contains('panel-creation-focus'))){
+      assert.equal(await page.locator('#requestForm').isVisible(),true);
+      assert.equal(await page.locator('[data-request-detail]').isVisible(),false);
+      await page.locator('#panel-creation-close').click();
+      assert.equal(await page.locator('[data-request-detail]').isVisible(),true);
+    }
     await page.locator('[data-request-detail]').click();
     await page.locator('#requestDetail').getByRole('heading',{name:'Solicitud de prueba',exact:true}).waitFor();
     assert.equal(await page.getByRole('link',{name:'Ir al pago'}).getAttribute('href'),'/panel/payments/'+id);

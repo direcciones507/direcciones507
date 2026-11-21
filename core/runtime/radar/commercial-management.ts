@@ -10,7 +10,7 @@ export function createCommercialManagement(db:Database,catalog?:{lookup(id:strin
    LEFT JOIN radar.registration_profiles p ON p.establishment_id=e.id
    LEFT JOIN radar.business_details d ON d.establishment_id=e.id AND d.updated_by=$2::uuid
    WHERE e.id=$1::uuid AND e.published AND
-   (o.account_ref IS NOT NULL OR p.submitted_by=$2::uuid)`,[id,account]);
+   (o.account_ref IS NOT NULL OR (p.submitted_by=$2::uuid AND NOT EXISTS(SELECT 1 FROM radar.verified_owners other_owner WHERE other_owner.establishment_id=e.id)))`,[id,account]);
   const item=rows[0];if(!item)return null;const configuredUnit=await catalog?.lookup(item.category);
   return {...item,...(configuredUnit?{configuredUnit}:{}),canManage:true};
  },
@@ -47,7 +47,7 @@ export function createCommercialManagement(db:Database,catalog?:{lookup(id:strin
    LEFT JOIN radar.registration_profiles p ON p.establishment_id=e.id
    LEFT JOIN radar.verified_owners o ON o.establishment_id=e.id AND o.account_ref=$2::uuid
    WHERE e.id=$1::uuid AND e.published AND
-    (p.submitted_by=$2::uuid OR o.account_ref IS NOT NULL)
+    (o.account_ref IS NOT NULL OR (p.submitted_by=$2::uuid AND NOT EXISTS(SELECT 1 FROM radar.verified_owners other_owner WHERE other_owner.establishment_id=e.id)))
    FOR UPDATE OF e
   ),saved AS (
    INSERT INTO radar.business_details(establishment_id,updated_by,hours,quantity,unit)

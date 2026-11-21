@@ -208,3 +208,5 @@ h1{letter-spacing:-.045em;line-height:1.09}h1 span{background:linear-gradient(11
 .map-area>.detail:has(.detail-options:not([open])){max-height:calc(100% - 28px)}
 .map-area>.detail .detail-options[open] .detail-options-content{max-height:min(50vh,430px);overflow-y:auto;overscroll-behavior:contain}
 @media(max-width:600px){.map-area>.detail{top:50%;left:50%;bottom:auto;width:calc(100% - 28px);max-height:calc(100% - 24px);padding:12px 14px}}
+
+.detail-open-status{display:inline-flex;align-items:center;margin:2px 0 6px;padding:3px 9px;border:1px solid #8ca2b2;border-radius:999px;background:#193249;color:#d7e6f1;font-size:.6875rem;font-weight:600;line-height:1.4}

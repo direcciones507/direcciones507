@@ -16,7 +16,7 @@ let passed=0;
 try{
  // Shared card + real Radar UI; every HTTP request is isolated and no real account is used.
  for(const registrationKind of ['user','owner']){
-  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage();page.setDefaultTimeout(10000);page.on('pageerror',e=>console.error('RADAR_PAGE_ERROR',e.message));
+  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage();page.setDefaultTimeout(10000);page.on('pageerror',e=>console.error('RADAR_PAGE_ERROR',e.stack||e.message));
   const radar='https://radar.direcciones.lat',latam='https://direcciones.lat';let loginPosts=0,logoutPosts=0;
   await context.route('**/*',async route=>{
    const request=route.request(),url=new URL(request.url()),path=url.pathname;
@@ -60,7 +60,7 @@ try{
    await page.waitForURL(radar+'/');
    try{await page.locator('#addDialog').waitFor({state:'visible'});}
    catch(error){
-    const diag=await page.evaluate(()=>({url:location.href,button:document.querySelector('#accountButton')?.textContent,storage:sessionStorage.getItem('radarAction'),dialogOpen:document.querySelector('#addDialog')?.open,logoutVisible:!document.querySelector('#radarLogoutButton')?.hidden}));
+    const diag=await page.evaluate(()=>({url:location.href,button:document.querySelector('#accountButton')?.textContent,storage:sessionStorage.getItem('radarAction'),dialogOpen:document.querySelector('#addDialog')?.open,logoutPresent:!!document.querySelector('#radarLogoutButton'),logoutVisible:!document.querySelector('#radarLogoutButton')?.hidden}));
     console.error('RADAR_COMMUNITY_RESUME_DIAGNOSTIC',JSON.stringify(diag));
     throw error;
    }

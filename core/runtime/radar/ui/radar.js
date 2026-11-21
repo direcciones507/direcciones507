@@ -245,7 +245,7 @@ function checkSession(){
    state.session=response.ok?(await response.json()).user:null;
   }catch{state.session=null;}
   $('accountButton').textContent=state.session?'Mi panel':'Ingresar';
-  $('radarLogoutButton').hidden=!state.session;
+  const logoutButton=$('radarLogoutButton');if(logoutButton)logoutButton.hidden=!state.session;
   $('adminButton').hidden=!state.session?.roles?.includes('ADMIN');
   return state.session;
  })().finally(()=>{state.sessionRequest=null;});
@@ -256,8 +256,9 @@ function resumeAction(action){if(!action)return;if(alertsEnabled&&action.type===
  if(action.type==='add'){setRegistrationKind($('addForm'),registrationKind(action)||'user');$('addDialog').querySelector('h2').textContent=registrationKind(action)==='owner'?'Registrar mi comercio':'Agregar establecimiento';if(action.draft){$('placeName').value=action.draft.name||'';$('placeCategory').value=action.draft.category||'shop';$('placeCountry').value=action.draft.country||state.country;updateRegistrationTerritoryLabels();coordinates(Number(action.draft.longitude),Number(action.draft.latitude));}renderCategoryRegistrationFields($('businessCategoryFields'),$('placeCategory').value);if(registrationKind(action)==='owner')restoreOwnerRegistration($('addForm'),action.draft?.profile);setOwnerPrivateEnabled($('addForm'),ownerPrivateEnabled&&registrationKind(action)==='owner',$('placeCountry').value);$('addStatus').textContent='';show('addDialog');}if(action.type==='business'){clearAction();location.assign('https://direcciones.lat/auth/radar?panel=1');return;}if(action.type==='report'){state.pending=action;$('reportName').textContent=action.name||'Establecimiento seleccionado';$('reportStatus').textContent='';show('reportDialog');if(action.reportState){const n=$('reportForm').querySelector(`input[value="${['available','queue','full','incident'].includes(action.reportState)?action.reportState:'available'}"]`);n.checked=true;}}}
 function openAccount(){location.assign('https://direcciones.lat/auth/radar');}
 $('accountButton').onclick=async()=>{if(await checkSession()){location.assign('https://direcciones.lat/auth/radar?panel=1');}else{clearAction();openAccount();}};
-$('radarLogoutButton').onclick=async()=>{
- const button=$('radarLogoutButton');button.disabled=true;
+const radarLogoutControl=$('radarLogoutButton');
+if(radarLogoutControl)radarLogoutControl.onclick=async()=>{
+ const button=radarLogoutControl;button.disabled=true;
  try{
   const response=await fetch('/auth/logout',{method:'POST',credentials:'same-origin'});
   if(!response.ok)throw Error();

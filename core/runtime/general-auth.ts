@@ -150,6 +150,18 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       const user=await currentUser(req);
       const token=readCookie(req,'ad507_session'),payload=token?await verify(token,cfg.secret):null;
       if(user&&payload)return radarRedirect([await sharedRadarCookie(payload),clearRadarReturn()]);
+      // A valid Radar session may outlive the host-only LATAM session cookie.
+      // Validate the same stored session and identity before issuing the canonical
+      // LATAM cookie; never redirect a Radar-only visitor to the legacy Google panel.
+      const shared=readCookie(req,radarSessionName);
+      const radarPayload=shared?await verify(shared,cfg.secret):null;
+      if(radarPayload&&sessionOrigin(radarPayload,radarOrigin)){
+        const radarUser=await currentUser(new Request(radarOrigin+'/v1/auth/me',{headers:{cookie:req.headers.get('cookie')??''}}));
+        if(radarUser?.id===radarPayload.uid&&radarUser.email.toLowerCase()===radarPayload.email.toLowerCase()){
+          const canonical=await sign({...radarPayload,origin:cfg.origin},cfg.secret);
+          return new Response(null,{status:302,headers:[['location',cfg.origin+'/panel#radarAccountSection'],['set-cookie',cookie('ad507_session',canonical,Math.max(0,Math.min(28800,Math.floor(radarPayload.exp-Date.now()/1000))))],['cache-control','no-store'],['referrer-policy','no-referrer']]});
+        }
+      }
       return new Response(null,{status:302,headers:[['location','https://direcciones.lat/commercial/international?access=1&radar=1'],['set-cookie',await radarReturnCookie()],['cache-control','no-store'],['referrer-policy','no-referrer']]});
     }
     const emailRoute=url.pathname.startsWith('/v1/auth/email/');

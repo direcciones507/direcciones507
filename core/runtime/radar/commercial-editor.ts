@@ -23,7 +23,7 @@ export async function openCommercialEditor(row:any,id:string,doc:any=document,se
   quantity.type='number';quantity.min='0';quantity.max='100000';quantity.step='1';
   const unitLabel=text('label','Unidad'),unit=doc.createElement('select');unit.name='unit';unit.setAttribute('aria-label','Unidad');
   for(const [value,label] of [['tables','Mesas'],['rooms','Habitaciones'],['places','Cupos'],['units','Unidades']]){const option=text('option',label);option.value=value;unit.append(option);}
-  unit.value=item.unit||'units';unitLabel.append(unit);form.append(unitLabel);
+  unit.value=item.unit||item.configuredUnit||profile.capacity?.unit||effectiveUnit;unitLabel.append(unit);form.append(unitLabel);
   if(!verified)form.append(text('p','Puedes administrar este comercio. La verificación voluntaria solo agrega el distintivo de negocio verificado.'));
   const definitions:any={restaurant:[['cuisine','Tipo de cocina'],['services','Servicios']],hotel:[['accommodation','Alojamiento'],['services','Servicios']],shop:[['products','Productos']],services:[['services','Servicios']],tourism:[['experiences','Experiencias'],['access','Acceso']]};
   const extraFields=definitions[item.category]||[['services','Servicios']];

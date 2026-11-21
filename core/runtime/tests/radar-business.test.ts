@@ -46,6 +46,6 @@ test('approved owner can update basic availability; revocation immediately denie
  await db.unsafe('DELETE FROM radar.verified_owners WHERE establishment_id=$1',[id]);
   expect((await store.mine(owner))[0]).toMatchObject({id,submitted:true,authorized:false,requested:false}); // A contribution remains visible, without ownership rights.
  expect(await store.update(id,owner,data)).toBe(false);
- rows=await repo.listPublished('PA',bounds);expect(rows[0].details).toBeUndefined();
+ rows=await repo.listPublished('PA',bounds);expect(rows[0].verifiedOwner).toBe(false);expect(rows[0].details?.quantity).toBe(10); // Declared registrant may still manage, but the badge is revoked.
  }finally{await pg.close();}
 },20000);

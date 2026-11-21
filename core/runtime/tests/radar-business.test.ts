@@ -28,7 +28,7 @@ test('approved owner can update basic availability; revocation immediately denie
  await db.unsafe('INSERT INTO ad507.users(id) VALUES($1),($2)',[owner,other]);
  await db.unsafe("INSERT INTO radar.establishments(id,account_ref,name,category,country,latitude,longitude,published) VALUES($1,$2,'Test','restaurant','PA',8,-80,true)",[id,owner]);
  const store=createBusinessStore(db);
- expect(await store.mine(owner)).toEqual([]); // Registration alone grants no ownership.
+  expect((await store.mine(owner))[0]).toMatchObject({id,submitted:true,authorized:false,requested:false}); // A contribution remains visible, without ownership rights.
  expect(await store.claim(id,other,'Soy representante autorizado')).toBe(true);
  expect(await store.claim(id,other,'Solicitud repetida no modifica permiso')).toBe(false);
  expect((await store.mine(other))[0]).toMatchObject({id,authorized:false,requested:true});
@@ -44,7 +44,7 @@ test('approved owner can update basic availability; revocation immediately denie
  expect(publicFeatures(rows,bounds,'PA',Date.now(),true).features[0].properties.pin).toBe('normal');
  expect((await db.unsafe('SELECT count(*)::int AS n FROM radar.activity_reports',[]))[0].n).toBe(0);
  await db.unsafe('DELETE FROM radar.verified_owners WHERE establishment_id=$1',[id]);
- expect(await store.mine(owner)).toEqual([]);
+  expect((await store.mine(owner))[0]).toMatchObject({id,submitted:true,authorized:false,requested:false}); // A contribution remains visible, without ownership rights.
  expect(await store.update(id,owner,data)).toBe(false);
  rows=await repo.listPublished('PA',bounds);expect(rows[0].details).toBeUndefined();
  }finally{await pg.close();}

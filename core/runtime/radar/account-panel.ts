@@ -54,16 +54,19 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
    row.append(quick,panel);
   }
   if(item.authorized!==true&&item.declared===true)row.append(text('p','Puedes consultar tu comercio aquí. La edición de la ficha, horarios y capacidad (mesas, habitaciones o cupos) está reservada actualmente a propietarios autorizados.'));
-  if(data.verificationAvailable===true&&item.declared===true&&item.authorized!==true&&item.requested!==true){
-   row.append(text('p','Verificación voluntaria gratuita e independiente de pagos. Contacta soporte por los canales oficiales para aportar un video continuo de fachada, letrero, aviso de operaciones e interior. No muestres tu cédula. La evidencia es privada; revisión manual de 48–72 horas.'));
-   const button=doc.createElement('button');button.type='button';button.textContent='Solicitar verificación';
-   const status=text('p','');status.setAttribute('role','status');
-   button.onclick=async()=>{
-    button.disabled=true;
-    try{const result=await send({action:'claim',id:item.id,reason:'Solicito verificación voluntaria; aportaré evidencia privada por los canales oficiales de soporte.'});if(!result.ok)throw Error();status.textContent='Solicitud registrada. Coordina el envío privado de evidencia con soporte. Todavía no concede titularidad.';}
-    catch{button.disabled=false;status.textContent='No se pudo registrar la solicitud. Actualiza tu panel antes de reintentar.';}
-   };
-   row.append(button,status);
+  if(data.verificationAvailable===true&&item.declared===true&&item.authorized!==true){
+   row.append(text('p','Verificación voluntaria gratuita e independiente de pagos. Tras solicitarla, contacta a Direcciones por WhatsApp para coordinar un video continuo de fachada, letrero, aviso de operaciones e interior. No muestres cédulas ni datos tributarios en el video. La revisión es manual y puede tardar 48–72 horas.'));
+   const contact=doc.createElement('a');contact.href='https://wa.me/50765996532?text='+encodeURIComponent('Hola, Direcciones. Solicité la verificación de mi establecimiento en Radar: '+String(item.name||'Establecimiento')+'. Quisiera coordinar el envío del video de evidencia.');contact.target='_blank';contact.rel='noopener noreferrer';contact.textContent='Contactar a Direcciones por WhatsApp (+507 6599-6532)';contact.hidden=item.requested!==true;row.append(contact);
+   if(item.requested!==true){
+    const button=doc.createElement('button');button.type='button';button.textContent='Solicitar verificación';
+    const status=text('p','');status.setAttribute('role','status');
+    button.onclick=async()=>{
+     button.disabled=true;
+     try{const result=await send({action:'claim',id:item.id,reason:'Solicito verificación voluntaria; aportaré evidencia privada por los canales oficiales de soporte.'});if(!result.ok)throw Error();status.textContent='Solicitud registrada. Contacta a Direcciones por WhatsApp para coordinar la evidencia. Todavía no concede titularidad.';contact.hidden=false;button.hidden=true;}
+     catch{button.disabled=false;status.textContent='No se pudo registrar la solicitud. Actualiza tu panel antes de reintentar.';}
+    };
+    row.append(button,status);
+   }
   }
   out.append(row);
  }

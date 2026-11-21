@@ -100,7 +100,7 @@ export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>
      const row=doc.createElement('article');row.className='tile';
      row.append(text('h4',String(item.name||'Establecimiento')),text('p',String(item.country||'')+(item.accountName?' · '+String(item.accountName):'')));
      if(item.reason)row.append(text('p',String(item.reason)));
-     if(privateEnabled&&(key==='requests'||key==='owners')){
+     if(privateEnabled){
       const inspect=doc.createElement('button');inspect.type='button';inspect.className='btn';inspect.textContent='Consultar identificación privada';
       const privateStatus=text('p','');privateStatus.setAttribute('role','status');
       inspect.onclick=async()=>{

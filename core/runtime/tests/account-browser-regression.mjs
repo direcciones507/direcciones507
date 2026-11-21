@@ -33,9 +33,9 @@ try{
     if(path==='/v1/radar/map')return route.fulfill({json:{type:'FeatureCollection',features:[]}});
     if(path==='/auth/logout'){logoutPosts++;return route.fulfill({status:204,headers:{'set-cookie':'__Secure-ad507_radar_session=; Max-Age=0; Path=/; Secure; HttpOnly; Domain=direcciones.lat; SameSite=Lax'}});}
    }else{
-    if(path==='/auth/radar')return route.fulfill({status:302,headers:{location:latam+'/?access=1'}});
+    if(path==='/auth/radar')return route.fulfill({status:302,headers:{location:loginPosts?radar+'/':latam+'/commercial/international?access=1&radar=1'}});
     if(path==='/panel')return route.fulfill({contentType:'text/html; charset=utf-8',body:fixtures.plan.html});
-    if(path==='/')return route.fulfill({contentType:'text/html',body:fixtures.commercial.html});
+    if(path==='/'||path==='/commercial/international')return route.fulfill({contentType:'text/html',body:fixtures.commercial.html});
     if(path==='/v1/user/panel')return route.fulfill({status:401,json:{error:'UNAUTHENTICATED'}});
     if(path==='/v1/auth/email/login'){
      loginPosts++;assert.equal(request.method(),'POST');assert.equal(request.headers().origin,latam);
@@ -45,7 +45,7 @@ try{
    }
    return route.fulfill({status:404,body:''});
   });
-  await page.goto(radar+'/');await page.locator('#addButton').click();await page.getByRole('button',{name:registrationKind==='owner'?'Soy propietario de un comercio':'Soy usuario',exact:true}).click();await page.waitForURL(latam+'/?access=1');
+  await page.goto(radar+'/');await page.locator('#addButton').click();await page.getByRole('button',{name:registrationKind==='owner'?'Soy propietario de un comercio':'Soy usuario',exact:true}).click();await page.waitForURL(latam+'/commercial/international?access=1&radar=1');
   if(await page.getByRole('button',{name:'Rechazar',exact:true}).isVisible()){
    // The access dialog is modal: close it before using a background consent control.
    await page.getByRole('button',{name:'Cerrar acceso',exact:true}).click();
@@ -53,10 +53,9 @@ try{
    await page.reload();await page.locator('#latamAccess').waitFor({state:'visible'});
   }
   await page.locator('#latamAccessEmail').fill('radar-browser@example.invalid');await page.locator('#latamAccessPassword').fill('synthetic-password-123');
-  await page.locator('#latamEmailSubmit').click();await page.getByRole('button',{name:'Continuar',exact:true}).waitFor();
-  assert.equal(page.url(),latam+'/?access=1');assert.equal(loginPosts,1);assert.equal(await page.locator('#latamAccessPassword').inputValue(),'');
+  await page.locator('#latamEmailSubmit').click();await page.waitForURL(radar+'/');await page.locator('#addDialog').waitFor({state:'visible'});
+  assert.equal(loginPosts,1);
   const cookie=(await context.cookies(radar)).find(c=>c.name==='__Secure-ad507_radar_session');assert.ok(cookie?.httpOnly&&cookie?.secure);
-  await page.getByRole('button',{name:'Continuar',exact:true}).click();await page.waitForURL(radar+'/');await page.locator('#addDialog').waitFor({state:'visible'});
   assert.equal(await page.locator('#accountButton').innerText(),'Mi cuenta');assert.equal(loginPosts,1);
   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).type),'add');
   assert.equal(await page.evaluate(()=>JSON.parse(sessionStorage.getItem('radarAction')).registrationKind),registrationKind);
@@ -64,7 +63,7 @@ try{
   await page.locator('#addDialog [data-close]').click();await page.locator('#accountButton').click();
   await page.waitForURL(latam+'/panel#radarAccountSection');assert.equal(logoutPosts,0);
   assert.ok((await context.cookies(radar)).some(c=>c.name==='__Secure-ad507_radar_session'&&c.httpOnly&&c.secure));
-  await context.close();console.log('PASS: isolated Radar -> shared LATAM email card -> Continue -> Radar pending add action -> CORE account; no real accounts or writes.');
+  await context.close();console.log('PASS: isolated Radar -> dedicated shared LATAM email card -> automatic Radar pending add action -> CORE account; no real accounts or writes.');
  }
 
  for(const viewport of [{width:390,height:844},{width:820,height:1180},{width:1440,height:1000}]){

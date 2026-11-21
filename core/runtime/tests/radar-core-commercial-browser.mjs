@@ -42,7 +42,7 @@ try{
  await page.locator('#radarAdminSearch').fill('Comercio');await Promise.all([page.waitForResponse(r=>r.url().endsWith('/v1/admin/radar')),page.getByRole('button',{name:'Buscar',exact:true}).click()]);await page.getByRole('checkbox').waitFor();
  assert.ok(calls.some(c=>c.q==='Comercio'&&c.offset===0));
  await page.route('**/v1/user/radar/business',async route=>{
-  const body=route.request().postDataJSON();calls.push(body);await route.fulfill({json:body.action==='inspect'?{item:{name:'Comercio sintético',category:'shop',profile:{province:'Panamá',locality:'Santiago',description:'Original',phone:'',socials:[],extras:{},hours:{}}}}:{ok:true}});
+  const body=route.request().postDataJSON();calls.push(body);await route.fulfill({json:body.action==='inspect'?{item:{name:'Comercio sintético',category:'shop',verified:true,profile:{province:'Panamá',locality:'Santiago',description:'Original',phone:'',socials:[],extras:{},hours:{}}}}:{ok:true}});
  });
  await page.goto(origin+'/panel');await page.getByRole('button',{name:'Editar ficha comercial',exact:true}).click();
  try{await page.getByLabel('Descripción pública',{exact:true}).fill('Descripción actualizada',{timeout:5000});}catch(error){console.error('Synthetic editor diagnostics:',JSON.stringify({calls:calls.filter(c=>c.action==='inspect'),errors,html:await page.locator('#radarAccountItems').innerHTML()}));throw error;}await page.getByLabel('Cantidad disponible (opcional)',{exact:true}).fill('7');await page.getByLabel('Unidad',{exact:true}).selectOption('tables');await page.getByRole('button',{name:'Guardar cambios',exact:true}).click();

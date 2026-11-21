@@ -11,7 +11,7 @@ const favoritesEnabled=document.querySelector('meta[name="radar-favorites"]')?.c
 const activityValidation=document.querySelector('meta[name="radar-activity-validation"]')?.content==='true';
 const ownerRegistrationEnabled=document.querySelector('meta[name="radar-registration-profiles"]')?.content==='true';
 const ownerPrivateEnabled=document.querySelector('meta[name="radar-owner-private"]')?.content==='true';
-const state={country:'PA',features:[],map:null,maplibre:null,selected:null,picking:false,pickMarker:null,request:null,sequence:0,session:null,pending:null,authChecking:false,bounds:null,revealZoom:12.8,resetZoom:false,expiryTimer:null};
+const state={country:'PA',features:[],map:null,maplibre:null,selected:null,picking:false,pickMarker:null,request:null,sequence:0,session:null,pending:null,sessionRequest:null,bounds:null,revealZoom:12.8,resetZoom:false,expiryTimer:null};
 let loadTimer,refreshTimer,toastTimer,authTimer,nearbyTarget=null,pulseLoaded=false,pulseLoading=false;
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,5500);}
@@ -237,7 +237,19 @@ let placeGpsSequence=0;
 $('addDialog').addEventListener('close',()=>{++placeGpsSequence;$('placeGps').disabled=false;$('placeGps').removeAttribute('aria-busy');$('placeGps').textContent='Usar mi ubicación';});
 $('placeGps').onclick=()=>{const seq=++placeGpsSequence,button=$('placeGps');button.disabled=true;button.setAttribute('aria-busy','true');button.textContent='Buscando ubicación…';$('addStatus').textContent='Buscando tu ubicación. Permite el acceso al GPS y espera un momento.';const done=()=>{if(seq!==placeGpsSequence||!$('addDialog').open)return false;button.disabled=false;button.removeAttribute('aria-busy');button.textContent='Usar mi ubicación';return true;};gps(p=>{if(!done())return;coordinates(p.longitude,p.latitude);$('addStatus').textContent='Ubicación obtenida. Elige en el mapa para comprobar y ajustar el PIN.';},m=>{if(done())$('addStatus').textContent=m;});};
 $('addButton').onclick=()=>show('registrationChoiceDialog');
-async function checkSession(){if(state.authChecking)return state.session;state.authChecking=true;try{const r=await fetch('/v1/auth/me',{credentials:'same-origin',cache:'no-store'});state.session=r.ok?(await r.json()).user:null;$('accountButton').textContent=state.session?'Mi cuenta':'Ingresar';$('adminButton').hidden=!state.session?.roles?.includes('ADMIN');return state.session;}catch{state.session=null;return null;}finally{state.authChecking=false;}}
+function checkSession(){
+ if(state.sessionRequest)return state.sessionRequest;
+ state.sessionRequest=(async()=>{
+  try{
+   const response=await fetch('/v1/auth/me',{credentials:'same-origin',cache:'no-store'});
+   state.session=response.ok?(await response.json()).user:null;
+  }catch{state.session=null;}
+  $('accountButton').textContent=state.session?'Mi cuenta':'Ingresar';
+  $('adminButton').hidden=!state.session?.roles?.includes('ADMIN');
+  return state.session;
+ })().finally(()=>{state.sessionRequest=null;});
+ return state.sessionRequest;
+}
 async function beginAction(action){saveAction(action);if(action.type==='report'&&anonymousReports){resumeAction(action);return;}if(!await checkSession()){openAccount();return;}resumeAction(action);}
 function resumeAction(action){if(!action)return;if(alertsEnabled&&action.type==='alerts-list'){clearAction();openAlerts();return;}if(reputationEnabled&&action.type==='reputation-summary'){clearAction();openReputation();return;}if(contributionsEnabled&&action.type==='contributions-list'){clearAction();openContributions();return;}if(favoritesEnabled&&action.type==='favorites-list'){clearAction();openFavorites();return;}if(favoritesEnabled&&action.type==='favorite-add'){saveFavorite(action);return;}if(action.type==='add'){setRegistrationKind($('addForm'),registrationKind(action)||'user');$('addDialog').querySelector('h2').textContent=registrationKind(action)==='owner'?'Registrar mi comercio':'Agregar establecimiento';if(action.draft){$('placeName').value=action.draft.name||'';$('placeCategory').value=action.draft.category||'shop';$('placeCountry').value=action.draft.country||state.country;updateRegistrationTerritoryLabels();coordinates(Number(action.draft.longitude),Number(action.draft.latitude));}renderCategoryRegistrationFields($('businessCategoryFields'),$('placeCategory').value);if(registrationKind(action)==='owner')restoreOwnerRegistration($('addForm'),action.draft?.profile);setOwnerPrivateEnabled($('addForm'),ownerPrivateEnabled&&registrationKind(action)==='owner',$('placeCountry').value);$('addStatus').textContent='';show('addDialog');}if(action.type==='business'){clearAction();location.assign('https://direcciones.lat/panel');return;}if(action.type==='report'){state.pending=action;$('reportName').textContent=action.name||'Establecimiento seleccionado';$('reportStatus').textContent='';show('reportDialog');if(action.reportState){const n=$('reportForm').querySelector(`input[value="${['available','queue','full','incident'].includes(action.reportState)?action.reportState:'available'}"]`);n.checked=true;}}}
 function openAccount(){location.assign('https://direcciones.lat/auth/radar');}
@@ -254,8 +266,6 @@ for(const b of $('validationVote').querySelectorAll('button'))b.onclick=async()=
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();scheduleLoad(0);}});
 countryOptions();updateRegistrationTerritoryLabels();territoryOptions();state.bounds=countries.PA.bounds;
 const stored=readStorage();if(stored&&Date.now()-stored.savedAt<30*60*1000&&['add','report','business','favorite-add','favorites-list','contributions-list','reputation-summary','alerts-list'].includes(stored.type)){state.pending=stored;if(countries[stored.country])setCountry(stored.country,false);checkSession().then(user=>{if(user)resumeAction(stored);});}else clearAction();
-// Only the isolated local preview serves this endpoint. Never request it from production.
-if(['localhost','127.0.0.1'].includes(location.hostname))fetch('/radar/preview-info',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.preview)$('previewNotice').hidden=false;}).catch(()=>{});
 checkSession();scheduleLoad(0);
 // Default to exploration on a fresh visit; respect explicit anchors and restored history.
 const navigation=performance.getEntriesByType('navigation')[0];

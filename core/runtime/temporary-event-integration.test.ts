@@ -107,7 +107,7 @@ test('native PostgreSQL: owner workflow, R2 adapter, verified Yappy, QR, expirat
   expect((await handleTemporaryEventRoutes(request('/evento/'+created.slug+'/foto/1'),ctx))?.status).toBe(200);
   expect((await repository.getPublic(created.slug,new Date(Date.parse(today+'T05:00:00Z')+2*86400000-1)))?.status).toBe('ACTIVE');expect((await repository.getPublic(created.slug,new Date(Date.parse(today+'T05:00:00Z')+2*86400000)))?.status).toBe('EXPIRED');
   await sql.unsafe("UPDATE ad507.temporary_events SET starts_on='2020-01-01',ends_on='2020-01-01' WHERE id=$1",[id]);
-  const ended=await handleTemporaryEventRoutes(request('/evento/'+created.slug),ctx);expect(await ended!.text()).toContain('evento ha finalizado');expect((await handleTemporaryEventRoutes(request('/evento/'+created.slug+'/foto/1'),ctx))?.status).toBe(410);
+  const ended=await handleTemporaryEventRoutes(request('/evento/'+created.slug),ctx);expect(ended?.status).toBe(410);const endedHtml=await ended!.text();expect(endedHtml).toContain('Dirección desconectada');expect(endedHtml).not.toContain('Fiesta editada');expect(endedHtml).not.toContain('Descargar QR');expect(endedHtml).not.toContain('og:image');expect((await handleTemporaryEventRoutes(request('/evento/'+created.slug+'/foto/1'),ctx))?.status).toBe(410);
   await sql.unsafe(readFileSync(new URL('./schema-proposals/temporary-events.rollback.sql',import.meta.url),'utf8'));expect(Number((await sql.unsafe('SELECT count(*) FROM ad507.users'))[0].count)).toBe(2);
  }finally{await sql.end();await admin.unsafe('DROP DATABASE '+database);await admin.end()}
 },30000);

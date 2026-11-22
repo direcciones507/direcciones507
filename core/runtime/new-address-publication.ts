@@ -1,5 +1,5 @@
 import {addressBillingExempt} from './admin-billing-policy';
-import {effectiveServicePlan} from './annual-service';
+import {effectiveServicePlan,serviceExpired,ANNUAL_POLICY} from './annual-service';
 import {PLACE_AD_PRICE_CENTS,PLACE_AD_DURATION_DAYS} from './payment-policy';
 import {continuousGallery} from './continuous-gallery';
 import {publicCardPresentation} from './public-card-presentation';
@@ -623,6 +623,12 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
         if(publicMatch&&!url.pathname.endsWith('/')&&(!record||record.extras.historical))return null;
         if(record&&publicMatch&&!record.extras.historical&&(!url.pathname.endsWith('/')||publicMatch[1]!==record.extras.publicCode))return new Response(null,{status:308,headers:{location:record.url,'cache-control':'no-store'}});
         if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
+        // Paid services are checked at read time, not by a scheduled job.
+        // Match both the canonical code and its personalized public alias.
+        const expired=await sql.unsafe(`SELECT 1 FROM ad507.addresses WHERE source='USER_REQUEST' AND status='ACTIVE' AND publication_receipt IS NOT NULL AND request_data->'migration' IS NULL AND request_data->'annualService'->>'policy'=$2 AND (lower(code)=lower($1) OR lower(request_data->>'publicCode')=lower($1) OR EXISTS(SELECT 1 FROM jsonb_array_elements_text(CASE WHEN jsonb_typeof(request_data->'codeAliases')='array' THEN request_data->'codeAliases' ELSE '[]'::jsonb END) alias WHERE lower(alias)=lower($1))) AND (NULLIF(request_data->'annualService'->>'endsAt','') IS NULL OR CASE WHEN request_data->'annualService'->>'endsAt' ~ '^\\d{4}-\\d{2}-\\d{2}T' THEN (request_data->'annualService'->>'endsAt')::timestamptz<=now() ELSE true END) LIMIT 1`,[code,ANNUAL_POLICY]);
+        if(expired.length)return publicMatch
+          ?new Response('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Dirección desconectada</title></head><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#101d35;color:white;font:16px system-ui;text-align:center"><main><h1>Dirección desconectada</h1><p>Esta dirección digital no se encuentra disponible.</p></main></body></html>',{status:410,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','referrer-policy':'no-referrer'}})
+          :Response.json({ok:false,error:'ADDRESS_DISCONNECTED'},{status:410,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
         // Owner-retired pages are permanently gone: do not fall back to historical
         // rendering, and let Google discover the 410 instead of a soft-404.
         const retired=await sql.unsafe("SELECT 1 FROM ad507.addresses WHERE code=$1 AND source='USER_REQUEST' AND status='ARCHIVED' LIMIT 1",[code]);
@@ -636,7 +642,7 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
       if(!context.r2)return new Response(null,{status:503});
       try{const rows=await sql.unsafe("SELECT a.id::text,a.request_data,a.country_code,a.address_type,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
       if(!rows.length)return new Response(null,{status:404});
-      const row=rows[0];if(row.request_data?.annualService&&!row.request_data?.migration&&row.address_type==='BUSINESS'&&effectiveServicePlan(row.request_data,row.request_data?.plan)!=='BUSINESS_PREMIUM_PRO'&&row.media_type!=='LOGO')return new Response(null,{status:403,headers:{'cache-control':'no-store'}});
+      const row=rows[0];if(serviceExpired(row.request_data))return new Response(null,{status:410,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});if(row.request_data?.annualService&&!row.request_data?.migration&&row.address_type==='BUSINESS'&&effectiveServicePlan(row.request_data,row.request_data?.plan)!=='BUSINESS_PREMIUM_PRO'&&row.media_type!=='LOGO')return new Response(null,{status:403,headers:{'cache-control':'no-store'}});
       // Keep private media closed for countries whose commercial publication is disabled.
       if(!row.request_data?.migration)assertCountryPublication(row.country_code??row.request_data?.countryCode??'PA',row.address_type,row.request_data?.plan);
         const storage=createR2Storage(context.r2,{fetch:context.fetch,registerIntent:async()=>{throw Error('PUBLIC_MEDIA_READ_ONLY');},authorize:async scope=>{

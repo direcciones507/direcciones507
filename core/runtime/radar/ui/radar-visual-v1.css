@@ -1,0 +1,51 @@
+/* Radar visual pilot: presentation only. No API, auth, pin or report changes. */
+:root{--radar-action:#20b86d;--radar-radius:12px;--muted:#b7c6d8}
+.hero,.explore,.featured-section{max-width:1440px;margin-inline:auto;padding-inline:20px}
+.header{padding:14px 20px}
+.hero{min-height:0;display:block;padding-block:22px 14px;overflow:visible}
+.hero:before,.radar-art,.hero-foot,.hero-actions{display:none!important}
+.hero h1{font-size:clamp(25px,4vw,40px);line-height:1.16;letter-spacing:normal;margin:0 0 5px;font-weight:650}
+.hero-description{font-size:14px;line-height:1.5;max-width:760px;margin:0;color:var(--muted)}
+.explore{padding-top:4px}.section-heading{margin-bottom:10px;align-items:center}
+.button,.icon-button,input,select,.search,.map-shell,.dialog{border-radius:var(--radar-radius)}
+.button{background:#10243b;color:#e9f2fb;border:1px solid #526782;box-shadow:none;transition:background .16s ease,border-color .16s ease}
+.button:hover{background:#1b3651}.button.primary,#addButton{background:var(--radar-action);border-color:var(--radar-action);color:#05231a;box-shadow:none;font-weight:700}
+.button.primary:hover,#addButton:hover{background:#2fce81}
+.button.silver,.button.subtle{background:transparent;border:1px solid #536b88;color:#e7f0fc;box-shadow:none}
+.search-submit{background:#17334c;border:1px solid #47627c;color:#f0f6fc}
+#addButton{min-height:42px;padding:9px 14px}
+.map-shell{box-shadow:none;overflow:visible}.toolbar{padding:10px;gap:10px;border-radius:var(--radar-radius) var(--radar-radius) 0 0}
+.country-control{width:155px}.search{padding:3px 5px 3px 12px}
+.radar-more-controls{background:#0e1b2c;border-bottom:1px solid #334860}
+.radar-more-controls>summary{cursor:pointer;padding:10px 14px;color:#d6e4f5;font-size:13px;list-style-position:inside}
+.radar-more-controls>summary:hover{background:#172a42}
+.radar-more-inner{display:grid;gap:14px;padding:12px 14px 16px}
+.radar-more-inner #filtersButton{justify-self:start}
+.radar-more-inner .filters{border:1px solid #344a63;border-radius:var(--radar-radius);padding:14px;flex-wrap:wrap}
+.radar-more-inner .nearby-actions{padding:0;display:flex;flex-wrap:wrap;gap:12px}
+.radar-more-inner .personal-tools{max-width:100%}
+.map-workspace{grid-template-columns:minmax(0,4fr) minmax(0,8fr);height:620px}
+.results-hint,.result-time,.privacy-note,.map-bottom,.category-label{color:#b5c5d9}
+.map-tools .icon-button,.maplibregl-ctrl-group,.maplibregl-ctrl-group button{background:#0c1a2e!important;color:#e8f2ff!important;border-color:#526b88!important}
+.maplibregl-ctrl-group button span{filter:invert(1)}
+.maplibregl-ctrl-attrib{background:#e1e7eeed!important;color:#172535!important}
+.category-label{display:inline-flex;border:1px solid #4b637d;border-radius:999px;padding:3px 9px;line-height:1.3}
+@media(min-width:1000px){.map-workspace{grid-template-columns:repeat(12,minmax(0,1fr))}.results-panel{grid-column:span 4}.map-area{grid-column:span 8}}
+@media(max-width:767px){
+.header{padding:10px 20px}.hero{padding-top:14px;padding-bottom:8px}
+.hero h1{font-size:26px}.hero-description{font-size:13px;line-height:1.4}
+.explore{padding:0 20px}.section-heading{margin:0 0 9px}
+#addButton{font-size:12px;min-height:40px;padding:8px 12px}
+.toolbar{display:grid;grid-template-columns:minmax(0,1fr) 120px;padding:9px;gap:8px}
+.search{min-width:0}.search>svg{display:none}.search-submit{padding:7px;font-size:12px}
+.country-control{width:100%}.country-control select{padding-left:9px;font-size:12px}
+.map-workspace{display:flex;flex-direction:column;height:auto}
+.map-area{order:0;min-height:52dvh;height:52dvh}
+.results-panel{order:1;max-height:240px;border-right:0;border-top:1px solid #30455e;padding:12px}
+.results-hint{margin-bottom:8px}.map-top{top:10px;left:10px;right:10px}
+.map-caption{font-size:10px;padding:8px;height:40px}.map-tools .icon-button{width:40px;height:40px}
+.map-legend{bottom:30px;left:8px;gap:8px;padding:7px;font-size:10px}
+.map-bottom{padding:10px;flex-wrap:wrap}
+.radar-more-inner .filters{display:grid;grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.hero *, .radar-more-controls *, .button{animation:none!important;transition:none!important}}

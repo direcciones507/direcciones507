@@ -1,3 +1,4 @@
+import {INITIAL_COUNTRIES,countryConfiguration} from './country-configuration';
 /** Dirección Temporal: draft-only form UI. Route integration must enforce authenticated owner and CSRF. */
 export function renderTemporaryEventDraftForm(action='/v1/user/temporary-events',paymentsEnabled=false,adminExempt=false):string {
  if(!/^\/v1\/user\/[a-z0-9/-]+$/.test(action))throw Error('INVALID_FORM_ACTION');
@@ -699,9 +700,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .temporary-event-form .event-map .leaflet-container{width:100%;height:100%}.temporary-event-form .event-map .leaflet-tile{max-width:none!important;max-height:none!important}</style><section class="temporary-event-form" aria-labelledby="temporary-heading">
  <nav id="event-drafts" aria-label="Mis eventos"></nav><h2 id="temporary-heading">Crear Dirección Temporal</h2>
  <p>${adminExempt?'Crea y publica gratuitamente una dirección temporal o de cortesía de 1 a 60 días.':'Publica una fiesta o evento: 1–30 días por US$12.99; 31–60 días por US$19.99. El evento no se publica hasta confirmar el pago.'}</p>
+ <script type="application/json" id="event-country-labels">${JSON.stringify(Object.fromEntries(INITIAL_COUNTRIES.map(code=>[code,countryConfiguration(code).locationLabels])))}</script>
  <form id="temporary-event-draft" data-action="${action}" data-admin-exempt="${adminExempt}" novalidate>
  <fieldset aria-label="Información del evento"><div class="event-field-grid"><h3 class="event-section-heading">Información del evento</h3>
- <label>País <select name="countryCode" required><option value="PA">Panamá</option><option value="CR">Costa Rica</option><option value="CO">Colombia</option><option value="GT">Guatemala</option><option value="SV">El Salvador</option><option value="HN">Honduras</option><option value="NI">Nicaragua</option><option value="MX">México</option></select></label>
+ <label>País <select name="countryCode" required>${INITIAL_COUNTRIES.map(code=>`<option value="${code}">${countryConfiguration(code).name}</option>`).join('')}</select></label>
  <label>Nombre del evento <input name="title" required minlength="3" maxlength="160" autocomplete="off"></label>
  <label>Descripción <textarea name="description" maxlength="5000"></textarea></label>
  <label>Fecha inicial <input name="startsOn" type="date" required></label>
@@ -741,7 +743,8 @@ export const temporaryEventDraftClientScript=`(() => {
  fetch('/v1/user/temporary-events',{cache:'no-store'}).then(r=>r.json()).then(data=>{const list=document.getElementById('event-drafts');for(const e of data.events||[]){const a=document.createElement('a');a.href='/panel/evento/nuevo?draft='+encodeURIComponent(e.id);a.textContent=e.title+' · '+(adminExempt&&e.status==='AWAITING_PAYMENT'?'Borrador':e.status);const p=document.createElement('p');p.append(a);list.append(p)}}).catch(()=>{});
  const ajax={'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'};
  const state=async()=>{if(!eventId)return;const r=await fetch('/v1/user/temporary-events/'+eventId,{cache:'no-store'});const data=await r.json();if(!r.ok)throw Error('No se pudo recuperar el borrador');return {...data.event,quote:data.quote}};
- const countrySettings={PA:{zone:'America/Panama',labels:['Provincia','Distrito','Corregimiento'],center:[8.5,-80]},CR:{zone:'America/Costa_Rica',labels:['Provincia','Cantón','Distrito'],center:[9.75,-84.1]},CO:{zone:'America/Bogota',labels:['Departamento','Municipio','Localidad'],center:[4.7,-74.1]},GT:{zone:'America/Guatemala',labels:['Departamento','Municipio','Localidad'],center:[14.6,-90.5]},SV:{zone:'America/El_Salvador',labels:['Departamento','Distrito','Localidad'],center:[13.7,-89.2]},HN:{zone:'America/Tegucigalpa',labels:['Departamento','Municipio','Localidad'],center:[14.1,-87.2]},NI:{zone:'America/Managua',labels:['Departamento','Municipio','Localidad'],center:[12.1,-86.3]},MX:{zone:'America/Mexico_City',labels:['Estado','Municipio','Localidad'],center:[23.6,-102.5]}};
+ const countryLabels=JSON.parse(document.getElementById('event-country-labels').textContent);
+ const countrySettings=Object.fromEntries(Object.entries({PA:{zone:'America/Panama',center:[8.5,-80]},CR:{zone:'America/Costa_Rica',center:[9.75,-84.1]},CO:{zone:'America/Bogota',center:[4.7,-74.1]},GT:{zone:'America/Guatemala',center:[14.6,-90.5]},SV:{zone:'America/El_Salvador',center:[13.7,-89.2]},HN:{zone:'America/Tegucigalpa',center:[14.1,-87.2]},NI:{zone:'America/Managua',center:[12.1,-86.3]},MX:{zone:'America/Mexico_City',center:[23.6,-102.5]}}).map(([code,settings])=>[code,{...settings,labels:countryLabels[code]}]));
  const territoryNames=['province','district','corregimiento'];
  const applyCountry=(reset=false)=>{const c=countrySettings[form.elements.countryCode.value]||countrySettings.PA;form.elements.timezone.value=c.zone;territoryNames.forEach((name,i)=>{const input=form.elements[name];input.parentElement.firstChild.textContent=c.labels[i]+' ';if(reset)input.value='';});if(reset){form.elements.latitude.value='';form.elements.longitude.value='';if(eventMarker){eventMarker.remove();eventMarker=null;}if(eventMap)eventMap.setView(c.center,6);}};
  form.elements.countryCode.addEventListener('change',()=>applyCountry(true));applyCountry();

@@ -90,4 +90,34 @@ body.latam-account-panel #actions #newRequestContent>.grid>button{min-width:0;mi
  body.latam-account-panel #actions #newRequestContent>.grid>button{width:100%}
 }
 
+/* Phase 1c: common field rhythm across Residential, Premium and Premium Pro.
+   The existing request type and plan logic decide which fields are visible. */
+body.latam-account-panel #requestForm .section-card{min-width:0;max-width:100%}
+body.latam-account-panel #requestForm .section-card>h4{
+ font-size:clamp(18px,2.3vw,22px);line-height:1.3;letter-spacing:-.02em;
+ margin-block:0 16px;overflow-wrap:anywhere;
+}
+body.latam-account-panel #requestForm .field-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;
+}
+body.latam-account-panel #requestForm .field-grid>*{min-width:0;max-width:100%}
+body.latam-account-panel #requestForm .field-grid .field-grid{grid-column:1/-1}
+body.latam-account-panel #requestForm :is(label,.muted){overflow-wrap:anywhere}
+body.latam-account-panel #requestForm .upload-box{min-width:0;max-width:100%}
+body.latam-account-panel #requestForm input[type=file]{
+ max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;
+}
+body.latam-account-panel #requestForm .form-actions{
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:12px;
+}
+body.latam-account-panel #requestForm .form-actions>button{flex:1 1 190px;min-width:0}
+@media(max-width:700px){
+ body.latam-account-panel #requestForm .field-grid,
+ body.latam-account-panel #requestForm .field-grid .field-grid{
+  grid-template-columns:minmax(0,1fr);gap:14px;
+ }
+ body.latam-account-panel #requestForm .form-actions{flex-direction:column}
+ body.latam-account-panel #requestForm .form-actions>button{flex:auto;width:100%}
+}
+
 `;

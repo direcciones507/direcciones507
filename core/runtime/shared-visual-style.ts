@@ -58,4 +58,78 @@ body .address-card .analytics-summary select{background:#fff;color:#142c4b;borde
 body .address-card .analytics-daily-chart li>div{height:9px;background:#dbe6f4;border-radius:4px;overflow:hidden;margin:3px 0 6px}
 body .address-card .analytics-daily-chart span{display:block;height:100%;background:#1769aa}
 
+/* Phase 1: shared responsive form rhythm, scoped to the LATAM account panel.
+   Presentation only; no markup, request, payment, or validation changes. */
+body.latam-account-panel #requestForm :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+ box-sizing:border-box;max-width:100%;min-width:0;min-height:46px;font-size:16px;line-height:1.45;
+ border-radius:12px;
+}
+body.latam-account-panel #requestForm textarea{min-height:108px;resize:vertical}
+body.latam-account-panel #requestForm :is(label,fieldset,legend){max-width:100%;overflow-wrap:anywhere}
+body.latam-account-panel #requestForm :is(button,[type="submit"]){min-height:44px;max-width:100%;white-space:normal}
+body.latam-account-panel #requestForm :is(input,select,textarea,button):focus-visible{
+ outline:3px solid #75b7f8;outline-offset:2px;
+}
+@media(max-width:700px){
+ body.latam-account-panel #requestForm{min-width:0;max-width:100%}
+ body.latam-account-panel #requestForm :is(.form-grid,.grid){grid-template-columns:minmax(0,1fr)}
+ body.latam-account-panel #requestForm :is(input,select,textarea){width:100%}
+}
+
+/* Phase 1b: customer home hierarchy; scoped to the authenticated LATAM panel. */
+body.latam-account-panel #panel{min-width:0;max-width:100%}
+body.latam-account-panel #panel>section.card{min-width:0;overflow-wrap:anywhere}
+body.latam-account-panel #panel>section.card>h1{font-size:clamp(25px,3.5vw,34px);line-height:1.18;letter-spacing:-.025em}
+body.latam-account-panel #panel>section.card>h2{font-size:clamp(21px,2.6vw,27px);line-height:1.25;letter-spacing:-.02em}
+body.latam-account-panel #actions #toggleNewRequest{min-height:48px;gap:12px;line-height:1.3}
+body.latam-account-panel #actions #newRequestContent>.grid{gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,185px),1fr))}
+body.latam-account-panel #actions #newRequestContent>.grid>button{min-width:0;min-height:54px;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:620px){
+ body.latam-account-panel #panel>section.card{margin-inline:0;max-width:100%}
+ body.latam-account-panel #actions #newRequestContent>.grid{grid-template-columns:minmax(0,1fr)}
+ body.latam-account-panel #actions #newRequestContent>.grid>button{width:100%}
+}
+
+/* Phase 1c: common field rhythm across Residential, Premium and Premium Pro.
+   The existing request type and plan logic decide which fields are visible. */
+body.latam-account-panel #requestForm .section-card{min-width:0;max-width:100%}
+body.latam-account-panel #requestForm .section-card>h4{
+ font-size:clamp(18px,2.3vw,22px);line-height:1.3;letter-spacing:-.02em;
+ margin-block:0 16px;overflow-wrap:anywhere;
+}
+body.latam-account-panel #requestForm .field-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;
+}
+body.latam-account-panel #requestForm .field-grid>*{min-width:0;max-width:100%}
+body.latam-account-panel #requestForm .field-grid .field-grid{grid-column:1/-1}
+body.latam-account-panel #requestForm :is(label,.muted){overflow-wrap:anywhere}
+body.latam-account-panel #requestForm .upload-box{min-width:0;max-width:100%}
+body.latam-account-panel #requestForm input[type=file]{
+ max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere;
+}
+body.latam-account-panel #requestForm .form-actions{
+ display:flex;flex-wrap:wrap;align-items:stretch;gap:12px;
+}
+body.latam-account-panel #requestForm .form-actions>button{flex:1 1 190px;min-width:0}
+@media(max-width:700px){
+ body.latam-account-panel #requestForm .field-grid,
+ body.latam-account-panel #requestForm .field-grid .field-grid{
+  grid-template-columns:minmax(0,1fr);gap:14px;
+ }
+ body.latam-account-panel #requestForm .form-actions{flex-direction:column}
+ body.latam-account-panel #requestForm .form-actions>button{flex:auto;width:100%}
+}
+
+/* Final visual review: keep the customer home actions above long address lists. */
+body.latam-account-panel #panel{display:flex;flex-direction:column;gap:20px}
+body.latam-account-panel #panel>section{margin-block:0}
+body.latam-account-panel #panel>section:first-child{padding:0;border:0;background:transparent;box-shadow:none}
+body.latam-account-panel #panel>#actions{padding:0;border:0;background:transparent;box-shadow:none}
+body.latam-account-panel #panel>.temporary-event-entry{transform:none;transition:border-color .12s ease}
+body.latam-account-panel #panel>.temporary-event-entry:hover{transform:none;box-shadow:none}
+body.latam-account-panel #panel>section:first-child #refresh{min-height:44px;background:#e7edf5;color:#183957;border:1px solid #bdcde0;box-shadow:none}
+body.latam-account-panel #requestForm .field-grid>div:has(>#countryField){grid-column:1/-1}
+body.latam-account-panel #requestForm input:is([type=checkbox],[type=radio]){width:20px;height:20px;min-height:20px;flex:none;margin:0}
+body.latam-account-panel #panel>#actions :is(input,select,textarea,button){scroll-margin-block:20px}
+@media(prefers-reduced-motion:reduce){body.latam-account-panel #panel>.temporary-event-entry{transition:none}}
 `;

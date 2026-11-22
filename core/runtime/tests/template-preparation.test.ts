@@ -20,3 +20,17 @@ test('Premium photo gallery hides the horizontal scrollbar without disabling swi
   expect(template).toContain('#galeriaFotos.negocio-galeria::-webkit-scrollbar { display:none; width:0; height:0; }');
   expect(template).not.toContain('scrollbar-width:thin');
 });
+
+test('Premium responsive coverflow preserves real photos and existing lightbox', () => {
+  expect(template).toContain('const gallery=document.getElementById(\'galeriaFotos\')');
+  expect(template).toContain('new MutationObserver(');
+  expect(template).toContain("matchMedia('(min-width:768px)').matches");
+  expect(template).toContain('rotateY('+ "'+rot+'"+'deg)');
+  expect(template).toContain("gallery.addEventListener('pointerup'");
+  expect(template).toContain("gallery.addEventListener('keydown'");
+  expect(template).toContain("gallery.addEventListener('wheel'");
+  expect(template).toContain("e.stopImmediatePropagation()");
+  expect(template).toContain('listaFotos.forEach((urlFoto, index)');
+  expect(template).toContain("overlay.classList.add('show')");
+  expect(template).toContain('.premium-gallery-dot[aria-current="true"]');
+});

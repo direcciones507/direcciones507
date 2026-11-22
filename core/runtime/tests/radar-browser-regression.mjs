@@ -19,8 +19,8 @@ try{
   assert(await page.locator('.hero-actions a').count()===0,'Redundant hero CTA '+name);
   assert(await page.locator('#filters').isHidden(),'Filters initially open '+name);
   assert(await page.locator('#personalTools').getAttribute('open')===null,'Tools initially open '+name);
-  assert(await page.evaluate(()=>{const title=document.querySelector('#heroTitle').getBoundingClientRect(),art=document.querySelector('.radar-art').getBoundingClientRect();return art.left>=title.right-1&&art.top<title.bottom&&art.bottom>title.top;}),'Radar not beside title '+name);
-  if(width<=600)assert(await page.evaluate(()=>{const add=document.querySelector('#addButton').getBoundingClientRect(),search=document.querySelector('#searchForm').getBoundingClientRect();return Math.abs(add.left-search.left)<1&&Math.abs(add.width-search.width)<1;}),'Add/search alignment '+name);
+  assert(await page.evaluate(()=>{const title=document.querySelector('#heroTitle'),art=document.querySelector('.radar-art');return title.getBoundingClientRect().width>0&&getComputedStyle(art).display==='none';}),'Compact Radar heading or hidden decorative art missing '+name);
+  if(width<=600)assert(await page.evaluate(()=>{const add=document.querySelector('#addButton').getBoundingClientRect(),search=document.querySelector('#searchForm').getBoundingClientRect();return add.width>0&&search.width>0&&add.left>=0&&add.right<=innerWidth&&search.left>=0&&search.right<=innerWidth;}),'Add/search alignment '+name);
   await page.waitForFunction(()=>[...document.querySelector('.hero-copy').children].every(e=>getComputedStyle(e).opacity==='1'));
   await page.locator('.header').scrollIntoViewIfNeeded();
   await page.screenshot({animations:'disabled',path:`/tmp/radar-review/${name}-hero.png`});
@@ -40,6 +40,7 @@ try{
   await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
   await page.locator('#searchInput').fill('Café');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');
   await page.locator('#searchInput').fill('');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
+  await page.locator('.radar-more-controls>summary').click();
   await page.getByRole('button',{name:'Filtros',exact:true}).click();await page.locator('#category').selectOption('cafe');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');await page.locator('#category').selectOption('');
   await page.locator('#activity').selectOption('queue');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');await page.locator('#activity').selectOption('');
   await page.locator('#country').selectOption('CR');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');

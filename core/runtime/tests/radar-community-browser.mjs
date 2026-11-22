@@ -58,7 +58,8 @@ try{
  await page.locator('#nearbyButton').click();await page.locator('#nearbyGps').click();
  await page.locator('#nearbyResults article').filter({hasText:'Café del Istmo'}).waitFor();
  await page.screenshot({path:'/tmp/radar-new-features/nearby-mobile.png'});await page.locator('#nearbyDialog [data-close]').click();
- await page.locator('.radar-more-controls>summary').click();
+ if(!(await page.locator('.radar-more-controls').evaluate(el=>el.open))) await page.locator('.radar-more-controls>summary').click();
+ await page.locator('#pulseButton').waitFor({state:'visible'});
  await page.locator('#pulseButton').click();await page.locator('#pulseResults article').filter({hasText:'Restaurante La Terraza'}).waitFor();assert(await page.locator('#pulseResults article').count()===1,'Pulse must show active live campaigns only');assert(await page.locator('#pulseResults article').filter({hasText:'Café del Istmo'}).count()===0,'Featured/community-only report leaked into Pulse');
  await page.screenshot({path:'/tmp/radar-new-features/pulse-mobile.png'});await page.locator('#pulseDialog [data-close]').click();
  assert(await page.locator('#favoritesButton').isHidden(),'Personal tools initially visible');

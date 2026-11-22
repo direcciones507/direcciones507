@@ -39,7 +39,7 @@ test('public event page never contains private organizer details',async()=>{
  const row={id:'22222222-2222-4222-8222-222222222222',slug:'fiesta-0123456789abcdef',title:'Fiesta pública',
  description:'Evento en Santiago',public_contact_name:null,public_contact_phone:null,public_contact_consent:false,
  country_code:'PA',region:'Veraguas',municipality:'Santiago',locality:'Santiago',reference:'Parque central',
- latitude:8.1,longitude:-80.9,starts_on:'2026-11-11',ends_on:'2026-11-11',event_timezone:'America/Panama',
+ latitude:8.1,longitude:-80.9,starts_on:'2099-11-11',ends_on:'2099-11-11',event_timezone:'America/Panama',
  hours_description:'19:00',status:'ACTIVE',payment_confirmed_at:'2026-11-11T12:00:00Z'};
  const fakeSql={unsafe:async(q:string)=>q.includes('temporary_event_media')?[]:[row]} as any;
  const response=await handleTemporaryEventRoutes(new Request('https://direcciones.lat/evento/fiesta-0123456789abcdef'),{...ctx,sql:fakeSql});

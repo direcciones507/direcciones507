@@ -40,6 +40,7 @@ try{
   await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
   await page.locator('#searchInput').fill('Café');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');
   await page.locator('#searchInput').fill('');await page.locator('#searchForm').getByRole('button',{name:'Buscar',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='3');
+  await page.locator('.radar-more-controls>summary').click();
   await page.getByRole('button',{name:'Filtros',exact:true}).click();await page.locator('#category').selectOption('cafe');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='1');await page.locator('#category').selectOption('');
   await page.locator('#activity').selectOption('queue');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');await page.locator('#activity').selectOption('');
   await page.locator('#country').selectOption('CR');await page.waitForFunction(()=>document.querySelector('#resultCount').textContent==='0');

@@ -23,6 +23,8 @@
 .radar-more-inner #filtersButton{justify-self:start}
 .radar-more-inner .filters{border:1px solid #344a63;border-radius:var(--radar-radius);padding:14px;flex-wrap:wrap}
 .radar-more-inner .nearby-actions{padding:0;display:flex;flex-wrap:wrap;gap:12px}
+/* Flex rows size to their content; inherited mobile percentages overflow into the map. */
+.radar-more-inner .nearby-actions>.button{height:auto}
 .radar-more-inner .personal-tools{max-width:100%}
 .map-workspace{grid-template-columns:minmax(0,4fr) minmax(0,8fr);height:620px}
 .results-hint,.result-time,.privacy-note,.map-bottom,.category-label{color:#b5c5d9}

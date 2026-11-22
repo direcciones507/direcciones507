@@ -19,7 +19,7 @@ try{
   assert(await page.locator('.hero-actions a').count()===0,'Redundant hero CTA '+name);
   assert(await page.locator('#filters').isHidden(),'Filters initially open '+name);
   assert(await page.locator('#personalTools').getAttribute('open')===null,'Tools initially open '+name);
-  assert(await page.evaluate(()=>{const title=document.querySelector('#heroTitle').getBoundingClientRect(),art=document.querySelector('.radar-art').getBoundingClientRect();return art.left>=title.right-1&&art.top<title.bottom&&art.bottom>title.top;}),'Radar not beside title '+name);
+  assert(await page.evaluate(()=>{const title=document.querySelector('#heroTitle'),art=document.querySelector('.radar-art');return title.getBoundingClientRect().width>0&&getComputedStyle(art).display==='none';}),'Compact Radar heading or hidden decorative art missing '+name);
   if(width<=600)assert(await page.evaluate(()=>{const add=document.querySelector('#addButton').getBoundingClientRect(),search=document.querySelector('#searchForm').getBoundingClientRect();return Math.abs(add.left-search.left)<1&&Math.abs(add.width-search.width)<1;}),'Add/search alignment '+name);
   await page.waitForFunction(()=>[...document.querySelector('.hero-copy').children].every(e=>getComputedStyle(e).opacity==='1'));
   await page.locator('.header').scrollIntoViewIfNeeded();

@@ -701,6 +701,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /* Shared direction-form visual rhythm: temporary event variant.
    Scoped presentation only; retain map layers, fields, and submission logic. */
 .temporary-event-form{width:100%;min-width:0}
+.temporary-event-form .event-back-link{display:inline-flex;align-items:center;min-height:44px;padding:10px 14px;margin-bottom:10px;border:1px solid #b9c9de;border-radius:12px;background:#e7edf5;color:#183957;font-weight:700;text-decoration:none;touch-action:manipulation}
+.temporary-event-form input[type=file]{font-size:16px}
+
 .temporary-event-form :is(h2,.event-section-heading,legend){overflow-wrap:anywhere}
 .temporary-event-form :is(input:not([type=checkbox]):not([type=file]),select,textarea){box-sizing:border-box;min-width:0;max-width:100%;font-size:16px;line-height:1.45}
 .temporary-event-form :is(button,.event-link){min-height:48px;max-width:100%;white-space:normal;overflow-wrap:anywhere}
@@ -712,7 +715,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
  .temporary-event-form :is(button[type=submit],.event-link){width:100%}
 }
 </style><section class="temporary-event-form" aria-labelledby="temporary-heading">
- <nav id="event-drafts" aria-label="Mis eventos"></nav><h2 id="temporary-heading">Crear Dirección Temporal</h2>
+ <a class="event-back-link" href="/panel">Volver a Mi panel</a><nav id="event-drafts" aria-label="Mis eventos"></nav><h2 id="temporary-heading">Crear Dirección Temporal</h2>
  <p>${adminExempt?'Crea y publica gratuitamente una dirección temporal o de cortesía de 1 a 60 días.':'Publica una fiesta o evento: 1–30 días por US$12.99; 31–60 días por US$19.99. El evento no se publica hasta confirmar el pago.'}</p>
  <form id="temporary-event-draft" data-action="${action}" data-admin-exempt="${adminExempt}" novalidate>
  <fieldset aria-label="Información del evento"><div class="event-field-grid"><h3 class="event-section-heading">Información del evento</h3>

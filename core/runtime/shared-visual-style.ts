@@ -120,4 +120,16 @@ body.latam-account-panel #requestForm .form-actions>button{flex:1 1 190px;min-wi
  body.latam-account-panel #requestForm .form-actions>button{flex:auto;width:100%}
 }
 
+/* Final visual review: keep the customer home actions above long address lists. */
+body.latam-account-panel #panel{display:flex;flex-direction:column;gap:20px}
+body.latam-account-panel #panel>section{margin-block:0}
+body.latam-account-panel #panel>section:first-child{padding:0;border:0;background:transparent;box-shadow:none}
+body.latam-account-panel #panel>#actions{padding:0;border:0;background:transparent;box-shadow:none}
+body.latam-account-panel #panel>.temporary-event-entry{transform:none;transition:border-color .12s ease}
+body.latam-account-panel #panel>.temporary-event-entry:hover{transform:none;box-shadow:none}
+body.latam-account-panel #panel>section:first-child #refresh{min-height:44px;background:#e7edf5;color:#183957;border:1px solid #bdcde0;box-shadow:none}
+body.latam-account-panel #requestForm .field-grid>div:has(>#countryField){grid-column:1/-1}
+body.latam-account-panel #requestForm input:is([type=checkbox],[type=radio]){width:20px;height:20px;min-height:20px;flex:none;margin:0}
+body.latam-account-panel #panel>#actions :is(input,select,textarea,button){scroll-margin-block:20px}
+@media(prefers-reduced-motion:reduce){body.latam-account-panel #panel>.temporary-event-entry{transition:none}}
 `;

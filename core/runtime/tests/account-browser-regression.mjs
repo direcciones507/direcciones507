@@ -267,8 +267,10 @@ try{
   assert.equal(await page.locator('#plan').inputValue(),'BUSINESS_PREMIUM');
   assert.deepEqual(await page.locator('#plan option').evaluateAll(options=>options.map(o=>o.value)),['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO']);
   await page.locator('#plan').selectOption('BUSINESS_PREMIUM_PRO');
-  // Focused creation hides the picker until the current form is closed.
+  // Plan changes are unsaved edits: accept discard confirmation before changing form type.
+  page.once('dialog',async dialog=>{assert.match(dialog.message(),/datos sin guardar/);await dialog.accept();});
   await page.locator('#panel-creation-close').click();
+  assert.equal(await page.locator('#panel').evaluate(el=>el.classList.contains('panel-creation-focus')),false);
   await page.locator('#toggleNewRequest').click();
   await page.locator('#place').click();assert.equal(await page.locator('#coverField').isVisible(),true);
   for(const status of ['FAILED','FAILED','CANCELLED']){

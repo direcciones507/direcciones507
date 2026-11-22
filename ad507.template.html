@@ -2570,5 +2570,52 @@ if(data.web){
 });
 </script>
 
+
+<style>
+/* Responsive commercial gallery: mobile single-card, tablet/desktop coverflow. */
+#galeriaFotos.negocio-galeria{position:relative!important;display:block!important;overflow:hidden!important;isolation:isolate;perspective:1100px;touch-action:pan-y;user-select:none;scroll-snap-type:none!important;padding:0!important;background:transparent!important;height:clamp(245px,76vw,410px);width:100%;max-width:100%;margin:auto}
+#galeriaFotos.negocio-galeria img,#galeriaFotos.negocio-galeria img:first-child{position:absolute!important;top:50%!important;left:50%!important;display:block!important;grid-column:auto!important;grid-row:auto!important;float:none!important;flex:none!important;width:min(78%,360px)!important;height:calc(100% - 30px)!important;max-width:none!important;margin:0!important;padding:0!important;object-fit:contain!important;background:#102543!important;border-radius:17px!important;transform-origin:center;transition:transform .55s cubic-bezier(.2,.75,.2,1),opacity .55s!important;scroll-snap-align:none!important;cursor:pointer!important;box-shadow:0 14px 30px rgba(0,0,0,.35)}
+#galeriaFotos.negocio-galeria img[aria-hidden="true"]{pointer-events:none!important}
+.premium-gallery-controls{display:flex;justify-content:center;align-items:center;gap:9px;margin:12px auto 0;min-height:30px}
+.premium-gallery-dot{width:9px;height:9px;padding:0;border:0;border-radius:20px;background:#6b819e;cursor:pointer}
+.premium-gallery-dot[aria-current="true"]{width:28px;background:#3b9bff}
+.premium-gallery-arrow{background:#18365d;color:#fff;border:1px solid #496a91;border-radius:50%;width:32px;height:32px;cursor:pointer}
+@media(min-width:768px){#galeriaFotos.negocio-galeria{height:clamp(300px,42vw,440px)}#galeriaFotos.negocio-galeria img,#galeriaFotos.negocio-galeria img:first-child{width:min(47%,380px)!important;height:calc(100% - 32px)!important}}
+@media(prefers-reduced-motion:reduce){#galeriaFotos.negocio-galeria img{transition:none!important}}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const gallery=document.getElementById('galeriaFotos');
+ if(!gallery)return;
+ const controls=document.createElement('div');controls.className='premium-gallery-controls';controls.setAttribute('aria-label','Navegación de fotografías');
+ gallery.insertAdjacentElement('afterend',controls);
+ let active=0,start=null,moved=false;
+ const photos=()=>Array.from(gallery.querySelectorAll('img'));
+ function go(n){const images=photos();if(!images.length)return;active=Math.max(0,Math.min(images.length-1,n));const desktop=matchMedia('(min-width:768px)').matches;
+  images.forEach((img,i)=>{const d=i-active,a=Math.abs(d),sign=Math.sign(d);const x=desktop?sign*(a===1?43:65):sign*(a===1?82:110);const z=desktop?-a*125:-a*75;const rot=desktop?-sign*Math.min(a,1)*42:0;
+   img.style.transform='translate(-50%,-50%) translateX('+x+'%) translateZ('+z+'px) rotateY('+rot+'deg)';
+   img.style.opacity=a>2?'0':a===2?'.18':a===1?(desktop?'.65':'.4'):'1';
+   img.style.zIndex=String(10-a);img.setAttribute('aria-hidden',a>2?'true':'false');img.tabIndex=a===0?0:-1;
+  });
+  controls.replaceChildren();
+  if(images.length<2)return;
+  const button=(label,txt,fn,cls)=>{const b=document.createElement('button');b.type='button';b.className=cls;b.setAttribute('aria-label',label);b.textContent=txt;b.addEventListener('click',fn);controls.appendChild(b);return b};
+  button('Fotografía anterior','‹',()=>go(active-1),'premium-gallery-arrow').disabled=active===0;
+  images.forEach((_,i)=>{const b=button('Ver fotografía '+(i+1),'',()=>go(i),'premium-gallery-dot');b.setAttribute('aria-current',String(i===active))});
+  button('Fotografía siguiente','›',()=>go(active+1),'premium-gallery-arrow').disabled=active===images.length-1;
+ }
+ gallery.addEventListener('click',e=>{const img=e.target.closest('img');if(!img)return;const i=photos().indexOf(img);if(moved){e.stopImmediatePropagation();e.preventDefault();return}if(i!==active){e.stopImmediatePropagation();e.preventDefault();go(i)}},true);
+ gallery.addEventListener('pointerdown',e=>{if(e.target.closest('img')){start=e.clientX;moved=false}});
+ gallery.addEventListener('pointermove',e=>{if(start!==null&&Math.abs(e.clientX-start)>12)moved=true});
+ gallery.addEventListener('pointerup',e=>{if(start!==null){const dx=e.clientX-start;if(Math.abs(dx)>45)go(active+(dx<0?1:-1));start=null;setTimeout(()=>moved=false,100)}});
+ gallery.addEventListener('pointercancel',()=>{start=null});
+ gallery.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();go(active+(e.key==='ArrowRight'?1:-1))}});
+ let lastWheel=0;gallery.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY)&&Date.now()-lastWheel>300){e.preventDefault();lastWheel=Date.now();go(active+(e.deltaX>0?1:-1))}},{passive:false});
+ new MutationObserver(()=>{active=0;go(0)}).observe(gallery,{childList:true});
+ window.addEventListener('resize',()=>go(active));
+ go(0);
+});
+</script>
+
 </body>
 </html>

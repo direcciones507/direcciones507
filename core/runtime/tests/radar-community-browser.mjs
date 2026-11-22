@@ -54,6 +54,7 @@ try{
  await page.getByRole('button',{name:'Guardar en favoritos',exact:true}).click();
  await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('guardado en favoritos'));
  assert(saved,'Favorite payload');await page.getByRole('button',{name:'Cerrar ficha',exact:true}).click();
+ await page.locator('.radar-more-controls>summary').click();
  await page.locator('#nearbyButton').click();await page.locator('#nearbyGps').click();
  await page.locator('#nearbyResults article').filter({hasText:'Café del Istmo'}).waitFor();
  await page.screenshot({path:'/tmp/radar-new-features/nearby-mobile.png'});await page.locator('#nearbyDialog [data-close]').click();

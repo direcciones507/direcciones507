@@ -39,12 +39,12 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--olive);outline-offs
  .qr-print-sheet{display:flex!important;position:relative;box-sizing:border-box;width:210mm;height:297mm;padding:18mm 15mm 20mm;flex-direction:column;align-items:center;text-align:center;overflow:hidden;background:linear-gradient(135deg,#eef1f6 0%,#fff 19%,#fff 79%,#edf0f5 100%);color:#10274d!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .qr-print-sheet::before,.qr-print-sheet::after{content:"";position:absolute;width:110mm;height:110mm;border:1mm solid #dfe4ed;border-radius:50%;pointer-events:none}
  .qr-print-sheet::before{top:-75mm;left:-65mm}.qr-print-sheet::after{bottom:-75mm;right:-65mm}
- .qr-poster-brand{position:absolute;right:15mm;top:12mm;font:400 10pt Arial,sans-serif;color:#10274d}
- .qr-print-sheet h2{margin:39mm 0 10mm!important;font:400 27pt/1.2 Arial,sans-serif!important;color:#10274d;overflow-wrap:anywhere;max-width:100%}
- .qr-poster-prompt{font:400 15pt/1.4 Arial,sans-serif!important;color:#30415c!important;max-width:150mm;margin:0 0 13mm!important}
+ .qr-poster-brand{position:absolute;right:15mm;top:12mm;font:700 12pt 'Montserrat','Arial',sans-serif;color:#10274d}
+ .qr-print-sheet h2{margin:39mm 0 10mm!important;font:700 30pt/1.18 'Montserrat','Arial',sans-serif!important;color:#10274d;overflow-wrap:anywhere;max-width:100%}
+ .qr-poster-prompt{font:500 16pt/1.4 'Montserrat','Arial',sans-serif!important;color:#30415c!important;max-width:150mm;margin:0 0 13mm!important}
  .qr-poster-frame{background:white;border-radius:8mm;padding:8mm;box-shadow:0 3mm 10mm #10274d20}
  .qr-poster-frame img{display:block;width:110mm!important;height:110mm!important;object-fit:contain;image-rendering:pixelated}
- .qr-print-sheet footer{margin-top:auto;width:150mm;border-top:.3mm solid #a9b1bd;padding-top:7mm;font:400 10pt Arial,sans-serif;color:#10274d}
+ .qr-print-sheet footer{margin-top:auto;width:150mm;border-top:.3mm solid #a9b1bd;padding-top:7mm;font:600 11pt 'Montserrat','Arial',sans-serif;color:#10274d}
 }
 `;
 

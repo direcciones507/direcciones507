@@ -8,17 +8,28 @@
 .hero-description{font-size:14px;line-height:1.5;max-width:760px;margin:0;color:var(--muted)}
 .explore{padding-top:4px}.section-heading{margin-bottom:10px;align-items:center}
 .button,.icon-button,input,select,.search,.map-shell,.dialog{border-radius:var(--radar-radius)}
-.button{background:#10243b;color:#e9f2fb;border:1px solid #526782;box-shadow:none;transition:background .16s ease,border-color .16s ease}
-.button:hover{background:#1b3651}.button.primary,#addButton{background:var(--radar-action);border-color:var(--radar-action);color:#05231a;box-shadow:none;font-weight:700}
-.button.primary:hover,#addButton:hover{background:#2fce81}
+.button,.section-heading>#addButton{background:#10243b;color:#e9f2fb;border:1px solid #526782;box-shadow:none;transform:none;transition:background-color .12s ease,border-color .12s ease}
+.button.primary,.section-heading>#addButton{background:var(--radar-action);border-color:var(--radar-action);color:#05231a;box-shadow:none;font-weight:700}
+/* Override the older silver CTA and its animated shine at the same specificity. */
+.button.silver::before,.section-heading>#addButton::before{content:none}
+.button:hover,.button.silver:hover,.section-heading>#addButton:hover{transform:none;box-shadow:none}
+.button.silver:hover,.button.subtle:hover{color:#e7f0fc}
+.button:active{background:#1b3651}
+.button.primary:active,.section-heading>#addButton:active{background:#19975a;transform:none;box-shadow:none}
+.button.silver:active{transform:none;box-shadow:none;border-color:#b7c6d8}
+@media(hover:hover) and (pointer:fine){
+.button:hover{background:#1b3651}
+.button.primary:hover,.section-heading>#addButton:hover{background:#2fce81}
+}
 .button.silver,.button.subtle{background:transparent;border:1px solid #536b88;color:#e7f0fc;box-shadow:none}
 .search-submit{background:#17334c;border:1px solid #47627c;color:#f0f6fc}
-#addButton{min-height:42px;padding:9px 14px}
+#addButton{min-height:44px;padding:9px 14px}
 .map-shell{box-shadow:none;overflow:visible}.toolbar{padding:10px;gap:10px;border-radius:var(--radar-radius) var(--radar-radius) 0 0}
 .country-control{width:155px}.search{padding:3px 5px 3px 12px}
 .radar-more-controls{background:#0e1b2c;border-bottom:1px solid #334860}
-.radar-more-controls>summary{cursor:pointer;padding:10px 14px;color:#d6e4f5;font-size:13px;list-style-position:inside}
-.radar-more-controls>summary:hover{background:#172a42}
+.radar-more-controls>summary{cursor:pointer;min-height:44px;padding:12px 14px;touch-action:manipulation;user-select:none;color:#d6e4f5;font-size:13px;list-style-position:inside}
+@media(hover:hover) and (pointer:fine){.radar-more-controls>summary:hover{background:#172a42}}
+.radar-more-controls>summary:active{background:#172a42}
 .radar-more-inner{display:grid;gap:14px;padding:12px 14px 16px}
 .radar-more-inner #filtersButton{justify-self:start}
 .radar-more-inner .filters{border:1px solid #344a63;border-radius:var(--radar-radius);padding:14px;flex-wrap:wrap}
@@ -36,16 +47,16 @@
 @media(max-width:767px){
 .header{padding:10px 20px}.hero{padding-top:14px;padding-bottom:8px}
 .hero h1{font-size:26px}.hero-description{font-size:13px;line-height:1.4}
-.explore{padding:0 20px}.section-heading{margin:0 0 9px}
-#addButton{font-size:12px;min-height:40px;padding:8px 12px}
+.explore{padding:0 20px}.section-heading{margin:0 0 9px}.explore>.section-heading{padding-inline:0}
+#addButton{font-size:14px;min-height:44px;padding:8px 12px}
 .toolbar{display:grid;grid-template-columns:minmax(0,1fr) 120px;padding:9px;gap:8px}
 .search{min-width:0}.search>svg{display:none}.search-submit{padding:7px;font-size:12px}
-.country-control{width:100%}.country-control select{padding-left:9px;font-size:12px}
+.country-control{width:100%}.country-control select{padding-left:9px;font-size:16px}
 .map-workspace{display:flex;flex-direction:column;height:auto}
 .map-area{order:0;min-height:52dvh;height:52dvh}
 .results-panel{order:1;max-height:240px;border-right:0;border-top:1px solid #30455e;padding:12px}
 .results-hint{margin-bottom:8px}.map-top{top:10px;left:10px;right:10px}
-.map-caption{font-size:10px;padding:8px;height:40px}.map-tools .icon-button{width:40px;height:40px}
+.map-caption{font-size:10px;padding:8px;height:40px}.map-tools .icon-button{width:44px;height:44px}
 .map-legend{bottom:30px;left:8px;gap:8px;padding:7px;font-size:10px}
 .map-bottom{padding:10px;flex-wrap:wrap}
 .radar-more-inner .filters{display:grid;grid-template-columns:1fr}
@@ -54,3 +65,20 @@
 
 /* Keep the centered detail card compact on narrow phones; long content scrolls inside. */
 @media(max-width:600px){.map-area>.detail{max-height:68%!important;overflow-y:auto}}
+
+/* Browsing is frequent: keep cards still and reserve hover feedback for a mouse. */
+.result-card,.featured-card,.how-grid article{transition:border-color .12s ease,background-color .12s ease}
+.result-card:hover,.featured-card:hover,.how-grid article:hover{transform:none}
+@media(hover:none),(pointer:coarse){
+.result-card:hover{background:#142338;border-color:#6b80734d}
+.result-card[aria-pressed=true]:hover{background:#263c3c;border-color:#bbcbc1}
+.featured-card:hover{border-color:#a28d565c}
+.icon-button:hover{background:#0c1a2e}
+input,select,textarea,.search input,.country-control select{font-size:16px}
+}
+/* Keep selection and pinch zoom available in content and in the map. */
+.button,.icon-button,.personal-tools>summary{touch-action:manipulation;user-select:none}
+@media(max-width:360px){
+.toolbar{grid-template-columns:minmax(0,1fr)}
+.country-control{max-width:100%}
+}

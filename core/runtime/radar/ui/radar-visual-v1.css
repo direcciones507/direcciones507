@@ -49,3 +49,6 @@
 .radar-more-inner .filters{display:grid;grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){.hero *, .radar-more-controls *, .button{animation:none!important;transition:none!important}}
+
+/* Keep the centered detail card compact on narrow phones; long content scrolls inside. */
+@media(max-width:600px){.map-area>.detail{max-height:68%!important;overflow-y:auto}}

@@ -12,6 +12,23 @@ test('visual routes preserve host and release gates without database access',asy
   expect(result?.status).toBe(200);expect(result?.headers.get('content-security-policy')).toContain("object-src 'none'");
  }
 });
+test('every stylesheet linked by the production HTML is served by the production asset allowlist',async()=>{
+ const env={RADAR_ENABLED:'true'};
+ const html=await (await radarPresentation(new Request(radarOrigin+'/'),env))!.text();
+ const styles=[...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(match=>match[1]);
+ expect(styles).toContain('/radar/ui/radar-visual-v1.css');
+ for(const path of styles){
+  const css=await radarPresentation(new Request(radarOrigin+path),env);
+  expect(css?.status).toBe(200);
+  expect(css?.headers.get('content-type')).toBe('text/css; charset=utf-8');
+  expect(css?.headers.get('x-content-type-options')).toBe('nosniff');
+  expect(css?.headers.get('cache-control')).toBe('no-cache');
+  expect((await css!.text()).length).toBeGreaterThan(0);
+  const head=await radarPresentation(new Request(radarOrigin+path,{method:'HEAD'}),env);
+  expect(head?.status).toBe(200);
+  expect(await head!.text()).toBe('');
+ }
+});
 test('asset allowlist rejects file probes and methods',async()=>{
  expect((await radarPresentation(new Request(radarOrigin+'/radar/ui/../schema.sql'),{RADAR_ENABLED:'true'}))).toBeNull();
  expect((await radarPresentation(new Request(radarOrigin+'/radar/ui/missing.js'),{RADAR_ENABLED:'true'}))?.status).toBe(404);

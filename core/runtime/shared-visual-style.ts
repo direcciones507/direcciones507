@@ -76,4 +76,18 @@ body.latam-account-panel #requestForm :is(input,select,textarea,button):focus-vi
  body.latam-account-panel #requestForm :is(input,select,textarea){width:100%}
 }
 
+/* Phase 1b: customer home hierarchy; scoped to the authenticated LATAM panel. */
+body.latam-account-panel #panel{min-width:0;max-width:100%}
+body.latam-account-panel #panel>section.card{min-width:0;overflow-wrap:anywhere}
+body.latam-account-panel #panel>section.card>h1{font-size:clamp(25px,3.5vw,34px);line-height:1.18;letter-spacing:-.025em}
+body.latam-account-panel #panel>section.card>h2{font-size:clamp(21px,2.6vw,27px);line-height:1.25;letter-spacing:-.02em}
+body.latam-account-panel #actions #toggleNewRequest{min-height:48px;gap:12px;line-height:1.3}
+body.latam-account-panel #actions #newRequestContent>.grid{gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,185px),1fr))}
+body.latam-account-panel #actions #newRequestContent>.grid>button{min-width:0;min-height:54px;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:620px){
+ body.latam-account-panel #panel>section.card{margin-inline:0;max-width:100%}
+ body.latam-account-panel #actions #newRequestContent>.grid{grid-template-columns:minmax(0,1fr)}
+ body.latam-account-panel #actions #newRequestContent>.grid>button{width:100%}
+}
+
 `;

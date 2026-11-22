@@ -1711,8 +1711,10 @@
         overflow-x:auto !important; overflow-y:hidden !important;
         gap:12px !important; scroll-snap-type:x proximity;
         overscroll-behavior-x:contain; touch-action:pan-x pan-y;
-        scrollbar-width:thin; cursor:grab;
+        scrollbar-width:none; -ms-overflow-style:none; cursor:grab;
       }
+      /* Keep touch and mouse swiping, but never expose a moving scrollbar. */
+      #galeriaFotos.negocio-galeria::-webkit-scrollbar { display:none; width:0; height:0; }
       #galeriaFotos.negocio-galeria:active { cursor:grabbing; }
       #galeriaFotos.negocio-galeria img,
       #galeriaFotos.negocio-galeria img:first-child {

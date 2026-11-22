@@ -58,4 +58,22 @@ body .address-card .analytics-summary select{background:#fff;color:#142c4b;borde
 body .address-card .analytics-daily-chart li>div{height:9px;background:#dbe6f4;border-radius:4px;overflow:hidden;margin:3px 0 6px}
 body .address-card .analytics-daily-chart span{display:block;height:100%;background:#1769aa}
 
+/* Phase 1: shared responsive form rhythm, scoped to the LATAM account panel.
+   Presentation only; no markup, request, payment, or validation changes. */
+body.latam-account-panel #requestForm :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+ box-sizing:border-box;max-width:100%;min-width:0;min-height:46px;font-size:16px;line-height:1.45;
+ border-radius:12px;
+}
+body.latam-account-panel #requestForm textarea{min-height:108px;resize:vertical}
+body.latam-account-panel #requestForm :is(label,fieldset,legend){max-width:100%;overflow-wrap:anywhere}
+body.latam-account-panel #requestForm :is(button,[type="submit"]){min-height:44px;max-width:100%;white-space:normal}
+body.latam-account-panel #requestForm :is(input,select,textarea,button):focus-visible{
+ outline:3px solid #75b7f8;outline-offset:2px;
+}
+@media(max-width:700px){
+ body.latam-account-panel #requestForm{min-width:0;max-width:100%}
+ body.latam-account-panel #requestForm :is(.form-grid,.grid){grid-template-columns:minmax(0,1fr)}
+ body.latam-account-panel #requestForm :is(input,select,textarea){width:100%}
+}
+
 `;

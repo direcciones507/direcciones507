@@ -29,6 +29,10 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
    const event=await repository.getPublic(match[1]);
    if(!event)return json(404,'EVENT_NOT_FOUND');
    // Render only public fields; do not manufacture or load private responsible data.
+   if(event.status!=='ACTIVE'){
+    const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Dirección desconectada</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#101d35;color:#fff;font:16px system-ui,sans-serif;text-align:center}main{padding:24px}h1{font-size:clamp(1.6rem,5vw,2.2rem)}p{color:#cad6e8}</style></head><body><main><h1>Dirección desconectada</h1><p>Esta dirección digital no se encuentra disponible.</p></main></body></html>';
+    return new Response(req.method==='HEAD'?null:html,{status:410,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"}});
+   }
    const data={...event,responsibleName:'',responsibleEmail:'',responsiblePhone:'',publicContactConsent:!!(event.publicContactName||event.publicContactPhone)} as TemporaryEventDraft;
    const base='https://direcciones.lat/evento/'+event.slug;
    const photos=await repository.photos(event.id);

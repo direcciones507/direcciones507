@@ -620,7 +620,7 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
     if(publicMatch||apiMatch&&configuredPublicCode(apiMatch[1])){
       try{const code=(publicMatch??apiMatch)![1];
         const record=await newPublicAddress(sql,code,url.origin);
-        if(publicMatch&&!url.pathname.endsWith('/')&&(!record||record.extras.historical))return null;
+
         if(record&&publicMatch&&!record.extras.historical&&(!url.pathname.endsWith('/')||publicMatch[1]!==record.extras.publicCode))return new Response(null,{status:308,headers:{location:record.url,'cache-control':'no-store'}});
         if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
         // Paid services are checked at read time, not by a scheduled job.
@@ -630,6 +630,7 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
         if(expired)return publicMatch
           ?new Response('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Dirección desconectada</title></head><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#101d35;color:white;font:16px system-ui;text-align:center"><main><h1>Dirección desconectada</h1><p>Esta dirección digital no se encuentra disponible.</p></main></body></html>',{status:410,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','referrer-policy':'no-referrer'}})
           :Response.json({ok:false,error:'ADDRESS_DISCONNECTED'},{status:410,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
+        if(publicMatch&&!url.pathname.endsWith('/')&&(!record||record.extras.historical))return null;
         // Owner-retired pages are permanently gone: do not fall back to historical
         // rendering, and let Google discover the 410 instead of a soft-404.
         const retired=await sql.unsafe("SELECT 1 FROM ad507.addresses WHERE code=$1 AND source='USER_REQUEST' AND status='ARCHIVED' LIMIT 1",[code]);

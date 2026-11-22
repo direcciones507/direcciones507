@@ -1,4 +1,4 @@
-import {effectiveServicePlan} from '../runtime/annual-service';
+import {effectiveServicePlan,serviceExpired} from '../runtime/annual-service';
 import { COUNTRIES } from '../runtime/country-configuration';
 export type SqlExecutor = <T = Record<string, unknown>>(
   strings: TemplateStringsArray,
@@ -112,7 +112,7 @@ export async function getPublicAddressByCode(
   `;
 
   const row = rows[0];
-  if (!row) return null;
+  if (!row || (serviceExpired(row.service_data) || row.service_data?.annualService?.paymentHold===true)) return null;
 
   const effective=effectiveServicePlan(row.service_data,row.plan_code);
   if(effective!==row.plan_code){const plans=await sql<{code:string;name:string}>`SELECT code,name FROM ad507.plans WHERE code=${effective} AND status='ACTIVE'`;row.plan_code=plans[0]?.code??null;row.plan_name=plans[0]?.name??null;row.description=null;row.commercial_description=null;}

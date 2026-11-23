@@ -5,6 +5,14 @@ const uiRoot=new URL('./ui/',import.meta.url);
 const assets=new Set(['favicon.svg','vendor/manrope.woff','vendor/inter.woff','radar.css','radar-visual-v1.css','radar.js','ui-model.js','territory-catalog.js','registration-form.js','commercial-details.js','motion.js','raster-map.js','vendor/leaflet.js','vendor/leaflet.css','vendor/maplibre-gl.css','vendor/maplibre-gl.mjs','vendor/maplibre-gl-shared.mjs','vendor/maplibre-gl-worker.mjs','vendor/gsap.min.js','vendor/ScrollTrigger.min.js','vendor/three.module.min.js','vendor/three.core.min.js']);
 // Fixed artwork, never generated from request data. Reuse encoded assets in memory.
 const pngAssets=new Map<string,Promise<Buffer>>();
+let socialJpeg:Promise<Buffer>|undefined;
+function radarSocialJpeg(){
+ if(!socialJpeg){
+  socialJpeg=sharp(readFileSync(new URL('share.png',uiRoot))).resize(1200,675,{fit:'cover'}).jpeg({quality:78,mozjpeg:true}).toBuffer();
+  socialJpeg.catch(()=>{socialJpeg=undefined;});
+ }
+ return socialJpeg;
+}
 function radarPng(asset:string){
  let pending=pngAssets.get(asset);
  if(!pending){
@@ -38,6 +46,7 @@ export async function radarPresentation(req:Request,env:Record<string,string|und
   const body='<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://radar.direcciones.lat/</loc></url></urlset>';
   return new Response(req.method==='HEAD'?null:body,{headers:{'content-type':'application/xml; charset=utf-8','cache-control':'no-cache','x-content-type-options':'nosniff'}});
  }
+ if(asset==='radar-social-20261123.jpg'){const body=req.method==='HEAD'?null:new Uint8Array(await radarSocialJpeg());return new Response(body,{headers:{...headers('image/jpeg',tiles),'cache-control':'public, max-age=86400'}});}
  if(asset==='share.png'||asset==='radar-social-20261123.png'||asset==='apple-touch-icon.png'){const body=req.method==='HEAD'?null:new Uint8Array(await radarPng(asset));return new Response(body,{headers:{...headers('image/png',tiles),'cache-control':'public, max-age=86400'}});}
  if(asset!==null){if(!assets.has(asset))return new Response(null,{status:404});const type=asset.endsWith('.svg')?'image/svg+xml':asset.endsWith('.woff')?'font/woff':asset.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8';return new Response(req.method==='HEAD'?null:readFileSync(new URL(asset,uiRoot)),{headers:headers(type,tiles)});}
  if(account)return new Response(null,{status:302,headers:{location:'https://direcciones.lat/auth/radar','cache-control':'no-store','referrer-policy':'no-referrer','x-robots-tag':'noindex, nofollow'}});

@@ -25,7 +25,10 @@ export function createPagaditoSandboxOrderBridge(sql:Sql) {
         if(!rows.length)throw Error('PAYMENT_NOT_FOUND');
         const address=rows[0];
         assertCountryCommerce(address.request_data?.countryCode??address.country_code??'PA');
-        if(!isPayableClientRequest(address))throw Error('INVALID_PAYMENT_REQUEST');
+        // The existing certification fixture remains usable after its commercial
+        // request stops awaiting payment. This read-only Sandbox exception is ID-bound.
+        const certificationFixture=addressId===CERTIFICATION_REQUEST_ID&&address.address_type==='BUSINESS'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(address.request_data?.plan);
+        if(!certificationFixture&&!isPayableClientRequest(address))throw Error('INVALID_PAYMENT_REQUEST');
         if(address.request_data?.migration)throw Error('INVALID_PAYMENT_REQUEST');
         const plan=address.request_data?.plan;
         const quote=isCertificationMode(mode)?{amountCents:CERTIFICATION_AMOUNTS[mode]}:commercialQuote(plan,mode);

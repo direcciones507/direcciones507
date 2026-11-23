@@ -21,14 +21,14 @@ function database(){
   statements.push(q);assert.match(q,/^SELECT /); // Certification entry cannot mutate any record.
   if(q.includes('address_ownership')){
    assert.equal(args[0],CERTIFICATION_REQUEST_ID);assert.equal(args[1],user.id);
-   return [{id:CERTIFICATION_REQUEST_ID,source:'USER_REQUEST',address_type:'BUSINESS',status:'DRAFT',request_data:{plan:'BUSINESS_PREMIUM',workflow:'PAYMENT_PENDING'}}];
+   return [{id:CERTIFICATION_REQUEST_ID,source:'USER_REQUEST',address_type:'BUSINESS',status:'ACTIVE',request_data:{plan:'BUSINESS_PREMIUM',workflow:'PUBLISHED'}}];
   }
   if(q.includes('user_roles'))return [{exists:1}];
   return [];
  }};return {sql,statements};
 }
 
-test('Temporal after-save link uses owned certification purchase and opens existing page and all four quotes without 404',async()=>{
+test('Temporal after-save link opens Sandbox and four quotes even when the certification fixture is already ACTIVE',async()=>{
  const {sql,statements}=database();
  const response=await handleTemporaryEventRoutes(request('/panel/evento/nuevo'),{enabled:true,sql,auth,certificationEnv:env,payment:{} as any});
  assert.equal(response?.status,200);const html=await response!.text();
@@ -44,6 +44,16 @@ test('Temporal after-save link uses owned certification purchase and opens exist
   assert.equal(quote?.status,200);assert.equal((await quote!.json()).quote.amountCents,amount);
  }
  assert.ok(statements.length>0);
+});
+
+test('certification fixture exception retains ownership, migration and ordinary request restrictions',async()=>{
+ const row={source:'USER_REQUEST',address_type:'BUSINESS',status:'ACTIVE',request_data:{plan:'BUSINESS_PREMIUM',workflow:'PUBLISHED'}};
+ const fixtureSql=(address:any)=>{const sql:any={begin:async(fn:any)=>fn(sql),unsafe:async(q:string)=>{assert.match(q,/^SELECT /);return q.includes('address_ownership')?(address?[address]:[]):[];}};return sql;};
+ await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql(null)).quote(user.id,CERTIFICATION_REQUEST_ID),/PAYMENT_NOT_FOUND/);
+ await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql({...row,request_data:{...row.request_data,migration:true}})).quote(user.id,CERTIFICATION_REQUEST_ID),/INVALID_PAYMENT_REQUEST/);
+ const ordinary='22222222-2222-4222-8222-222222222222';
+ await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql(row)).quote(user.id,ordinary),/INVALID_PAYMENT_REQUEST/);
+ await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql(row)).quote(user.id,ordinary,'CERTIFICATION_1'),/PAYMENT_NOT_FOUND/);
 });
 
 test('missing flags, wrong account/host or role never expose the certification link or query the database',async()=>{

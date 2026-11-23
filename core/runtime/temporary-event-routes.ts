@@ -1,3 +1,4 @@
+import {temporaryCertificationLink} from './temporary-event-certification';
 import {adminBillingExempt} from './admin-billing-policy';
 import QRCode from 'qrcode';
 import {eventOwnerRoute,type EventServices} from './temporary-event-owner';
@@ -8,7 +9,7 @@ import {renderTemporaryEventDraftForm,temporaryEventDraftClientScript} from './t
 import {renderTemporaryEventPage} from './temporary-event-page';
 import type {TemporaryEventDraft} from './temporary-event-draft';
 const json=(status:number,error:string)=>Response.json({ok:false,error},{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex, nofollow'}});
-export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{enabled:boolean;sql:Sql;auth:{currentUser:(req:Request)=>Promise<{id:string;roles:unknown[]}|null>}}):Promise<Response|null>{
+export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{enabled:boolean;certificationEnv?:Record<string,string|undefined>;sql:Sql;auth:{currentUser:(req:Request)=>Promise<{id:string;email?:string;roles:unknown[]}|null>}}):Promise<Response|null>{
  const url=new URL(req.url);
  const form=url.pathname==='/panel/evento/nuevo';
  const draft=url.pathname==='/v1/user/temporary-events';
@@ -57,10 +58,11 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
   if(draft&&req.method==='GET'){const events=await ctx.sql.unsafe('SELECT id,slug,title,status,created_at FROM ad507.temporary_events WHERE owner_user_id=$1 ORDER BY created_at DESC LIMIT 100',[user.id]);return Response.json({ok:true,events},{headers:{'cache-control':'no-store'}})}
   if(owned)return await eventOwnerRoute(req,ctx.sql,user.id,{...ctx,adminExempt});
   if(form){
+   const certification=await temporaryCertificationLink(req,user,ctx.certificationEnv??{},ctx.sql);
    // The official Yappy component signs in with a custom token and follows its
    // transaction in Firestore. Keep these exact origins confined to event checkout.
    const paymentConnections=ctx.payment&&!adminExempt?' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com':'';
-   const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-192.png"><meta name="robots" content="noindex">'+(ctx.payment&&!adminExempt?'<script type="module" src="https://bt-cdn.yappy.cloud/v1/cdn/web-component-btn-yappy.js"></script>':'')+'</head><body>'+renderTemporaryEventDraftForm('/v1/user/temporary-events',!!ctx.payment&&!adminExempt,adminExempt)+'<script>'+temporaryEventDraftClientScript+'</script></body></html>';
+   const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-192.png"><meta name="robots" content="noindex">'+(ctx.payment&&!adminExempt?'<script type="module" src="https://bt-cdn.yappy.cloud/v1/cdn/web-component-btn-yappy.js"></script>':'')+'</head><body>'+renderTemporaryEventDraftForm('/v1/user/temporary-events',!!ctx.payment&&!adminExempt,adminExempt,certification)+'<script>'+temporaryEventDraftClientScript+'</script></body></html>';
    return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex','content-security-policy':"default-src 'self'; script-src 'unsafe-inline' https://bt-cdn.yappy.cloud https://unpkg.com https://cdn.jsdelivr.net; connect-src 'self' https://*.yappy.cloud https://*.bgeneral.cloud"+paymentConnections+" https://tile.openstreetmap.org; img-src 'self' data: https:; style-src 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; base-uri 'none'; frame-ancestors 'none'; form-action 'none'"}});
   }
   const body=await req.text();if(body.length>24000)return json(413,'PAYLOAD_TOO_LARGE');

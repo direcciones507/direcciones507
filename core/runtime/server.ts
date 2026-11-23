@@ -1,6 +1,6 @@
 import {accountEmailEntry} from './account-email';
 import {handleAdminBillingGuard} from './admin-billing-policy';
-import {pagaditoSandboxPage} from './pagadito-sandbox-ui';
+import {handlePagaditoSandboxPage} from './pagadito-sandbox-page-route';
 import {pagaditoRelayEnabled,createPagaditoCertificationRelay,handlePagaditoCertificationRelay,lookupPagaditoCertification} from './pagadito-certification-relay';
 import {expireTemporaryEvents} from './temporary-event-ledger';
 import {createAdvertisingRepository} from './place-advertising';
@@ -73,7 +73,7 @@ startLegacyCore(async req => {
   const legalResponse=handleLegalRoutes(req);if(legalResponse)return legalResponse;
   const accountLegal=await handleAccountLegal(req,sql,auth);if(accountLegal)return accountLegal;
   const url = new URL(req.url);
-  const adminBillingResponse=await handleAdminBillingGuard(req,sql,auth);if(adminBillingResponse)return adminBillingResponse;
+  const adminBillingResponse=await handleAdminBillingGuard(req,sql,auth,process.env);if(adminBillingResponse)return adminBillingResponse;
   // Panamá uses the LATAM account panel, not a second session or identity.
   // Only redirect account entry paths; preserve historical AD507 pages and assets.
   if(req.method==='GET' && ['direcciones507.com','cuenta.direcciones507.com'].includes(url.hostname) && ['/panel','/panel/','/mi-cuenta','/crear-cuenta'].includes(url.pathname)){
@@ -103,14 +103,7 @@ startLegacyCore(async req => {
       return Response.json(result,{headers:{'cache-control':'no-store'}});
     }catch{return Response.json({error:'CERTIFICATION_STATUS_UNAVAILABLE'},{status:503,headers:{'cache-control':'no-store'}});}
   }
-  const sandboxPageId=url.pathname.match(/^\/panel\/pagadito\/sandbox\/([a-f0-9-]{36})$/);
-  if(sandboxPageId&&req.method==='GET'){
-    if(!relayEnabled&&(process.env.AD507_PAGADITO_CERTIFICATION_ENABLED!=='true'||process.env.AD507_PAGADITO_ISOLATED_DB!=='true'||process.env.AD507_PAGADITO_ENVIRONMENT!=='sandbox'||process.env.AD507_PAGADITO_ENABLED!=='true'))return new Response('Sandbox no disponible',{status:404});
-    const user=await auth.currentUser(req);
-    if(!user?.roles.some(role=>role==='CLIENT'||role==='ADMIN'))return new Response('Acceso requerido',{status:403});
-    try{await createPagaditoSandboxOrderBridge(sql).quote(user.id,sandboxPageId[1]);}catch{return new Response('Solicitud no disponible',{status:404});}
-    return new Response(pagaditoSandboxPage(sandboxPageId[1]),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','referrer-policy':'no-referrer','x-robots-tag':'noindex','x-content-type-options':'nosniff'}});
-  }
+  const sandboxPage=await handlePagaditoSandboxPage(req,{sql,auth,env:process.env});if(sandboxPage)return sandboxPage;
   const paymentPageId=url.pathname.match(/^\/panel\/payments\/([a-f0-9-]{36})$/);
   if(paymentPageId&&req.method==='GET'){
     if(!yappyEnabled||!paymentConfig||!paymentRepository)return new Response('Pago no habilitado',{status:503,headers:{'cache-control':'no-store'}});
@@ -149,7 +142,7 @@ startLegacyCore(async req => {
   const publicResponse=await handleNewPublicRoutes(req,{enabled:commercialWorkflowEnabled,sql,r2:requestR2});if(publicResponse)return publicResponse;
   const requestResponse = await handleRequestRoutes(req, { enabled: commercialWorkflowEnabled, sql, auth, repository: requestRepository, r2: requestR2 });
   if (requestResponse) return requestResponse;
-  const temporaryEventResponse=await handleTemporaryEventRoutes(req,{enabled:process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true',sql,auth,media:temporaryMedia,payment:temporaryPayment});
+  const temporaryEventResponse=await handleTemporaryEventRoutes(req,{enabled:process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true',certificationEnv:process.env,sql,auth,media:temporaryMedia,payment:temporaryPayment});
   if(temporaryEventResponse)return temporaryEventResponse;
   const userPanel = await handleUserPanel(req, sql, auth);
   if (userPanel) return userPanel;

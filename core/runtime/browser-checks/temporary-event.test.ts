@@ -55,7 +55,9 @@ test('Android and desktop: save, recover, upload, private preview, tap-to-advanc
   await page.waitForFunction(()=>document.getElementById('event-quote')?.textContent==='60 días · USD 19.99');
   expect((await sql.unsafe('SELECT price_cents FROM ad507.temporary_events'))[0].price_cents).toBe(1999);
   await page.locator('[name=endsOn]').fill('2031-02-13');await page.getByRole('button',{name:'Guardar borrador'}).click();
-  expect(await page.locator('#temporary-event-error').textContent()).toBe('Selecciona una duración de 1 a 60 días.');
+  // The required duration selector rejects an out-of-range end date before submit.
+  expect(await page.locator('[name=durationDays]').evaluate((el:HTMLSelectElement)=>el.validity.valueMissing)).toBe(true);
+  expect(await page.locator('#event-quote').textContent()).toBe('Selecciona una vigencia válida de 1 a 60 días.');
   expect((await sql.unsafe('SELECT ends_on::text FROM ad507.temporary_events'))[0].ends_on).toBe('2031-02-12');
   for(const width of [360,768,1440]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)}
   const reduced=await browser.newPage({viewport:{width:393,height:851},reducedMotion:'reduce'});await reduced.clock.install();await reduced.goto(server.url+preview!.slice(1));await reduced.clock.fastForward(20000);expect(await reduced.locator('.photo-counter').textContent()).toBe('1 / 3');

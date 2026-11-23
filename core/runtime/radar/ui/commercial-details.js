@@ -12,7 +12,9 @@ export function renderCommercialDetails(target,p,doc=document){
  for(const value of Array.isArray(profile.socials)?profile.socials.slice(0,8):[]){try{
   const u=new URL(value);if(u.protocol!=='https:'||u.username||u.password||u.port&&u.port!=='443')continue;
   const host=u.hostname.replace(/^www\./,'');
-  const a=node('a',host==='tiktok.com'||host.endsWith('.tiktok.com')?'TikTok':host);a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';a.className='button subtle';target.append(a);
+  const networks=[['Facebook','facebook.com'],['Instagram','instagram.com'],['TikTok','tiktok.com'],['YouTube','youtube.com'],['YouTube','youtu.be'],['X','x.com'],['Twitter','twitter.com'],['LinkedIn','linkedin.com'],['Pinterest','pinterest.com']];
+  const label=networks.find(([,domain])=>host===domain||host.endsWith('.'+domain))?.[0]||host;
+  const a=node('a',label);a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';a.className='button subtle';target.append(a);
  }catch{}}
  // One effective schedule avoids displaying the original and edited hours twice.
  const hours=details.hours&&Object.keys(details.hours).length?details.hours:profile.hours;

@@ -21,6 +21,15 @@ test('existing LATAM panel route applies display brand and preserves CSP nonce f
  expect(count).toBeGreaterThan(0);
 });
 
+test('owner map assets are narrowly allowed only on account panel',async()=>{
+ const response=await handleUserPanel(new Request('https://direcciones.lat/panel'),{} as any,{currentUser:async()=>({id:'map-test',roles:['CLIENT']})} as any);
+ const csp=response!.headers.get('content-security-policy')!;
+ expect(csp).toContain('https://radar.direcciones.lat/radar/ui/vendor/leaflet.js');
+ expect(csp).toContain('https://radar.direcciones.lat/radar/ui/vendor/leaflet.css');
+ expect(csp).toContain("'nonce-");
+ expect(csp).not.toContain("'unsafe-eval'");
+});
+
 test('anonymous shared panel stays on the panel behind Railway TLS and retains only a configured country',async()=>{
  for(const [country,expected]of [['CR','CR'],['https://evil.test','PA']]){
   const response=await handleUserPanel(new Request('http://direcciones.lat/panel?country='+encodeURIComponent(country)),{} as any,{currentUser:async()=>null} as any);

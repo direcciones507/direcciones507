@@ -11,7 +11,8 @@ export function renderCommercialDetails(target,p,doc=document){
  for(const [key,label] of Object.entries(labels))if(typeof profile.extras?.[key]==='string'&&profile.extras[key])target.append(node('p',label+': '+profile.extras[key]));
  for(const value of Array.isArray(profile.socials)?profile.socials.slice(0,8):[]){try{
   const u=new URL(value);if(u.protocol!=='https:'||u.username||u.password||u.port&&u.port!=='443')continue;
-  const a=node('a',u.hostname.replace(/^www\./,''));a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';a.className='button subtle';target.append(a);
+  const host=u.hostname.replace(/^www\./,'');
+  const a=node('a',host==='tiktok.com'||host.endsWith('.tiktok.com')?'TikTok':host);a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';a.className='button subtle';target.append(a);
  }catch{}}
  // One effective schedule avoids displaying the original and edited hours twice.
  const hours=details.hours&&Object.keys(details.hours).length?details.hours:profile.hours;

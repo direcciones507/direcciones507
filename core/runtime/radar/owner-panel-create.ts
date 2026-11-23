@@ -46,7 +46,7 @@ export async function openRadarOwnerCreate(
  const coordinates=()=>{const lat=latitude.value.trim(),lng=longitude.value.trim();return lat!==''&&lng!==''&&Number.isFinite(Number(lat))&&Number.isFinite(Number(lng))?[Number(lat),Number(lng)]:[8.9824,-79.5199];};
  const updatePin=(lat:number,lng:number)=>{
   latitude.value=lat.toFixed(6);longitude.value=lng.toFixed(6);
-  if(ownerMap){if(ownerMarker)ownerMarker.setLatLng([lat,lng]);else ownerMarker=doc.defaultView.L.marker([lat,lng]).addTo(ownerMap);}
+  if(ownerMap){if(ownerMarker)ownerMarker.setLatLng([lat,lng]);else ownerMarker=doc.defaultView.L.marker([lat,lng],{icon:doc.defaultView.L.divIcon({className:'',html:'<span aria-hidden="true" style="display:block;width:22px;height:22px;box-sizing:border-box;background:#1460c8;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 7px #0007"></span>',iconSize:[22,22],iconAnchor:[11,22]})}).addTo(ownerMap);}
  };
  mapButton.onclick=async()=>{
   mapRegion.hidden=false;

@@ -43,7 +43,7 @@ export async function openRadarOwnerCreate(
  const mapButton:any=region.querySelector('#radarOwnerPickMap');
  const mapRegion:any=region.querySelector('#radarOwnerMap');
  let ownerMap:any=null,ownerMarker:any=null;
- const coordinates=()=>[Number(latitude.value)||8.9824,Number(longitude.value)||-79.5199];
+ const coordinates=()=>{const lat=latitude.value.trim(),lng=longitude.value.trim();return lat!==''&&lng!==''&&Number.isFinite(Number(lat))&&Number.isFinite(Number(lng))?[Number(lat),Number(lng)]:[8.9824,-79.5199];};
  const updatePin=(lat:number,lng:number)=>{
   latitude.value=lat.toFixed(6);longitude.value=lng.toFixed(6);
   if(ownerMap){if(ownerMarker)ownerMarker.setLatLng([lat,lng]);else ownerMarker=doc.defaultView.L.marker([lat,lng]).addTo(ownerMap);}
@@ -56,12 +56,12 @@ export async function openRadarOwnerCreate(
    const win:any=doc.defaultView;
    if(!win.L){
     if(!doc.querySelector('link[data-radar-owner-leaflet]')){
-     const css=doc.createElement('link');css.rel='stylesheet';css.href='/radar/ui/vendor/leaflet.css';css.dataset.radarOwnerLeaflet='1';doc.head.append(css);
+     const css=doc.createElement('link');css.rel='stylesheet';css.href='https://radar.direcciones.lat/radar/ui/vendor/leaflet.css';css.dataset.radarOwnerLeaflet='1';doc.head.append(css);
     }
     await new Promise<void>((resolve,reject)=>{
      const existing:any=doc.querySelector('script[data-radar-owner-leaflet]');
      if(existing){if(win.L)resolve();else{existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(Error('MAP_LOAD')),{once:true});}return;}
-     const script=doc.createElement('script');script.src='/radar/ui/vendor/leaflet.js';script.dataset.radarOwnerLeaflet='1';script.onload=()=>resolve();script.onerror=()=>reject(Error('MAP_LOAD'));doc.head.append(script);
+     const script=doc.createElement('script');script.src='https://radar.direcciones.lat/radar/ui/vendor/leaflet.js';script.dataset.radarOwnerLeaflet='1';script.onload=()=>resolve();script.onerror=()=>reject(Error('MAP_LOAD'));doc.head.append(script);
     });
    }
    if(!win.L)throw Error('MAP_LOAD');

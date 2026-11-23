@@ -2599,7 +2599,8 @@ document.addEventListener('DOMContentLoaded',()=>{
  const photos=()=>Array.from(gallery.querySelectorAll('img'));
  function go(n){const images=photos();if(!images.length)return;active=Math.max(0,Math.min(images.length-1,n));const desktop=matchMedia('(min-width:768px)').matches;
   images.forEach((img,i)=>{const d=i-active,a=Math.abs(d),sign=Math.sign(d);const x=desktop?sign*(a===1?43:65):sign*(a===1?82:110);const z=desktop?-a*125:-a*75;const rot=desktop?-sign*Math.min(a,1)*42:0;
-   img.style.transform=desktop?'translate(-50%,-50%) translateX('+x+'%) translateZ('+z+'px) rotateY('+rot+'deg)':'translate(-50%,-50%) translateX('+x+'%) scale('+(a===0?1:a===1?.9:.82)+')';
+   const tf=desktop?'translate(-50%,-50%) translateX('+x+'%) translateZ('+z+'px) rotateY('+rot+'deg)':'translate(-50%,-50%) translateX('+x+'%) scale('+(a===0?1:a===1?.9:.82)+')';
+   if(desktop)img.style.transform=tf;else img.style.setProperty('transform',tf,'important');
    img.style.opacity=a>2?'0':a===2?'.18':a===1?(desktop?'.65':'.4'):'1';
    img.style.zIndex=String(10-a);img.setAttribute('aria-hidden',a>2?'true':'false');img.tabIndex=a===0?0:-1;
   });

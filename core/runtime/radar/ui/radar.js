@@ -103,7 +103,7 @@ function render(){
 }
 function renderFeatured(rows){const groups=featuredGroups(rows),fragment=document.createDocumentFragment();for(const [category,items] of groups){const section=el('section','featured-category');section.append(el('h3','',({restaurant:'Restaurantes',hotel:'Hoteles',cafe:'Cafeterías',shop:'Comercios',services:'Servicios',health:'Salud',other:'Otros'})[category]||categoryLabel(category)));const track=el('div','featured-track');track.setAttribute('aria-label',categoryLabel(category));for(const f of items){const b=el('button','featured-card');b.type='button';b.append(el('span','commercial-badge','Destacado'),el('h4','',f.properties.name),el('span','',categoryLabel(category)));b.onclick=()=>{scrollMap();selectFeature(f);};track.append(b);}section.append(track);fragment.append(section);}$('featuredGroups').replaceChildren(fragment);$('featuredSection').hidden=!groups.size;}
 function detail(f,focus=true){
- const p=f.properties,d=$('detail'),optionsOpen=d.dataset.id===f.id&&!!d.querySelector('.detail-options[open]');
+ const p=f.properties,d=$('detail'),optionsOpen=!d.hidden&&d.dataset.id===f.id&&!!d.querySelector('.detail-options[open]');
  d.replaceChildren();d.dataset.id=f.id;
  const top=el('div','detail-top');top.append(el('span','category-label',categoryLabel(p.category)));
  const closeButton=el('button','icon-button','×');closeButton.setAttribute('aria-label','Cerrar ficha');
@@ -130,7 +130,7 @@ function detail(f,focus=true){
 }
 let mapSelectionSequence=0;
 function openPinGroup(rows){const out=$('pinGroupResults');out.replaceChildren();const sorted=[...rows].sort((a,b)=>({live:0,featured:1,normal:2}[a.properties.pin]??3)-({live:0,featured:1,normal:2}[b.properties.pin]??3)||a.properties.name.localeCompare(b.properties.name));for(const f of sorted){const button=el('button','button subtle wide',f.properties.name+(f.properties.pin==='live'?' · En vivo':f.properties.pin==='featured'?' · Destacado':''));button.type='button';button.onclick=()=>{close('pinGroupDialog');const latest=filtered().find(row=>row.id===f.id);if(latest)selectFeature(latest);else toast('El establecimiento ya no está en esta consulta.');};out.append(button);}show('pinGroupDialog');}
-function dismissDetail(){++mapSelectionSequence;if(!state.selected&&$('detail').hidden)return;state.selected=null;$('detail').hidden=true;for(const n of document.querySelectorAll('.result-card[aria-pressed="true"]'))n.setAttribute('aria-pressed','false');}
+function dismissDetail(){++mapSelectionSequence;if(!state.selected&&$('detail').hidden)return;state.selected=null;const panel=$('detail');panel.hidden=true;panel.querySelector('.detail-options')?.removeAttribute('open');delete panel.dataset.id;for(const n of document.querySelectorAll('.result-card[aria-pressed="true"]'))n.setAttribute('aria-pressed','false');}
 // Close the pin card on any free map surface, while leaving navigation and pin selection intact.
 // A renderer handles its own actual map tiles/pins; this catches surrounding map-area overlays.
 document.querySelector('.map-area')?.addEventListener('click',event=>{

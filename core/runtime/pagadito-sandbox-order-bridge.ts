@@ -9,12 +9,13 @@ import {isPayableClientRequest} from './paid-activation-policy';
  * Write operations require a dedicated provider-specific ledger integration.
  */
 export const CERTIFICATION_AMOUNTS:Readonly<Record<string,number>>=Object.freeze({CERTIFICATION_1:1844,CERTIFICATION_2:2379,CERTIFICATION_3:9991,CERTIFICATION_4:10412});
+export const CERTIFICATION_REQUEST_ID='bcd3213d-1b3a-4072-9570-e83c97480fa4';
 export const isCertificationMode=(mode:string)=>Object.hasOwn(CERTIFICATION_AMOUNTS,mode);
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export function createPagaditoSandboxOrderBridge(sql:Sql) {
   return Object.freeze({
     async quote(userId:string,addressId:string,mode='ANNUAL') {
-      if(isCertificationMode(mode)&&addressId!=='bcd3213d-1b3a-4072-9570-e83c97480fa4')throw Error('PAYMENT_NOT_FOUND');
+      if(isCertificationMode(mode)&&addressId!==CERTIFICATION_REQUEST_ID)throw Error('PAYMENT_NOT_FOUND');
       if(!uuid.test(userId)||!uuid.test(addressId))throw Error('PAYMENT_NOT_FOUND');
       return sql.begin(async tx=>{
         const rows=await tx.unsafe(

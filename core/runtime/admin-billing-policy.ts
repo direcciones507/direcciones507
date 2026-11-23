@@ -1,3 +1,4 @@
+import {isAuthorizedCertificationRequest} from './temporary-event-certification';
 /** Billing exemption is an active database permission, never a browser flag. */
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 export async function adminBillingExempt(sql:any,userId:string):Promise<boolean>{
@@ -11,10 +12,13 @@ export async function addressBillingExempt(sql:any,row:{id:string;request_data?:
  return rows.length===1&&(!actorId||rows[0].user_id===actorId);
 }
 /** Gate provider entry points, leaving provider adapters and customer billing intact. */
-export async function handleAdminBillingGuard(req:Request,sql:any,auth:{currentUser:(r:Request)=>Promise<any>}):Promise<Response|null>{
+export async function handleAdminBillingGuard(req:Request,sql:any,auth:{currentUser:(r:Request)=>Promise<any>},env:Record<string,string|undefined>={}):Promise<Response|null>{
  const path=new URL(req.url).pathname;
  if(!/^\/(?:panel\/(?:payments|pagadito)\/|v1\/(?:user\/requests\/[a-f0-9-]{36}\/(?:payment|renewal|installment|advertising)|user\/pagadito\/))/.test(path))return null;
  const user=await auth.currentUser(req);
+ // Certification uses the isolated relay and a single existing test purchase.
+ // All real billing and every other ADMIN request retain the exemption.
+ if(user&&isAuthorizedCertificationRequest(req,user,env))return null;
  if(!user?.roles.includes('ADMIN')||!await adminBillingExempt(sql,user.id))return null;
  return path.startsWith('/panel/')?new Response(null,{status:302,headers:{location:'/panel','cache-control':'no-store'}}):Response.json({ok:false,error:'ADMIN_PAYMENT_EXEMPT'},{status:409,headers:{'cache-control':'no-store'}});
 }

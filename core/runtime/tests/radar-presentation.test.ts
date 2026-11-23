@@ -95,9 +95,9 @@ test('Radar identity uses its own favicon and canonical metadata without opening
 test('Radar social preview and touch icon serve fixed PNG dimensions and HEAD without exposing data',async()=>{
  const env={RADAR_ENABLED:'true'};
  const html=await (await radarPresentation(new Request(radarOrigin+'/'),env))!.text();
- expect(html).toContain('property="og:image" content="https://radar.direcciones.lat/radar/ui/share.png"');
+ expect(html).toContain('property="og:image" content="https://radar.direcciones.lat/radar/ui/share.png?v=20261123"');
  expect(html).toContain('rel="apple-touch-icon" sizes="180x180"');
- for(const [asset,width,height] of [['share.png',1200,630],['apple-touch-icon.png',180,180]] as const){
+ for(const [asset,width,height] of [['share.png',1536,865],['apple-touch-icon.png',180,180]] as const){
   const url=radarOrigin+'/radar/ui/'+asset;
   const image=await radarPresentation(new Request(url),env);
   expect(image?.status).toBe(200);

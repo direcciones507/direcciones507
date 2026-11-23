@@ -19,8 +19,8 @@ function database(){
  const statements:string[]=[];
  const sql:any={begin:async(fn:any)=>fn(sql),unsafe:async(q:string,args:any[])=>{
   statements.push(q);assert.match(q,/^SELECT /); // Certification entry cannot mutate any record.
-  if(q.includes('address_ownership')){
-   assert.equal(args[0],CERTIFICATION_REQUEST_ID);assert.equal(args[1],user.id);
+  if(q.includes('FROM ad507.addresses')){
+   assert.equal(args[0],CERTIFICATION_REQUEST_ID);if(args.length>1)assert.equal(args[1],user.id);
    return [{id:CERTIFICATION_REQUEST_ID,source:'USER_REQUEST',address_type:'BUSINESS',status:'ACTIVE',request_data:{plan:'BUSINESS_PREMIUM',workflow:'PUBLISHED'}}];
   }
   if(q.includes('user_roles'))return [{exists:1}];
@@ -48,7 +48,7 @@ test('Temporal after-save link opens Sandbox and four quotes even when the certi
 
 test('certification fixture exception retains ownership, migration and ordinary request restrictions',async()=>{
  const row={source:'USER_REQUEST',address_type:'BUSINESS',status:'ACTIVE',request_data:{plan:'BUSINESS_PREMIUM',workflow:'PUBLISHED'}};
- const fixtureSql=(address:any)=>{const sql:any={begin:async(fn:any)=>fn(sql),unsafe:async(q:string)=>{assert.match(q,/^SELECT /);return q.includes('address_ownership')?(address?[address]:[]):[];}};return sql;};
+ const fixtureSql=(address:any)=>{const sql:any={begin:async(fn:any)=>fn(sql),unsafe:async(q:string)=>{assert.match(q,/^SELECT /);return q.includes('FROM ad507.addresses')?(address?[address]:[]):[];}};return sql;};
  await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql(null)).quote(user.id,CERTIFICATION_REQUEST_ID),/PAYMENT_NOT_FOUND/);
  await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql({...row,request_data:{...row.request_data,migration:true}})).quote(user.id,CERTIFICATION_REQUEST_ID),/INVALID_PAYMENT_REQUEST/);
  const ordinary='22222222-2222-4222-8222-222222222222';
@@ -101,4 +101,29 @@ test('authorized checkout reaches only isolated certification relay; real cards 
   assert.equal((await handleSandboxCheckout(post(input,'https://evil.example'),context))?.status,403);
   assert.equal(transports,1);
  }finally{globalThis.fetch=original;}
+});
+
+
+test('Outlook certification reviewer can access fixed Sandbox fixture without commercial ownership',async()=>{
+ const statements:string[]=[];
+ const sql:any={begin:async(fn:any)=>fn(sql),unsafe:async(q:string,args:any[])=>{
+  statements.push(q);assert.match(q,/^SELECT /);
+  if(q.includes('FROM ad507.addresses')){
+   if(q.includes('address_ownership'))return []; // Fixture belongs to prior Gmail account.
+   assert.deepEqual(args,[CERTIFICATION_REQUEST_ID]);
+   return [{id:CERTIFICATION_REQUEST_ID,source:'USER_REQUEST',address_type:'BUSINESS',status:'ACTIVE',request_data:{plan:'BUSINESS_PREMIUM',workflow:'PUBLISHED'}}];
+  }
+  return [];
+ }};
+ const reviewer={...user,email:'jacinto3180@outlook.cl'};
+ const settings={...env,AD507_PAGADITO_TEST_EMAIL:reviewer.email};
+ assert.equal((await temporaryCertificationLink(request('/panel/evento/nuevo'),reviewer,settings,sql)).href,pagePath);
+ const page=await handlePagaditoSandboxPage(request(pagePath),{sql,auth:{currentUser:async()=>reviewer} as any,env:settings});
+ assert.equal(page?.status,200);
+ const quote=await handlePagaditoSandboxQuote(request(api+'/quote?mode=CERTIFICATION_1'),{enabled:true,auth:{currentUser:async()=>reviewer} as any,bridge:createPagaditoSandboxOrderBridge(sql),certificationEmail:reviewer.email,certificationRelayEnabled:true});
+ assert.equal(quote?.status,200);
+ assert.equal((await quote!.json()).quote.amountCents,1844);
+ await assert.rejects(createPagaditoSandboxOrderBridge(sql).quote(reviewer.id,CERTIFICATION_REQUEST_ID),/PAYMENT_NOT_FOUND/);
+ await assert.rejects(createPagaditoSandboxOrderBridge(sql).quote(reviewer.id,'22222222-2222-4222-8222-222222222222','ANNUAL',true),/PAYMENT_NOT_FOUND/);
+ assert.ok(statements.every(q=>q.startsWith('SELECT ')));
 });

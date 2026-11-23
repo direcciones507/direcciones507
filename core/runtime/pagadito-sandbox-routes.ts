@@ -1,11 +1,13 @@
 import type {createGeneralAuth} from './general-auth';
-import {isCertificationMode} from './pagadito-sandbox-order-bridge';
+import {CERTIFICATION_REQUEST_ID,isCertificationMode} from './pagadito-sandbox-order-bridge';
 import type {createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 
 type Context={
   enabled:boolean;
   auth:Pick<ReturnType<typeof createGeneralAuth>,'currentUser'>;
   bridge:ReturnType<typeof createPagaditoSandboxOrderBridge>;
+  certificationEmail?:string;
+  certificationRelayEnabled?:boolean;
 };
 const json=(status:number,value:unknown)=>Response.json(value,{status,headers:{
   'cache-control':'no-store','referrer-policy':'no-referrer',
@@ -33,7 +35,8 @@ export async function handlePagaditoSandboxQuote(req:Request,context:Context):Pr
   if(!['ANNUAL','INSTALLMENTS'].includes(mode)&&!isCertificationMode(mode))
     return json(400,{ok:false,error:'INVALID_PAYMENT_MODE'});
   try{
-    const quote=await context.bridge.quote(user.id,match[1],mode);
+    const reviewer=context.certificationRelayEnabled===true&&match[1]===CERTIFICATION_REQUEST_ID&&!!context.certificationEmail&&user.email?.toLowerCase()===context.certificationEmail.toLowerCase();
+    const quote=await context.bridge.quote(user.id,match[1],mode,reviewer);
     return json(200,{ok:true,quote});
   }catch(error){
     const name=error instanceof Error?error.message:'';

@@ -13,6 +13,6 @@ export async function handlePagaditoSandboxPage(req:Request,ctx:{sql:Sql;env:Rec
  if(!relay&&(env.AD507_PAGADITO_CERTIFICATION_ENABLED!=='true'||env.AD507_PAGADITO_ISOLATED_DB!=='true'||env.AD507_PAGADITO_ENVIRONMENT!=='sandbox'||env.AD507_PAGADITO_ENABLED!=='true'))return new Response('Sandbox no disponible',{status:404,headers});
  const user=await ctx.auth.currentUser(req);
  if(!user?.roles.some(role=>role==='CLIENT'||role==='ADMIN')||(relay&&(!env.AD507_PAGADITO_TEST_EMAIL||user.email?.toLowerCase()!==env.AD507_PAGADITO_TEST_EMAIL.toLowerCase())))return new Response('Acceso requerido',{status:403,headers});
- try{await createPagaditoSandboxOrderBridge(ctx.sql).quote(user.id,match[1]);}catch{return new Response('Solicitud no disponible',{status:404,headers});}
+ try{await createPagaditoSandboxOrderBridge(ctx.sql).quote(user.id,match[1],'ANNUAL',relay&&match[1]==='bcd3213d-1b3a-4072-9570-e83c97480fa4');}catch{return new Response('Solicitud no disponible',{status:404,headers});}
  return new Response(pagaditoSandboxPage(match[1]),{headers:{...headers,'content-type':'text/html; charset=utf-8'}});
 }

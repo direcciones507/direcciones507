@@ -36,7 +36,7 @@ if p.exists():
     )
     text = text.replace(
         '<meta property="og:image" content="https://direcciones507.com/assets/logo-direcciones507.png?v=2">',
-        '<meta property="og:image" content="https://direcciones507.com/assets/og-image-new.jpg">\n  <meta property="og:image:secure_url" content="https://direcciones507.com/assets/og-image-new.jpg">\n  <meta property="og:image:type" content="image/jpeg">'
+        '<meta property="og:image" content="https://direcciones507.com/assets/og-image.jpg">\n  <meta property="og:image:secure_url" content="https://direcciones507.com/assets/og-image.jpg">\n  <meta property="og:image:type" content="image/jpeg">'
     )
     text = text.replace(
         '<meta property="og:image:width" content="300">',
@@ -48,7 +48,7 @@ if p.exists():
     )
     text = text.replace(
         '<meta name="twitter:image" content="{{OG_IMAGE}}">',
-        '<meta name="twitter:image" content="https://direcciones507.com/assets/og-image-new.jpg">'
+        '<meta name="twitter:image" content="https://direcciones507.com/assets/og-image.jpg">'
     )
 
     p.write_text(text, encoding="utf-8")

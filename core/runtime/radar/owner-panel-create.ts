@@ -25,6 +25,8 @@ export async function openRadarOwnerCreate(
   +'<label>País<select name="country" required></select></label>'
   +'<fieldset><legend>Ubicación del establecimiento</legend><p>Introduce las coordenadas del negocio o usa la ubicación actual del dispositivo. Revisa que correspondan a tu local.</p>'
   +'<button type="button" id="radarOwnerGps">Usar mi ubicación</button>'
+  +'<button type="button" id="radarOwnerPickMap">Elegir en el mapa</button>'
+  +'<div id="radarOwnerMap" hidden style="height:320px;max-width:100%;margin:12px 0;border-radius:12px;overflow:hidden" role="region" aria-label="Mapa para elegir ubicación del negocio"></div>'
   +'<label>Latitud<input name="latitude" type="number" step="any" min="-90" max="90" required inputmode="decimal"></label>'
   +'<label>Longitud<input name="longitude" type="number" step="any" min="-180" max="180" required inputmode="decimal"></label></fieldset>'
   +ownerRegistrationMarkup
@@ -38,6 +40,41 @@ export async function openRadarOwnerCreate(
  const country:any=form.elements.namedItem('country');
  const latitude:any=form.elements.namedItem('latitude');
  const longitude:any=form.elements.namedItem('longitude');
+ const mapButton:any=region.querySelector('#radarOwnerPickMap');
+ const mapRegion:any=region.querySelector('#radarOwnerMap');
+ let ownerMap:any=null,ownerMarker:any=null;
+ const coordinates=()=>{const lat=latitude.value.trim(),lng=longitude.value.trim();return lat!==''&&lng!==''&&Number.isFinite(Number(lat))&&Number.isFinite(Number(lng))?[Number(lat),Number(lng)]:[8.9824,-79.5199];};
+ const updatePin=(lat:number,lng:number)=>{
+  latitude.value=lat.toFixed(6);longitude.value=lng.toFixed(6);
+  if(ownerMap){if(ownerMarker)ownerMarker.setLatLng([lat,lng]);else ownerMarker=doc.defaultView.L.marker([lat,lng]).addTo(ownerMap);}
+ };
+ mapButton.onclick=async()=>{
+  mapRegion.hidden=false;
+  if(ownerMap){ownerMap.invalidateSize();return;}
+  mapButton.disabled=true;status.textContent='Cargando mapa…';
+  try{
+   const win:any=doc.defaultView;
+   if(!win.L){
+    if(!doc.querySelector('link[data-radar-owner-leaflet]')){
+     const css=doc.createElement('link');css.rel='stylesheet';css.href='https://radar.direcciones.lat/radar/ui/vendor/leaflet.css';css.dataset.radarOwnerLeaflet='1';doc.head.append(css);
+    }
+    await new Promise<void>((resolve,reject)=>{
+     const existing:any=doc.querySelector('script[data-radar-owner-leaflet]');
+     if(existing){if(win.L)resolve();else{existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(Error('MAP_LOAD')),{once:true});}return;}
+     const script=doc.createElement('script');script.src='https://radar.direcciones.lat/radar/ui/vendor/leaflet.js';script.dataset.radarOwnerLeaflet='1';script.onload=()=>resolve();script.onerror=()=>reject(Error('MAP_LOAD'));doc.head.append(script);
+    });
+   }
+   if(!win.L)throw Error('MAP_LOAD');
+   const [lat,lng]=coordinates();ownerMap=win.L.map(mapRegion).setView([lat,lng],13);
+   win.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(ownerMap);
+   ownerMap.on('click',(event:any)=>{updatePin(event.latlng.lat,event.latlng.lng);status.textContent='Ubicación seleccionada. Revisa el punto antes de guardar.';});
+   if(latitude.value&&longitude.value)updatePin(lat,lng);
+   status.textContent='Toca el mapa para colocar el pin de tu negocio.';
+   ownerMap.invalidateSize();
+  }catch{mapRegion.hidden=true;releaseMap();status.textContent='No se pudo cargar el mapa. Puedes usar GPS o escribir las coordenadas.';}
+  finally{mapButton.disabled=false;}
+ };
+ const releaseMap=()=>{if(ownerMap){ownerMap.remove();ownerMap=null;ownerMarker=null;}};
  const fields:any=region.querySelector('#ownerRegistrationFields');
  fields.hidden=false;fields.disabled=false;
  for(const [code,label] of Object.entries(names)){
@@ -82,11 +119,11 @@ export async function openRadarOwnerCreate(
   if(!doc.defaultView?.navigator?.geolocation){status.textContent='La ubicación no está disponible. Escribe las coordenadas manualmente.';return;}
   button.disabled=true;status.textContent='Consultando tu ubicación…';
   doc.defaultView.navigator.geolocation.getCurrentPosition((position:any)=>{
-   latitude.value=String(position.coords.latitude);longitude.value=String(position.coords.longitude);
+   updatePin(position.coords.latitude,position.coords.longitude);if(ownerMap)ownerMap.setView([position.coords.latitude,position.coords.longitude],16);
    button.disabled=false;status.textContent='Ubicación copiada. Comprueba que el punto corresponde a tu local.';
   },()=>{button.disabled=false;status.textContent='No se obtuvo la ubicación. Puedes escribir las coordenadas manualmente.';},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
  };
- region.querySelector('#radarOwnerCreateCancel').onclick=()=>{region.hidden=true;region.replaceChildren();};
+ region.querySelector('#radarOwnerCreateCancel').onclick=()=>{releaseMap();region.hidden=true;region.replaceChildren();};
  form.onsubmit=async(e:any)=>{
   e.preventDefault();if(submit.disabled||!form.reportValidity())return;
   const read=(key:string)=>String(form.elements.namedItem(key)?.value||'').trim();
@@ -107,7 +144,7 @@ export async function openRadarOwnerCreate(
     status.textContent=errors[result.error]||'No se pudo guardar. Revisa tu información y vuelve a intentar.';
     return;
    }
-   region.replaceChildren();
+   releaseMap();region.replaceChildren();
    const done=doc.createElement('p');done.setAttribute('role','status');
    done.textContent='Local publicado correctamente. Ya puedes editar su ficha y disponibilidad desde Mi panel.';
    const link=doc.createElement('a');link.href='https://radar.direcciones.lat/';

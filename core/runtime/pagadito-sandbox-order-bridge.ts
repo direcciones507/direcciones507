@@ -14,13 +14,18 @@ export const isCertificationMode=(mode:string)=>Object.hasOwn(CERTIFICATION_AMOU
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 export function createPagaditoSandboxOrderBridge(sql:Sql) {
   return Object.freeze({
-    async quote(userId:string,addressId:string,mode='ANNUAL') {
+    async quote(userId:string,addressId:string,mode='ANNUAL',authorizedCertification=false) {
       if(isCertificationMode(mode)&&addressId!==CERTIFICATION_REQUEST_ID)throw Error('PAYMENT_NOT_FOUND');
       if(!uuid.test(userId)||!uuid.test(addressId))throw Error('PAYMENT_NOT_FOUND');
+      // Explicitly authorized certification reviewers can inspect only the fixed
+      // Sandbox fixture. This does not transfer ownership or change real orders.
+      const reviewerFixture=authorizedCertification&&addressId===CERTIFICATION_REQUEST_ID;
       return sql.begin(async tx=>{
         const rows=await tx.unsafe(
-          "SELECT a.* FROM ad507.addresses a JOIN ad507.address_ownership o ON o.address_id=a.id JOIN ad507.users u ON u.id=o.user_id WHERE a.id=$1::uuid AND o.user_id=$2::uuid AND o.ownership_role='OWNER' AND u.status='ACTIVE' AND a.source='USER_REQUEST' FOR SHARE OF a",
-          [addressId,userId]
+          reviewerFixture
+            ? "SELECT a.* FROM ad507.addresses a WHERE a.id=$1::uuid AND a.source='USER_REQUEST' FOR SHARE OF a"
+            : "SELECT a.* FROM ad507.addresses a JOIN ad507.address_ownership o ON o.address_id=a.id JOIN ad507.users u ON u.id=o.user_id WHERE a.id=$1::uuid AND o.user_id=$2::uuid AND o.ownership_role='OWNER' AND u.status='ACTIVE' AND a.source='USER_REQUEST' FOR SHARE OF a",
+          reviewerFixture?[addressId]:[addressId,userId]
         );
         if(!rows.length)throw Error('PAYMENT_NOT_FOUND');
         const address=rows[0];
@@ -28,6 +33,7 @@ export function createPagaditoSandboxOrderBridge(sql:Sql) {
         // The existing certification fixture remains usable after its commercial
         // request stops awaiting payment. This read-only Sandbox exception is ID-bound.
         const certificationFixture=addressId===CERTIFICATION_REQUEST_ID&&address.address_type==='BUSINESS'&&['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO'].includes(address.request_data?.plan);
+        if(reviewerFixture&&!certificationFixture)throw Error('INVALID_PAYMENT_REQUEST');
         if(!certificationFixture&&!isPayableClientRequest(address))throw Error('INVALID_PAYMENT_REQUEST');
         if(address.request_data?.migration)throw Error('INVALID_PAYMENT_REQUEST');
         const plan=address.request_data?.plan;

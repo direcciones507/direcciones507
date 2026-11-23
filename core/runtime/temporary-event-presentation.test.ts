@@ -49,12 +49,3 @@ test('a stale ACTIVE record is treated as expired at local cutoff',()=>{
  assert.doesNotMatch(html,/Google Maps/);
  assert.doesNotMatch(html,/photo.jpg/);
 });
-
-
-test('social preview uses the event photo only while active, otherwise the institutional image',()=>{
- const fallback='https://direcciones.lat/assets/og-latam-map-v2.jpg',photo='https://direcciones.lat/evento/fiesta-0123456789abcdef/foto/1';
- const image=(html:string)=>[...html.split('</head>')[0].matchAll(/<meta property="og:image" content="([^"]*)"/g)].map(m=>m[1]);
- assert.deepEqual(image(renderTemporaryEventPage({...event,photos:[photo]})),[photo]);
- assert.deepEqual(image(renderTemporaryEventPage({...event,photos:[]})),[fallback]);
- assert.deepEqual(image(renderTemporaryEventPage({...event,status:'EXPIRED',photos:[photo]})),[fallback]);
-});

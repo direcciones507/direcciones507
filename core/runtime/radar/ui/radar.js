@@ -111,7 +111,7 @@ function detail(f,focus=true){
  const whatsapp=commercialWhatsapp(p);if(whatsapp)top.append(whatsapp);top.append(closeButton);d.append(top,el('h3','',p.name));
  if(['live','featured'].includes(p.pin))d.append(el('span','commercial-badge '+p.pin,p.pin==='featured'?'Destacado':'Pin en vivo'));
  d.append(el('p','detail-country',countries[p.country||state.country]?.name||state.country));
- const hoursStatus=commercialOpenStatus(p);if(hoursStatus)d.append(el('span','detail-open-status',hoursStatus));
+ const hoursStatus=commercialOpenStatus(p);const available=p.details?.quantity,availableUnit=p.details?.unit;const availableNames={tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'};const statusLine=el('div','detail-status-line');if(hoursStatus)statusLine.append(el('span','detail-open-status',hoursStatus));if(Number.isInteger(available)&&available>=0&&Object.hasOwn(availableNames,availableUnit))statusLine.append(el('span','result-availability',available+' '+availableNames[availableUnit]+' disponibles'));if(statusLine.childNodes.length){statusLine.style.display='flex';statusLine.style.flexWrap='wrap';statusLine.style.alignItems='center';statusLine.style.gap='8px';d.append(statusLine);}
  const activity=el('div','detail-activity');activity.append(activityBadge(p),el('span','',relativeTime(p)));d.append(activity);
  const options=el('details','detail-options');options.open=optionsOpen;
  const summary=el('summary','button subtle','Más opciones');summary.append(el('span','disclosure-arrow','⌄'));summary.lastChild.setAttribute('aria-hidden','true');options.append(summary);

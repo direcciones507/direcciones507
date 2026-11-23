@@ -90,7 +90,11 @@ function render(){
  $('resultCount').textContent=String(priority.length);
  $('dataStatus').textContent=priority.length?'':'Sin destacados ni actividades en vivo para esta búsqueda. Acerca el mapa para explorar establecimientos gratuitos.';
  const fragment=document.createDocumentFragment();
- for(const f of priority){const p=f.properties,b=el('button','result-card');b.type='button';b.dataset.id=f.id;b.setAttribute('aria-pressed',String(state.selected?.id===f.id));const top=el('span','result-top');top.append(el('span','category-symbol',p.pin==='live'?'◉':'◇'),el('span','category-label',categoryLabel(p.category)));const meta=el('span','result-meta');meta.append(el('i',p.activity),document.createTextNode(activityLabels[p.activity]||activityLabels.unknown));b.append(top,el('h4','',p.name),el('span','commercial-badge '+p.pin,p.pin==='live'?'En vivo':'Destacado'),meta,el('div','result-time',relativeTime(p)));b.onclick=()=>selectFeature(f);fragment.append(b);}
+ for(const f of priority){const p=f.properties,b=el('button','result-card');b.type='button';b.dataset.id=f.id;b.setAttribute('aria-pressed',String(state.selected?.id===f.id));const top=el('span','result-top');top.append(el('span','category-symbol',p.pin==='live'?'◉':'◇'),el('span','category-label',categoryLabel(p.category)));const meta=el('span','result-meta');meta.append(el('i',p.activity),document.createTextNode(activityLabels[p.activity]||activityLabels.unknown));b.append(top,el('h4','',p.name),el('span','commercial-badge '+p.pin,p.pin==='live'?'En vivo':'Destacado'),meta);
+  const openStatus=commercialOpenStatus(p);if(openStatus)b.append(el('span','detail-open-status',openStatus));
+  const qty=p.details?.quantity,unit=p.details?.unit;
+  if(Number.isInteger(qty)&&qty>=0&&['tables','rooms','places','units'].includes(unit))b.append(el('span','result-availability',qty+' '+({tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'})[unit]+' disponibles ahora'));
+  b.append(el('div','result-time',relativeTime(p)));b.onclick=()=>selectFeature(f);fragment.append(b);}
  $('results').replaceChildren(fragment);renderFeatured(rows);updateMap(rows);state.pulseControl?.();renderPulse();
  if(state.selected){const current=rows.find(f=>f.id===state.selected.id);if(!current){state.selected=null;$('detail').hidden=true;}else{state.selected=current;detail(current,false);}}
  clearTimeout(state.expiryTimer);

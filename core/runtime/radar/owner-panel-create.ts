@@ -71,7 +71,7 @@ export async function openRadarOwnerCreate(
    if(latitude.value&&longitude.value)updatePin(lat,lng);
    status.textContent='Toca el mapa para colocar el pin de tu negocio.';
    ownerMap.invalidateSize();
-  }catch{status.textContent='No se pudo cargar el mapa. Puedes usar GPS o escribir las coordenadas.';}
+  }catch{mapRegion.hidden=true;releaseMap();status.textContent='No se pudo cargar el mapa. Puedes usar GPS o escribir las coordenadas.';}
   finally{mapButton.disabled=false;}
  };
  const releaseMap=()=>{if(ownerMap){ownerMap.remove();ownerMap=null;ownerMarker=null;}};

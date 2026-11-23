@@ -48,7 +48,7 @@ export function commercialOpenStatus(p,now=new Date()){
  if(today===undefined)return null;
  const minute=Number(get('hour'))*60+Number(get('minute'));
  const parse=value=>{
-  if(typeof value!=='string'||!/^([01]\\d|2[0-3]):[0-5]\\d-([01]\\d|2[0-3]):[0-5]\\d$/.test(value))return null;
+  if(typeof value!=='string'||!/^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/.test(value))return null;
   const [start,end]=value.split('-').map(t=>Number(t.slice(0,2))*60+Number(t.slice(3)));
   return {start,end};
  };

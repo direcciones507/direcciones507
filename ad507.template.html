@@ -2582,8 +2582,9 @@ if(data.web){
 .premium-gallery-arrow{background:#18365d;color:#fff;border:1px solid #496a91;border-radius:50%;width:32px;height:32px;cursor:pointer}
 @media(min-width:768px){#galeriaFotos.negocio-galeria{height:clamp(300px,42vw,440px)}#galeriaFotos.negocio-galeria img,#galeriaFotos.negocio-galeria img:first-child{width:min(47%,380px)!important;height:calc(100% - 32px)!important}}
 @media(max-width:767px){
-#galeriaFotos.negocio-galeria{height:clamp(220px,68vw,340px);margin:0 auto!important}
-#galeriaFotos.negocio-galeria img,#galeriaFotos.negocio-galeria img:first-child{width:84%!important;height:calc(100% - 16px)!important;object-fit:cover!important;object-position:center!important}
+/* One phone-sized layout, independent of device brand and 3D rendering quirks. */
+#galeriaFotos.negocio-galeria{box-sizing:border-box!important;min-width:0!important;height:clamp(220px,68vw,340px)!important;margin:0 auto!important;perspective:none!important}
+#galeriaFotos.negocio-galeria img,#galeriaFotos.negocio-galeria img:first-child{box-sizing:border-box!important;top:50%!important;left:50%!important;min-width:0!important;min-height:0!important;width:84%!important;height:calc(100% - 16px)!important;max-height:none!important;aspect-ratio:auto!important;object-fit:cover!important;object-position:center!important;transform-origin:center center!important}
 }
 @media(prefers-reduced-motion:reduce){#galeriaFotos.negocio-galeria img{transition:none!important}}
 </style>
@@ -2598,7 +2599,7 @@ document.addEventListener('DOMContentLoaded',()=>{
  const photos=()=>Array.from(gallery.querySelectorAll('img'));
  function go(n){const images=photos();if(!images.length)return;active=Math.max(0,Math.min(images.length-1,n));const desktop=matchMedia('(min-width:768px)').matches;
   images.forEach((img,i)=>{const d=i-active,a=Math.abs(d),sign=Math.sign(d);const x=desktop?sign*(a===1?43:65):sign*(a===1?82:110);const z=desktop?-a*125:-a*75;const rot=desktop?-sign*Math.min(a,1)*42:0;
-   img.style.transform='translate(-50%,-50%) translateX('+x+'%) translateZ('+z+'px) rotateY('+rot+'deg)';
+   img.style.transform=desktop?'translate(-50%,-50%) translateX('+x+'%) translateZ('+z+'px) rotateY('+rot+'deg)':'translate(-50%,-50%) translateX('+x+'%) scale('+(a===0?1:a===1?.9:.82)+')';
    img.style.opacity=a>2?'0':a===2?'.18':a===1?(desktop?'.65':'.4'):'1';
    img.style.zIndex=String(10-a);img.setAttribute('aria-hidden',a>2?'true':'false');img.tabIndex=a===0?0:-1;
   });

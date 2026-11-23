@@ -127,7 +127,7 @@ startLegacyCore(async req => {
   }
   // Read-only Pagadito preview. Disabled by default; does not require credentials
   // and cannot create orders or initiate card transactions.
-  const pagaditoQuoteResponse=await handlePagaditoSandboxQuote(req,{enabled:process.env.AD507_PAGADITO_QUOTE_PREVIEW_ENABLED==='true',auth,bridge:createPagaditoSandboxOrderBridge(sql)});
+  const pagaditoQuoteResponse=await handlePagaditoSandboxQuote(req,{enabled:process.env.AD507_PAGADITO_QUOTE_PREVIEW_ENABLED==='true',auth,bridge:createPagaditoSandboxOrderBridge(sql),certificationEmail:process.env.AD507_PAGADITO_TEST_EMAIL,certificationRelayEnabled:relayEnabled});
   if(pagaditoQuoteResponse)return pagaditoQuoteResponse;
   if(url.pathname.startsWith('/v1/user/pagadito/sandbox/')&&url.pathname.endsWith('/checkout')){
     const enabled=process.env.AD507_PAGADITO_CERTIFICATION_ENABLED==='true'&&process.env.AD507_PAGADITO_ISOLATED_DB==='true';

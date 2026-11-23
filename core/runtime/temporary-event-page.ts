@@ -35,7 +35,7 @@ export function renderTemporaryEventPage(event:PublishedEvent):string {
  <link rel="icon" type="image/png" sizes="192x192" href="https://direcciones507.com/assets/icon-192.png"><link rel="apple-touch-icon" sizes="180x180" href="https://direcciones507.com/assets/icon-192.png">
  <meta name="robots" content="noindex,nofollow"><title>${title} | Direcciones LATAM</title>
  <meta property="og:title" content="${title}"><meta property="og:description" content="${escapeHtml(data.description.slice(0,180))}">
- ${active&&photos[0]?'<meta property="og:image" content="'+escapeHtml(photos[0])+'">':'<meta property="og:image" content="https://direcciones.lat/assets/og-latam-map-v2.jpg"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675">'}
+ ${active&&photos[0]?'<meta property="og:image" content="'+escapeHtml(photos[0])+'">':''}
  <meta property="og:url" content="${escapeHtml(url)}"><meta property="og:type" content="website">
  <style>${temporaryEventDesign}</style></head>
  <body><main><header class="event-hero"><div class="event-top"><div class="event-eyebrow">Direcciones LATAM · Dirección Temporal</div><span class="event-live">${event.preview?'Borrador':active?'Vigente':'Finalizado'}</span></div><h1>${title}</h1><div class="event-rule" aria-hidden="true"></div><p class="hero-sub">${escapeHtml(data.description)}</p></header>

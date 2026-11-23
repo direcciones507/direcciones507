@@ -27,7 +27,7 @@ export async function temporaryCertificationLink(req:Request,user:User,env:Env,s
  if(!temporaryCertificationAuthorized(req,user,env))return {};
  try{
   // Same ownership/payability check as the destination. No writes or provider calls.
-  await createPagaditoSandboxOrderBridge(sql).quote(user.id,CERTIFICATION_REQUEST_ID);
+  await createPagaditoSandboxOrderBridge(sql).quote(user.id,CERTIFICATION_REQUEST_ID,'ANNUAL',true);
   return {href:'/panel/pagadito/sandbox/'+CERTIFICATION_REQUEST_ID};
  }catch(error){
   console.warn('TEMPORARY_CERTIFICATION_UNAVAILABLE',error instanceof Error?error.message:'QUOTE_UNAVAILABLE');

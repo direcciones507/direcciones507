@@ -99,7 +99,7 @@ startLegacyCore(async req => {
     const mode=url.searchParams.get('mode')||'ANNUAL';
     if(!['ANNUAL','INSTALLMENTS','CERTIFICATION_1','CERTIFICATION_2','CERTIFICATION_3','CERTIFICATION_4'].includes(mode))return Response.json({error:'INVALID_MODE'},{status:400});
     try{
-      const result=await lookupPagaditoCertification(sql,process.env,user.id,certificationStatusId[1],mode);
+      const result=await lookupPagaditoCertification(sql,process.env,user.id,certificationStatusId[1],mode,url.searchParams.get('key')??undefined);
       return Response.json(result,{headers:{'cache-control':'no-store'}});
     }catch{return Response.json({error:'CERTIFICATION_STATUS_UNAVAILABLE'},{status:503,headers:{'cache-control':'no-store'}});}
   }

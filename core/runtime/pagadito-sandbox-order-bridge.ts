@@ -45,11 +45,12 @@ export function createPagaditoSandboxOrderBridge(sql:Sql) {
           "SELECT id,provider,status,payment_environment FROM ad507.orders WHERE address_id=$1::uuid AND payment_environment='test' ORDER BY created_at DESC LIMIT 1",
           [addressId]
         );
+        const repeatCertification=reviewerFixture&&certificationFixture&&isCertificationMode(mode);
         return {
           addressId,code:address.code,plan,mode,
           amountCents:quote.amountCents,currency:'USD' as const,
-          available:existing.length===0,
-          blockedByExistingOrder:existing.length>0,
+          available:repeatCertification||existing.length===0,
+          blockedByExistingOrder:!repeatCertification&&existing.length>0,
           // No card/payment entry until provider-specific persisted orders are implemented.
           checkoutEnabled:false
         };

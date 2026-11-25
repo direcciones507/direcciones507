@@ -88,6 +88,8 @@ test('ADMIN certification exception is limited to authorized test purchase; Yapp
 test('authorized checkout reaches only isolated certification relay; real cards and cross-origin requests are rejected',async()=>{
  const {sql}=database(),original=globalThis.fetch;let transports=0;
  globalThis.fetch=(async(url:any,options:any)=>{
+  const sentStatus=JSON.parse(options.body);
+  if(url==='https://direcciones507-pagadito-sandbox.up.railway.app/v1/internal/pagadito/certification/status'){assert.match(sentStatus.operation,/^[a-f0-9]{64}$/);assert.match(sentStatus.scope,/^[a-f0-9]{64}$/);return Response.json({state:'NOT_FOUND',repeatSupported:true});}
   transports++;assert.equal(url,'https://direcciones507-pagadito-sandbox.up.railway.app/v1/internal/pagadito/certification');
   const sent=JSON.parse(options.body);assert.equal(sent.mode,'CERTIFICATION_1');assert.equal(sent.amountCents,1844);assert.equal(sent.card,undefined);
   return Response.json({result:{orderId:crypto.randomUUID(),state:'VERIFIED',amountCents:1844,currency:'USD',authorization:'FIXTURE_ONLY'}});

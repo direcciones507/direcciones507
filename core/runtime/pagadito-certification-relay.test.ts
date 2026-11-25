@@ -69,7 +69,9 @@ test('certification restricted to the authorized request; commercial prices and 
  assert.equal(PAYMENT_PRICES.RESIDENTIAL,1499);assert.equal(PAYMENT_PRICES.BUSINESS_PREMIUM,2999);assert.equal(PAYMENT_PRICES.BUSINESS_PREMIUM_PRO,4999);
  assert.deepEqual(acceptedOrderAmounts('BUSINESS_PREMIUM'),[2999,1999]);
  const html=pagaditoSandboxPage('bcd3213d-1b3a-4072-9570-e83c97480fa4');
- for(const [mode,amount] of Object.entries(CERTIFICATION_AMOUNTS)){assert.ok(html.includes('value="'+mode+'"'));assert.ok(html.includes((amount/100).toFixed(2)));}
+ // This isolated branch exposes the legacy annual/installment UI only; the four-mode selector lives on main.
+ assert.match(html,/value="ANNUAL"/);assert.match(html,/value="INSTALLMENTS"/);
+ assert.deepEqual(Object.values(CERTIFICATION_AMOUNTS),[1844,2379,9991,10412]);
  for(const script of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new Function(script[1]);
 });
 

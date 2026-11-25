@@ -8,6 +8,13 @@ import {PagaditoApiError} from './pagadito-rest-client';
 
 const endpoint='https://direcciones507-pagadito-sandbox.up.railway.app/v1/internal/pagadito/certification';
 const sign=(secret:string,body:string)=>createHmac('sha256',secret).update(body).digest('hex');
+const attemptKey=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
+function certificationReferences(secret:string,addressId:string,mode:string,key?:string){
+ const scope=sign(secret,'certification:'+addressId+':'+mode);
+ if(!isCertificationMode(mode)||key===undefined)return {operation:scope};
+ if(typeof key!=='string'||!attemptKey.test(key))throw Error('CERTIFICATION_INVALID_REQUEST');
+ return {operation:sign(secret,'certification-attempt:'+scope+':'+key),scope};
+}
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{'cache-control':'no-store'}});
 type Env=Record<string,string|undefined>;
 type CheckoutInput={userId:string;addressId:string;key:string;mode:string;card:SandboxCard;browserInfo:{deviceFingerprintID:string;customerIp:string}};
@@ -21,10 +28,18 @@ export function createPagaditoCertificationRelay(sql:Sql,env:Env){
   if(!pagaditoRelayEnabled(env)||!secret)throw Error('CERTIFICATION_DISABLED');
   const q=await createPagaditoSandboxOrderBridge(sql).quote(input.userId,input.addressId,input.mode);
   if(!q.available)throw Error('CERTIFICATION_ALREADY_EXISTS');
-  const operation=sign(secret,'certification:'+input.addressId+':'+input.mode);
+  if(isCertificationMode(input.mode)&&(typeof input.key!=='string'||!attemptKey.test(input.key)))throw Error('CERTIFICATION_INVALID_REQUEST');
+  const refs=certificationReferences(secret,input.addressId,input.mode,input.key);
   if(input.card.number!=='4111111111111111'||input.card.expirationDate!=='01/2030'||input.card.cvv!=='123')throw Error('SANDBOX_TEST_CARD_REQUIRED');
   // Send the quote and required browser metadata, not customer or card details.
-  const body=JSON.stringify({operation,plan:q.plan,mode:input.mode,amountCents:q.amountCents,browserInfo:input.browserInfo});
+  // Fail closed during a mixed-version deployment. The isolated relay must support
+  // attempt scopes before a new reference may be submitted.
+  if(refs.scope){
+   const statusBody=JSON.stringify(refs);
+   const statusResponse=await fetch(endpoint+'/status',{method:'POST',redirect:'error',headers:{'content-type':'application/json','x-certification-signature':sign(secret,statusBody)},body:statusBody,signal:AbortSignal.timeout(10000)});
+   if(!statusResponse.ok||(await statusResponse.json()).repeatSupported!==true)throw Error('CERTIFICATION_SERVICE_UNAVAILABLE');
+  }
+  const body=JSON.stringify({...refs,plan:q.plan,mode:input.mode,amountCents:q.amountCents,browserInfo:input.browserInfo});
   const r=await fetch(endpoint,{method:'POST',redirect:'error',headers:{'content-type':'application/json','x-certification-signature':sign(secret,body)},body,signal:AbortSignal.timeout(27000)});
   const data=await r.json();
   if(r.status===409)throw Error('CERTIFICATION_ALREADY_SUBMITTED');
@@ -48,26 +63,38 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
  if(pathname.endsWith('/status')){
   const value=JSON.parse(body);
   if(typeof value.operation!=='string'||! /^[a-f0-9]{64}$/.test(value.operation))return json(400,{error:'INVALID_REFERENCE'});
-  const rows=await sql.unsafe(`SELECT order_id::text,state,"authorization",to_jsonb(r)->>'amount_cents' AS amount_cents,to_jsonb(r)->>'recorded_at' AS recorded_at FROM ad507.pagadito_certification_relay r WHERE operation=$1`,[value.operation]);
-  const row=rows[0];return json(200,{state:row?.state||'NOT_FOUND',orderId:row?.order_id||null,ern:row?.order_id||null,authorization:row?.authorization||null,amountCents:row?.amount_cents?Number(row.amount_cents):null,recordedAt:row?.recorded_at||null});
+  if(value.scope!==undefined&&(typeof value.scope!=='string'||! /^[a-f0-9]{64}$/.test(value.scope)||value.scope===value.operation))return json(400,{error:'INVALID_REFERENCE'});
+  const rows=await sql.unsafe(`SELECT operation,order_id::text,state,"authorization",to_jsonb(r)->>'amount_cents' AS amount_cents,to_jsonb(r)->>'recorded_at' AS recorded_at FROM ad507.pagadito_certification_relay r WHERE operation=$1 OR ($2::text IS NOT NULL AND (operation=$2 OR to_jsonb(r)->>'attempt_scope'=$2) AND state NOT IN ('VERIFIED','REJECTED')) ORDER BY CASE WHEN operation=$1 THEN 1 ELSE 0 END LIMIT 1`,[value.operation,value.scope??null]);
+  const row=rows[0];return json(200,{repeatSupported:true,blockedByPrior:!!row&&row.operation!==value.operation,state:row?.state||'NOT_FOUND',orderId:row?.order_id||null,ern:row?.order_id||null,authorization:row?.authorization||null,amountCents:row?.amount_cents?Number(row.amount_cents):null,recordedAt:row?.recorded_at||null});
  }
  const client=createPagaditoSandboxClient(env);
  if(!client)return json(503,{error:'DISABLED'});
  const value=JSON.parse(body);
  if(!/^[a-f0-9]{64}$/.test(value.operation)||(!['ANNUAL','INSTALLMENTS'].includes(value.mode)&&!isCertificationMode(value.mode))||!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE'].includes(value.plan))return json(400,{error:'INVALID_QUOTE'});
+ if(value.scope!==undefined&&(!isCertificationMode(value.mode)||typeof value.scope!=='string'||! /^[a-f0-9]{64}$/.test(value.scope)||value.scope===value.operation))return json(400,{error:'INVALID_REFERENCE'});
  if(typeof value.browserInfo?.deviceFingerprintID!=='string'||!/^\d{1,40}$/.test(value.browserInfo.deviceFingerprintID))return json(400,{error:'FINGERPRINT_INVALID'});
  const quote=isCertificationMode(value.mode)?{amountCents:CERTIFICATION_AMOUNTS[value.mode]}:commercialQuote(value.plan,value.mode);
  if(quote.amountCents!==value.amountCents||quote.amountCents<=0)return json(400,{error:'INVALID_QUOTE'});
  // This ledger exists exclusively in the already configured isolated database.
  await sql.unsafe('CREATE TABLE IF NOT EXISTS ad507.pagadito_certification_relay (operation text PRIMARY KEY, order_id uuid NOT NULL UNIQUE, state text NOT NULL, "authorization" text)');
- await sql.unsafe('ALTER TABLE ad507.pagadito_certification_relay ADD COLUMN IF NOT EXISTS amount_cents integer, ADD COLUMN IF NOT EXISTS recorded_at timestamptz');
+ await sql.unsafe('ALTER TABLE ad507.pagadito_certification_relay ADD COLUMN IF NOT EXISTS amount_cents integer, ADD COLUMN IF NOT EXISTS recorded_at timestamptz, ADD COLUMN IF NOT EXISTS attempt_scope text');
  // Record the outcome and reference of earlier attempts before reserving a new one.
  await sql.unsafe("CREATE TABLE IF NOT EXISTS ad507.pagadito_certification_history (order_id uuid PRIMARY KEY, operation text NOT NULL, outcome text NOT NULL, evidence text NOT NULL, recorded_at timestamptz NOT NULL DEFAULT now())");
  const id=crypto.randomUUID();
  const reserved=await sql.begin(async tx=>{
+  if(value.scope){
+   // Serialize reservations for a modality, including its historical fixed reference.
+   await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1::text,0))',[value.scope]);
+   const unresolved=await tx.unsafe("SELECT operation FROM ad507.pagadito_certification_relay WHERE (operation=$1 OR attempt_scope=$1) AND operation<>$2 AND state NOT IN ('VERIFIED','REJECTED') LIMIT 1",[value.scope,value.operation]);
+   if(unresolved.length)return [];
+  }else if(isCertificationMode(value.mode)){
+   await tx.unsafe('SELECT pg_advisory_xact_lock(hashtextextended($1::text,0))',[value.operation]);
+   const unresolved=await tx.unsafe("SELECT operation FROM ad507.pagadito_certification_relay WHERE attempt_scope=$1 AND state NOT IN ('VERIFIED','REJECTED') LIMIT 1",[value.operation]);
+   if(unresolved.length)return [];
+  }
   const existing=await tx.unsafe('SELECT order_id::text AS order_id,state,"authorization" FROM ad507.pagadito_certification_relay WHERE operation=$1 FOR UPDATE',[value.operation]);
   const prior=existing[0];
-  if(!prior)return tx.unsafe("INSERT INTO ad507.pagadito_certification_relay(operation,order_id,state) VALUES($1,$2::uuid,'SUBMITTING') ON CONFLICT DO NOTHING RETURNING order_id",[value.operation,id]);
+  if(!prior)return tx.unsafe("INSERT INTO ad507.pagadito_certification_relay(operation,order_id,state,attempt_scope,amount_cents,recorded_at) VALUES($1,$2::uuid,'SUBMITTING',$3,$4,now()) ON CONFLICT DO NOTHING RETURNING order_id",[value.operation,id,value.scope??null,quote.amountCents]);
   if(isCertificationMode(value.mode))return [];
   // Only definite provider rejections or the exact Sandbox reference manually
   // reconciled by the merchant after checking the provider report may be retried.
@@ -97,12 +124,11 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
 }
 
 /** Read-only reconciliation of a prior Sandbox attempt. Does not submit payment. */
-export async function lookupPagaditoCertification(sql:Sql,env:Env,userId:string,addressId:string,mode:string){
+export async function lookupPagaditoCertification(sql:Sql,env:Env,userId:string,addressId:string,mode:string,key?:string){
  const secret=env.AD507_PAGADITO_RELAY_SECRET;
  if(!pagaditoRelayEnabled(env)||!secret)throw Error('CERTIFICATION_DISABLED');
  await createPagaditoSandboxOrderBridge(sql).quote(userId,addressId,mode);
- const operation=sign(secret,'certification:'+addressId+':'+mode);
- const body=JSON.stringify({operation});
+ const body=JSON.stringify(certificationReferences(secret,addressId,mode,key));
  const response=await fetch(endpoint+'/status',{method:'POST',redirect:'error',headers:{'content-type':'application/json','x-certification-signature':sign(secret,body)},body,signal:AbortSignal.timeout(10000)});
  if(!response.ok)throw Error('CERTIFICATION_STATUS_UNAVAILABLE');
  const result=await response.json();

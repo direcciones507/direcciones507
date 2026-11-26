@@ -8,7 +8,6 @@ import {createBusinessRoutes,createBusinessStore} from "./business";
 import {radarPresentation} from "./presentation";
 import {createRadarCampaignLookup} from "./campaign-repository";
 import {createRadarAddressResolver} from "./address-resolver";
-import {newPublicAddress} from "../new-address-publication";
 import {createRadarAbuseChecks} from "./abuse";
 import {createCategoryStore} from "./category-catalog";
 import {createRadarRoutes} from "./routes";
@@ -31,7 +30,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const enabled=env.RADAR_ENABLED==="true";
  const origins=new Set([radarOrigin]);
  const ownershipEnabled=enabled&&env.RADAR_OWNERSHIP_ENABLED==="true";
- const resolveAddress=ownershipEnabled&&env.RADAR_ADDRESS_LINKS_ENABLED==="true"?createRadarAddressResolver(db,code=>newPublicAddress(db as Parameters<typeof newPublicAddress>[0],code,"https://direcciones.lat")):undefined;
+ const resolveAddress=ownershipEnabled&&env.RADAR_ADDRESS_LINKS_ENABLED==="true"?createRadarAddressResolver(db):undefined;
  const campaignLookup=enabled&&env.RADAR_COMMERCIAL_ENABLED==="true"?createRadarCampaignLookup(db,true):undefined;
  const businessEnabled=ownershipEnabled&&env.RADAR_BUSINESS_DETAILS_ENABLED==="true";
  const profilesEnabled=businessEnabled&&env.RADAR_REGISTRATION_PROFILES_ENABLED==='true';

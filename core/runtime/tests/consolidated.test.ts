@@ -1532,7 +1532,13 @@ test('ADMIN-owned paid products publish without orders; clients cannot claim the
   const detail=await repo.read(adminId,request.id);expect(detail.billingExempt).toBe(true);expect(detail.canPublish).toBe(true);
   const active=await repo.publish(adminId,request.id);expect(active.status).toBe('ACTIVE');expect((await repo.publish(adminId,request.id)).code).toBe(active.code);
   const after=await repo.read(adminId,request.id);expect(after.extras.annualService.mode).toBe('ADMIN_EXEMPT');expect(after.extras.annualService.orderId).toBeUndefined();expect(after.canEdit).toBe(true);
-  if(plan==='RESIDENTIAL'){expect(after.publicUrl).toBeNull();expect(await newPublicAddress(sql,active.code,origin)).toBeNull();}
+  if(plan==='RESIDENTIAL'){
+   expect(after.publicUrl).toBeNull();expect(await newPublicAddress(sql,active.code,origin)).toBeNull();
+   await expect(repo.read(clientId,request.id)).rejects.toThrow();
+   await sql.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService,endsAt}',to_jsonb($2::text)) WHERE id=$1",[request.id,'2020-01-01T00:00:00.000Z']);
+   const expired=await repo.read(adminId,request.id);expect(expired.commercialService?.expired).toBe(true);expect(expired.publicUrl).toBeNull();
+   expect(await newPublicAddress(sql,active.code,origin)).toBeNull();
+  }
  }
  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.orders'))[0].n).toBe(before);
  expect(await adminBillingExempt(sql,clientId)).toBe(false);
@@ -1557,6 +1563,15 @@ test('courtesy Temporal has separate ADMIN authorization, preserves expiry and n
  const publicEvent=await repo.getPublic(event.slug,new Date('2030-01-01T16:00:00Z'));expect(publicEvent?.status).toBe('ACTIVE');expect(JSON.stringify(publicEvent)).not.toContain('private@example.test');
  expect((await repo.getPublic(event.slug,new Date('2030-01-04T06:00:00Z')))?.status).toBe('EXPIRED');
  await repo.updateDraft(adminId,event.id,{...input,title:input.title+' edited'});await expect(repo.updateDraft(adminId,event.id,{...input,endsOn:'2030-01-03'})).rejects.toThrow('EVENT_NOT_EDITABLE');
+ const extension={startsOn:'2030-01-04',endsOn:'2030-01-06',previousStartsOn:'2030-01-01',previousEndsOn:'2030-01-02'};
+ await expect(repo.rescheduleAdmin(clientId,event.id,extension)).rejects.toThrow('FORBIDDEN');
+ await sql.unsafe("UPDATE ad507.temporary_events SET status='EXPIRED' WHERE id=$1",[event.id]);
+ const clock=new Date('2030-01-04T07:00:00Z');
+ expect(await repo.rescheduleAdmin(adminId,event.id,extension,clock)).toMatchObject({slug:event.slug,status:'ACTIVE'});
+ expect(await repo.rescheduleAdmin(adminId,event.id,extension,clock)).toMatchObject({slug:event.slug,status:'ACTIVE'});
+ expect((await repo.getPublic(event.slug,clock))?.endsOn).toBe('2030-01-06');
+ expect((await repo.getPublic(event.slug,new Date('2030-01-08T05:00:00Z')))?.status).toBe('EXPIRED');
+ expect((await sql.unsafe("SELECT id FROM ad507.audit_log WHERE action='ADMIN_TEMPORARY_RESCHEDULED' AND entity_id=$1",[event.id]))).toHaveLength(1);
  const ordinary=await repo.createDraft(clientId,{...input,title:'Ordinary '+crypto.randomUUID(),admin_published_by:clientId,admin_published_at:new Date().toISOString()});
  expect(await repo.getPublic(ordinary.slug)).toBeNull();await expect(repo.publishAdmin(clientId,ordinary.id)).rejects.toThrow('FORBIDDEN');
  const pending=await repo.createDraft(adminId,{...input,title:'Existing pending admin '+crypto.randomUUID()});await repo.savePhoto(adminId,pending.id,1,'temporary-events/isolated/old.webp',100);

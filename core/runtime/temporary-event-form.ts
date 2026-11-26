@@ -717,7 +717,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
  .temporary-event-form :is(button[type=submit],.event-link){width:100%}
 }
 </style><section class="temporary-event-form" aria-labelledby="temporary-heading">
- <a class="event-back-link" href="/panel">Volver a Mi panel</a><nav id="event-drafts" aria-label="Mis eventos"></nav><h2 id="temporary-heading">Crear Dirección Temporal</h2>
+ <a class="event-back-link" href="/panel">Volver a Mi panel</a><nav id="event-drafts" aria-label="Mis eventos"></nav>${adminExempt?'<div id="event-reschedule" hidden><label>Nueva fecha inicial <input id="event-reschedule-start" type="date"></label><label>Nueva fecha final <input id="event-reschedule-end" type="date"></label><button id="event-reschedule-button" type="button">Extender o reactivar con el mismo QR</button><p id="event-reschedule-status" role="status"></p></div>':''}<h2 id="temporary-heading">Crear Dirección Temporal</h2>
  <p>${adminExempt?'Crea y publica gratuitamente una dirección temporal o de cortesía de 1 a 60 días.':'Publica una fiesta o evento: 1–30 días por US$12.99; 31–60 días por US$19.99. El evento no se publica hasta confirmar el pago.'}</p>
  <form id="temporary-event-draft" data-action="${action}" data-admin-exempt="${adminExempt}" novalidate>
  <fieldset aria-label="Información del evento"><div class="event-field-grid"><h3 class="event-section-heading">Información del evento</h3>
@@ -783,7 +783,27 @@ export const temporaryEventDraftClientScript=`(() => {
  let quoteReady=false,dirty=false;form.addEventListener('input',()=>{dirty=true;quoteReady=false;document.getElementById('event-reviewed').checked=false});
  const after=()=>{dirty=false;updateQuote();quoteReady=false;state().then(e=>{if(dirty)return;if(adminExempt){document.getElementById('event-quote').textContent='Publicación administrativa gratuita';quoteReady=true;return;}const q=e.quote;if(!q)throw Error('No se pudo verificar la cotización');document.getElementById('event-quote').textContent=q.days+' días · '+q.currency+' '+(q.amountCents/100).toFixed(2);quoteReady=true;}).catch(e=>error.textContent=e.message);document.getElementById('event-after-save').hidden=false;document.getElementById('event-preview-link').href='/v1/user/temporary-events/'+eventId+'/preview'};
  document.getElementById('event-state').onclick=async()=>{try{const e=await state();const m=document.getElementById('event-payment-message');m.textContent=e.status==='ACTIVE'?(adminExempt?'Dirección publicada gratuitamente.':'Pago confirmado. Dirección publicada.'):e.status==='EXPIRED'?'Evento finalizado.':'Estado: '+(adminExempt&&e.status==='AWAITING_PAYMENT'?'Borrador':e.status);if(e.status==='ACTIVE'){const a=document.createElement('a');a.href='/evento/'+e.slug;a.textContent=' Abrir evento';m.append(a)}}catch(e){error.textContent=e.message}};
- if(eventId)state().then(e=>{const fields={title:'title',description:'description',responsibleName:'responsible_name',responsibleEmail:'responsible_email',responsiblePhone:'responsible_phone',countryCode:'country_code',province:'region',district:'municipality',corregimiento:'locality',reference:'reference',latitude:'latitude',longitude:'longitude',startsOn:'starts_on',endsOn:'ends_on',timezone:'event_timezone',hours:'hours_description',publicContactName:'public_contact_name',publicContactPhone:'public_contact_phone'};for(const [k,v]of Object.entries(fields))form.elements[k].value=e[v]??'';form.elements.publicContactConsent.checked=e.public_contact_consent;applyCountry();if(adminExempt&&e.status==='ACTIVE')for(const key of ['startsOn','endsOn','timezone'])form.elements[key].readOnly=true;syncPoint();syncDuration();after()}).catch(e=>error.textContent=e.message);
+ if(eventId)state().then(e=>{
+  const section=document.getElementById('event-reschedule');
+  if(section&&['ACTIVE','EXPIRED'].includes(e.status)&&e.admin_published_at&&!e.payment_order_id){
+   section.hidden=false;
+   const start=document.getElementById('event-reschedule-start'),end=document.getElementById('event-reschedule-end');
+   const button=document.getElementById('event-reschedule-button'),message=document.getElementById('event-reschedule-status');
+   start.value=e.starts_on;end.value=e.ends_on;
+   button.onclick=async()=>{
+    if(!start.value||!end.value){message.textContent='Selecciona las dos fechas.';return;}
+    button.disabled=true;
+    try{
+     const response=await fetch('/v1/user/temporary-events/'+eventId+'/reschedule',{method:'POST',headers:{'content-type':'application/json','x-requested-with':'XMLHttpRequest'},body:JSON.stringify({startsOn:start.value,endsOn:end.value,previousStartsOn:e.starts_on,previousEndsOn:e.ends_on})});
+     if(!response.ok)throw Error();
+     e.starts_on=start.value;e.ends_on=end.value;
+     form.elements.startsOn.value=start.value;form.elements.endsOn.value=end.value;syncDuration();
+     message.textContent='Vigencia actualizada. Tu enlace y QR se mantienen.';
+    }catch{message.textContent='No se pudo actualizar. Revisa las fechas y vuelve a cargar el evento.';}
+    finally{button.disabled=false;}
+   };
+  }
+  const fields={title:'title',description:'description',responsibleName:'responsible_name',responsibleEmail:'responsible_email',responsiblePhone:'responsible_phone',countryCode:'country_code',province:'region',district:'municipality',corregimiento:'locality',reference:'reference',latitude:'latitude',longitude:'longitude',startsOn:'starts_on',endsOn:'ends_on',timezone:'event_timezone',hours:'hours_description',publicContactName:'public_contact_name',publicContactPhone:'public_contact_phone'};for(const [k,v]of Object.entries(fields))form.elements[k].value=e[v]??'';form.elements.publicContactConsent.checked=e.public_contact_consent;applyCountry();if(adminExempt&&e.status==='ACTIVE')for(const key of ['startsOn','endsOn','timezone'])form.elements[key].readOnly=true;syncPoint();syncDuration();after()}).catch(e=>error.textContent=e.message);
  const publish=document.getElementById('event-publish');if(publish)publish.onclick=async()=>{if(dirty||!eventId||!document.getElementById('event-reviewed').checked){error.textContent='Guarda y revisa la vista previa antes de publicar.';return;}publish.disabled=true;try{const response=await fetch('/v1/user/temporary-events/'+eventId+'/publish',{method:'POST',headers:ajax,body:'{}'});const result=await response.json();if(!response.ok)throw Error(result.error);document.getElementById('event-state').click();}catch(e){error.textContent=e.message;}finally{publish.disabled=false;}};
  const pay=document.querySelector('btn-yappy');if(pay)pay.addEventListener('eventClick',async()=>{if(!quoteReady||dirty||!eventId||!document.getElementById('event-reviewed').checked){error.textContent='Guarda y revisa la vista previa antes de pagar.';return}try{const r=await fetch('/v1/user/temporary-events/'+eventId+'/payment',{method:'POST',headers:ajax,body:JSON.stringify({alias:document.getElementById('event-alias').value})});const v=await r.json();if(!r.ok)throw Error(v.error);pay.eventPayment({transactionId:v.transactionId,token:v.token,documentName:v.documentName});document.getElementById('event-payment-message').textContent='Confirma en Yappy y consulta el estado.'}catch(e){error.textContent='No se pudo iniciar el pago: '+e.message}});
 

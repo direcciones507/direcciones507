@@ -1525,6 +1525,7 @@ test('ADMIN-owned paid products publish without orders; clients cannot claim the
  const stamp=crypto.randomUUID(),r2={accountId:'a'.repeat(32),bucket:'direcciones507-media',accessKeyId:'test',secretAccessKey:'test',configurationVerified:true as const};
  const png=await(await import('sharp')).default({create:{width:12,height:12,channels:3,background:'blue'}}).png().toBuffer();
  const repo=createRequestRepository(sql,{canonical:createNewAddressPublication(sql,{namespaceExclusive:true,fetch:async()=>Response.json({ok:true,codes:[{codigo:'AD507-HISTORICALFIXTURE'}]})}),r2,fetch:async()=>new Response(null,{status:200}),paymentEnvironment:'test',paidWorkflow:true});
+ let originalResidentialQr:Uint8Array|undefined;
  const before=(await sql.unsafe('SELECT count(*)::int AS n FROM ad507.orders'))[0].n;
  for(const plan of ['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','RESIDENTIAL']){
   const request=await repo.createAdmin(adminId,'admin-exempt-'+plan+'-'+stamp,{type:plan==='RESIDENTIAL'?'RESIDENTIAL':'BUSINESS',plan,name:'Courtesy '+plan+' '+stamp,reference:'Synthetic only',latitude:8.49,longitude:-80.49},plan==='RESIDENTIAL'?[]:[{role:'logo',mime:'image/png',bytes:png}]);
@@ -1535,12 +1536,37 @@ test('ADMIN-owned paid products publish without orders; clients cannot claim the
   if(plan==='RESIDENTIAL'){
    expect(after.publicUrl).toBeNull();expect(await newPublicAddress(sql,active.code,origin)).toBeNull();
    await expect(repo.read(clientId,request.id)).rejects.toThrow();
+   const {handleRequestRoutes}=await import('../request-routes');
+   const path=origin+'/v1/user/requests/'+request.id+'/residential';
+   const privateRead=(user:any,suffix='')=>handleRequestRoutes(new Request(path+suffix),{enabled:true,sql,repository:repo,r2:null,auth:{currentUser:async()=>user}});
+   const qr=await privateRead({id:adminId,roles:['ADMIN']},'/qr.png');
+   expect(qr?.status).toBe(200);originalResidentialQr=new Uint8Array(await qr!.arrayBuffer());
    await sql.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService,endsAt}',to_jsonb($2::text)) WHERE id=$1",[request.id,'2020-01-01T00:00:00.000Z']);
    const expired=await repo.read(adminId,request.id);expect(expired.commercialService?.expired).toBe(true);expect(expired.publicUrl).toBeNull();
    expect(await newPublicAddress(sql,active.code,origin)).toBeNull();
+   expect((await privateRead(null))?.status).toBe(401);
+   expect((await privateRead({id:clientId,roles:['CLIENT']}))?.status).toBe(404);
+   expect((await privateRead({id:adminId,roles:['ADMIN']}))?.status).toBe(410);
+
   }
  }
  expect((await sql.unsafe('SELECT count(*)::int AS n FROM ad507.orders'))[0].n).toBe(before);
+ const [home]=await sql.unsafe("SELECT id::text,code FROM ad507.addresses WHERE name=$1",['Courtesy RESIDENTIAL '+stamp]);
+ await repo.transfer(adminId,home.id,adminId,clientId);
+ const {handleRequestRoutes}=await import('../request-routes');
+ const {createPaymentRepository}=await import('../payment-repository');
+ const {createHmac}=await import('node:crypto');
+ const payment=createPaymentRepository(sql,{environment:'test',merchantId:'residential',domain:origin,ipnUrl:origin+'/ipn',secret:Buffer.from('residential-fixture.secret').toString('base64')},{commercialEnabled:true});
+ const {order}=await payment.prepareRenewal(clientId,home.id,'residential-renewal-'+stamp);
+ expect(order.amount_cents).toBe(1499);
+ await payment.registerProviderOrder(order.id,'residential-'+stamp);
+ const proof=new URLSearchParams({orderId:order.provider_order_id,status:'E',domain:origin,hash:createHmac('sha256','residential-fixture').update(order.provider_order_id+'E'+origin).digest('hex')});
+ await payment.confirm(proof);const activeHome=await repo.read(clientId,home.id);
+ await payment.confirm(proof);expect((await repo.read(clientId,home.id)).extras.annualService).toEqual(activeHome.extras.annualService);
+ expect(activeHome.code).toBe(home.code);expect(activeHome.publicUrl).toBeNull();expect(activeHome.commercialService?.expired).toBe(false);
+ const privateQr=await handleRequestRoutes(new Request(origin+'/v1/user/requests/'+home.id+'/residential/qr.png'),{enabled:true,sql,repository:repo,r2:null,auth:{currentUser:async()=>({id:clientId,roles:['CLIENT']})} as any});
+ expect(privateQr?.status).toBe(200);expect(privateQr?.headers.get('content-type')).toBe('image/png');expect(new Uint8Array(await privateQr!.arrayBuffer())).toEqual(originalResidentialQr);
+
  expect(await adminBillingExempt(sql,clientId)).toBe(false);
  const client=await repo.submit(clientId,'normal-billing-'+stamp,{type:'BUSINESS',plan:'BUSINESS_PREMIUM',name:'Client '+stamp,reference:'Synthetic',latitude:8,longitude:-80},[{role:'logo',mime:'image/png',bytes:png}]);
  expect(client.workflow).toBe('PAYMENT_PENDING');expect((await repo.read(clientId,client.id)).billingExempt).toBe(false);

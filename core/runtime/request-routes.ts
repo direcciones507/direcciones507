@@ -1,3 +1,6 @@
+import QRCode from 'qrcode';
+import {annualServiceDisconnected,ANNUAL_POLICY} from './annual-service';
+import {disconnectedAddressResponse} from './disconnected-address';
 import {adminBillingExempt} from './admin-billing-policy';
 import {personalizedCode,verifyHistoricalCustomCode,assertCodeAvailable} from './custom-public-code';
 import {requireLegalAcceptance} from './legal';
@@ -41,6 +44,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
   const url=new URL(req.url),adminCreate=url.pathname==='/v1/admin/requests'&&req.method==='POST',submit=url.pathname==='/v1/user/requests'||adminCreate;
   const edit=url.pathname.match(/^\/v1\/(user|admin)\/requests\/([a-f0-9-]{36})\/(edit|history|location-approve|location-reject)$/);
   const availability=url.pathname==='/v1/user/code-availability';
+  const residential=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/residential(\/qr\.png)?$/);
   const userDetail=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})$/);
   const userArchive=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/archive$/);
   const userMedia=url.pathname.match(/^\/v1\/user\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/);
@@ -48,7 +52,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
   const bridge=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/bridge$/);
   const detail=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})$/)||userDetail;
   const media=url.pathname.match(/^\/v1\/admin\/requests\/([a-f0-9-]{36})\/media\/([a-f0-9-]{36})$/)||userMedia;
-  if(!submit&&!action&&!detail&&!media&&!bridge&&!edit&&!userArchive&&!availability)return null;
+  if(!submit&&!action&&!detail&&!media&&!bridge&&!edit&&!userArchive&&!availability&&!residential)return null;
   const respond=(status:number,value:unknown)=>Response.json(value,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
   if(!context.enabled)return respond(503,{ok:false,error:'USER_PANEL_SUBMISSION_NOT_ENABLED'});
   if(req.method!==(submit||action||userArchive||(edit&&edit[3]!=='history')?'POST':'GET'))return respond(405,{ok:false,error:'METHOD_NOT_ALLOWED'});
@@ -59,7 +63,7 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     if(req.headers.get('sec-fetch-site')==='cross-site'||(req.method==='POST'&&req.headers.get('origin')!==requestOrigin)||(req.headers.has('origin')&&req.headers.get('origin')!==requestOrigin))return respond(403,{ok:false,error:'ORIGIN_DENIED'});
     const user=await context.auth.currentUser(req);if(!user)return respond(401,{ok:false,error:'UNAUTHENTICATED'});
     const canCreateCommercial=adminCreate&&user.roles.includes('COMMERCIAL');
-    if(!((submit&&!adminCreate||userDetail||userMedia||userArchive||availability||edit?.[1]==='user')?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
+    if(!((submit&&!adminCreate||userDetail||userMedia||userArchive||availability||residential||edit?.[1]==='user')?(user.roles.includes('CLIENT')||user.roles.includes('ADMIN')):user.roles.includes('ADMIN'))&&!canCreateCommercial)return respond(403,{ok:false,error:'FORBIDDEN'});
     const now=Date.now();for(const [id,item]of limits)if(now-item.at>60000)limits.delete(id);
     const item=limits.get(user.id);if(item&&++item.count>20||!item&&limits.size>=1024)return respond(429,{ok:false,error:'RATE_LIMITED'});if(!item)limits.set(user.id,{at:now,count:1});
     if(availability){
@@ -79,6 +83,23 @@ export async function handleRequestRoutes(req:Request,context:{enabled:boolean;s
     if(adminCreate&&req.headers.get('content-type')?.startsWith('application/json')){const body=JSON.parse((await readRequestBody(req,64000)).toString('utf8'));if(!body||Object.keys(body).length!==1||!body.historicalSnapshot)throw Error('INVALID_REQUEST');return respond(200,{ok:true,request:await context.repository.stageHistorical(user.id,req.headers.get('idempotency-key')??'',body.historicalSnapshot)});}
     if(submit){const {raw,files}=await parseRequestForm(req);const exempt=user.roles.includes('ADMIN')&&await adminBillingExempt(context.sql,user.id);if(!adminCreate&&!exempt)(raw as any).legalAcceptance=requireLegalAcceptance(raw);const result=await context.repository[adminCreate||exempt?'createAdmin':'submit'](user.id,req.headers.get('idempotency-key')??'',raw,files);return respond(200,{ok:true,request:result,...(yappyPaymentsEnabled(process.env)&&REQUEST_WORKFLOW_ENABLED&&!adminCreate&&!exempt&&result.workflow==='PAYMENT_PENDING'?{paymentUrl:'/panel/payments/'+result.id}:{})});}
     if(bridge){await context.repository.read(user.id,bridge[1]);const rows=await context.sql.unsafe("SELECT legacy_payload FROM ad507.addresses WHERE id=$1::uuid AND source='USER_REQUEST' AND request_data->>'origin'='HISTORICAL_IMPORT'",[bridge[1]]);if(!rows.length)throw Error('REQUEST_NOT_FOUND');return new Response(renderCommercialBridge(rows[0].legacy_payload,bridge[1],url.origin),{headers:{'content-type':'text/html; charset=utf-8','content-disposition':'attachment; filename="'+rows[0].legacy_payload.code+'.html"','cache-control':'no-store','x-content-type-options':'nosniff'}});}
+    if(residential){
+      const [row]=await context.sql.unsafe(`SELECT a.name,a.reference,a.latitude,a.longitude,a.request_data
+       FROM ad507.addresses a JOIN ad507.address_ownership o ON o.address_id=a.id
+       WHERE a.id=$1::uuid AND o.user_id=$2::uuid AND o.ownership_role='OWNER'
+         AND a.source='USER_REQUEST' AND a.address_type='RESIDENTIAL' AND a.status='ACTIVE'
+         AND a.publication_receipt IS NOT NULL`,[residential[1],user.id]);
+      if(!row||row.request_data?.migration||row.request_data?.annualService?.policy!==ANNUAL_POLICY)throw Error('REQUEST_NOT_FOUND');
+      if(annualServiceDisconnected(row.request_data))return disconnectedAddressResponse(req,!residential[2]);
+      const headers={'cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; frame-ancestors 'none'; base-uri 'none'"};
+      if(residential[2]){
+        const link='https://direcciones.lat/v1/user/requests/'+residential[1]+'/residential';
+        return new Response(new Uint8Array(await QRCode.toBuffer(link,{width:640,margin:4})),{headers:{...headers,'content-type':'image/png','content-disposition':'attachment; filename="residencial-qr.png"'}});
+      }
+      const escape=(value:unknown)=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!));
+      const map=row.latitude!=null&&row.longitude!=null?'https://www.google.com/maps/search/?api=1&amp;query='+encodeURIComponent(row.latitude+','+row.longitude):null;
+      return new Response('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dirección residencial privada</title></head><body><main><h1>'+escape(row.name)+'</h1><p>'+escape(row.reference)+'</p>'+(map?'<a href="'+map+'">Ver ubicación</a>':'')+'<p><a href="/panel">Volver a Mi panel</a></p></main></body></html>',{headers:{...headers,'content-type':'text/html; charset=utf-8'}});
+    }
     if(detail)return respond(200,{ok:true,request:await context.repository.read(user.id,detail[1])});
     if(media){
       if(!context.r2)throw Error('R2_NOT_READY');

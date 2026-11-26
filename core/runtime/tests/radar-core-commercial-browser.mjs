@@ -21,6 +21,7 @@ const id='00000000-0000-4000-8000-000000000001',account='00000000-0000-4000-8000
 const style='<style>*{box-sizing:border-box}body{font:16px system-ui;margin:16px}.hidden{display:none}label{display:block;margin:8px 0}input,textarea,select{display:block;max-width:100%;width:100%}button{margin:6px;min-height:42px}article{overflow-wrap:anywhere}main{max-width:900px;margin:auto}</style>';
 const admin=withCoreRadarAdmin('<html><head>'+style+'</head><body><main><button id="statsTile">Estadísticas</button></main></body></html>',env);
 const items={available:true,managementAvailable:true,items:[{id,name:'Comercio sintético',country:'PA',category:'restaurant',authorized:true,canManage:true}]};
+const simulation={...items,promotionSimulation:true,commercialCatalog:{live:{amountCents:199},featured:{amountCents:399}}};
 const client='<html><head>'+style+'</head><body><main>'+radarAccountSection+'</main><script>'+radarAccountScript+';renderRadarAccount('+JSON.stringify(items)+');</script></body></html>';
 const server=createServer((req,res)=>{res.setHeader('content-type','text/html; charset=utf-8');res.end(req.url==='/admin'?admin:client);});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
@@ -86,5 +87,29 @@ try{
  assert(!('accountRef' in registered.draft)&&!('verified' in registered.draft),'Owner cannot grant privileges');
  assert.equal(new URL(page.url()).pathname,'/panel');
  await page.getByRole('link',{name:'Continuar en Radar',exact:true}).waitFor();
+ const orders=new Map();
+ await page.route('**/v1/user/radar/business',async route=>{
+  const body=route.request().postDataJSON();
+  if(body.action==='promotion_simulation_request'){
+   assert.equal(body.previous,orders.get(body.product)?.id??null);
+   orders.set(body.product,{id:crypto.randomUUID(),product:body.product,ends_at:new Date(Date.now()+3600000).toISOString()});
+  }else assert.equal(body.action,'promotion_simulation_status');
+  await route.fulfill({json:{items:[...orders.values()]}});
+ });
+ for(const [width,product,label,price] of [[390,'live','En vivo','US$1.99 · 1 hora'],[820,'featured','Destacado','US$3.99 · 1 día'],[1440,'live','En vivo','US$1.99 · 1 hora']]){
+  orders.clear();
+  await page.setViewportSize({width,height:900});
+  await page.goto(origin+'/panel');
+  await page.evaluate(data=>window.renderRadarAccount(data),simulation);
+  await page.getByRole('button',{name:'Gestionar promociones de prueba'}).click();
+  await page.getByText(price,{exact:false}).waitFor();
+  await page.getByRole('button',{name:'Simular contratación de '+label}).click();
+  await page.getByText('Orden simulada confirmada. Sin cobro ni beneficios reales.').waitFor();
+  const previous=orders.get(product).id;
+  await page.getByRole('button',{name:'Simular renovación de '+label}).click();
+  await page.getByText('Orden simulada confirmada. Sin cobro ni beneficios reales.').waitFor();
+  assert.notEqual(orders.get(product).id,previous);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ }
  assert.deepEqual(errors,[]);console.log('CORE commercial browser: owner creates locally in panel, edits existing business and returns to Radar by link. Synthetic writes only.');
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

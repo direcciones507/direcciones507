@@ -64,6 +64,12 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
    }
    if(management){
     if(env.RADAR_REGISTRATION_PROFILES_ENABLED!=='true')return json(503,{error:'PROFILE_MANAGEMENT_DISABLED'});
+    if(['promotion_simulation_status','promotion_simulation_request'].includes(body?.action)){
+     const {manageRadarPromotionSimulation,radarPromotionSimulationEnabled}=await import('./order-simulation');
+     if(!radarPromotionSimulationEnabled(env))return json(404,{error:'NOT_FOUND'});
+     const result=await manageRadarPromotionSimulation(db as Sql,user.id,body);
+     return result?json(result.stale?409:200,result):json(403,{error:'FORBIDDEN'});
+    }
     if(body?.action==='catalog'){
      if(env.RADAR_CATEGORY_CATALOG_ENABLED!=='true')return json(200,{dynamic:false});
      return json(200,{dynamic:true,...await createCategoryStore(db).list()});

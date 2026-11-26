@@ -50,7 +50,7 @@ export async function manageRadarPromotionSimulation(db:Sql,account:string,body:
  if(!uuid(account)||!uuid(body?.id))return null;
  const list=body.action==='promotion_simulation_status';
  const kind=body.product;
- if(!list&&((kind!=='live'&&kind!=='featured')||(body.previous!==null&&!uuid(body.previous))))return null;
+ if(!list&&(!product(kind)||(body.previous!==null&&!uuid(body.previous))))return null;
  return db.begin(async tx=>{
   const lock=list?'':'FOR UPDATE OF e';
   const allowed=await tx.unsafe(`SELECT 1 FROM radar.establishments e
@@ -62,7 +62,7 @@ export async function manageRadarPromotionSimulation(db:Sql,account:string,body:
   if(!allowed.length)return null;
   const items=await tx.unsafe<{id:string;product:string;ends_at:string}[]>(`SELECT DISTINCT ON (product)
    id::text,product,simulated_until::text AS ends_at FROM radar.simulated_orders
-   WHERE establishment_id=$1::uuid AND ordering_account=$2::uuid AND product IN ('live','featured')
+   WHERE establishment_id=$1::uuid AND ordering_account=$2::uuid AND product IN ('annual','live','featured')
     AND confirmed_at IS NOT NULL ORDER BY product,simulated_until DESC,id`,[body.id,account]);
   if(list)return {items};
   const previous=items.find(row=>row.product===kind);

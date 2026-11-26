@@ -93,3 +93,20 @@ test("public map releases admission slot even after storage errors",async()=>{
  for(let i=0;i<9;i++)await expect(handler(map())).rejects.toThrow("storage");
  fail=false;expect((await handler(map()))?.status).toBe(200);
 });
+
+test("commercial community submissions restrict fields and keep occupancy reports separate",async()=>{
+ const recorded:unknown[][]=[];
+ const storage:RadarRepository={...repo,register:async(...args)=>{recorded.push(args);return id;},
+  addReport:async(...args)=>{recorded.push(args);}};
+ const handler=createRadarRoutes(storage,{currentUser:async()=>({id:"owner",roles:[]})},allowed,true,undefined,undefined,false,undefined,false,true);
+ const {category,...pin}=draft;
+ for(const extra of [{phone:"555555"},{profile:{}},{description:"Publicar"},{socials:[]}]){
+  expect((await handler(submission({...pin,...extra})))?.status).toBe(400);
+ }
+ expect((await handler(submission({...pin,category})))?.status).toBe(201);
+ expect(recorded[0]).toEqual([{...pin,category:"shop"},"owner"]);
+ const report=(state:string)=>new Request(origin+"/v1/radar/report",{method:"POST",headers:{origin},body:JSON.stringify({id,state})});
+ expect((await handler(report("incident")))?.status).toBe(400);
+ expect((await handler(report("full")))?.status).toBe(201);
+ expect(recorded[1]).toEqual([id,"owner","full","community"]);
+});

@@ -12,7 +12,9 @@ export async function radarAccountData(db:Database,account:string,env:Record<str
   const commercial=env.RADAR_COMMERCIAL_MODEL_ENABLED==='true';
   const simulation=commercial&&(await import('./order-simulation')).radarPromotionSimulationEnabled(env);
   const promotions=commercial?await createRadarCampaignLookup(db,env.RADAR_COMMERCIAL_ENABLED==='true')(items.filter(item=>item.canManage===true).map(item=>item.id)):null;
-  return {available:true,...(simulation?{promotionSimulation:true}:{}),...(env.RADAR_COMMERCIAL_MODEL_ENABLED==='true'?{commercialCatalog:radarCommercialCatalog}:{}),items:promotions?items.map(item=>({...item,promotion:promotions.get(item.id)??null})):items,...(env.RADAR_CORE_ADMIN_ENABLED==='true'?{verificationAvailable:true,...(env.RADAR_REGISTRATION_PROFILES_ENABLED==='true'?{managementAvailable:true,ownerPrivateRequired:env.RADAR_OWNER_PRIVATE_ENABLED==='true'}:{})}:{})};}
+  const annual=commercial?(await import('./annual-memberships')).radarAnnualUntil:null;
+  const memberships=annual?await annual(db,items.filter(item=>item.canManage===true).map(item=>item.id)):null;
+  return {available:true,...(simulation?{promotionSimulation:true}:{}),...(env.RADAR_COMMERCIAL_MODEL_ENABLED==='true'?{commercialCatalog:radarCommercialCatalog}:{}),items:promotions?items.map(item=>({...item,promotion:promotions.get(item.id)??null,...(memberships?.has(item.id)?{annualUntil:memberships.get(item.id)}:{})})):items,...(env.RADAR_CORE_ADMIN_ENABLED==='true'?{verificationAvailable:true,...(env.RADAR_REGISTRATION_PROFILES_ENABLED==='true'?{managementAvailable:true,ownerPrivateRequired:env.RADAR_OWNER_PRIVATE_ENABLED==='true'}:{})}:{})};}
  catch{return {available:false,items:[]};} // Radar must not take the existing account panel offline.
 }
 export const radarAccountSection='<style>#radarAccountSection{box-sizing:border-box;width:100%;max-width:none}#radarAccountSection.radar-owner-flat{background:transparent;border:0;box-shadow:none;padding:0}#radarAccountItems{min-width:0}#radarAccountItems .row{box-sizing:border-box;max-width:100%;padding:clamp(12px,3vw,20px);margin:12px 0}#radarAccountItems .row h3{margin:0 0 8px}#radarAccountItems .row p{margin:7px 0;line-height:1.4}#radarAccountItems button{display:block;width:100%;box-sizing:border-box;min-height:48px;margin:8px 0;padding:12px 14px;text-align:center;white-space:normal}#radarAccountItems .radar-owner-summary p{margin:5px 0}#radarAccountItems .radar-owner-summary{margin:10px 0}#radarAccountItems .radar-owner-editor,#radarAccountItems form{width:100%;box-sizing:border-box}#radarAccountItems form label{min-width:0;max-width:100%}#radarAccountItems form input[type=number]{width:100%!important;max-width:100%!important}#radarAccountItems a{overflow-wrap:anywhere}#radarOwnerRegistration{margin:18px 0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0;max-width:100%;box-sizing:border-box}#radarOwnerCreateForm{width:100%;min-width:0;max-width:100%;box-sizing:border-box}#radarOwnerCreateForm h3{font-size:clamp(1.25rem,3.5vw,1.6rem);font-weight:750;line-height:1.25;margin:22px 0 10px;color:#173b67}#radarOwnerCreateForm>p{line-height:1.55;margin:0 0 18px}#radarOwnerRegistration fieldset{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;min-width:0;max-width:100%;margin:22px 0!important;padding:0!important}#radarOwnerRegistration legend{font-size:1.12rem;font-weight:750;color:#173b67;padding:0;margin:0 0 10px}#radarOwnerRegistration fieldset p{line-height:1.5;margin:6px 0 14px}#radarOwnerRegistration form label{display:block;margin:16px 0;font-weight:600}#radarOwnerRegistration form label input,#radarOwnerRegistration form label select,#radarOwnerRegistration form label textarea{margin-top:7px;font-weight:400}#radarOwnerRegistration form,#radarOwnerRegistration form *{box-sizing:border-box}#radarOwnerRegistration form{overflow-wrap:anywhere}#radarOwnerRegistration button{max-width:100%;white-space:normal}@media(max-width:600px){#radarOwnerRegistration{margin:16px 0;padding:0}#radarOwnerRegistration .hours-row{grid-template-columns:repeat(auto-fit,minmax(min(100%,135px),1fr))}}#radarOwnerRegistration form label{display:block;margin:10px 0}#radarOwnerRegistration input,#radarOwnerRegistration textarea,#radarOwnerRegistration select{display:block;width:100%;min-height:44px;max-width:100%;box-sizing:border-box}#radarOwnerRegistration fieldset{max-width:100%;min-width:0;border:1px solid #a3bed9;border-radius:12px;margin:14px 0;padding:12px}#radarOwnerRegistration .hours-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}#radarOwnerRegistration button,#radarOwnerTools button{display:block;width:100%;min-height:48px;margin:10px 0;padding:12px 16px}@media(max-width:600px){#radarAccountSection.radar-owner-flat{margin-inline:0}#radarAccountItems .row{padding:12px;margin:10px 0}}#radarAccountItems button{max-width:100%;min-height:44px;white-space:normal;margin:4px 6px 4px 0}#radarAccountItems form{min-width:0;max-width:100%}#radarAccountItems .radar-owner-editor label{display:block;margin-top:8px}#radarAccountItems .radar-owner-editor input,#radarAccountItems .radar-owner-editor textarea,#radarAccountItems .radar-owner-editor select{display:block;width:100%;min-width:0;min-height:44px;box-sizing:border-box}#radarAccountItems .radar-owner-schedule>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,135px),1fr));gap:0 10px}#radarOwnerRegistration #radarOwnerCreateForm fieldset,#radarOwnerRegistration #radarOwnerCreateForm fieldset.coordinate-box,#radarOwnerRegistration #radarOwnerCreateForm fieldset.owner-private-fields{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;border-radius:0!important;margin:20px 0!important;padding:0!important;min-width:0;width:100%;max-width:100%}#radarOwnerRegistration #radarOwnerCreateForm legend{font-size:1.13rem;font-weight:750;line-height:1.4;color:inherit;padding:0;margin:0 0 12px}#radarOwnerRegistration #radarOwnerCreateForm .hours-row{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin:16px 0 22px;min-width:0}#radarOwnerRegistration #radarOwnerCreateForm .hours-row>label.check{display:flex!important;align-items:center;justify-content:flex-start;gap:10px;margin:0 0 4px!important;min-width:0;line-height:1.4}#radarOwnerRegistration #radarOwnerCreateForm .hours-row>label.check input[type=checkbox]{display:inline-block!important;appearance:auto!important;-webkit-appearance:checkbox!important;width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;min-height:20px!important;max-height:20px!important;margin:0!important;padding:0!important;flex:0 0 20px;vertical-align:middle}#radarOwnerRegistration #radarOwnerCreateForm .hours-row>label:not(.check){margin:8px 0!important;min-width:0}#radarOwnerRegistration #radarOwnerCreateForm .hours-row input[type=time]{width:100%;max-width:100%;min-width:0}#radarOwnerRegistration #radarOwnerCreateForm .form-grid{min-width:0;max-width:100%}#radarOwnerRegistration #radarOwnerCreateForm .owner-privacy-popover{max-width:100%;min-width:0}/* Radar desktop/tablet: preserve phone layout and existing form behavior. */@media(min-width:768px){ #radarOwnerRegistration,#radarAccountItems .radar-owner-editor{max-width:960px;margin-inline:auto} #radarOwnerRegistration button,#radarOwnerTools button{display:inline-flex;width:auto;max-width:100%;min-width:0;min-height:42px;margin:8px 10px 8px 0;padding:9px 18px;align-items:center;justify-content:center} #radarAccountItems .radar-owner-editor>button{display:inline-flex;width:auto;min-width:0;min-height:42px;padding:9px 18px;margin:12px 10px 4px 0} #radarAccountItems .radar-owner-schedule>div{grid-template-columns:minmax(125px,1fr) minmax(0,1fr) minmax(0,1fr);gap:10px 14px;align-items:end;margin:5px 0} #radarAccountItems .radar-owner-schedule>div>label{margin:4px 0;min-width:0} #radarOwnerRegistration #radarOwnerCreateForm .hours-row{grid-template-columns:minmax(160px,1.15fr) repeat(2,minmax(0,1fr));align-items:end;gap:10px 14px;margin:12px 0 18px} #radarOwnerRegistration #radarOwnerCreateForm .hours-row>label:not(.check){margin:0!important} #radarOwnerRegistration #radarOwnerCreateForm .hours-row>label.check{align-self:center}}@media(min-width:1100px){ #radarOwnerRegistration,#radarAccountItems .radar-owner-editor{max-width:1020px}}</style><section id="radarAccountSection" class="card radar-owner-flat hidden"><h2>Mis establecimientos en Radar</h2><p><a href="https://radar.direcciones.lat/">Volver a Radar</a></p><p>Si registraste tu comercio, puedes editar su ficha y disponibilidad. La verificación voluntaria solo concede el distintivo de negocio verificado.</p><div id="radarOwnerTools" hidden><button type="button" id="radarOwnerCreateButton">Agregar mi local</button></div><div id="radarOwnerRegistration" hidden></div><div id="radarAccountItems" aria-live="polite"></div></section>';
@@ -67,10 +69,12 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
     }
     const promotion=item.promotion;
     const expires=(deadline:number)=>new Intl.DateTimeFormat('es',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Panama'}).format(deadline);
+    if(Number(item.annualUntil)>Date.now())offer.append(text('p','Ficha comercial vigente hasta '+expires(item.annualUntil)+' (hora de Panamá)'));
     for(const [kind,label] of [['live','En vivo'],['featured','Destacado']]){
      const deadline=promotion?.[kind+'Until']??(promotion?.kind===kind?promotion.endsAt:null);
      if(Number.isFinite(deadline)&&deadline>Date.now())offer.append(text('p',label+' vigente hasta '+expires(deadline)+' (hora de Panamá)'));
     }
+    if(['live','featured'].some(kind=>(promotion?.[kind+'Until']??(promotion?.kind===kind?promotion.endsAt:0))>Date.now()))offer.append(renderRadarCoverControls(doc,item.id));
     if(data.promotionSimulation===true)offer.append(renderRadarPromotionSimulation(doc,item.id,data.commercialCatalog));
     else offer.append(text('p','La contratación aún no está disponible.'));
     row.append(offer);
@@ -151,10 +155,33 @@ export function renderRadarAccount(data:any,doc:any=document,send:any=(body:unkn
   out.append(row);
  }
 }
+function renderRadarCoverControls(doc:Document,id:string){
+ const section=doc.createElement('div'),label=doc.createElement('label'),file=doc.createElement('input');
+ const save=doc.createElement('button'),remove=doc.createElement('button'),status=doc.createElement('p');
+ label.textContent='Portada de la promoción';
+ file.type='file';file.accept='image/jpeg,image/png,image/webp';label.append(file);
+ save.type=remove.type='button';save.textContent='Guardar portada';remove.textContent='Eliminar portada';
+ status.setAttribute('role','status');section.append(label,save,remove,status);
+ const update=async(method:string)=>{
+  const photo=file.files?.[0];
+  if(method==='POST'&&!photo){status.textContent='Selecciona una imagen.';return;}
+  save.disabled=remove.disabled=true;
+  try{
+   const response=await fetch('/v1/user/radar/business/cover?id='+encodeURIComponent(id),{
+    method,credentials:'same-origin',...(method==='POST'&&photo?{headers:{'content-type':photo.type},body:photo}:{})});
+   if(!response.ok)throw Error();
+   status.textContent=method==='POST'?'Portada guardada.':'Portada eliminada.';
+   file.value='';
+  }catch{status.textContent='No se pudo actualizar la portada. Revisa la vigencia de tu promoción y el formato de la imagen.';}
+  finally{save.disabled=remove.disabled=false;}
+ };
+ save.onclick=()=>void update('POST');remove.onclick=()=>void update('DELETE');
+ return section;
+}
 function renderRadarPromotionSimulation(doc:Document,id:string,catalog:any){
  const section=doc.createElement('div'),status=doc.createElement('p'),actions=doc.createElement('div');
  const open=doc.createElement('button');
- open.type='button';open.textContent='Gestionar promociones de prueba';
+ open.type='button';open.textContent='Gestionar servicios de prueba';
  status.setAttribute('role','status');
  section.append(open,status,actions);
  const date=new Intl.DateTimeFormat('es',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Panama'});
@@ -168,7 +195,8 @@ function renderRadarPromotionSimulation(doc:Document,id:string,catalog:any){
    if(!response.ok&&response.status!==409)throw Error();
    const {items,stale}=await response.json();
    actions.replaceChildren();
-   for(const [kind,label,duration] of [['live','En vivo','1 hora'],['featured','Destacado','1 día']]){
+   for(const [kind,label,duration] of [['annual','Ficha comercial','1 año'],['live','En vivo','1 hora'],['featured','Destacado','1 día']]){
+    if(!Number.isSafeInteger(catalog[kind]?.amountCents))continue;
     const order=items.find((entry:any)=>entry.product===kind);
     const plan=doc.createElement('p'),button=doc.createElement('button');
     const end=order?new Date(order.ends_at):null;
@@ -191,4 +219,4 @@ function renderRadarPromotionSimulation(doc:Document,id:string,catalog:any){
  open.onclick=()=>void request();
  return section;
 }
-export const radarAccountScript=commercialFieldsScript+ownerPanelCreateScript+openCommercialEditor.toString()+';'+renderRadarPromotionSimulation.toString()+';'+renderRadarAccount.toString();
+export const radarAccountScript=commercialFieldsScript+ownerPanelCreateScript+openCommercialEditor.toString()+';'+renderRadarCoverControls.toString()+';'+renderRadarPromotionSimulation.toString()+';'+renderRadarAccount.toString();

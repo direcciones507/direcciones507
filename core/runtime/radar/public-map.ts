@@ -24,12 +24,17 @@ export function publicFeatures(rows:readonly Establishment[], bounds:Bounds, cou
  if(commercialModel){
   const full=pin!=="normal"||annualUntil!==null;
   const profile=e.registrationProfile;
+  const occupancy=currentActivity(e.reports.filter(r=>r.source==="community"&&(r.state==="full"||r.state==="available")),now);
   const phone=profile?.phone&&/^[+0-9 ()-]{5,32}$/.test(profile.phone)?profile.phone:null;
   const status=commercialOpenStatus({country:e.country,details:e.details,registrationProfile:profile},new Date(now));
-  const basic={name:e.name,category:e.category,pin,phone,openStatus:status==="Cierra pronto"?"Abierto ahora":status,commercialModel:true,corporate:!!digitalAddressUrl,...(digitalAddressUrl?{digitalAddressUrl}:{})};
+  const owner=!!profile||e.verifiedOwner===true;
+  const basic={name:e.name,category:e.category,pin,commercialModel:true,corporate:!!digitalAddressUrl,
+   ...(owner?{phone,openStatus:status==="Cierra pronto"?"Abierto ahora":status}:{}),
+   ...(occupancy?{activity:occupancy.state,reportedAt:occupancy.createdAt}:{}),
+   ...(digitalAddressUrl?{digitalAddressUrl}:{})};
   if(!full)return {type:"Feature" as const,id:e.id,geometry,properties:basic};
   const granted=(timestamp?:number)=>timestamp&&timestamp>now?timestamp:null;
-  return {type:"Feature" as const,id:e.id,geometry,properties:{...basic,annualUntil,country:e.country,
+  return {type:"Feature" as const,id:e.id,geometry,properties:{...basic,annualUntil,country:e.country,...(pin!=="normal"?{coverAvailable:true}:{}),
    featuredUntil:commercialEnabled?granted(e.campaign?.featuredUntil??(e.campaign?.kind==="featured"?e.campaign.endsAt:undefined)):null,
    liveUntil:commercialEnabled?granted(e.campaign?.liveUntil??(e.campaign?.kind==="live"?e.campaign.endsAt:undefined)):null,
    ...(profile?{registrationProfile:{description:profile.description,whatsapp:profile.whatsapp,hours:profile.hours,

@@ -14,7 +14,7 @@ export interface RadarRepository {
  anonymousReportAllowed?(digest:string,id:string):Promise<boolean>;
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false,catalog?:{list():Promise<{groups:any[];categories:any[]}>;lookup(id:string,activeOnly?:boolean):Promise<string|undefined>},privateOwnerRequired=false,commercialModel=false){
+export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false,catalog?:{list():Promise<{groups:any[];categories:any[]}>;lookup(id:string,activeOnly?:boolean):Promise<string|undefined>},privateOwnerRequired=false,commercialModel=false,annualLookup?:(ids:string[],now:number)=>Promise<Map<string,number>>){
  // A per-process admission cap protects the shared pool without using visitor IPs.
  // Tune only after isolated load testing; writes and authentication are independent.
  let activeMapReads=0;
@@ -40,7 +40,12 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    try{
     const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
     const now=Date.now();
-    if(campaignLookup){const campaigns=await campaignLookup(rows.map(e=>e.id),now);for(const e of rows)e.campaign=campaigns.get(e.id);}
+    const ids=rows.map(e=>e.id);
+    const [campaigns,annual]=await Promise.all([campaignLookup?.(ids,now),commercialModel?annualLookup?.(ids,now):undefined]);
+    for(const e of rows){
+     if(campaigns)e.campaign=campaigns.get(e.id);
+     if(annual)e.annualUntil=annual.get(e.id);
+    }
     return json(200,publicFeatures(rows,b,country,now,!!campaignLookup,commercialModel));
    }finally{activeMapReads--;}
 
@@ -50,10 +55,14 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    if(!actor)return json(403,{error:"AUTH_REQUIRED"});
    if(!repo.register)return json(503,{error:"REGISTRATION_DISABLED"});
    const parsed=await readRadarJson(req,4608);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
-   const body=parsed.body;
+   const input=parsed.body as Record<string,unknown>|null;
+   const community=commercialModel&&input?.registrationKind!=='owner';
+   if(community&&(!input||typeof input!=='object'||Array.isArray(input)||
+     Object.keys(input).some(key=>!['name','country','latitude','longitude','category','registrationKind'].includes(key))))return json(400,{error:"INVALID_ESTABLISHMENT"});
+   const body=community?{...input,category:'shop'}:input;
    const requestedCategory=(body as any)?.category;
-   const unit=catalog&&typeof requestedCategory==="string"?await catalog.lookup(requestedCategory.trim(),true):undefined;
-   if(catalog&&!unit)return json(400,{error:"INVALID_CATEGORY"});
+   const unit=catalog&&!community&&typeof requestedCategory==="string"?await catalog.lookup(requestedCategory.trim(),true):undefined;
+   if(catalog&&!community&&!unit)return json(400,{error:"INVALID_CATEGORY"});
    const draft=validateRegistration(body,unit,privateOwnerRequired);
    if(!draft)return json(400,{error:"INVALID_ESTABLISHMENT"});
    if(draft.registrationKind==='owner'&&!ownerRegistrationEnabled)return json(503,{error:"OWNER_REGISTRATION_DISABLED"});
@@ -75,13 +84,13 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
    if(!actor&&(!digest||!/^[0-9a-f]{64}$/.test(digest)||!repo.addAnonymousReport))return json(403,{error:"AUTH_REQUIRED"});
    const parsed=await readRadarJson(req,2048);if(!parsed.ok)return json(parsed.status,{error:parsed.error});
    const body=parsed.body as any;
-   if(!body||typeof body.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)||!["available","queue","full","incident"].includes(body.state))return json(400,{error:"INVALID_REPORT"});
+   if(!body||typeof body.id!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)||!(commercialModel?["available","full"]:["available","queue","full","incident"]).includes(body.state))return json(400,{error:"INVALID_REPORT"});
    const e=await repo.findPublished(body.id);
    if(!e)return json(404,{error:"NOT_FOUND"});
    if(actor&&repo.reportAllowed&&!await repo.reportAllowed(actor.accountRef,e.id))return json(429,{error:"REPORT_RATE_LIMIT"});
    if(!actor&&repo.anonymousReportAllowed&&!await repo.anonymousReportAllowed(digest!,e.id))return json(429,{error:"REPORT_RATE_LIMIT"});
    try {
-    if(actor)await repo.addReport(e.id,actor.accountRef,body.state,reportSource(actor,e.verifiedOwnerAccount));
+    if(actor)await repo.addReport(e.id,actor.accountRef,body.state,commercialModel?"community":reportSource(actor,e.verifiedOwnerAccount));
     else await repo.addAnonymousReport!(e.id,digest!,body.state);
    }
    catch(error){if((error as {code?:string})?.code==="P4290")return json(429,{error:"REPORT_RATE_LIMIT"});throw error;}

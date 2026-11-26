@@ -34,3 +34,12 @@ test("Radar commercial policy projects only fields allowed by active benefits",(
  expect(publicFeatures([{...fixture,campaign:promo}],bounds,"PA",now,true,true).features[0].properties).toMatchObject({pin:"live",annualUntil:null});
  expect(publicFeatures([{...fixture,campaign:promo,annualUntil:now+1}],bounds,"PA",now+1,true,true).features[0].properties).not.toHaveProperty("registrationProfile");
 });
+
+test("commercial map keeps the independent corporate link without granting commercial visibility",()=>{
+ const code=publicFeatures([{...base,digitalAddress:address}],bounds,"PA",1,true,true).features[0].properties;
+ expect(code).toMatchObject({corporate:true,digitalAddressUrl:address.publicUrl,pin:"normal"});
+ expect(code).not.toHaveProperty("registrationProfile");
+ const residential=publicFeatures([{...base,digitalAddress:{...address,residential:true}}],bounds,"PA",1,true,true).features[0].properties;
+ expect(residential).toMatchObject({corporate:false});
+ expect(residential).not.toHaveProperty("digitalAddressUrl");
+});

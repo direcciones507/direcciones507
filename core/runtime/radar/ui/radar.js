@@ -148,6 +148,11 @@ function detail(f,focus=true){
    directions.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent([...f.geometry.coordinates].reverse().join(','));
    directions.target='_blank';directions.rel='noopener noreferrer';d.append(directions);
   }
+  const corporateUrl=p.corporate?safeAddress(p.digitalAddressUrl):null;
+  if(corporateUrl){
+   const address=el('a','button subtle','Ver dirección digital');
+   address.href=corporateUrl;address.target='_blank';address.rel='noopener noreferrer';d.append(address);
+  }
   d.hidden=false;if(focus)d.focus({preventScroll:true});return;
  }
  if(['live','featured'].includes(p.pin))d.append(el('span','commercial-badge '+p.pin,p.pin==='featured'?'Destacado':'Pin en vivo'));

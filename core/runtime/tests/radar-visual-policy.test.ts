@@ -35,3 +35,14 @@ test('overlapping approved campaigns preserve independent live and featured dead
  const p=(await lookup(['a'],now)).get('a')!;
  expect(p.kind).toBe('live');expect(p.featuredUntil).toBe(now+2000);
 });
+
+test('commercial map preserves corporate pins and applies zoom, order and expiry in isolation',()=>{
+ const now=Date.now();
+ const feature=(id:string,fields:Record<string,unknown>={})=>({id,properties:freshProperties({commercialModel:true,...fields},now)});
+ const rows=[feature('basic'),feature('annual',{annualUntil:now+60000}),feature('featured',{featuredUntil:now+60000}),feature('live',{liveUntil:now+60000}),feature('corporate',{corporate:true})];
+ expect(mapFeatures(rows,9,13).map(f=>f.id)).toEqual(['live','corporate']);
+ expect(mapFeatures(rows,10,13).map(f=>f.id)).toEqual(['featured','live','corporate']);
+ expect(mapFeatures(rows,13,13)).toHaveLength(5);
+ expect(priorityFeatures(rows).map(f=>f.id)).toEqual(['live','featured','annual']);
+ expect(freshProperties({commercialModel:true,liveUntil:now,annualUntil:now,registrationProfile:{description:'private'},details:{quantity:1}},now)).not.toHaveProperty('registrationProfile');
+});

@@ -8,11 +8,15 @@ import type {createTemporaryEventMedia} from './temporary-event-media';
 import type {createTemporaryEventPayment} from './temporary-event-payment';
 export type EventServices={media?:ReturnType<typeof createTemporaryEventMedia>|null;payment?:ReturnType<typeof createTemporaryEventPayment>|null;adminExempt?:boolean};
 export async function eventOwnerRoute(req:Request,sql:Sql,userId:string,services:EventServices):Promise<Response>{
- const url=new URL(req.url),origin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin,match=url.pathname.match(/^\/v1\/user\/temporary-events\/([a-f0-9-]{36})(?:\/(preview|photos|payment|refund|publish))?$/)!;
+ const url=new URL(req.url),origin=url.protocol==='http:'&&req.headers.get('x-forwarded-proto')==='https'?'https://'+url.host:url.origin,match=url.pathname.match(/^\/v1\/user\/temporary-events\/([a-f0-9-]{36})(?:\/(preview|photos|payment|refund|publish|reschedule))?$/)!;
  const [,id,action]=match,repository=createTemporaryEventRepository(sql);
  const fail=(status:number,error:string)=>Response.json({ok:false,error},{status,headers:{'cache-control':'no-store'}});
  const event=await repository.getOwned(userId,id);if(!event)return fail(404,'EVENT_NOT_FOUND');
  const readJson=async()=>{const text=await req.text();if(text.length>24000)throw Error('INVALID_PAYLOAD_SIZE');return JSON.parse(text)};
+ if(action==='reschedule'&&req.method==='POST'){
+  if(!services.adminExempt)return fail(403,'FORBIDDEN');
+  return Response.json({ok:true,event:await repository.rescheduleAdmin(userId,id,await readJson())},{headers:{'cache-control':'no-store'}});
+ }
  if(action==='publish'&&req.method==='POST')return Response.json({ok:true,event:await repository.publishAdmin(userId,id)});
  if(services.adminExempt&&['payment','refund'].includes(action))return fail(409,'ADMIN_PAYMENT_EXEMPT');
  if(!action&&req.method==='GET'){

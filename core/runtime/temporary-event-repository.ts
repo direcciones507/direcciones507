@@ -59,6 +59,30 @@ export function createTemporaryEventRepository(sql:Sql){
     return {id:e.id,slug:e.slug,status:'ACTIVE'};
    });
   },
+  async rescheduleAdmin(ownerId:string,eventId:string,input:unknown,now=new Date()){
+   requireUuid(ownerId);requireUuid(eventId);
+   const {startsOn,endsOn,previousStartsOn,previousEndsOn}=(input??{}) as Record<string,unknown>;
+   if([startsOn,endsOn,previousStartsOn,previousEndsOn].some(value=>typeof value!=='string'))throw Error('INVALID_EVENT_DATE');
+   const start=startsOn as string,end=endsOn as string;
+   const quote=temporaryEventQuote(start,end);
+   return sql.begin(async tx=>{
+    if(!await adminBillingExempt(tx,ownerId))throw Error('FORBIDDEN');
+    const [event]=await tx.unsafe('SELECT * FROM ad507.temporary_events WHERE id=$1 AND owner_user_id=$2 FOR UPDATE',[eventId,ownerId]);
+    if(!event||!['ACTIVE','EXPIRED'].includes(event.status)||!event.admin_published_at||event.payment_order_id)throw Error('EVENT_NOT_EDITABLE');
+    const oldStart=dbDate(event.starts_on),oldEnd=dbDate(event.ends_on);
+    if(eventIsExpired(end,event.event_timezone,now))throw Error('EVENT_NOT_PUBLISHABLE');
+    if(oldStart===start&&oldEnd===end&&event.status==='ACTIVE')return {id:event.id,slug:event.slug,status:'ACTIVE'};
+    if(oldStart!==previousStartsOn||oldEnd!==previousEndsOn||end<=oldEnd)throw Error('EVENT_NOT_EDITABLE');
+    const [photo]=await tx.unsafe('SELECT slot FROM ad507.temporary_event_media WHERE event_id=$1 AND slot=1',[eventId]);
+    if(!photo)throw Error('PRIMARY_PHOTO_REQUIRED');
+    await tx.unsafe("UPDATE ad507.temporary_events SET starts_on=$2,ends_on=$3,price_cents=$4,status='ACTIVE',updated_at=now() WHERE id=$1", [eventId,start,end,quote.amountCents]);
+    await tx.unsafe(`INSERT INTO ad507.audit_log(actor_user_id,actor_type,action,entity_type,entity_id,metadata)
+     VALUES($1::uuid,'ADMIN','ADMIN_TEMPORARY_RESCHEDULED','TEMPORARY_EVENT',$2,
+     jsonb_build_object('previousStartsOn',$3::text,'previousEndsOn',$4::text,'startsOn',$5::text,'endsOn',$6::text))`,
+     [ownerId,eventId,oldStart,oldEnd,start,end]);
+    return {id:event.id,slug:event.slug,status:'ACTIVE'};
+   });
+  },
   async photos(eventId:string){
    requireUuid(eventId);
    return sql.unsafe('SELECT slot,object_key FROM ad507.temporary_event_media WHERE event_id=$1 ORDER BY slot',[eventId]);

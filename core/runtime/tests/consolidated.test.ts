@@ -1373,10 +1373,23 @@ test('new annual contracts: signed initial payment, explicit renewal, expiry and
  await repo.confirm(proof(renewal.order));expect((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data.annualService).toEqual(renewed.request_data.annualService);
  await sql.unsafe("UPDATE ad507.addresses SET request_data=jsonb_set(request_data,'{annualService,endsAt}','\"2020-01-01T00:00:00.000Z\"') WHERE id=$1::uuid",[id]);
  expect(serviceExpired((await sql.unsafe('SELECT request_data FROM ad507.addresses WHERE id=$1::uuid',[id]))[0].request_data)).toBe(true);
- expect((await getPublicAddressByCode(sql as any,code))?.plan?.code).toBe('BUSINESS_FREE');
+ expect(await getPublicAddressByCode(sql as any,code)).toBeNull();
+ const {handleNewPublicRoutes}=await import('../new-address-publication');
+ const disconnected=await handleNewPublicRoutes(new Request(origin+'/'+code+'/'),{enabled:true,sql,r2:null});
+ expect(disconnected?.status).toBe(410);
+ expect(await disconnected?.text()).toContain('Dirección desconectada');
+ const api=await handleNewPublicRoutes(new Request(origin+'/v1/addresses/'+code),{enabled:true,sql,r2:null});
+ expect(api?.status).toBe(410);
+ expect(await api?.json()).toEqual({ok:false,error:'ADDRESS_DISCONNECTED'});
+ const late=await repo.prepareRenewal(owner,id,'annual-late-'+stamp);
+ await repo.registerProviderOrder(late.order.id,'late-'+stamp);
+ await repo.confirm(proof(late.order));
+ const active=await handleNewPublicRoutes(new Request(origin+'/'+code+'/'),{enabled:true,sql,r2:null});
+ expect(active?.status).toBe(200);
+ expect((await getPublicAddressByCode(sql as any,code))?.plan?.code).toBe('BUSINESS_PREMIUM');
  await sql.unsafe("UPDATE ad507.addresses SET request_data=request_data-'annualService' WHERE id=$1::uuid",[id]);
  expect(await getPublicAddressByCode(sql as any,code)).not.toBeNull();
- const audit=await sql.unsafe("SELECT action FROM ad507.audit_log WHERE entity_id=$1 AND action IN ('ANNUAL_SERVICE_ACTIVATED','ANNUAL_SERVICE_RENEWED')",[id]);expect(audit).toHaveLength(2);
+ const audit=await sql.unsafe("SELECT action FROM ad507.audit_log WHERE entity_id=$1 AND action IN ('ANNUAL_SERVICE_ACTIVATED','ANNUAL_SERVICE_RENEWED')",[id]);expect(audit).toHaveLength(3);
 });
 
 test('installments: authentic partial activation, due date, second-order deduplication and immutable anniversary',async()=>{

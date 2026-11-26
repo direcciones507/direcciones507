@@ -1,6 +1,7 @@
 import {temporaryCertificationLink} from './temporary-event-certification';
 import {adminBillingExempt} from './admin-billing-policy';
 import QRCode from 'qrcode';
+import {disconnectedAddressResponse} from './disconnected-address';
 import {eventOwnerRoute,type EventServices} from './temporary-event-owner';
 /** Authenticated draft and public event endpoints. Disabled until migration is applied. */
 import type {Sql} from 'postgres';
@@ -29,12 +30,12 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
   try{
    const event=await repository.getPublic(match[1]);
    if(!event)return json(404,'EVENT_NOT_FOUND');
+   if(event.status!=='ACTIVE')return disconnectedAddressResponse(req,!match[2]);
    // Render only public fields; do not manufacture or load private responsible data.
    const data={...event,responsibleName:'',responsibleEmail:'',responsiblePhone:'',publicContactConsent:!!(event.publicContactName||event.publicContactPhone)} as TemporaryEventDraft;
    const base='https://direcciones.lat/evento/'+event.slug;
    const photos=await repository.photos(event.id);
    if(match[2]){
-    if(event.status!=='ACTIVE')return json(410,'EVENT_FINISHED');
     if(match[2]==='qr.png')return new Response(req.method==='HEAD'?null:new Uint8Array(await QRCode.toBuffer(base,{width:640,margin:4})),{headers:{'content-type':'image/png','cache-control':'no-store','x-robots-tag':'noindex, nofollow','content-disposition':'attachment; filename="evento-qr.png"'}});
     const photo=photos.find(x=>Number(x.slot)===Number(match[2].split('/')[1]));
     if(!photo||!ctx.media)return json(404,'PHOTO_NOT_FOUND');

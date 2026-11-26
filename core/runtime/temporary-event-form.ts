@@ -725,7 +725,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
  <label>Nombre del evento <input name="title" required minlength="3" maxlength="160" autocomplete="off"></label>
  <label>Descripción <textarea name="description" maxlength="5000"></textarea></label>
  <label>Fecha inicial <input name="startsOn" type="date" required></label>
- <label>Duración de la dirección temporal <select name="durationDays" required><option value="">Selecciona duración</option>${Array.from({length:60},(_,i)=>`<option value="${i+1}">${i+1} ${i===0?"día":"días"}</option>`).join("")}</select></label>
  <label>Fecha final <input name="endsOn" type="date" required></label>
  <label>Horario <input name="hours" maxlength="400" placeholder="Ej. 6:00 p. m. a 11:00 p. m."></label>
  <label>Zona horaria del evento <input name="timezone" required value="America/Panama" readonly></label>
@@ -751,6 +750,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
  </div></fieldset>
  <fieldset aria-label="Fotografías"><div class="event-field-grid"><h3 class="event-section-heading">Fotografías</h3><label>Foto principal obligatoria<input name="photo1" type="file" accept="image/jpeg,image/png,image/webp"></label><label>Fotografía 2 (opcional)<input name="photo2" type="file" accept="image/jpeg,image/png,image/webp"></label><label>Fotografía 3 (opcional)<input name="photo3" type="file" accept="image/jpeg,image/png,image/webp"></label><p>Hasta 3 fotos, máximo 8 MB cada una. Puedes guardar el borrador antes de subirlas.</p></div></fieldset>
  <p id="temporary-event-error" role="alert" aria-live="polite"></p>
+ <label>Duración de la dirección temporal <select name="durationDays" required><option value="">Selecciona duración</option>${Array.from({length:60},(_,i)=>`<option value="${i+1}">${i+1} ${i===0?"día":"días"}</option>`).join("")}</select></label>
  <button type="submit">Guardar borrador</button>
  </form><section id="event-after-save" hidden><a id="event-preview-link" target="_blank" rel="noopener" class="event-link">Ver vista previa privada</a>${adminExempt?'<p>Revisa y publica gratuitamente tu dirección temporal o de cortesía.</p><label class="event-review-check"><input id="event-reviewed" type="checkbox"> He revisado la vista previa</label><p id="event-quote" role="status">Publicación administrativa gratuita</p><button id="event-publish" type="button">Publicar gratuitamente</button>':`<p>Revisa la vista previa antes de pagar.</p><p id="event-quote" role="status"></p><label class="event-review-check"><input id="event-reviewed" type="checkbox"> He revisado la vista previa</label><label>Celular Yappy<input id="event-alias" type="tel" inputmode="numeric" maxlength="8"></label><div id="event-pay-container">${paymentsEnabled?'<btn-yappy theme="blue"></btn-yappy>':'<p>Cobros desactivados. Puedes guardar y revisar tu borrador.</p>'}</div>`}${certificationHtml}<button id="event-state" type="button">Consultar estado</button><p id="event-payment-message" role="status"></p></section></section>`;
 }

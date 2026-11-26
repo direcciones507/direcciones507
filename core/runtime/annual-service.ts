@@ -9,9 +9,12 @@ export function annualEnd(start:string):string {
 export function serviceExpired(data:any,now=Date.now()):boolean {
  const s=data?.annualService;return !data?.migration&&s?.policy===ANNUAL_POLICY&&(!s.startsAt||!s.endsAt||!Number.isFinite(Date.parse(s.endsAt))||Date.parse(s.endsAt)<=now);
 }
+export function annualServiceDisconnected(data:any,now=Date.now()):boolean {
+ return !data?.migration&&data?.annualService?.policy===ANNUAL_POLICY&&(data.annualService.paymentHold===true||serviceExpired(data,now));
+}
 export function effectiveServicePlan(data:any,plan:string|null,now=Date.now()):string|null {
  if(data?.migration||data?.annualService?.policy!==ANNUAL_POLICY)return plan;
- if(data.annualService.paymentHold||serviceExpired(data,now))return plan==='RESIDENTIAL'?plan:'BUSINESS_FREE';
+ if(annualServiceDisconnected(data,now))return null;
  const s=data.annualService;
  if(s.mode==='INSTALLMENTS'&&!s.fullyPaid){
   if(plan==='BUSINESS_PREMIUM_PRO'&&s.secondDueAt&&now>Date.parse(s.secondDueAt)+5*86400000)return 'BUSINESS_PREMIUM';

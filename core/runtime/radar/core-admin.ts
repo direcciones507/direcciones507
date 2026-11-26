@@ -1,3 +1,5 @@
+import {createRadarCoverRoutes} from "./cover-routes";
+import type {Sql} from "postgres";
 import {readRadarJson} from "./request-body";
 import type {CoreAuth} from './auth';
 import {createBusinessRoutes,createBusinessStore} from './business';
@@ -22,11 +24,12 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
  const business=createBusinessRoutes(createBusinessStore(db),auth,origins,enabled);
  const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-robots-tag':'noindex'}});
  return async(req:Request):Promise<Response|null>=>{
-  const url=new URL(req.url),admin=url.pathname==='/v1/admin/radar',verification=url.pathname==='/v1/user/radar/verification',management=url.pathname==='/v1/user/radar/business';
-  if(!admin&&!verification&&!management)return null;
+  const url=new URL(req.url),admin=url.pathname==='/v1/admin/radar',verification=url.pathname==='/v1/user/radar/verification',management=url.pathname==='/v1/user/radar/business',cover=url.pathname==='/v1/user/radar/business/cover';
+  if(!admin&&!verification&&!management&&!cover)return null;
   if(!adminOrigins.has('https://'+url.hostname)||url.username||url.password||
    !(url.protocol==='https:'&&(!url.port||url.port==='443')||url.protocol==='http:'&&(!url.port||url.port==='8080')&&req.headers.get('x-forwarded-proto')==='https'))return json(403,{error:'FORBIDDEN'});
   if(!enabled)return json(503,{error:'RADAR_ADMIN_DISABLED'});
+  if(cover)return createRadarCoverRoutes(db as Sql,auth,env,'https://'+url.hostname)(req);
   if(req.method!=='POST')return json(405,{error:'METHOD_NOT_ALLOWED'});
   if(req.headers.get('origin')!=='https://'+url.hostname)return json(403,{error:'FORBIDDEN'});
   const user=await auth.currentUser(req);

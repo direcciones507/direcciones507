@@ -43,3 +43,18 @@ test("commercial map keeps the independent corporate link without granting comme
  expect(residential).toMatchObject({corporate:false});
  expect(residential).not.toHaveProperty("digitalAddressUrl");
 });
+
+
+test("commercial occupancy is public independently of promotions and owner capacity",()=>{
+ const now=Date.now();
+ const rows:Establishment[]=[{...base,details:{hours:{monday:"08:00-17:00"},quantity:18,unit:"tables",updatedAt:now},
+  reports:[{state:"available",source:"community",createdAt:now-2},{state:"incident",source:"community",createdAt:now-1},{state:"full",source:"verified_owner",createdAt:now}]}];
+ const features=(e:Establishment,at=now)=>publicFeatures([e],bounds,"PA",at,true,true).features[0].properties;
+ expect(features(rows[0])).toMatchObject({activity:"available",reportedAt:now-2});
+ for(const key of ["phone","openStatus","details","registrationProfile","coverAvailable"])expect(features(rows[0])).not.toHaveProperty(key);
+ expect(features({...rows[0],annualUntil:now+10})).not.toHaveProperty("coverAvailable");
+ const promoted={...rows[0],annualUntil:now+10,campaign:{kind:"featured" as const,startsAt:now-10,endsAt:now+1}};
+ expect(features(promoted)).toMatchObject({coverAvailable:true,activity:"available"});
+ expect(features(promoted,now+1)).not.toHaveProperty("coverAvailable");
+ expect(features(rows[0],now+30*60*1000)).not.toHaveProperty("activity");
+});

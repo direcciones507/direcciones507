@@ -39,6 +39,25 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
   const parsed=await readRadarJson(req,(management?8192:2048));if(!parsed.ok)return json(parsed.status,{error:parsed.error});
   const body=parsed.body as any;
   try{
+   if(admin&&body?.action==='annual_orders_list'){
+    if(env.RADAR_COMMERCIAL_MODEL_ENABLED!=='true')return json(404,{error:'NOT_FOUND'});
+    if(typeof body.id!=='string'||!/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ID'});
+    const {radarAnnualHistory}=await import('./annual-memberships');
+    return json(200,{items:await radarAnnualHistory(db,body.id)});
+   }
+   if(admin&&body?.action==='simulated_orders_list'){
+    const {radarPromotionSimulationEnabled}=await import('./order-simulation');
+    if(!radarPromotionSimulationEnabled(env))return json(404,{error:'NOT_FOUND'});
+    if(typeof body.id!=='string'||!/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ID'});
+    const items=await db.unsafe(`SELECT e.name AS establishment,COALESCE(NULLIF(u.display_name,''),'Cuenta sin nombre') AS owner,
+     s.product,s.amount_cents AS "amountCents",s.created_at AS "createdAt",
+     s.confirmed_at AS "simulationConfirmedAt",s.simulated_until AS "endsAt",
+     CASE WHEN s.confirmed_at IS NULL THEN 'PENDING' WHEN s.simulated_until<=now() THEN 'EXPIRED' ELSE 'CONFIRMED' END AS status
+     FROM radar.simulated_orders s JOIN radar.establishments e ON e.id=s.establishment_id
+     JOIN ad507.users u ON u.id=s.ordering_account
+     WHERE e.id=$1::uuid ORDER BY s.created_at DESC,s.id LIMIT 100`,[body.id]);
+    return json(200,{items});
+   }
    if(admin&&body?.action==='campaigns_list'){
     if(env.RADAR_COMMERCIAL_MODEL_ENABLED!=='true')return json(503,{error:'RADAR_COMMERCIAL_DISABLED'});
     if(typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ID'});
@@ -145,7 +164,7 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
  };
 }
 
-export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),privateEnabled=false,commercialEnabled=false){
+export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),privateEnabled=false,commercialEnabled=false,simulationEnabled=false){
  const tile=doc.getElementById('radarTile'),view=doc.getElementById('radarView'),out=doc.getElementById('radarAdminRows');if(!tile||!view||!out)return;
  const text=(tag:string,value:string)=>{const n=doc.createElement(tag);n.textContent=value;return n;};
  let offset=0,query='';
@@ -193,6 +212,35 @@ export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>
         finally{button.disabled=false;}
        };
        row.append(button,history);
+      }
+      for(const simulated of [...(commercialEnabled?[false]:[]),...(simulationEnabled?[true]:[])]){
+       const inspect=text('button',simulated?'Consultar historial de órdenes simuladas':'Consultar historial de membresía anual');
+       inspect.type='button';inspect.className='btn';
+       const history=doc.createElement('div');history.setAttribute('aria-live','polite');history.style.overflowX='auto';
+       inspect.onclick=async()=>{
+        inspect.disabled=true;history.replaceChildren(text('p','Consultando órdenes…'));
+        try{
+         const response=await send({action:simulated?'simulated_orders_list':'annual_orders_list',id:item.id});if(!response.ok)throw Error();
+         const {items}=await response.json();
+         if(!items.length){history.replaceChildren(text('p',simulated?'Sin órdenes simuladas.':'Sin membresías anuales.'));return;}
+         const table=doc.createElement('table'),head=table.createTHead().insertRow(),tbody=table.createTBody();
+         table.append(text('caption',simulated?'Órdenes simuladas · hora de Panamá':'Membresías anuales · hora de Panamá'));
+         for(const header of ['Establecimiento','Propietario','Servicio','Importe','Contratación','Confirmación simulada','Pago real','Vencimiento','Estado','Avisos'])head.append(text('th',header));
+         const labels:any={annual:'Ficha comercial anual',live:'En vivo',featured:'Destacado'};
+         const states:any={PENDING:'Pendiente',EXPIRED:'Vencida',CONFIRMED:'Confirmada',ACTIVE:'Vigente',SCHEDULED:'Programada',INVALID:'Pago sin confirmar',OWNER_CHANGED:'Titularidad cambió'};
+         const format=new Intl.DateTimeFormat('es',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Panama'});
+         const date=(value:string|null)=>value?format.format(new Date(value)):'—';
+         for(const entry of items){
+          const tr=tbody.insertRow();
+          for(const value of [entry.establishment,entry.owner,labels[entry.product??'annual'],'US$'+(entry.amountCents/100).toFixed(2),date(entry.createdAt),
+           date(entry.simulationConfirmedAt),date(entry.paidAt),date(entry.endsAt),states[entry.status],
+           !simulated&&entry.status==='ACTIVE'?[15,7,1].map(days=>date(new Date(Date.parse(entry.endsAt)-days*86400000).toISOString())).join(' · ')+' (fechas previstas)':'—'])tr.append(text('td',String(value)));
+         }
+         history.replaceChildren(table);
+        }catch{history.replaceChildren(text('p','No se pudieron consultar las órdenes.'));}
+        finally{inspect.disabled=false;}
+       };
+       row.append(inspect,history);
       }
       out.append(row);continue;
      }
@@ -267,5 +315,5 @@ export function withCoreRadarAdmin(html:string,env:Record<string,string|undefine
  const categoryMarkup=env.RADAR_CATEGORY_CATALOG_ENABLED==='true'?'<button type="button" id="radarCategoryButton" class="btn">Categorías Radar</button><div id="radarCategoryRows" hidden aria-live="polite"></div>':'';
  return html.replace('<button id="statsTile"','<button id="radarTile" class="tile action"><b>Radar</b><span class="muted">Establecimientos y verificación voluntaria</span></button><button id="statsTile"')
   .replace('</main>','<section id="radarView" class="card list hidden"><div class="listhead"><h2>Radar</h2><button type="button" id="radarClose" class="btn">Cerrar</button></div><p>La verificación es manual e independiente de pagos. No publicar videos ni documentos de comprobación. Listas limitadas a 100 registros por sección.</p>'+categoryMarkup+'<label>Buscar establecimiento<input id="radarAdminSearch" type="search" maxlength="100"></label><button type="button" id="radarAdminFilter" class="btn">Buscar</button><div id="radarAdminRows" class="rows" aria-live="polite"></div></section></main>')
-  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')(undefined,undefined,'+(env.RADAR_OWNER_PRIVATE_ENABLED==='true')+','+(env.RADAR_COMMERCIAL_MODEL_ENABLED==='true')+');</script></body>');
+  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')(undefined,undefined,'+(env.RADAR_OWNER_PRIVATE_ENABLED==='true')+','+(env.RADAR_COMMERCIAL_MODEL_ENABLED==='true')+','+(env.RADAR_COMMERCIAL_MODEL_ENABLED==='true'&&env.RADAR_PROMOTION_SIMULATION_ENABLED==='true'&&env.RAILWAY_ENVIRONMENT_NAME?.toLowerCase()!=='production')+');</script></body>');
 }

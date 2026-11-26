@@ -50,6 +50,7 @@ export function freshProperties(input={},now=Date.now()){
  const active=t=>Number.isFinite(Number(t))&&Number(t)>now;
  p.isFeatured=active(p.featuredUntil);
  p.pin=active(p.liveUntil)?'live':p.isFeatured?'featured':'normal';
+ if(p.commercialModel&&p.pin==='normal')delete p.coverAvailable;
  if(p.commercialModel&&!active(p.annualUntil)&&p.pin==='normal'){
   delete p.registrationProfile;
   delete p.details;

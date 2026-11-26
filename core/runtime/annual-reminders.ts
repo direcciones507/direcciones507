@@ -20,7 +20,7 @@ export async function sendAnnualReminders(sql:Sql, mailer:ReturnType<typeof crea
     AND a.request_data->'annualService'->>'endsAt' > to_char(($1::timestamptz AT TIME ZONE 'UTC')+make_interval(days=>o.days-1),'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
     AND a.request_data->'annualService'->>'endsAt' <= to_char(($1::timestamptz AT TIME ZONE 'UTC')+make_interval(days=>o.days),'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
     AND NOT EXISTS (
-      SELECT 1 FROM ad507.audit_log l WHERE l.entity_id=a.id::text AND l.action='ANNUAL_REMINDER_CLAIMED'
+      SELECT 1 FROM ad507.audit_log l WHERE l.entity_type='ADDRESS' AND l.entity_id=a.id::text AND l.action='ANNUAL_REMINDER_CLAIMED'
       AND l.metadata @> jsonb_build_object('endsAt',a.request_data->'annualService'->>'endsAt','days',o.days)
     )
   ORDER BY "endsAt",a.id LIMIT 20
@@ -40,7 +40,7 @@ export async function sendAnnualReminders(sql:Sql, mailer:ReturnType<typeof crea
    if(owners.length!==1||!owners[0].email)return null;
    const claim=await tx.unsafe(`INSERT INTO ad507.audit_log(actor_type,action,entity_type,entity_id,metadata)
     SELECT 'SYSTEM','ANNUAL_REMINDER_CLAIMED','ADDRESS',$1,jsonb_build_object('endsAt',$2::text,'days',$3::int)
-    WHERE NOT EXISTS (SELECT 1 FROM ad507.audit_log WHERE entity_id=$1 AND action='ANNUAL_REMINDER_CLAIMED'
+    WHERE NOT EXISTS (SELECT 1 FROM ad507.audit_log WHERE entity_type='ADDRESS' AND entity_id=$1 AND action='ANNUAL_REMINDER_CLAIMED'
       AND metadata @> jsonb_build_object('endsAt',$2::text,'days',$3::int)) RETURNING entity_id`,
     [candidate.id,candidate.endsAt,candidate.days]);
    return claim.length?owners[0].email:null;

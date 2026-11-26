@@ -1,4 +1,3 @@
-import {createRadarCoverRoutes} from "./cover-routes";
 import type {Sql} from "postgres";
 import {readRadarJson} from "./request-body";
 import type {CoreAuth} from './auth';
@@ -29,7 +28,10 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
   if(!adminOrigins.has('https://'+url.hostname)||url.username||url.password||
    !(url.protocol==='https:'&&(!url.port||url.port==='443')||url.protocol==='http:'&&(!url.port||url.port==='8080')&&req.headers.get('x-forwarded-proto')==='https'))return json(403,{error:'FORBIDDEN'});
   if(!enabled)return json(503,{error:'RADAR_ADMIN_DISABLED'});
-  if(cover)return createRadarCoverRoutes(db as Sql,auth,env,'https://'+url.hostname)(req);
+  if(cover){
+   const {createRadarCoverRoutes}=await import('./cover-routes');
+   return createRadarCoverRoutes(db as Sql,auth,env,'https://'+url.hostname)(req);
+  }
   if(req.method!=='POST')return json(405,{error:'METHOD_NOT_ALLOWED'});
   if(req.headers.get('origin')!=='https://'+url.hostname)return json(403,{error:'FORBIDDEN'});
   const user=await auth.currentUser(req);

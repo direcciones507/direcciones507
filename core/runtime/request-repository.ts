@@ -1,5 +1,5 @@
 import {addressBillingExempt} from './admin-billing-policy';
-import {activateAnnualService,effectiveServicePlan,serviceExpired,ANNUAL_POLICY,annualPlans,annualEnd} from './annual-service';
+import {activateAnnualService,effectiveServicePlan,serviceExpired,annualGraceEndsAt,ANNUAL_POLICY,annualPlans,annualEnd} from './annual-service';
 import {CODE_NAMESPACE_LOCK,personalizedCode,assertCodeAvailable,verifyHistoricalCustomCode,addressPublicUrl,publicCode} from './custom-public-code';
 import {isAutomaticPaidPlan,automaticPaidStateAllowed,isLegacyUnpaidPaidRequest} from './paid-activation-policy';
 import { assertCountryPublication, freeCountryPublicationAllowed, codeMatchesCountry, proposedCountryUrl } from './country-configuration';
@@ -162,7 +162,7 @@ export function createRequestRepository(sql:Sql, options:{r2:R2Settings|null;fet
       const {publicationReceipt,...record}=rows[0];
       const publicUrl=record.status==='ACTIVE'&&['BUSINESS','PLACE'].includes(record.type)&&publicationReceipt&&(record.countryCode==='PA'||freeCountryPublicationAllowed(record.countryCode,record.type,record.extras?.plan))?addressPublicUrl({code:record.code,source:'USER_REQUEST',country_code:record.countryCode,request_data:record.extras}):null;
       const billingExempt=await addressBillingExempt(sql,{id:addressId,request_data:record.extras},actorId);
-      return {...record,billingExempt,canPublish:billingExempt&&isAutomaticPaidPlan({type:record.type,request_data:record.extras})&&['DRAFT','PENDING_REVIEW'].includes(record.status),commercialService:record.extras?.annualService?{effectivePlan:effectiveServicePlan(record.extras,record.extras.plan),expired:serviceExpired(record.extras),endsAt:record.extras.annualService.endsAt}:null,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&(['BUSINESS','PLACE'].includes(record.type)||billingExempt&&record.type==='RESIDENTIAL')&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
+      return {...record,billingExempt,canPublish:billingExempt&&isAutomaticPaidPlan({type:record.type,request_data:record.extras})&&['DRAFT','PENDING_REVIEW'].includes(record.status),commercialService:record.extras?.annualService?{effectivePlan:effectiveServicePlan(record.extras,record.extras.plan),expired:serviceExpired(record.extras),graceEndsAt:annualGraceEndsAt(record.extras),endsAt:record.extras.annualService.endsAt}:null,publicCode:publicCode({code:record.code,source:'USER_REQUEST',request_data:record.extras}),canEdit:record.status==='ACTIVE'&&!!publicationReceipt&&(['BUSINESS','PLACE'].includes(record.type)||billingExempt&&record.type==='RESIDENTIAL')&&!record.extras?.migration,publicUrl,ownerId:owners.length===1?owners[0].user_id:null,media,socials};
     },
     async transfer(actorId:string,addressId:string,expectedOwner:string,targetId:string) {
       if(![actorId,addressId,expectedOwner,targetId].every(id=>uuid.test(id)))throw Error('INVALID_REQUEST');

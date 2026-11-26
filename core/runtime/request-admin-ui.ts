@@ -9,6 +9,18 @@ async function openRequestReview(id){
     const {request:r}=await response.json();
     rows.innerHTML='<article class="tile"><h3 style="margin:0 0 12px">Detalle de solicitud</h3><b>'+esc(r.name)+'</b><p>'+esc(reviewLabel(r.type))+' · '+esc(r.extras.plan)+' · '+esc(r.extras?.workflow==='PAYMENT_PENDING'?'Pendiente de pago':reviewLabel(r.status))+'</p>'+(r.extras?.workflow==='PAYMENT_PENDING'?'<p><strong>Pago:</strong> No confirmado. Esta solicitud está guardada, pero no puede aprobarse ni publicarse hasta que el proveedor confirme el pago.</p>':'')+'<p>'+'<strong>Descripción:</strong> '+esc((r.type==='PLACE'||r.extras.plan==='BUSINESS_PREMIUM_PRO'?r.description:'')||'No indicada')+'</p><p>'+'<strong>Referencia:</strong> '+esc(r.reference||'No indicada')+'</p><p>'+esc(r.latitude)+', '+esc(r.longitude)+'</p><p>'+'<strong>Teléfonos:</strong> '+esc([r.phone,r.landlinePhone].filter(Boolean).join(' · ')||'No indicados')+'</p><p>'+'<strong>Correo:</strong> '+esc(r.extras.email||'No indicado')+'</p><p>'+esc(r.commercialDescription||'')+'</p><p>'+'<strong>Horario:</strong> '+esc(r.hours||'No indicado')+'</p><p>'+esc(r.extras.postalCode||'')+' '+esc(r.extras.postalZone||'')+'</p><p>Código solicitado: '+esc(r.extras.namedCode||'')+'</p>'+r.socials.map(s=>'<p>'+esc(s.platform)+': '+esc(s.url)+'</p>').join('')+r.media.map((m,i)=>'<div><span>'+esc(r.type==='PLACE'?(i===0?'Foto de portada':'Foto adicional '+i):m.type)+' · '+esc(reviewLabel(m.status))+'</span>'+(m.status==='READY'?'<img alt="Archivo de la solicitud" style="max-width:100%;max-height:240px" src="'+esc(m.url||('/v1/admin/requests/'+id+'/media/'+m.id))+'">':'')+'</div>').join('')+'<p>País: '+esc(r.countryCode||r.extras.countryCode||'PA')+'</p><p>'+esc(Object.values(r.extras.territory||{}).filter(Boolean).join(' · '))+'</p>'+'<p>Decisión: '+esc(reviewLabel(r.review)||'Pendiente')+'</p><div id="reviewActions"></div><p id="reviewMessage" role="status"></p></article>';
     const actions=document.getElementById('reviewActions');
+    const service=r.extras?.annualService;
+    if(service?.policy==='annual-manual-20261113'&&!r.extras?.migration){
+      const formatDate=value=>Number.isFinite(Date.parse(value))?new Date(value).toLocaleString('es-PA'):'Pendiente';
+      const details=document.createElement('dl');
+      for(const [label,value] of [
+        ['Plan contratado',service.plan],['Activación',formatDate(service.startsAt)],['Vencimiento',formatDate(service.endsAt)],
+        ['Pago',service.mode==='ADMIN_EXEMPT'?'Exento por ADMIN':service.paymentHold?'En conciliación':!service.startsAt?'Pendiente':service.fullyPaid?'Confirmado':'Parcial'],
+        ['Renovación',service.pendingRenewalOrderId?'Manual · pago pendiente':'Manual'],
+        ['Gracia anual',r.commercialService?.graceEndsAt?formatDate(r.commercialService.graceEndsAt):'—']
+      ]){const term=document.createElement('dt'),entry=document.createElement('dd');term.textContent=label;entry.textContent=value;details.append(term,entry);}
+      actions.before(details);
+    }
     mountAddressEditor(actions,r,true,()=>openRequestReview(id));
     if(r.extras?.adService?.status==='PENDING_REVIEW'){
       const ad=r.extras.adService,summary=document.createElement('p');summary.textContent='Publicidad pagada pendiente: '+ad.title+' · '+ad.text+' · '+ad.link+' · '+ad.durationDays+' días';actions.append(summary);

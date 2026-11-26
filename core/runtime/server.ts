@@ -2,6 +2,8 @@ import {accountEmailEntry} from './account-email';
 import {handleAdminBillingGuard} from './admin-billing-policy';
 import {handlePagaditoSandboxPage} from './pagadito-sandbox-page-route';
 import {pagaditoRelayEnabled,createPagaditoCertificationRelay,handlePagaditoCertificationRelay,lookupPagaditoCertification} from './pagadito-certification-relay';
+import {createAccountMailer} from './account-email';
+import {sendAnnualReminders} from './annual-reminders';
 import {expireTemporaryEvents} from './temporary-event-ledger';
 import {createAdvertisingRepository} from './place-advertising';
 import {temporaryYappyConfiguration} from './temporary-event-configuration';
@@ -51,6 +53,13 @@ if(process.env.AD507_TEMPORARY_EVENTS_ENABLED==='true'){
 const requestR2 = r2Settings(process.env);
 const temporaryMedia=requestR2?createTemporaryEventMedia(requestR2):null;
 const commercialWorkflowEnabled = REQUEST_WORKFLOW_ENABLED && process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
+const annualMailer=createAccountMailer(process.env);
+if(commercialWorkflowEnabled&&annualMailer.configured&&process.env.AD507_ANNUAL_REMINDERS_ENABLED!=='false'){
+ let running=false;
+ const remind=async()=>{if(running)return;running=true;try{await sendAnnualReminders(sql,annualMailer);}catch{console.error('ANNUAL_REMINDER_SCAN_FAILED');}finally{running=false;}};
+ setInterval(remind,3_600_000).unref();
+ void remind();
+}
 const namespaceExclusive = process.env.AD507_HISTORICAL_NAMESPACE_VERIFIED === 'true';
 const paymentConfig = yappyConfiguration(process.env);
 const yappyEnabled = yappyPaymentsEnabled(process.env) && commercialWorkflowEnabled;

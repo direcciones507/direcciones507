@@ -48,3 +48,11 @@ test('registration boundary prevents missing acceptance before authentication; l
 });
 
 test('previous commercial policy remains immutable after price publication',async()=>{const archived=await import('../legal-content-1.0-20261017.json');const response=handleLegalRoutes(new Request('https://direcciones.lat/legal/1.0-20261017/commercial'))!;const html=await response.text();expect(html).toContain('Versión 1.0-20261017');expect(html).not.toContain('Tarifas de referencia para nuevas contrataciones');expect(archived.default.find(d=>d.key==='commercial')?.sha256).toBe('50cdff00323ff2c0c4b91c5e19210fdeac23c84c06fc53a4467ee9d69da63fa9');});
+
+test('current annual disconnection terms retain the previously published policy',async()=>{
+ const current=await handleLegalRoutes(new Request('https://direcciones.lat/legal/commercial'))!.text();
+ const archived=await handleLegalRoutes(new Request('https://direcciones.lat/legal/1.2-20261113/commercial'))!.text();
+ expect(current).toContain('La gracia anual de 15 días');
+ expect(current).toContain('reactiva el mismo enlace y QR');
+ expect(archived).toContain('Al finalizar la vigencia queda la ficha básica');
+});

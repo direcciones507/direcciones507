@@ -29,3 +29,15 @@ test('approved purchase modes use exact integer cents, yearly service and explic
  expect(p(data,'BUSINESS_PREMIUM_PRO',Date.parse('2026-02-06'))).toBe('BUSINESS_PREMIUM');
  expect(p(data,'BUSINESS_PREMIUM_PRO',Date.parse('2027-01-01'))).toBeNull();
 });
+
+test('annual grace starts at disconnection and ends exactly 15 days later',async()=>{
+ const {annualGraceEndsAt,annualServiceDisconnected}=await import('../annual-service');
+ const endsAt='2027-01-01T00:00:00.000Z',end=Date.parse(endsAt);
+ const data={annualService:{policy:ANNUAL_POLICY,startsAt:'2026-01-01T00:00:00.000Z',endsAt}};
+ expect(annualGraceEndsAt(data,end-1)).toBeNull();
+ expect(annualServiceDisconnected(data,end)).toBe(true);
+ expect(annualGraceEndsAt(data,end)).toBe('2027-01-16T00:00:00.000Z');
+ expect(annualGraceEndsAt(data,end+15*86400000-1)).not.toBeNull();
+ expect(annualGraceEndsAt(data,end+15*86400000)).toBeNull();
+ expect(annualGraceEndsAt({...data,migration:{}},end)).toBeNull();
+});

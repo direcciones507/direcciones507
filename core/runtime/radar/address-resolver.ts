@@ -1,22 +1,32 @@
-import {serviceExpired} from "../annual-service";
-import {eligibleAddress} from "./address-policy";
+import {normalizeAd507Code} from "../../postgres/public-address-repository";
+import {annualServiceDisconnected} from "../annual-service";
+import {assertCountryPublication} from "../country-configuration";
+import {addressPublicUrl} from "../custom-public-code";
+import type {Establishment} from "./public-map";
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
-type Publication={type:string;url:string;extras?:{countryCode?:string;historical?:boolean}};
-type ResolvePublication=(code:string)=>Promise<Publication|null>;
-export function createRadarAddressResolver(db:Database,resolvePublication:ResolvePublication){
- return async (establishmentId:string,country:string)=>{
-  const rows=await db.unsafe(`SELECT a.code,a.address_type,a.status,a.country_code,a.request_data
+
+export function createRadarAddressResolver(db:Database){
+ return async (establishmentIds:string[],country:string)=>{
+  const links=new Map<string,NonNullable<Establishment["digitalAddress"]>>();
+  if(!establishmentIds.length)return links;
+  const rows=await db.unsafe(`SELECT e.id::text AS establishment_id,a.code,a.address_type,a.source,a.country_code,a.request_data
    FROM radar.establishments e JOIN ad507.addresses a ON a.id=e.digital_address_ref
-   JOIN radar.verified_owners o ON o.establishment_id=e.id
-   JOIN ad507.address_ownership own ON own.address_id=a.id AND own.user_id=o.account_ref AND own.ownership_role='OWNER'
-   WHERE e.id=$1::uuid AND e.published AND e.country=$2 AND a.country_code=$2
-   AND a.address_type IN ('BUSINESS','PLACE') AND a.status='ACTIVE'`,[establishmentId,country]);
-  if(rows.length!==1)return null;
-  const a=rows[0];
-  if(serviceExpired(a.request_data)||a.request_data?.annualService?.paymentHold===true)return null;
-  const publication=await resolvePublication(a.code);
-  if(!publication || publication.type!==a.address_type || publication.extras?.historical!==false)return null;
-  if(!eligibleAddress({addressType:a.address_type,status:a.status,country:publication.extras.countryCode,publiclyVisible:true,current:true,ownershipConfirmed:true},country))return null;
-  return {publicUrl:publication.url,publiclyVisible:true,residential:false,active:true};
+   WHERE e.id=ANY(string_to_array($1::text, ',')::uuid[]) AND e.published AND e.country=$2
+   AND a.country_code=$2 AND a.address_type IN ('BUSINESS','PLACE') AND a.status='ACTIVE'
+   AND a.source='USER_REQUEST' AND a.publication_receipt IS NOT NULL
+   AND EXISTS (
+    SELECT 1 FROM radar.verified_owners o JOIN ad507.address_ownership own
+      ON own.address_id=a.id AND own.user_id=o.account_ref AND own.ownership_role='OWNER'
+    WHERE o.establishment_id=e.id
+   )`,[[...new Set(establishmentIds)].join(','),country]);
+  for(const row of rows){
+   const data=row.request_data;
+   if(data?.migration||(data?.countryCode??'PA')!==country||!normalizeAd507Code(row.code)||
+      annualServiceDisconnected(data)||data?.annualService?.paymentHold===true)continue;
+   try{assertCountryPublication(country,row.address_type,data?.plan);}
+   catch{continue;}
+   links.set(row.establishment_id,{publicUrl:addressPublicUrl(row),publiclyVisible:true,residential:false,active:true});
+  }
+  return links;
  };
 }

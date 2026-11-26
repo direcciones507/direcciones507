@@ -2,7 +2,7 @@ import type {RadarRepository} from "./routes";
 import type {Country,Report} from "./domain";
 import type {Bounds,Establishment} from "./public-map";
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
-export function createRadarRepository(db:Database,ownershipEnabled=false,resolveAddress?:(id:string,country:Country)=>Promise<Establishment["digitalAddress"]|null>,businessEnabled=false,registrationProfilesEnabled=false,privateOwnerEnabled=false):RadarRepository {
+export function createRadarRepository(db:Database,ownershipEnabled=false,resolveAddress?:(ids:string[],country:Country)=>Promise<Map<string,NonNullable<Establishment["digitalAddress"]>>>,businessEnabled=false,registrationProfilesEnabled=false,privateOwnerEnabled=false):RadarRepository {
  return {
   async register(draft,accountRef) {
    if(draft.registrationKind==='owner'){
@@ -54,9 +54,8 @@ export function createRadarRepository(db:Database,ownershipEnabled=false,resolve
    const establishments:Establishment[]=rows.map(r=>({id:r.id,name:r.name,category:r.category,country:r.country,latitude:Number(r.latitude),longitude:Number(r.longitude),published:r.published,verifiedOwner:r.verified_owner===true,...(r.registration_profile?{registrationProfile:typeof r.registration_profile==="string"?JSON.parse(r.registration_profile):r.registration_profile}:{}),reports:(typeof r.reports==="string"?JSON.parse(r.reports):r.reports) as Report[],...(r.details?{details:typeof r.details==="string"?JSON.parse(r.details):r.details}:{})}));
    if(resolveAddress){
     const linked=establishments.filter((_,i)=>rows[i].has_link===true);
-    for(let i=0;i<linked.length;i+=8){
-     await Promise.all(linked.slice(i,i+8).map(async e=>{e.digitalAddress=(await resolveAddress(e.id,country))??undefined;}));
-    }
+    const links=await resolveAddress(linked.map(e=>e.id),country);
+    for(const e of linked)e.digitalAddress=links.get(e.id);
    }
    return establishments;
   },

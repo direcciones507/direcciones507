@@ -26,7 +26,7 @@ export function publicFeatures(rows:readonly Establishment[], bounds:Bounds, cou
   const profile=e.registrationProfile;
   const phone=profile?.phone&&/^[+0-9 ()-]{5,32}$/.test(profile.phone)?profile.phone:null;
   const status=commercialOpenStatus({country:e.country,details:e.details,registrationProfile:profile},new Date(now));
-  const basic={name:e.name,category:e.category,pin,phone,openStatus:status==="Cierra pronto"?"Abierto ahora":status,commercialModel:true,corporate:!!digitalAddressUrl};
+  const basic={name:e.name,category:e.category,pin,phone,openStatus:status==="Cierra pronto"?"Abierto ahora":status,commercialModel:true,corporate:!!digitalAddressUrl,...(digitalAddressUrl?{digitalAddressUrl}:{})};
   if(!full)return {type:"Feature" as const,id:e.id,geometry,properties:basic};
   const granted=(timestamp?:number)=>timestamp&&timestamp>now?timestamp:null;
   return {type:"Feature" as const,id:e.id,geometry,properties:{...basic,annualUntil,country:e.country,

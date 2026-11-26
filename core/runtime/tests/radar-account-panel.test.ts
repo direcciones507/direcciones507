@@ -35,3 +35,18 @@ test('list renders untrusted names as text and never grants controls to pending 
 test('shared account renderer executes as a standalone generated script',()=>{
  new Script(radarAccountScript);const u=ui();runInNewContext(radarAccountScript+';renderRadarAccount(data,document);',{document:u.doc,data:{available:true,items:[]}});assert.equal(u.nodes.hidden,false);assert.match(u.nodes.radarAccountItems.children[0].textContent,/Todavía no tienes/);
 });
+
+test('commercial status batches promotions only for manageable establishments',async()=>{
+ const id='00000000-0000-4000-8000-000000000001';
+ let reads=0;
+ const db={unsafe:async(query:string,params:any[])=>{
+  reads++;
+  if(!query.includes('FROM radar.campaigns'))return [{id,canManage:true},{id:'pending',canManage:false}];
+  assert.equal(params[0],id);
+  return [{id,kind:'live',starts_at:'2026-01-01T00:00:00Z',ends_at:'2099-01-01T01:00:00Z'}];
+ }};
+ const result=await radarAccountData(db,'account',{...env,RADAR_COMMERCIAL_MODEL_ENABLED:'true',RADAR_COMMERCIAL_ENABLED:'true'});
+ assert.equal(reads,2);
+ assert.equal(result?.items[0].promotion.kind,'live');
+ assert.equal(result?.items[1].promotion,null);
+});

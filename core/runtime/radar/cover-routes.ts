@@ -1,3 +1,4 @@
+import {verifiedRadarOrdersEnabled} from './verified-orders';
 import type { Sql } from 'postgres';
 import { MAX_IMAGE_BYTES } from '../image-processing';
 import { r2Settings } from '../r2-storage';
@@ -20,7 +21,7 @@ export function createRadarCoverRoutes(db:Sql,auth:CoreAuth,env:Record<string,st
   if(!uuid.test(id))return json(404,'NOT_FOUND');
   const settings=r2Settings(env);
   if(!settings)return json(404,'NOT_FOUND');
-  const repository=createRadarCoverRepository(db);
+  const repository=createRadarCoverRepository(db,verifiedRadarOrdersEnabled(env));
   try{
    const storage=createRadarCoverStorage(settings,repository,http);
    if(!ownerOrigin){

@@ -1,3 +1,4 @@
+import {radarCampaignOrderGuard} from './verified-orders';
 import type { Sql } from 'postgres';
 
 const owner = `e.digital_address_ref IS NULL AND (
@@ -5,13 +6,15 @@ const owner = `e.digital_address_ref IS NULL AND (
  OR (EXISTS (SELECT 1 FROM radar.registration_profiles p WHERE p.establishment_id=e.id AND p.submitted_by=$2::uuid)
  AND NOT EXISTS (SELECT 1 FROM radar.verified_owners o WHERE o.establishment_id=e.id))
 )`;
-const promoted = `e.published AND EXISTS (
+const promotion = (verifiedOrders:boolean)=>`e.published AND EXISTS (
  SELECT 1 FROM radar.campaigns c WHERE c.establishment_id=e.id AND c.status='APPROVED'
  AND c.starts_at<=now() AND c.ends_at>now()
+ ${verifiedOrders?radarCampaignOrderGuard:''}
 )`;
 const reclaimable = `(state='cleanup' OR (state IN ('staged','cancelled') AND updated_at<now()-interval '10 minutes'))`;
 
-export function createRadarCoverRepository(db: Sql) {
+export function createRadarCoverRepository(db: Sql,verifiedOrders=false) {
+ const promoted=promotion(verifiedOrders);
  const canUpload = async (account:string,id:string) =>
   (await db.unsafe(`SELECT 1 FROM radar.establishments e WHERE e.id=$1::uuid AND ${owner} AND ${promoted}`,[id,account])).length===1;
  return {

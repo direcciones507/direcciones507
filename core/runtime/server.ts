@@ -1,3 +1,5 @@
+import {sendRadarAnnualReminders} from './radar/annual-reminders';
+import {verifiedRadarOrdersEnabled} from './radar/verified-orders';
 import {accountEmailEntry} from './account-email';
 import {handleAdminBillingGuard} from './admin-billing-policy';
 import {handlePagaditoSandboxPage} from './pagadito-sandbox-page-route';
@@ -54,9 +56,18 @@ const requestR2 = r2Settings(process.env);
 const temporaryMedia=requestR2?createTemporaryEventMedia(requestR2):null;
 const commercialWorkflowEnabled = REQUEST_WORKFLOW_ENABLED && process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 const annualMailer=createAccountMailer(process.env);
-if(commercialWorkflowEnabled&&annualMailer.configured&&process.env.AD507_ANNUAL_REMINDERS_ENABLED!=='false'){
+const addressRemindersEnabled=commercialWorkflowEnabled&&process.env.AD507_ANNUAL_REMINDERS_ENABLED!=='false';
+const radarRemindersEnabled=verifiedRadarOrdersEnabled(process.env)&&process.env.RADAR_ANNUAL_REMINDERS_ENABLED==='true';
+if(annualMailer.configured&&(addressRemindersEnabled||radarRemindersEnabled)){
  let running=false;
- const remind=async()=>{if(running)return;running=true;try{await sendAnnualReminders(sql,annualMailer);}catch{console.error('ANNUAL_REMINDER_SCAN_FAILED');}finally{running=false;}};
+ const remind=async()=>{
+  if(running)return;
+  running=true;
+  try{
+   if(addressRemindersEnabled)await sendAnnualReminders(sql,annualMailer).catch(()=>console.error('ANNUAL_REMINDER_SCAN_FAILED'));
+   if(radarRemindersEnabled)await sendRadarAnnualReminders(sql,annualMailer).catch(()=>console.error('RADAR_ANNUAL_REMINDER_SCAN_FAILED'));
+  }finally{running=false;}
+ };
  setInterval(remind,3_600_000).unref();
  void remind();
 }

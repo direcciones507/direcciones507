@@ -1,3 +1,4 @@
+import {radarOrderOwner,radarVerifiedOrder} from './verified-orders';
 import {radarCommercialCatalog} from './commercial-catalog';
 
 type Database={unsafe(query:string,params:any[]):PromiseLike<any[]>};
@@ -8,13 +9,15 @@ const owner=`EXISTS (SELECT 1 FROM radar.verified_owners v WHERE v.establishment
  OR (EXISTS (SELECT 1 FROM radar.registration_profiles p WHERE p.establishment_id=m.establishment_id AND p.submitted_by=m.account_id)
  AND NOT EXISTS (SELECT 1 FROM radar.verified_owners v WHERE v.establishment_id=m.establishment_id))`;
 
-export async function radarAnnualUntil(db:Database,ids:string[],now=Date.now()):Promise<Map<string,number>>{
+export async function radarAnnualUntil(db:Database,ids:string[],now=Date.now(),verifiedOrders=false):Promise<Map<string,number>>{
  if(!ids.length)return new Map();
  try{
   const rows=await db.unsafe(`SELECT m.establishment_id::text id,max(m.ends_at) AS deadline
    FROM radar.annual_memberships m JOIN ad507.orders o ON o.id=m.order_id
    WHERE m.establishment_id=ANY(string_to_array($1::text, ',')::uuid[])
    AND ${validOrder} AND (${owner}) AND m.starts_at<=$3::timestamptz AND m.ends_at>$3::timestamptz
+   ${verifiedOrders?`AND EXISTS(SELECT 1 FROM radar.verified_order_intents b WHERE b.order_id=m.order_id
+     AND b.establishment_id=m.establishment_id AND b.product='annual' AND (${radarVerifiedOrder}) AND (${radarOrderOwner}))`:''}
    GROUP BY m.establishment_id`,[ids.join(','),radarCommercialCatalog.annual.amountCents,new Date(now).toISOString()]);
   return new Map(rows.map(row=>[row.id,new Date(row.deadline).getTime()]));
  }catch(error){

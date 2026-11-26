@@ -11,9 +11,10 @@ export async function radarAccountData(db:Database,account:string,env:Record<str
   const items=await createBusinessStore(db,env.RADAR_REGISTRATION_PROFILES_ENABLED==='true').mine(account);
   const commercial=env.RADAR_COMMERCIAL_MODEL_ENABLED==='true';
   const simulation=commercial&&(await import('./order-simulation')).radarPromotionSimulationEnabled(env);
-  const promotions=commercial?await createRadarCampaignLookup(db,env.RADAR_COMMERCIAL_ENABLED==='true')(items.filter(item=>item.canManage===true).map(item=>item.id)):null;
+  const verifiedOrders=commercial&&(await import('./verified-orders')).verifiedRadarOrdersEnabled(env);
+  const promotions=commercial?await createRadarCampaignLookup(db,env.RADAR_COMMERCIAL_ENABLED==='true',verifiedOrders)(items.filter(item=>item.canManage===true).map(item=>item.id)):null;
   const annual=commercial?(await import('./annual-memberships')).radarAnnualUntil:null;
-  const memberships=annual?await annual(db,items.filter(item=>item.canManage===true).map(item=>item.id)):null;
+  const memberships=annual?await annual(db,items.filter(item=>item.canManage===true).map(item=>item.id),Date.now(),verifiedOrders):null;
   return {available:true,...(simulation?{promotionSimulation:true}:{}),...(env.RADAR_COMMERCIAL_MODEL_ENABLED==='true'?{commercialCatalog:radarCommercialCatalog}:{}),items:promotions?items.map(item=>({...item,promotion:promotions.get(item.id)??null,...(memberships?.has(item.id)?{annualUntil:memberships.get(item.id)}:{})})):items,...(env.RADAR_CORE_ADMIN_ENABLED==='true'?{verificationAvailable:true,...(env.RADAR_REGISTRATION_PROFILES_ENABLED==='true'?{managementAvailable:true,ownerPrivateRequired:env.RADAR_OWNER_PRIVATE_ENABLED==='true'}:{})}:{})};}
  catch{return {available:false,items:[]};} // Radar must not take the existing account panel offline.
 }

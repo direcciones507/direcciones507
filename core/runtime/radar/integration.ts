@@ -1,3 +1,4 @@
+import {verifiedRadarOrdersEnabled} from './verified-orders';
 import {radarAnnualUntil} from './annual-memberships';
 import {createRadarCoverRoutes} from "./cover-routes";
 import type {Sql} from "postgres";
@@ -34,7 +35,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const origins=new Set([radarOrigin]);
  const ownershipEnabled=enabled&&env.RADAR_OWNERSHIP_ENABLED==="true";
  const resolveAddress=ownershipEnabled&&env.RADAR_ADDRESS_LINKS_ENABLED==="true"?createRadarAddressResolver(db):undefined;
- const campaignLookup=enabled&&env.RADAR_COMMERCIAL_ENABLED==="true"?createRadarCampaignLookup(db,true):undefined;
+ const campaignLookup=enabled&&env.RADAR_COMMERCIAL_ENABLED==="true"?createRadarCampaignLookup(db,true,verifiedRadarOrdersEnabled(env)):undefined;
  const businessEnabled=ownershipEnabled&&env.RADAR_BUSINESS_DETAILS_ENABLED==="true";
  const profilesEnabled=businessEnabled&&env.RADAR_REGISTRATION_PROFILES_ENABLED==='true';
  const covers=createRadarCoverRoutes(db as Sql,auth,env);
@@ -46,7 +47,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const favorites=createFavoriteRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true");
  const confirmations=createConfirmationRoutes(db,auth,origins,enabled&&env.RADAR_ACTIVITY_VALIDATION_ENABLED==="true",anonymousIdentity);
  const catalog=enabled&&env.RADAR_CATEGORY_CATALOG_ENABLED==="true"?createCategoryStore(db):undefined;
- const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled,profilesEnabled,profilesEnabled&&env.RADAR_OWNER_PRIVATE_ENABLED==='true'),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity,profilesEnabled,catalog,profilesEnabled&&env.RADAR_OWNER_PRIVATE_ENABLED==='true',env.RADAR_COMMERCIAL_MODEL_ENABLED==='true',(ids,now)=>radarAnnualUntil(db,ids,now));
+ const api=createRadarRoutes({...createRadarRepository(db,ownershipEnabled,resolveAddress,businessEnabled,profilesEnabled,profilesEnabled&&env.RADAR_OWNER_PRIVATE_ENABLED==='true'),...createRadarAbuseChecks(db)},auth,origins,enabled,campaignLookup,anonymousIdentity,profilesEnabled,catalog,profilesEnabled&&env.RADAR_OWNER_PRIVATE_ENABLED==='true',env.RADAR_COMMERCIAL_MODEL_ENABLED==='true',(ids,now)=>radarAnnualUntil(db,ids,now,verifiedRadarOrdersEnabled(env)));
  const moderation=createModerationStore(db);
  const admin=createModerationRoutes(ownershipEnabled?moderation:{pending:moderation.pending,publish:moderation.publish},auth,origins,enabled);
  return async(req:Request):Promise<Response|null>=>{

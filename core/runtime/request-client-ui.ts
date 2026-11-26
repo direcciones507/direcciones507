@@ -19,6 +19,12 @@ async function openUserRequest(id,editing=false){
     const add=(label,value)=>{if(value===undefined||value===null||value==='')return;const p=document.createElement('p'),b=document.createElement('strong');b.textContent=label+': ';p.append(b,document.createTextNode(String(value)));p.style.overflowWrap='anywhere';content.append(p)};
     add('Tipo',({PLACE:'Lugar',BUSINESS:'Negocio',RESIDENTIAL:'Residencial'})[r.type]||r.type);add('Estado',r.billingExempt&&r.status==='DRAFT'?'Borrador administrativo':r.status==='ACTIVE'?'Activa':r.extras?.workflow==='PAYMENT_CONFIRMED'?'Pago confirmado, publicación pendiente':r.extras?.workflow==='PAYMENT_PENDING'?'Pendiente de pago':r.status==='PENDING_REVIEW'&&(!r.extras?.plan||['BUSINESS_FREE','PLACE'].includes(r.extras.plan))?'En revisión · Plazo de hasta 48 horas':labels[r.status]||r.status);
     add('Código',r.publicCode||r.code);add('Nombre de código personalizado',r.extras?.namedCode);if(r.type==='PLACE'||r.extras?.plan==='BUSINESS_PREMIUM_PRO')add('Descripción',r.description);add('Referencia',r.reference);add('Ubicación',r.latitude+', '+r.longitude);
+    if(r.type==='RESIDENTIAL'&&r.status==='ACTIVE'&&r.extras?.annualService?.startsAt&&r.ownerId){
+      const path='/v1/user/requests/'+id+'/residential';
+      for(const [href,label] of [[path,'Abrir dirección privada'],[path+'/qr.png','Descargar QR privado']]){
+        const link=document.createElement('a');link.href=href;link.textContent=label;link.className='btn';content.append(link);
+      }
+    }
     add('País',countrySettings[r.countryCode||'PA']?.name||r.countryCode);add('Zona',Object.values(r.extras?.territory||{}).filter(Boolean).join(' · '));
     add('Teléfono',r.phone);add('Teléfono fijo',r.landlinePhone);add('Correo',r.extras?.email);add('Horario',r.hours);add('Descripción comercial',r.commercialDescription);
     for(const m of r.media||[]){if(m.status!=='READY')continue;const img=document.createElement('img');img.alt=m.type==='LOGO'?'Logo enviado':'Fotografía enviada';img.loading='lazy';img.style.cssText='display:block;max-width:100%;max-height:360px;object-fit:contain;margin:14px 0';img.src='/v1/user/requests/'+id+'/media/'+m.id;content.append(img)}

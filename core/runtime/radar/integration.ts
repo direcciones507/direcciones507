@@ -1,3 +1,5 @@
+import {createRadarCoverRoutes} from "./cover-routes";
+import type {Sql} from "postgres";
 import {createAlertRoutes} from "./alerts";
 import {createReputationRoutes} from "./reputation";
 import {createContributionRoutes} from "./contributions";
@@ -34,6 +36,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
  const campaignLookup=enabled&&env.RADAR_COMMERCIAL_ENABLED==="true"?createRadarCampaignLookup(db,true):undefined;
  const businessEnabled=ownershipEnabled&&env.RADAR_BUSINESS_DETAILS_ENABLED==="true";
  const profilesEnabled=businessEnabled&&env.RADAR_REGISTRATION_PROFILES_ENABLED==='true';
+ const covers=createRadarCoverRoutes(db as Sql,auth,env);
  const business=createBusinessRoutes(createBusinessStore(db,profilesEnabled),auth,origins,businessEnabled);
  const anonymousIdentity=enabled&&env.RADAR_ANONYMOUS_REPORTS_ENABLED==="true"?createAnonymousIdentity(env.RADAR_ANONYMOUS_REPORTS_SECRET,trustedPeer):undefined;
  const alerts=createAlertRoutes(db,auth,origins,enabled&&env.RADAR_FAVORITES_ENABLED==="true"&&env.RADAR_ALERTS_ENABLED==="true");
@@ -54,7 +57,7 @@ export function createRadarIntegration(db:Database,auth:CoreAuth,env:Record<stri
   let response:Response;
   try{
    response=!enabled?Response.json({error:"RADAR_DISABLED"},{status:503}):
-    await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
+    (businessEnabled?await covers(req):null)??await business(req)??await admin(req)??await confirmations(req)??await favorites(req)??await contributions(req)??await reputation(req)??await alerts(req)??await api(req)??Response.json({error:"NOT_FOUND"},{status:404});
   }catch{
    // Keep diagnostics free of SQL text, credentials, request payloads and account IDs.
    console.error("RADAR_API_UNEXPECTED_ERROR");

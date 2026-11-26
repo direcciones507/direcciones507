@@ -27,5 +27,5 @@ test('approved purchase modes use exact integer cents, yearly service and explic
  expect(p(data,'BUSINESS_PREMIUM',Date.parse('2026-05-01'))).toBe('BUSINESS_PREMIUM');
  expect(p(data,'BUSINESS_PREMIUM',Date.parse('2026-07-01'))).toBe('BUSINESS_FREE');
  expect(p(data,'BUSINESS_PREMIUM_PRO',Date.parse('2026-02-06'))).toBe('BUSINESS_PREMIUM');
- expect(p(data,'BUSINESS_PREMIUM_PRO',Date.parse('2027-01-01'))).toBe('BUSINESS_FREE');
+ expect(p(data,'BUSINESS_PREMIUM_PRO',Date.parse('2027-01-01'))).toBeNull();
 });

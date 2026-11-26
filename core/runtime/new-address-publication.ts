@@ -1,5 +1,6 @@
 import {addressBillingExempt} from './admin-billing-policy';
-import {effectiveServicePlan} from './annual-service';
+import {annualServiceDisconnected,effectiveServicePlan} from './annual-service';
+import {disconnectedAddressResponse} from './disconnected-address';
 import {PLACE_AD_PRICE_CENTS,PLACE_AD_DURATION_DAYS} from './payment-policy';
 import {continuousGallery} from './continuous-gallery';
 import {publicCardPresentation} from './public-card-presentation';
@@ -73,11 +74,15 @@ export function createNewAddressPublication(sql:Sql,options:{namespaceExclusive:
   };
 }
 
-export async function newPublicAddress(sql:Sql,code:string,origin:string) {
-  const matches=await sql.unsafe(`SELECT code FROM ad507.addresses WHERE source='USER_REQUEST' AND (lower(code)=lower($1) OR (request_data->'migration' IS NULL AND request_data->>'plan' IN ('BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO') AND (lower(request_data->>'publicCode')=lower($1) OR EXISTS(SELECT 1 FROM jsonb_array_elements_text(COALESCE(request_data->'codeAliases','[]'::jsonb)) alias WHERE lower(alias)=lower($1))))) LIMIT 2`,[code]);
+async function findNewPublicCode(sql:Sql,code:string) {
+  const matches=await sql.unsafe(`SELECT code,status,publication_receipt,request_data FROM ad507.addresses WHERE source='USER_REQUEST' AND (lower(code)=lower($1) OR (request_data->'migration' IS NULL AND request_data->>'plan' IN ('BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO') AND (lower(request_data->>'publicCode')=lower($1) OR EXISTS(SELECT 1 FROM jsonb_array_elements_text(COALESCE(request_data->'codeAliases','[]'::jsonb)) alias WHERE lower(alias)=lower($1))))) LIMIT 2`,[code]);
   if(matches.length>1)throw Error('CANONICAL_CODE_COLLISION');
-  if(!matches.length)return null;
-  const internalCode=matches[0].code;
+  return matches[0]??null;
+}
+export async function newPublicAddress(sql:Sql,code:string,origin:string,match?:Awaited<ReturnType<typeof findNewPublicCode>>) {
+  const publication=match===undefined?await findNewPublicCode(sql,code):match;
+  if(!publication||annualServiceDisconnected(publication.request_data))return null;
+  const internalCode=publication.code;
   const record=await getPublicAddressByCode(sql as any,internalCode);if(!record)return null;
   const rows=await sql.unsafe("SELECT a.id::text,a.request_data,a.country_code,a.address_type FROM ad507.addresses a WHERE a.code=$1 AND a.source='USER_REQUEST' AND a.publication_receipt IS NOT NULL",[record.code]);
   if(!rows.length)return null;
@@ -613,16 +618,20 @@ function configuredPublicCode(code:string):boolean {
 
 export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean;sql:Sql;r2:R2Settings|null;fetch?:typeof fetch}):Promise<Response|null>{
   const {sql}=context;const url=new URL(req.url);
-  if(context.enabled&&req.method==='GET'){
+  if(context.enabled&&(req.method==='GET'||req.method==='HEAD')){
     const publicMatch=url.pathname.match(/^\/([A-Za-z0-9][A-Za-z0-9_-]{0,89})\/?$/);
     const apiMatch=url.pathname.match(/^\/v1\/addresses\/(AD[0-9]{2,3}-[A-Z0-9_-]+)$/);
     if(publicMatch&&!configuredPublicCode(publicMatch[1].toUpperCase())){try{personalizedCode('BUSINESS_PREMIUM_PRO',publicMatch[1]);}catch{return null;}}
     if(publicMatch||apiMatch&&configuredPublicCode(apiMatch[1])){
       try{const code=(publicMatch??apiMatch)![1];
-        const record=await newPublicAddress(sql,code,url.origin);
+        const match=await findNewPublicCode(sql,code);
+        if(match?.status==='ACTIVE'&&match.publication_receipt&&annualServiceDisconnected(match.request_data)){
+          return disconnectedAddressResponse(req,!!publicMatch);
+        }
+        const record=await newPublicAddress(sql,code,url.origin,match);
         if(publicMatch&&!url.pathname.endsWith('/')&&(!record||record.extras.historical))return null;
         if(record&&publicMatch&&!record.extras.historical&&(!url.pathname.endsWith('/')||publicMatch[1]!==record.extras.publicCode))return new Response(null,{status:308,headers:{location:record.url,'cache-control':'no-store'}});
-        if(record)return publicMatch?new Response(renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
+        if(record)return publicMatch?new Response(req.method==='HEAD'?null:renderNewPublicAddress(record),{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':record.publication?.indexable?'index, follow':'noindex'}}):Response.json({ok:true,address:record},{headers:{'cache-control':'no-store','access-control-allow-origin':'https://direcciones507.com'}});
         // Owner-retired pages are permanently gone: do not fall back to historical
         // rendering, and let Google discover the 410 instead of a soft-404.
         const retired=await sql.unsafe("SELECT 1 FROM ad507.addresses WHERE code=$1 AND source='USER_REQUEST' AND status='ARCHIVED' LIMIT 1",[code]);
@@ -636,12 +645,13 @@ export async function handleNewPublicRoutes(req:Request,context:{enabled:boolean
       if(!context.r2)return new Response(null,{status:503});
       try{const rows=await sql.unsafe("SELECT a.id::text,a.request_data,a.country_code,a.address_type,m.storage_key,m.media_type FROM ad507.addresses a JOIN ad507.address_media m ON m.address_id=a.id WHERE a.code=$1 AND m.id=$2::uuid AND a.source='USER_REQUEST' AND a.status='ACTIVE' AND a.publication_receipt IS NOT NULL AND a.address_type IN ('BUSINESS','PLACE') AND m.upload_status='READY'",[mediaMatch[1],mediaMatch[2]]);
       if(!rows.length)return new Response(null,{status:404});
-      const row=rows[0];if(row.request_data?.annualService&&!row.request_data?.migration&&row.address_type==='BUSINESS'&&effectiveServicePlan(row.request_data,row.request_data?.plan)!=='BUSINESS_PREMIUM_PRO'&&row.media_type!=='LOGO')return new Response(null,{status:403,headers:{'cache-control':'no-store'}});
+      const row=rows[0];if(annualServiceDisconnected(row.request_data))return disconnectedAddressResponse(req,false);
+      if(row.request_data?.annualService&&!row.request_data?.migration&&row.address_type==='BUSINESS'&&effectiveServicePlan(row.request_data,row.request_data?.plan)!=='BUSINESS_PREMIUM_PRO'&&row.media_type!=='LOGO')return new Response(null,{status:403,headers:{'cache-control':'no-store'}});
       // Keep private media closed for countries whose commercial publication is disabled.
       if(!row.request_data?.migration)assertCountryPublication(row.country_code??row.request_data?.countryCode??'PA',row.address_type,row.request_data?.plan);
         const storage=createR2Storage(context.r2,{fetch:context.fetch,registerIntent:async()=>{throw Error('PUBLIC_MEDIA_READ_ONLY');},authorize:async scope=>{
           if(scope.action!=='read'||scope.addressId!==row.id||scope.storageKey!==row.storage_key)return false;
-          const active=await sql.unsafe("SELECT id FROM ad507.addresses WHERE id=$1::uuid AND status='ACTIVE' AND source='USER_REQUEST' AND address_type IN ('BUSINESS','PLACE')",[row.id]);return !!active.length;
+          const active=await sql.unsafe("SELECT id,request_data FROM ad507.addresses WHERE id=$1::uuid AND status='ACTIVE' AND source='USER_REQUEST' AND address_type IN ('BUSINESS','PLACE')",[row.id]);return !!active.length&&!annualServiceDisconnected(active[0].request_data);
         }});
         const file=await storage.readPrivate({ownerId:row.id,addressId:row.id,role:row.media_type==='LOGO'?'logo':'photo',storageKey:row.storage_key});
         return new Response(file.bytes,{headers:{'content-type':'image/webp','cache-control':'no-store','x-content-type-options':'nosniff'}});

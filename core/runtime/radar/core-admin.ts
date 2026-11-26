@@ -34,6 +34,15 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
   const parsed=await readRadarJson(req,(management?8192:2048));if(!parsed.ok)return json(parsed.status,{error:parsed.error});
   const body=parsed.body as any;
   try{
+   if(admin&&body?.action==='campaigns_list'){
+    if(env.RADAR_COMMERCIAL_MODEL_ENABLED!=='true')return json(503,{error:'RADAR_COMMERCIAL_DISABLED'});
+    if(typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ID'});
+    const items=await db.unsafe(`SELECT kind,starts_at AS "startsAt",ends_at AS "endsAt",
+     CASE WHEN status<>'APPROVED' THEN status WHEN ends_at<=now() THEN 'EXPIRED'
+      WHEN starts_at>now() THEN 'SCHEDULED' ELSE 'ACTIVE' END AS status
+     FROM radar.campaigns WHERE establishment_id=$1::uuid ORDER BY starts_at DESC,id LIMIT 100`,[body.id]);
+    return json(200,{items});
+   }
    if(admin&&body?.action==='owner_private_inspect'){
     if(env.RADAR_OWNER_PRIVATE_ENABLED!=='true')return json(503,{error:'OWNER_PRIVATE_DISABLED'});
     if(typeof body.id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id))return json(400,{error:'INVALID_ID'});
@@ -125,7 +134,7 @@ export function createCoreRadarAdmin(db:Database,auth:CoreAuth,env:Record<string
  };
 }
 
-export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),privateEnabled=false){
+export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>fetch('/v1/admin/radar',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),privateEnabled=false,commercialEnabled=false){
  const tile=doc.getElementById('radarTile'),view=doc.getElementById('radarView'),out=doc.getElementById('radarAdminRows');if(!tile||!view||!out)return;
  const text=(tag:string,value:string)=>{const n=doc.createElement(tag);n.textContent=value;return n;};
  let offset=0,query='';
@@ -155,7 +164,27 @@ export function installCoreRadarAdmin(doc:any=document,send:any=(body:unknown)=>
       row.append(inspect,privateStatus);
      }
 
-     if(key==='establishments'){out.append(row);continue;}
+     if(key==='establishments'){
+      if(commercialEnabled){
+       const button=text('button','Consultar promociones');
+       button.type='button';button.className='btn';
+       const history=doc.createElement('div');history.setAttribute('aria-live','polite');
+       button.onclick=async()=>{
+        button.disabled=true;history.replaceChildren(text('p','Consultando promociones…'));
+        try{
+         const response=await send({action:'campaigns_list',id:item.id});if(!response.ok)throw Error();
+         const {items}=await response.json();
+         const states:any={DRAFT:'Borrador',CANCELLED:'Cancelada',EXPIRED:'Vencida',SCHEDULED:'Programada',ACTIVE:'Activa'};
+         const dates=new Intl.DateTimeFormat('es',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Panama'});
+         history.replaceChildren(text('p',items.length?'Últimas promociones · hora de Panamá':'Sin promociones.'));
+         for(const entry of items)history.append(text('p',(entry.kind==='live'?'En vivo':'Destacado')+' · '+states[entry.status]+' · '+dates.format(new Date(entry.startsAt))+' a '+dates.format(new Date(entry.endsAt))));
+        }catch{history.replaceChildren(text('p','No se pudieron consultar las promociones.'));}
+        finally{button.disabled=false;}
+       };
+       row.append(button,history);
+      }
+      out.append(row);continue;
+     }
      let checked:any;
      if(key==='requests'){
       const label=doc.createElement('label');checked=doc.createElement('input');checked.type='checkbox';
@@ -227,5 +256,5 @@ export function withCoreRadarAdmin(html:string,env:Record<string,string|undefine
  const categoryMarkup=env.RADAR_CATEGORY_CATALOG_ENABLED==='true'?'<button type="button" id="radarCategoryButton" class="btn">Categorías Radar</button><div id="radarCategoryRows" hidden aria-live="polite"></div>':'';
  return html.replace('<button id="statsTile"','<button id="radarTile" class="tile action"><b>Radar</b><span class="muted">Establecimientos y verificación voluntaria</span></button><button id="statsTile"')
   .replace('</main>','<section id="radarView" class="card list hidden"><div class="listhead"><h2>Radar</h2><button type="button" id="radarClose" class="btn">Cerrar</button></div><p>La verificación es manual e independiente de pagos. No publicar videos ni documentos de comprobación. Listas limitadas a 100 registros por sección.</p>'+categoryMarkup+'<label>Buscar establecimiento<input id="radarAdminSearch" type="search" maxlength="100"></label><button type="button" id="radarAdminFilter" class="btn">Buscar</button><div id="radarAdminRows" class="rows" aria-live="polite"></div></section></main>')
-  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')(undefined,undefined,'+(env.RADAR_OWNER_PRIVATE_ENABLED==='true')+');</script></body>');
+  .replace('</body>','<script>('+installCoreRadarAdmin.toString()+')(undefined,undefined,'+(env.RADAR_OWNER_PRIVATE_ENABLED==='true')+','+(env.RADAR_COMMERCIAL_MODEL_ENABLED==='true')+');</script></body>');
 }

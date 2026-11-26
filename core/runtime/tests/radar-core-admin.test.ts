@@ -96,3 +96,27 @@ test('declared owner requests voluntary verification from CORE without sending i
  assert.deepEqual(Object.keys(calls[0]).sort(),['action','id','reason']);assert.equal(calls[0].action,'claim');assert.equal(button.disabled,true);
  const v=ui();runInNewContext('('+renderRadarAccount.toString()+')(data,document,send);',{data:{available:true,items:[]},document:v.doc,send:async()=>({ok:true})});
 });
+
+test('commercial campaign history requires ADMIN and classifies dates in the database',async()=>{
+ const pg=new PGlite();
+ try{
+  await pg.exec(`CREATE SCHEMA radar; CREATE TABLE radar.campaigns(id uuid DEFAULT gen_random_uuid(),establishment_id uuid,kind text,starts_at timestamptz,ends_at timestamptz,status text);`);
+  await pg.query(`INSERT INTO radar.campaigns(establishment_id,kind,starts_at,ends_at,status)
+   VALUES ($1,'live',now()-interval '2 hours',now()-interval '1 hour','APPROVED'),
+   ($1,'featured',now()-interval '1 hour',now()+interval '1 hour','APPROVED'),
+   ($2,'live',now(),now()+interval '1 hour','APPROVED')`,[id,other]);
+  let calls=0;
+  const db={unsafe:async(q:string,p:any[])=>{calls++;return (await pg.query(q,p)).rows as any[];}};
+  const req=(value:string)=>new Request(origin+'/v1/admin/radar',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({action:'campaigns_list',id:value})});
+  const enabled={...env,RADAR_COMMERCIAL_MODEL_ENABLED:'true'};
+  assert.equal((await createCoreRadarAdmin(db,admin,env)(req(id)))?.status,503);
+  assert.equal((await createCoreRadarAdmin(db,{currentUser:async()=>({id:owner,roles:['CLIENT']})},enabled)(req(id)))?.status,403);
+  const api=createCoreRadarAdmin(db,admin,enabled);
+  assert.equal((await api(req('invalid')))?.status,400);
+  assert.equal(calls,0);
+  const result=await api(req(id));
+  assert.equal(result?.status,200);
+  assert.deepEqual((await result!.json()).items.map((item:any)=>item.status),['ACTIVE','EXPIRED']);
+  assert.equal(calls,1);
+ }finally{await pg.close();}
+});

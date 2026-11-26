@@ -50,13 +50,22 @@ export function freshProperties(input={},now=Date.now()){
  const active=t=>Number.isFinite(Number(t))&&Number(t)>now;
  p.isFeatured=active(p.featuredUntil);
  p.pin=active(p.liveUntil)?'live':p.isFeatured?'featured':'normal';
+ if(p.commercialModel&&!active(p.annualUntil)&&p.pin==='normal'){
+  delete p.registrationProfile;
+  delete p.details;
+ }
  return p;
 }
 export const normalZoomStep=.6;
 // All registered establishments remain discoverable at any zoom; normal pins cluster on the map.
-export function mapPinStyle(properties){return properties.pin==='normal'&&safeAddress(properties.digitalAddressUrl)?'corporate':properties.pin;}
-export function mapFeatures(rows,zoom,revealZoom){return rows;}
-export function priorityFeatures(rows){return rows.filter(f=>f.properties.pin==='live'||f.properties.pin==='featured').sort((a,b)=>Number(b.properties.pin==='live')-Number(a.properties.pin==='live'));}
+export function mapPinStyle(properties){return properties.pin==='normal'&&(properties.corporate||safeAddress(properties.digitalAddressUrl))?'corporate':properties.pin;}
+export function mapFeatures(rows,zoom,revealZoom){
+ return rows.filter(({properties:p})=>!p.commercialModel||p.corporate||p.pin==='live'||(p.pin==='featured'?zoom>=10:zoom>=13));
+}
+export function priorityFeatures(rows){
+ const rank=p=>p.pin==='live'?1:p.pin==='featured'?2:p.commercialModel&&Number(p.annualUntil)>Date.now()?3:4;
+ return rows.filter(f=>rank(f.properties)<4).sort((a,b)=>rank(a.properties)-rank(b.properties));
+}
 export function featuredGroups(rows){const groups=new Map();for(const f of rows){if(!f.properties.isFeatured)continue;const key=f.properties.category;const group=groups.get(key)||[];group.push(f);groups.set(key,group);}return groups;}
 export function searchContext(text,country){
  const clean=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();

@@ -15,3 +15,22 @@ test("digital address link respects privacy, expiration and host",()=>{
  expect(publicFeatures([{...base,digitalAddress:address}],bounds,"PA",0).features[0].properties.digitalAddressUrl).toBe(address.publicUrl);
 });
 test("invalid bounds rejected",()=>expect(()=>publicFeatures([base],{...bounds,north:99},"PA",0)).toThrow());
+
+test("Radar commercial policy projects only fields allowed by active benefits",()=>{
+ const now=Date.parse("2026-11-25T16:00:00Z");
+ const fixture={...base,country:"PA" as const,registrationProfile:{
+  province:"Veraguas",locality:"Santiago",description:"Privada hasta activar",phone:"+507 6000 0000",
+  whatsapp:"+50760000000",hours:{wednesday:"08:00-18:00"},
+  socials:["https://www.instagram.com/radar/","https://example.test/"],extras:{legalName:"Privado"}
+ }};
+ const free=publicFeatures([fixture],bounds,"PA",now,true,true).features[0].properties;
+ expect(free).toMatchObject({phone:"+507 6000 0000",openStatus:"Abierto ahora",pin:"normal"});
+ expect(free).not.toHaveProperty("registrationProfile");
+ expect(free).not.toHaveProperty("details");
+ const annual=publicFeatures([{...fixture,annualUntil:now+1}],bounds,"PA",now,true,true).features[0].properties;
+ expect(annual).toMatchObject({annualUntil:now+1,registrationProfile:{description:"Privada hasta activar",socials:["https://www.instagram.com/radar/"]}});
+ expect(annual).not.toHaveProperty("registrationProfile.extras");
+ const promo={kind:"live" as const,startsAt:now-1,endsAt:now+1};
+ expect(publicFeatures([{...fixture,campaign:promo}],bounds,"PA",now,true,true).features[0].properties).toMatchObject({pin:"live",annualUntil:null});
+ expect(publicFeatures([{...fixture,campaign:promo,annualUntil:now+1}],bounds,"PA",now+1,true,true).features[0].properties).not.toHaveProperty("registrationProfile");
+});

@@ -85,6 +85,7 @@ function scheduleLoad(delay=250){clearTimeout(loadTimer);loadTimer=setTimeout(lo
 async function load(){
  if(state.map?.isMoving()){scheduleLoad(150);return;}
  if(state.resetZoom&&state.map){state.revealZoom=state.map.getZoom()+normalZoomStep;state.resetZoom=false;}
+ if(state.features.some(f=>f.properties.commercialModel))updateMap(filtered());
  const bounds=currentBounds();
  const params=new URLSearchParams({country:state.country,...Object.fromEntries(['west','south','east','north'].map((key,index)=>[key,String(bounds[index])]))});
  const query=searchContext($('searchInput').value,state.country).query;
@@ -118,7 +119,7 @@ function render(){
  $('resultCount').textContent=String(priority.length);
  $('dataStatus').textContent=priority.length?'':'Sin destacados ni actividades en vivo para esta búsqueda. Acerca el mapa para explorar establecimientos gratuitos.';
  const fragment=document.createDocumentFragment();
- for(const f of priority){const p=f.properties,b=el('button','result-card');b.type='button';b.dataset.id=f.id;b.setAttribute('aria-pressed',String(state.selected?.id===f.id));const top=el('span','result-top');top.append(el('span','category-symbol',p.pin==='live'?'◉':'◇'),el('span','category-label',categoryLabel(p.category)));const meta=el('span','result-meta');meta.append(el('i',p.activity),document.createTextNode(activityLabels[p.activity]||activityLabels.unknown));b.append(top,el('h4','',p.name),el('span','commercial-badge '+p.pin,p.pin==='live'?'En vivo':'Destacado'),meta);
+ for(const f of priority){const p=f.properties,b=el('button','result-card');b.type='button';b.dataset.id=f.id;b.setAttribute('aria-pressed',String(state.selected?.id===f.id));const top=el('span','result-top');top.append(el('span','category-symbol',p.pin==='live'?'◉':'◇'),el('span','category-label',categoryLabel(p.category)));const meta=el('span','result-meta');meta.append(el('i',p.activity),document.createTextNode(activityLabels[p.activity]||activityLabels.unknown));b.append(top,el('h4','',p.name),el('span','commercial-badge '+p.pin,p.pin==='live'?'En vivo':p.pin==='featured'?'Destacado':'Ficha comercial'),meta);
   const openStatus=commercialOpenStatus(p);if(openStatus)b.append(el('span','detail-open-status',openStatus));
   const qty=p.details?.quantity,unit=p.details?.unit;
   if(Number.isInteger(qty)&&qty>=0&&['tables','rooms','places','units'].includes(unit))b.append(el('span','result-availability',qty+' '+({tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'})[unit]+' disponibles ahora'));
@@ -126,7 +127,7 @@ function render(){
  $('results').replaceChildren(fragment);renderFeatured(rows);updateMap(rows);state.pulseControl?.();renderPulse();
  if(state.selected){const current=rows.find(f=>f.id===state.selected.id);if(!current){state.selected=null;$('detail').hidden=true;}else{state.selected=current;detail(current,false);}}
  clearTimeout(state.expiryTimer);
- const deadlines=state.features.flatMap(f=>[f.properties.liveUntil,f.properties.featuredUntil,f.properties.reportedAt?Number(f.properties.reportedAt)+1800000:null]).map(Number).filter(t=>Number.isFinite(t)&&t>Date.now());
+ const deadlines=state.features.flatMap(f=>[f.properties.liveUntil,f.properties.featuredUntil,f.properties.annualUntil,f.properties.reportedAt?Number(f.properties.reportedAt)+1800000:null]).map(Number).filter(t=>Number.isFinite(t)&&t>Date.now());
  if(deadlines.length)state.expiryTimer=setTimeout(render,Math.min(2147483647,Math.max(1,Math.min(...deadlines)-Date.now()+10)));
 }
 function renderFeatured(rows){const groups=featuredGroups(rows),fragment=document.createDocumentFragment();for(const [category,items] of groups){const section=el('section','featured-category');section.append(el('h3','',({restaurant:'Restaurantes',hotel:'Hoteles',cafe:'Cafeterías',shop:'Comercios',services:'Servicios',health:'Salud',other:'Otros'})[category]||categoryLabel(category)));const track=el('div','featured-track');track.setAttribute('aria-label',categoryLabel(category));for(const f of items){const b=el('button','featured-card');b.type='button';b.append(el('span','commercial-badge','Destacado'),el('h4','',f.properties.name),el('span','',categoryLabel(category)));const availability=f.properties.details;const labels={tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'};if(Number.isInteger(availability?.quantity)&&availability.quantity>=0&&Object.hasOwn(labels,availability.unit))b.append(el('span','result-availability',availability.quantity+' '+labels[availability.unit]+' disponibles ahora'));b.onclick=()=>{scrollMap();selectFeature(f);};track.append(b);}section.append(track);fragment.append(section);}$('featuredGroups').replaceChildren(fragment);$('featuredSection').hidden=!groups.size;}
@@ -137,6 +138,18 @@ function detail(f,focus=true){
  const closeButton=el('button','icon-button','×');closeButton.setAttribute('aria-label','Cerrar ficha');
  closeButton.onclick=()=>{dismissDetail();const button=[...document.querySelectorAll('.result-card')].find(n=>n.dataset.id===f.id);button?.focus({preventScroll:true});};
  const whatsapp=commercialWhatsapp(p);if(whatsapp)top.append(whatsapp);top.append(closeButton);d.append(top,el('h3','',p.name));
+ if(p.commercialModel){
+  if(p.phone)d.append(el('p','',p.phone));
+  const status=commercialOpenStatus(p)||p.openStatus;
+  if(status)d.append(el('p','detail-open-status',status));
+  if(p.pin!=='normal'||Number(p.annualUntil)>Date.now()){
+   appendBusinessDetails(d,p);
+   const directions=el('a','button subtle','Cómo llegar');
+   directions.href='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent([...f.geometry.coordinates].reverse().join(','));
+   directions.target='_blank';directions.rel='noopener noreferrer';d.append(directions);
+  }
+  d.hidden=false;if(focus)d.focus({preventScroll:true});return;
+ }
  if(['live','featured'].includes(p.pin))d.append(el('span','commercial-badge '+p.pin,p.pin==='featured'?'Destacado':'Pin en vivo'));
  d.append(el('p','detail-country',countries[p.country||state.country]?.name||state.country));
  const hoursStatus=commercialOpenStatus(p);const available=p.details?.quantity,availableUnit=p.details?.unit;const availableNames={tables:'mesas',rooms:'habitaciones',places:'cupos',units:'unidades'};const statusLine=el('div','detail-status-line');if(hoursStatus)statusLine.append(el('span','detail-open-status',hoursStatus));if(Number.isInteger(available)&&available>=0&&Object.hasOwn(availableNames,availableUnit))statusLine.append(el('span','result-availability',available+' '+availableNames[availableUnit]+' disponibles'));if(statusLine.childNodes.length){statusLine.style.display='flex';statusLine.style.flexWrap='wrap';statusLine.style.alignItems='center';statusLine.style.gap='8px';d.append(statusLine);}

@@ -14,7 +14,7 @@ export interface RadarRepository {
  anonymousReportAllowed?(digest:string,id:string):Promise<boolean>;
 }
 const json=(status:number,data:unknown)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false,catalog?:{list():Promise<{groups:any[];categories:any[]}>;lookup(id:string,activeOnly?:boolean):Promise<string|undefined>},privateOwnerRequired=false){
+export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:ReadonlySet<string>,enabled=false,campaignLookup?:(ids:string[],now:number)=>Promise<Map<string,NonNullable<Establishment["campaign"]>>>,anonymousIdentity?:(req:Request)=>string|null,ownerRegistrationEnabled=false,catalog?:{list():Promise<{groups:any[];categories:any[]}>;lookup(id:string,activeOnly?:boolean):Promise<string|undefined>},privateOwnerRequired=false,commercialModel=false){
  // A per-process admission cap protects the shared pool without using visitor IPs.
  // Tune only after isolated load testing; writes and authentication are independent.
  let activeMapReads=0;
@@ -41,7 +41,7 @@ export function createRadarRoutes(repo:RadarRepository,auth:CoreAuth,origins:Rea
     const rows=search?await repo.listPublished(country,b,search):await repo.listPublished(country,b);
     const now=Date.now();
     if(campaignLookup){const campaigns=await campaignLookup(rows.map(e=>e.id),now);for(const e of rows)e.campaign=campaigns.get(e.id);}
-    return json(200,publicFeatures(rows,b,country,now,!!campaignLookup));
+    return json(200,publicFeatures(rows,b,country,now,!!campaignLookup,commercialModel));
    }finally{activeMapReads--;}
 
   }

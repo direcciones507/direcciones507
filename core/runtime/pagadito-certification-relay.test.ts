@@ -116,3 +116,40 @@ test('an uncertain legacy or scoped attempt blocks a fresh reference',async()=>{
  assert.equal((await handlePagaditoCertificationRelay(request(b),sql,env))?.status,409);
  assert.equal(rows.size,2);
 });
+
+test('Sandbox confirmation replaces form only on verified result and repeat requires explicit action',async()=>{
+ const html=pagaditoSandboxPage('bcd3213d-1b3a-4072-9570-e83c97480fa4');
+ assert.match(html,/id="confirmation" hidden/);
+ assert.match(html,/¡Pago Sandbox exitoso!/);
+ const script=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)![1];
+ const ids=['mode','form','pay','status','quote','entry','confirmation','confirmationTitle','again','confirmedAmount','confirmedAuthorization','confirmedDate','confirmedErn','accept','expiry'];
+ const elements:any=Object.fromEntries(ids.map(id=>[id,{hidden:id==='confirmation',disabled:false,value:id==='mode'?'CERTIFICATION_1':id==='expiry'?'01/2030':'',textContent:'',dataset:{},checked:true,focus(){}}]));
+ const map=new Map<string,string>(),posted:string[]=[];
+ const verified={state:'VERIFIED',amountCents:1844,authorization:'TEST-AUTH',ern:'test-ern',recordedAt:'2026-11-25T23:13:39Z'};
+ let state:any={state:'NOT_FOUND',repeatSupported:true},checkoutResponse:any=verified;
+ const document={getElementById:(id:string)=>elements[id],scripts:[{src:'https://h.online-metrix.net/fp/check.js?id=123',addEventListener(event:string,fn:()=>void){if(event==='load')queueMicrotask(fn);}}]};
+ const storage={getItem:(k:string)=>map.get(k),setItem:(k:string,v:string)=>map.set(k,v)};
+ const transport=async(url:string,options:any)=>{
+  if(url.includes('/quote?'))return Response.json({quote:{amountCents:1844,available:true}});
+  if(url.includes('/status?'))return Response.json(state);
+  if(url.endsWith('/checkout')){posted.push(JSON.parse(options.body).key);return Response.json({result:checkoutResponse});}
+  throw Error('unexpected request');
+ };
+ const run=new Function('document','sessionStorage','fetch','cybs_dfprofiler',script);
+ run(document,storage,transport,()=>123);
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(elements.pay.disabled,false);assert.equal(elements.confirmation.hidden,true);
+ await elements.form.onsubmit({preventDefault(){}});
+ assert.equal(elements.entry.hidden,true);assert.equal(elements.confirmation.hidden,false);
+ assert.equal(elements.confirmedAmount.textContent,'USD 18.44');assert.equal(elements.confirmedAuthorization.textContent,'TEST-AUTH');assert.equal(elements.confirmedErn.textContent,'test-ern');
+ assert.equal(elements.again.disabled,false);assert.equal(posted.length,1);
+ elements.again.onclick();
+ assert.equal(elements.entry.hidden,false);assert.equal(elements.confirmation.hidden,true);assert.equal(elements.accept.checked,false);assert.equal(posted.length,1);
+ elements.accept.checked=true;
+ await elements.form.onsubmit({preventDefault(){}});
+ assert.equal(posted.length,2);assert.notEqual(posted[0],posted[1]);
+ elements.again.onclick();
+ state={state:'UNCERTAIN',repeatSupported:true,amountCents:1844};checkoutResponse={state:'UNCERTAIN'};
+ await elements.form.onsubmit({preventDefault(){}});
+ assert.equal(elements.confirmation.hidden,true);assert.equal(elements.pay.disabled,true);assert.equal(elements.again.disabled,true);
+});

@@ -9,6 +9,13 @@ export function annualEnd(start:string):string {
 export function serviceExpired(data:any,now=Date.now()):boolean {
  const s=data?.annualService;return !data?.migration&&s?.policy===ANNUAL_POLICY&&(!s.startsAt||!s.endsAt||!Number.isFinite(Date.parse(s.endsAt))||Date.parse(s.endsAt)<=now);
 }
+export function annualGraceEndsAt(data:any,now=Date.now()):string|null {
+ const service=data?.annualService;
+ const endsAt=Date.parse(service?.endsAt);
+ const graceEndsAt=endsAt+15*86400000;
+ return serviceExpired(data,now)&&service?.startsAt&&Number.isFinite(graceEndsAt)&&now<graceEndsAt
+  ?new Date(graceEndsAt).toISOString():null;
+}
 export function annualServiceDisconnected(data:any,now=Date.now()):boolean {
  return !data?.migration&&data?.annualService?.policy===ANNUAL_POLICY&&(data.annualService.paymentHold===true||serviceExpired(data,now));
 }

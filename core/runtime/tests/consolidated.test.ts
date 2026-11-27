@@ -501,6 +501,20 @@ test('request routes default closed and development context validates authentica
   expect((await runtimeGet('/v1/user/requests')).status).toBe(503);
 });
 
+test('database security audit is read only and reports actual role and connection without identities',async()=>{
+  const {inspectDatabaseSecurity}=await import('../scripts/postgres-security-audit');
+  const report=await inspectDatabaseSecurity(sql);
+  expect(report.readOnly).toBe(true);
+  expect(report.role.superuser).toBe(true);
+  expect(report.role.ownedOrEffectivelyOwnedTables).toBeGreaterThan(0);
+  expect(typeof report.connection.encrypted).toBe('boolean');
+  expect(report.networkIsolationVerified).toBe(false);
+  expect(report.backupVerified).toBe(false);
+  expect(JSON.stringify(report)).not.toContain(password);
+  const refused={begin:async(_mode:string,fn:any)=>fn({unsafe:async(q:string)=>q.includes('transaction_read_only')?[{read_only:false}]:[]})} as any;
+  await expect(inspectDatabaseSecurity(refused)).rejects.toThrow('READ_ONLY_REQUIRED');
+});
+
 test('read-only preflight inventories canonical schema and repeated proposals preserve existing codes',async()=>{
   const {inspectCanonicalSchema}=await import('../scripts/integration-preflight');
   const before=await sql.unsafe("SELECT id::text,code,source FROM ad507.addresses WHERE source<>'USER_REQUEST' ORDER BY id");

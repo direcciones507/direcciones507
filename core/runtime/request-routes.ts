@@ -1,4 +1,6 @@
 import QRCode from 'qrcode';
+import {readRequestBody} from './request-body';
+export {readRequestBody} from './request-body';
 import {annualServiceDisconnected,ANNUAL_POLICY} from './annual-service';
 import {disconnectedAddressResponse} from './disconnected-address';
 import {adminBillingExempt} from './admin-billing-policy';
@@ -19,15 +21,6 @@ import { archiveUnprocessedRequest } from './request-archive';
 export const REQUEST_WORKFLOW_ENABLED=process.env.AD507_COMMERCIAL_WORKFLOW_ENABLED === 'true';
 const maxBody=49*1024*1024;
 const limits=new Map<string,{at:number;count:number}>();
-export async function readRequestBody(req:Request,limit:number) {
-  const reader=req.body?.getReader();if(!reader)throw Error('INVALID_REQUEST');
-  const chunks:Uint8Array[]=[];let length=0;
-  let expired=false;
-  const timer=setTimeout(()=>{expired=true;reader.cancel().catch(()=>{});},20_000);
-  try {while(true){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>limit){await reader.cancel();throw Error('PAYLOAD_TOO_LARGE');}chunks.push(value);}}finally{clearTimeout(timer);reader.releaseLock();}
-  if(expired)throw Error('INVALID_REQUEST');
-  return Buffer.concat(chunks);
-}
 export async function parseRequestForm(req:Request) {
   if(!req.headers.get('content-type')?.startsWith('multipart/form-data;'))throw Error('INVALID_REQUEST');
   const declared=req.headers.get('content-length');if(declared&&(!/^\d+$/.test(declared)||Number(declared)>maxBody))throw Error('PAYLOAD_TOO_LARGE');

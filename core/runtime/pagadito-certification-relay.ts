@@ -5,6 +5,7 @@ import {createPagaditoSandboxOrderBridge,CERTIFICATION_AMOUNTS,isCertificationMo
 import {executeSandboxFirstPayment,type SandboxCard} from './pagadito-sandbox-first-payment';
 import {commercialQuote} from './commercial-policy';
 import {PagaditoApiError} from './pagadito-rest-client';
+import {readRequestBody} from './request-body';
 
 const endpoint='https://direcciones507-pagadito-sandbox.up.railway.app/v1/internal/pagadito/certification';
 const sign=(secret:string,body:string)=>createHmac('sha256',secret).update(body).digest('hex');
@@ -58,10 +59,13 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
  if(req.method!=='POST')return json(405,{error:'METHOD_NOT_ALLOWED'});
  const signature=req.headers.get('x-certification-signature')||'';
  if(!/^[a-f0-9]{64}$/.test(signature))return json(403,{error:'FORBIDDEN'});
- const body=await req.text();
- if(body.length>8192||!timingSafeEqual(Buffer.from(signature),Buffer.from(sign(secret,body))))return json(403,{error:'FORBIDDEN'});
+ let body:string;
+ try{body=(await readRequestBody(req,8192)).toString('utf8');}catch(error){return json(error instanceof Error&&error.message==='PAYLOAD_TOO_LARGE'?413:400,{error:'INVALID_BODY'});}
+ if(!timingSafeEqual(Buffer.from(signature),Buffer.from(sign(secret,body))))return json(403,{error:'FORBIDDEN'});
+ let value:any;
+ try{value=JSON.parse(body);}catch{return json(400,{error:'INVALID_BODY'});}
+ if(!value||typeof value!=='object'||Array.isArray(value))return json(400,{error:'INVALID_BODY'});
  if(pathname.endsWith('/status')){
-  const value=JSON.parse(body);
   if(typeof value.operation!=='string'||! /^[a-f0-9]{64}$/.test(value.operation))return json(400,{error:'INVALID_REFERENCE'});
   if(value.scope!==undefined&&(typeof value.scope!=='string'||! /^[a-f0-9]{64}$/.test(value.scope)||value.scope===value.operation))return json(400,{error:'INVALID_REFERENCE'});
   const rows=await sql.unsafe(`SELECT operation,order_id::text,state,"authorization",to_jsonb(r)->>'amount_cents' AS amount_cents,to_jsonb(r)->>'recorded_at' AS recorded_at FROM ad507.pagadito_certification_relay r WHERE operation=$1 OR ($2::text IS NOT NULL AND (operation=$2 OR to_jsonb(r)->>'attempt_scope'=$2) AND state NOT IN ('VERIFIED','REJECTED')) ORDER BY CASE WHEN operation=$1 THEN 1 ELSE 0 END LIMIT 1`,[value.operation,value.scope??null]);
@@ -69,8 +73,7 @@ export async function handlePagaditoCertificationRelay(req:Request,sql:Sql,env:E
  }
  const client=createPagaditoSandboxClient(env);
  if(!client)return json(503,{error:'DISABLED'});
- const value=JSON.parse(body);
- if(!/^[a-f0-9]{64}$/.test(value.operation)||(!['ANNUAL','INSTALLMENTS'].includes(value.mode)&&!isCertificationMode(value.mode))||!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE'].includes(value.plan))return json(400,{error:'INVALID_QUOTE'});
+ if(typeof value.operation!=='string'||! /^[a-f0-9]{64}$/.test(value.operation)||(!['ANNUAL','INSTALLMENTS'].includes(value.mode)&&!isCertificationMode(value.mode))||!['BUSINESS_PREMIUM','BUSINESS_PREMIUM_PRO','PLACE'].includes(value.plan))return json(400,{error:'INVALID_QUOTE'});
  if(value.scope!==undefined&&(!isCertificationMode(value.mode)||typeof value.scope!=='string'||! /^[a-f0-9]{64}$/.test(value.scope)||value.scope===value.operation))return json(400,{error:'INVALID_REFERENCE'});
  if(typeof value.browserInfo?.deviceFingerprintID!=='string'||!/^\d{1,40}$/.test(value.browserInfo.deviceFingerprintID))return json(400,{error:'FINGERPRINT_INVALID'});
  const quote=isCertificationMode(value.mode)?{amountCents:CERTIFICATION_AMOUNTS[value.mode]}:commercialQuote(value.plan,value.mode);

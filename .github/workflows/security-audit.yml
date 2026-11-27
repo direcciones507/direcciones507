@@ -55,6 +55,8 @@ jobs:
             echo "::error::Potential secret exposures detected. Review privately; no sensitive details are published."
             if [ -f "$report/findings.json" ]; then
               jq -r '"Potential findings: " + (length|tostring)' "$report/findings.json"
+              # Print only rule category and count, never paths, commits, fingerprints or secret values.
+              jq -r 'group_by(.RuleID)[] | "Rule: " + (.[0].RuleID | tostring | gsub("[^a-zA-Z0-9_-]"; "_")) + " | count: " + (length|tostring)' "$report/findings.json"
             fi
             exit 1
           fi

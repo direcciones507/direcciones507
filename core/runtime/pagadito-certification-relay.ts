@@ -5,7 +5,7 @@ import {createPagaditoSandboxOrderBridge,CERTIFICATION_AMOUNTS,isCertificationMo
 import {executeSandboxFirstPayment,type SandboxCard} from './pagadito-sandbox-first-payment';
 import {commercialQuote} from './commercial-policy';
 import {PagaditoApiError} from './pagadito-rest-client';
-import {readRequestBody} from './request-routes';
+import {readRequestBody} from './request-body';
 
 const endpoint='https://direcciones507-pagadito-sandbox.up.railway.app/v1/internal/pagadito/certification';
 const sign=(secret:string,body:string)=>createHmac('sha256',secret).update(body).digest('hex');

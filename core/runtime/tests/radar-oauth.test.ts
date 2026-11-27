@@ -4,21 +4,22 @@ import {createGeneralAuth} from '../general-auth';
 const main='https://direcciones507.com',latam='https://direcciones.lat',radar='https://radar.direcciones.lat';
 const env={AD507_GOOGLE_CLIENT_ID:'existing-client',AD507_GOOGLE_CLIENT_SECRET:'test-secret',AD507_SESSION_SECRET:'s'.repeat(64),AD507_GOOGLE_REDIRECT_URI:main+'/auth/google/callback',AD507_AUTH_SUCCESS_URL:'/panel',AD507_PUBLIC_BASE_URL:main,AD507_INTERNATIONAL_DOMAIN_VERIFIED:'true',AD507_GOOGLE_REDIRECT_URI_LATAM:latam+'/auth/google/callback',AD507_AUTH_SUCCESS_URL_LATAM:'/panel',RADAR_ENABLED:'true',AD507_RADAR_DOMAIN_VERIFIED:'true'};
 const user={id:'00000000-0000-4000-8000-000000000001',email:'radar.test@gmail.com',display_name:'Test',roles:['CLIENT'],status:'ACTIVE'};
+const secondUser={...user,id:'00000000-0000-4000-8000-000000000002',email:'second.test@gmail.com',display_name:'Second'};
 const password='test-only-password-123',salt=Buffer.alloc(16,1),password_hash='scrypt:'+salt.toString('hex')+':'+scryptSync(password,salt,64).toString('hex');
-function setup(overrides={}){
- const sessions=new Map<string,{revoked:boolean}>(),states=new Map<string,{binding:string;verifier:string;used:boolean}>();
+function setup(overrides={},googleUser=user){
+ const sessions=new Map<string,{revoked:boolean;uid:string}>(),states=new Map<string,{binding:string;verifier:string;used:boolean}>();
  const db:any={unsafe:async(q:string,p:any[]=[])=>{
   if(q.startsWith('INSERT INTO ad507.oauth_transactions')){states.set(p[0],{binding:p[1],verifier:p[2],used:false});return [];}
   if(q.startsWith('UPDATE ad507.oauth_transactions')){const row=states.get(p[0]);if(!row||row.used||row.binding!==p[1])return [];row.used=true;return [{verifier:row.verifier}];}
-  if(q.startsWith('INSERT INTO ad507.auth_sessions')){sessions.set(p[0],{revoked:false});return [];}
-  if(q.startsWith('UPDATE ad507.auth_sessions')){const row=sessions.get(p[0]);if(row)row.revoked=true;return [];}
-  if(q.includes('FROM ad507.auth_sessions s'))return sessions.has(p[0])&&!sessions.get(p[0])!.revoked&&p[1]===user.id?[user]:[];
-  if(q.includes('FROM ad507.users u JOIN ad507.email_credentials'))return p[0]===user.email?[{...user,password_hash,email_verified_at:new Date(),failed_attempts:0,locked_until:null}]:[];
-  if(q.includes('FROM ad507.google_identities'))return [user];
+  if(q.startsWith('INSERT INTO ad507.auth_sessions')){sessions.set(p[0],{revoked:false,uid:p[1]});return [];}
+  if(q.startsWith('UPDATE ad507.auth_sessions')){const row=sessions.get(p[0]);if(row?.uid===p[1])row.revoked=true;return [];}
+  if(q.includes('FROM ad507.auth_sessions s'))return sessions.has(p[0])&&!sessions.get(p[0])!.revoked&&sessions.get(p[0])!.uid===p[1]?[user,secondUser].filter(u=>u.id===p[1]):[];
+  if(q.includes('FROM ad507.users u JOIN ad507.email_credentials'))return [user,secondUser].filter(u=>u.email===p[0]).map(u=>({...u,password_hash,email_verified_at:new Date(),failed_attempts:0,locked_until:null}));
+  if(q.includes('FROM ad507.google_identities'))return [googleUser];
   if(q.includes('UPDATE ad507.email_credentials')||q.includes('pg_advisory_xact_lock'))return [];
   throw Error('Unexpected authentication SQL: '+q);
  }};db.begin=(fn:any)=>fn(db);
- const provider=async(input:any,init:any)=>{if(String(input).includes('/token')){expect(new URLSearchParams(init.body).get('redirect_uri')).toBe(latam+'/auth/google/callback');return Response.json({access_token:'provider-test-token'});}return Response.json({sub:'existing-google-user',email:user.email,email_verified:true});};
+ const provider=async(input:any,init:any)=>{if(String(input).includes('/token')){expect(new URLSearchParams(init.body).get('redirect_uri')).toBe(latam+'/auth/google/callback');return Response.json({access_token:'provider-test-token'});}return Response.json({sub:'existing-google-user',email:googleUser.email,email_verified:true});};
  return {auth:createGeneralAuth(db,{...env,...overrides},provider as typeof fetch),sessions,states};
 }
 const request=(path:string,cookies='',body?:any,origin=latam)=>new Request(origin+path,{method:body?'POST':'GET',headers:{origin,cookie:cookies,...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
@@ -42,7 +43,7 @@ test('email login shares the canonical session, returns only to Radar, and revok
 });
 test('an already authenticated LATAM account returns without another login or account',async()=>{
  const {auth,sessions}=setup();const login=(await auth.handle(request('/v1/auth/email/login','',{email:user.email,password})))!;
- expect((await login.clone().json()).redirect).toBeUndefined();expect(named(login,'__Secure-ad507_radar_session')).toBeUndefined();
+ expect((await login.clone().json()).redirect).toBeUndefined();expect(named(login,'__Secure-ad507_radar_session')).toContain('Domain=direcciones.lat');
  const result=(await auth.handle(request('/auth/radar',cookies(login))))!;
  expect(result.headers.get('location')).toBe(radar+'/');expect(sessions.size).toBe(1);
  expect(await auth.currentUser(request('/v1/auth/me',cookies(result),undefined,radar))).not.toBeNull();
@@ -107,7 +108,7 @@ test('return cannot be changed, tampered with, or detached from the OAuth transa
  const tamperedState=state!.slice(0,-1)+(state!.endsWith('A')?'B':'A');
  expect((await auth.handle(request('/auth/google/callback?code=x&state='+tamperedState,cookies(start))))!.status).toBe(400);
  const tampered=marker.slice(0,-1)+(marker.endsWith('a')?'b':'a');const login=(await auth.handle(request('/v1/auth/email/login',tampered,{email:user.email,password})))!;
- expect((await login.json()).redirect).toBeUndefined();expect(named(login,'__Secure-ad507_radar_session')).toBeUndefined();
+ expect((await login.json()).redirect).toBeUndefined();expect(named(login,'__Secure-ad507_radar_session')).toContain('Domain=direcciones.lat');
 });
 test('ordinary 507 and LATAM login routes keep their callbacks and redirect protections',async()=>{
  const {auth}=setup();for(const origin of [main,latam]){const start=(await auth.handle(request('/auth/google/login','',undefined,origin)))!;expect(new URL(start.headers.get('location')!).searchParams.get('redirect_uri')).toBe(origin+'/auth/google/callback');expect((await auth.handle(request('/auth/google/login?returnTo=https://evil.example','',undefined,origin)))!.status).toBe(400);}
@@ -139,4 +140,49 @@ test('LATAM proxy normalization does not authorize foreign hosts, ports, insecur
  }
  const disabled=setup({RADAR_ENABLED:'false'}).auth;
  expect((await disabled.handle(new Request('http://direcciones.lat:8080/auth/radar',{headers:{'x-forwarded-proto':'https'}})))!.status).toBe(400);
+});
+
+test('switching LATAM accounts replaces both browser sessions, rejects old cookies and preserves another device',async()=>{
+ const {auth}=setup();
+ const first=(await auth.handle(request('/v1/auth/email/login',await intent(auth),{email:user.email,password})))!;
+ const separate=(await auth.handle(request('/v1/auth/email/login','',{email:user.email,password})))!;
+ const second=(await auth.handle(request('/v1/auth/email/login',cookies(first),{email:secondUser.email,password})))!;
+ expect(second.status).toBe(200);expect((await second.clone().json()).redirect).toBeUndefined();
+ for(const host of [latam,radar]){
+  expect((await auth.currentUser(request('/v1/auth/me',cookies(second),undefined,host)))?.id).toBe(secondUser.id);
+  expect(await auth.currentUser(request('/v1/auth/me',cookies(first),undefined,host))).toBeNull();
+  expect((await auth.currentUser(request('/v1/auth/me',cookies(separate),undefined,host)))?.id).toBe(user.id);
+ }
+ const logout=(await auth.handle(request('/auth/logout',cookies(second),{},latam)))!;
+ expect(logout.status).toBe(204);expect(named(logout,'__Secure-ad507_radar_session')).toContain('Max-Age=0');
+ for(const host of [latam,radar])expect(await auth.currentUser(request('/v1/auth/me',cookies(second),undefined,host))).toBeNull();
+ const entry=(await auth.handle(request('/auth/radar',cookies(first))))!;
+ expect(entry.headers.get('location')).toBe(latam+'/commercial/international?access=1&radar=1');
+});
+test('Google account switch synchronizes LATAM and Radar without changing the normal return destination',async()=>{
+ const {auth}=setup({},secondUser);
+ const first=(await auth.handle(request('/v1/auth/email/login','',{email:user.email,password})))!;
+ const start=(await auth.handle(request('/auth/google/login',cookies(first))))!;
+ const state=new URL(start.headers.get('location')!).searchParams.get('state');
+ const finish=(await auth.handle(request('/auth/google/callback?code=test-code&state='+state,cookies(first)+'; '+cookies(start))))!;
+ expect(finish.status).toBe(302);expect(finish.headers.get('location')).toBe(latam+'/panel');
+ for(const host of [latam,radar]){
+  expect((await auth.currentUser(request('/v1/auth/me',cookies(finish),undefined,host)))?.id).toBe(secondUser.id);
+  expect(await auth.currentUser(request('/v1/auth/me',cookies(first),undefined,host))).toBeNull();
+ }
+ const logout=(await auth.handle(request('/auth/logout',cookies(finish),{},radar)))!;
+ expect(logout.status).toBe(204);
+ expect(await auth.currentUser(request('/v1/auth/me',cookies(finish),undefined,latam))).toBeNull();
+});
+test('legacy divergent LATAM and Radar cookies are revoked on handoff or LATAM logout',async()=>{
+ const {auth}=setup();
+ for(const path of ['/auth/radar?panel=1','/auth/logout']){
+  const a=(await auth.handle(request('/v1/auth/email/login','',{email:user.email,password})))!;
+  const b=(await auth.handle(request('/v1/auth/email/login','',{email:secondUser.email,password})))!;
+  const mixed=named(b,'ad507_session').split(';')[0]+'; '+named(a,'__Secure-ad507_radar_session').split(';')[0];
+  const result=(await auth.handle(request(path,mixed,path==='/auth/logout'?{}:undefined)))!;
+  expect(await auth.currentUser(request('/v1/auth/me',cookies(a),undefined,radar))).toBeNull();
+  if(path==='/auth/logout'){expect(result.status).toBe(204);expect(await auth.currentUser(request('/v1/auth/me',cookies(b)))).toBeNull();}
+  else {expect(result.status).toBe(302);expect((await auth.currentUser(request('/v1/auth/me',cookies(result),undefined,radar)))?.id).toBe(secondUser.id);}
+ }
 });

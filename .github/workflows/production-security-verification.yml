@@ -1,0 +1,20 @@
+name: Production HTTPS security verification
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/production-security-verification.yml"
+      - ".github/scripts/verify-production-security.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-read-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify public TLS and anonymous access boundaries
+        run: python3 .github/scripts/verify-production-security.py

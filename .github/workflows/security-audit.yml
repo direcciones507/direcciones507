@@ -2,10 +2,6 @@ name: Security audit
 on:
   pull_request:
     branches: [main]
-    paths:
-      - ".github/workflows/security-audit.yml"
-      - "core/runtime/package.json"
-      - "core/runtime/bun.lock"
   workflow_dispatch:
 permissions:
   contents: read
@@ -42,47 +38,28 @@ jobs:
           docker pull "$image"
           report="$(mktemp -d)"
           trap 'rm -rf "$report"' EXIT
+          # Execute both scans independently and retain scanner errors.
           set +e
           docker run --rm --network none \
             -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo \
             -v "$GITHUB_WORKSPACE:/repo:ro" -v "$report:/report" \
             "$image" git /repo --log-opts="--all" --redact=100 --no-banner \
-            --report-format=json --report-path=/report/findings.json --exit-code=42 \
+            --report-format=json --report-path=/report/history.json --exit-code=42 \
             >/dev/null 2>&1
-          code=$?
+          history_code=$?
+          docker run --rm --network none \
+            -v "$GITHUB_WORKSPACE:/repo:ro" -v "$report:/report" \
+            "$image" dir /repo --redact=100 --no-banner \
+            --report-format=json --report-path=/report/current.json --exit-code=42 \
+            >/dev/null 2>&1
+          current_code=$?
+          python3 .github/scripts/review-gitleaks.py history "$report/history.json" "$history_code" "$GITHUB_WORKSPACE"
+          history_result=$?
+          python3 .github/scripts/review-gitleaks.py current "$report/current.json" "$current_code" "$GITHUB_WORKSPACE"
+          current_result=$?
           set -e
-          if [ "$code" -eq 42 ]; then
-            echo "::error::Potential secret exposures detected. Review privately; no sensitive details are published."
-            if [ -f "$report/findings.json" ]; then
-              jq -r '"Potential findings: " + (length|tostring)' "$report/findings.json"
-              # Print only rule category and count, never paths, commits, fingerprints or secret values.
-              jq -r 'group_by(.RuleID)[] | "Rule: " + (.[0].RuleID | tostring | gsub("[^a-zA-Z0-9_-]"; "_")) + " | count: " + (length|tostring)' "$report/findings.json"
-              jq -r 'group_by(if (.File | test("(^|/)(tests?|fixtures|__tests__)/|\\\\.(test|spec)\\\\.[^/]+$"; "i")) then "test-or-fixture" else "other" end)[] | "Location class: " + (if (.[0].File | test("(^|/)(tests?|fixtures|__tests__)/|\\\\.(test|spec)\\\\.[^/]+$"; "i")) then "test-or-fixture" else "other" end) + " | count: " + (length|tostring)' "$report/findings.json"
-              # Independently scan the checked-out tree to distinguish current from historical findings.
-              set +e
-              docker run --rm --network none -v "$GITHUB_WORKSPACE:/repo:ro" -v "$report:/report" \
-                "$image" dir /repo --redact=100 --no-banner --report-format=json --report-path=/report/current.json --exit-code=42 >/dev/null 2>&1
-              current_code=$?
-              set -e
-              if [ "$current_code" -eq 0 ]; then
-                echo "Current tree: no findings"
-              elif [ "$current_code" -eq 42 ] && [ -f "$report/current.json" ]; then
-                jq -r '"Current tree findings: " + (length|tostring)' "$report/current.json"
-              else
-                echo "Current tree scan inconclusive"
-              fi
-            fi
-            # One-time owner-only encrypted metadata; no secret values in report.
-            printf '%s\n' '-----BEGIN CERTIFICATE-----' 'MIIEHzCCAoegAwIBAgIUBFu5XDWEi8n/Q1IzH9mhqnPZ6+AwDQYJKoZIhvcNAQEL' 'BQAwHzEdMBsGA1UEAwwUQUQ1MDcgb25lLXRpbWUtYXVkaXQwHhcNMjYxMTI3MTYw' 'NzM3WhcNMjYxMTI4MTYwNzM3WjAfMR0wGwYDVQQDDBRBRDUwNyBvbmUtdGltZSBh' 'dWRpdDCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBANYCxfZufki80QBf' 'fUQKCYKEXIagVPam4xVoBULmsNmg6h7et1edBLJt4OrQAmLd6L3A06KrqXaST9vw' '7v9BkphRuo5nRBsAjbSL0NI9CwVDAcgcOoF/lLyx3G9VEb/Rl8UmKsL34BAlYrbH' 'GAr8dwkE+wrG2xrH8vhnqx6HVyaeCAAzArC07SuNlrbAmzsuyPbJaHKg5DnZt+No' 'MPpdG4aFo9/DCpfrLsSoyvAGlLm3WXgFt28C3m+UdINcyYNzff3p32kdrmPzY+4u' 'X++FfrTIQmb1NxVSRcJwIBjtTBObdeHKGTYKmSj5ncJWnUmiuZYDDuK8AmzCvFMb' 'l4BVPDce73A94O6pBWwC/5Zo+9jKlk9dU2vfP2H3wzI9mGUICKvmyvlvVjoRq0dA' 'si+QNLRQm/bPxyUVLCXD6JVkzI5QDKRK95Dlcxr/qztOxKguYZ3ss00IrNVr1uJ2' '1gf+6i/1spy8SHaBJFdv9T+YedD+qANwtSmxpDE87RseLtNSyQIDAQABo1MwUTAd' 'BgNVHQ4EFgQUGEWU+QdRvMC6ScQ4mHAwmdqYbvkwHwYDVR0jBBgwFoAUGEWU+QdR' 'vMC6ScQ4mHAwmdqYbvkwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOC' 'AYEA0tW2WTiE1izu25PHc/dm7qTqZ/p0HjVTngxNuVXTI3iQ0z/V3mRPKEgD8hJM' 'N7o/Rhi0vr0OvS3lQMwvacNqyUFCHvHZhQXvFKEcf9JiXi6HK/nbe97NB8Nk+hTd' 'nwaxnUaUmgZCpvIMmeuK1LxtQwz1ncC9VwK9ZcU2rP6/JTQAhU7vcwaWB20vHEHK' 'pVj9dSbkFEBcdONXuaDpGDHfaUCR1l1dmjIdnlrvff7ZjNVUAzL0YvCAphjhrs5U' '4vHzjmmazVFOs4/RSUpzZ0X4Jc0Wvd1mL5qOhSR7U9GjTKvGHEkPtb6/Z1CpuDB3' 'XYV4BCVX6wBRPf6qqXtrVoyAZr7fcpdB3xTMdCnlK7+A6vQ75lKH3Bw906h+PzxS' 'xHjHJ8kqZXlQmXJmJzQaUSXiHWBZbyeWbS3pHwD8weLDvrzKEvx7fBVqZz8xZKeX' 'lN7Bx7EteYCY7XKMMPRAyNYOTRjyVy6eDwImilJLyauixh1RBnEpFW6MNBZMnZAG' 'qjbs' '-----END CERTIFICATE-----' > "$report/review-cert.pem"
-            jq -c -n --slurpfile h "$report/findings.json" --slurpfile c "$report/current.json" '{history:($h[0]|map({File,StartLine,Commit,RuleID})),current:($c[0]|map({File,StartLine,RuleID}))}' > "$report/metadata.json"
-            openssl cms -encrypt -binary -aes-256-cbc -in "$report/metadata.json" -outform DER -out "$report/metadata.enc" "$report/review-cert.pem"
-            printf 'ENCRYPTED_REVIEW_METADATA:'
-            base64 -w0 "$report/metadata.enc"
-            printf '\n'
+          if [ "$history_result" -ne 0 ] || [ "$current_result" -ne 0 ]; then
+            echo "::error::Security audit has unreviewed findings or did not complete."
             exit 1
           fi
-          if [ "$code" -ne 0 ]; then
-            echo "::error::Secret scanner did not complete; audit result is inconclusive."
-            exit 1
-          fi
-          echo "Gitleaks completed without detected secrets in fetched Git history."
+          echo "Both scans completed; no unresolved findings."

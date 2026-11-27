@@ -502,9 +502,13 @@ test('request routes default closed and development context validates authentica
 });
 
 test('runtime privilege proposal grants application access without ownership, DDL or migration writes',async()=>{
-  const connection=await sql.reserve();
+  const db=postgres(isolatedDatabase,{max:1,connect_timeout:3});
+  const rollback=new Error('ROLLBACK_RUNTIME_ROLE_FIXTURE');
   try{
-    await connection.unsafe('BEGIN');
+    try{
+      await db.begin(async connection=>{
+    await connection.unsafe("SET LOCAL lock_timeout='2000ms'");
+    await connection.unsafe("SET LOCAL statement_timeout='3000ms'");
     await connection.unsafe('CREATE SCHEMA IF NOT EXISTS radar');
     await connection.unsafe(readFileSync(new URL('../schema-proposals/postgres-runtime-role.sql',import.meta.url),'utf8'));
     await connection.unsafe('SET LOCAL ROLE ad507_runtime');
@@ -513,9 +517,16 @@ test('runtime privilege proposal grants application access without ownership, DD
     const [permissions]=await connection.unsafe("SELECT has_schema_privilege(current_user,'ad507','CREATE') AS ddl,has_table_privilege(current_user,'ad507.users','SELECT') AS read_users,has_table_privilege(current_user,'ad507.users','INSERT') AS insert_users,has_table_privilege(current_user,'ad507.users','TRUNCATE') AS truncate_users,has_table_privilege(current_user,'ad507.schema_migrations','INSERT,UPDATE,DELETE') AS write_ledger");
     expect(permissions).toEqual({ddl:false,read_users:true,insert_users:true,truncate_users:false,write_ledger:false});
     expect((await connection.unsafe('SELECT count(*)::int AS n FROM ad507.users'))[0].n).toBeGreaterThan(0);
-    await expect(connection.unsafe('CREATE TABLE ad507.forbidden_runtime_ddl(id int)')).rejects.toThrow();
-  }finally{await connection.unsafe('ROLLBACK');connection.release();}
-});
+    let denied=false;
+    try{await connection.unsafe('CREATE TABLE ad507.forbidden_runtime_ddl(id int)');}
+    catch(error){expect((error as {code?:string}).code).toBe('42501');denied=true;}
+    expect(denied).toBe(true);
+    throw rollback;
+      });
+    }catch(error){if(error!==rollback)throw error;}
+    expect((await db.unsafe("SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='ad507_runtime') AS present"))[0].present).toBe(false);
+  }finally{await db.end({timeout:1});}
+},15000);
 
 test('database security audit is read only and reports actual role and connection without identities',async()=>{
   const {inspectDatabaseSecurity}=await import('../scripts/postgres-security-audit');

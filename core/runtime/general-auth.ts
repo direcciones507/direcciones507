@@ -71,6 +71,7 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   const radarSessionName='__Secure-ad507_radar_session';
   const radarReturnName='__Host-ad507_radar_return';
   const clearRadarReturn=()=>cookie(radarReturnName,'',0);
+  const clearRadarSession=()=>cookie(radarSessionName,'',0)+'; Domain=direcciones.lat';
   const sharedRadarCookie=async(payload:Payload)=>cookie(radarSessionName,await sign({...payload,origin:radarOrigin},radar!.secret),Math.max(0,Math.min(28800,Math.floor(payload.exp-Date.now()/1000))))+'; Domain=direcciones.lat';
   const radarRedirect=(cookies:string[]=[])=>{const headers=new Headers({location:radarOrigin+'/','cache-control':'no-store','referrer-policy':'no-referrer'});for(const value of cookies)headers.append('set-cookie',value);return new Response(null,{status:302,headers});};
   // Railway terminates TLS before Bun. Normalize only the configured LATAM
@@ -104,6 +105,26 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
   const accountCountries=new Set(['PA','CO','CR','GT','SV','HN','NI','MX']);
   const stateHash=(state:string,origin:string,admin=false,country='',returnRadar=false)=>hash((returnRadar?'radar|':'')+(admin?'admin|':country?'client:'+country+'|':'')+(origin===primary?.origin?state:origin+'|'+state));
   const sessionOrigin=(p:Payload,origin:string)=>p.origin===origin||(p.origin===undefined&&origin===primary?.origin);
+  // Revoke only the signed sessions presented by this browser, not other devices.
+  async function browserSessions(req:Request,origin:string,secret:string,includeRadar:boolean){
+    const candidates:[string,string][]=[[origin===radarOrigin?radarSessionName:'ad507_session',origin]];
+    if(includeRadar)candidates.push([radarSessionName,radarOrigin]);
+    const sessions:Payload[]=[];
+    for(const [name,expectedOrigin] of candidates){
+      const token=readCookie(req,name),p=token?await verify(token,secret):null;
+      if(p&&sessionOrigin(p,expectedOrigin)&&!sessions.some(x=>x.sid===p.sid&&x.uid===p.uid))sessions.push(p);
+    }
+    return sessions;
+  }
+  async function createBrowserSession(req:Request,origin:string,secret:string,userId:string,sid:string,exp:number){
+    if(radar&&origin===radar.origin){
+      const old=await browserSessions(req,origin,secret,true);
+      await sql.begin(async tx=>{
+        for(const p of old)await tx.unsafe('UPDATE ad507.auth_sessions SET revoked_at=now() WHERE session_hash=$1 AND user_id=$2::uuid AND revoked_at IS NULL',[hash(p.sid),p.uid]);
+        await tx.unsafe('INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))',[hash(sid),userId,exp]);
+      });
+    }else await sql.unsafe('INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))',[hash(sid),userId,exp]);
+  }
   const respond = (status: number, body: Record<string, unknown>, cookies: string[] = []) => {
     const headers = new Headers({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
     for (const c of cookies) headers.append('set-cookie', c);
@@ -151,7 +172,14 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
       const panelTarget=cfg.origin+'/panel?radar=1'+(url.searchParams.get('add')==='1'?'&addLocal=1':'')+'#radarAccountSection';
       const user=await currentUser(req);
       const token=readCookie(req,'ad507_session'),payload=token?await verify(token,cfg.secret):null;
-      if(user&&payload){if(panelEntry)return new Response(null,{status:302,headers:{location:panelTarget,'cache-control':'no-store','referrer-policy':'no-referrer'}});return radarRedirect([await sharedRadarCookie(payload),clearRadarReturn()]);}
+      if(user&&payload){
+        // Repair pre-existing divergent cookies at the next authenticated handoff.
+        const previous=await browserSessions(req,radarOrigin,cfg.secret,false);
+        for(const p of previous)if(p.sid!==payload.sid||p.uid!==payload.uid)await sql.unsafe('UPDATE ad507.auth_sessions SET revoked_at=now() WHERE session_hash=$1 AND user_id=$2::uuid AND revoked_at IS NULL',[hash(p.sid),p.uid]);
+        const values=[await sharedRadarCookie(payload),clearRadarReturn()];
+        if(panelEntry){const headers=new Headers({location:panelTarget,'cache-control':'no-store','referrer-policy':'no-referrer'});for(const value of values)headers.append('set-cookie',value);return new Response(null,{status:302,headers});}
+        return radarRedirect(values);
+      }
       // A valid Radar session may outlive the host-only LATAM session cookie.
       // Validate the same stored session and identity before issuing the canonical
       // LATAM cookie; never redirect a Radar-only visitor to the legacy Google panel.
@@ -248,12 +276,12 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         }
         await sql.unsafe("UPDATE ad507.email_credentials SET failed_attempts=0,locked_until=NULL WHERE user_id=$1::uuid",[user.id]);
         const sid=random(),exp=Math.floor(Date.now()/1000)+28800;
-        await sql.unsafe("INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))",[hash(sid),user.id,exp]);
+        await createBrowserSession(req,cfg.origin,cfg.secret,user.id,sid,exp);
         const signed=await sign({uid:user.id,email:user.email,sid,exp,origin:cfg.origin},cfg.secret);
         const returning=await radarReturn(req);
         const headers=new Headers({'content-type':'application/json','cache-control':'no-store'});
         headers.append('set-cookie',cookie('ad507_session',signed,28800));
-        if(returning){headers.append('set-cookie',await sharedRadarCookie({uid:user.id,email:user.email,sid,exp,origin:cfg.origin}));headers.append('set-cookie',clearRadarReturn());}
+        if(radar&&cfg.origin===radar.origin){headers.append('set-cookie',await sharedRadarCookie({uid:user.id,email:user.email,sid,exp,origin:cfg.origin}));headers.append('set-cookie',clearRadarReturn());}
         return new Response(JSON.stringify(returning?{ok:true,redirect:radarOrigin+'/'}:{ok:true}),{status:200,headers});
       }
       }
@@ -326,19 +354,22 @@ export function createGeneralAuth(sql: Sql, env: Env, googleFetch: typeof fetch 
         if (!user) return fail(403, 'ACCESS_NOT_PROVISIONED');
         if(adminReturn&&!(await sql.unsafe("SELECT 1 FROM ad507.user_roles WHERE user_id=$1::uuid AND role='ADMIN'",[user.id])).length)return fail(403,'FORBIDDEN');
         const sid = random(), exp = Math.floor(Date.now() / 1000) + 28800;
-        await sql.unsafe('INSERT INTO ad507.auth_sessions(session_hash,user_id,expires_at) VALUES($1,$2::uuid,to_timestamp($3))', [hash(sid), user.id, exp]);
+        await createBrowserSession(req,cfg.origin,cfg.secret,user.id,sid,exp);
         const signed = await sign({ uid: user.id, email: user.email, sid, exp, origin:cfg.origin }, cfg.secret);
         const headers=new Headers({location:returning?radarOrigin+'/':adminReturn?cfg.origin+'/admin':countryReturn?cfg.origin+'/panel?country='+countryReturn:cfg.success,'cache-control':'no-store','referrer-policy':'no-referrer'});
         for(const value of [cookie('ad507_session',signed,28800),clearState(),clearAdminReturn(),clearCountryReturn()])headers.append('set-cookie',value);
-        if(returning){headers.append('set-cookie',await sharedRadarCookie({uid:user.id,email:user.email,sid,exp,origin:cfg.origin}));headers.append('set-cookie',clearRadarReturn());}
+        if(radar&&cfg.origin===radar.origin){headers.append('set-cookie',await sharedRadarCookie({uid:user.id,email:user.email,sid,exp,origin:cfg.origin}));headers.append('set-cookie',clearRadarReturn());}
         return new Response(null,{status:302,headers});
       }
       if (url.pathname === '/auth/logout') {
         if (req.headers.get('origin') !== (isRadar?radarOrigin:cfg.origin) || req.headers.get('sec-fetch-site') === 'cross-site') return respond(403, { ok: false, error: 'CSRF_DENIED' });
-        const token = readCookie(req, isRadar?radarSessionName:'ad507_session');
-        const p = token ? await verify(token, cfg.secret) : null;
-        if (p && sessionOrigin(p,isRadar?radarOrigin:cfg.origin)) await sql.unsafe('UPDATE ad507.auth_sessions SET revoked_at=now() WHERE session_hash=$1 AND user_id=$2::uuid AND revoked_at IS NULL', [hash(p.sid), p.uid]);
-        return new Response(null, { status: 204, headers: { 'set-cookie': isRadar?cookie(radarSessionName,'',0)+'; Domain=direcciones.lat':cookie('ad507_session', '', 0), 'cache-control': 'no-store' } });
+        const shared=!!radar&&!isRadar&&cfg.origin===radar.origin;
+        const old=await browserSessions(req,isRadar?radarOrigin:cfg.origin,cfg.secret,shared);
+        for(const p of old)await sql.unsafe('UPDATE ad507.auth_sessions SET revoked_at=now() WHERE session_hash=$1 AND user_id=$2::uuid AND revoked_at IS NULL',[hash(p.sid),p.uid]);
+        const headers=new Headers({'cache-control':'no-store'});
+        headers.append('set-cookie',isRadar?clearRadarSession():cookie('ad507_session','',0));
+        if(shared){headers.append('set-cookie',clearRadarSession());headers.append('set-cookie',clearRadarReturn());}
+        return new Response(null,{status:204,headers});
       }
       const user = await currentUser(req);
       if (!user) return respond(401, { ok: false, error: 'UNAUTHENTICATED' });

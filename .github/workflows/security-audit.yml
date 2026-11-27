@@ -60,7 +60,7 @@ jobs:
               jq -r 'group_by(if (.File | test("(^|/)(tests?|fixtures|__tests__)/|\\\\.(test|spec)\\\\.[^/]+$"; "i")) then "test-or-fixture" else "other" end)[] | "Location class: " + (if (.[0].File | test("(^|/)(tests?|fixtures|__tests__)/|\\\\.(test|spec)\\\\.[^/]+$"; "i")) then "test-or-fixture" else "other" end) + " | count: " + (length|tostring)' "$report/findings.json"
               # Independently scan the checked-out tree to distinguish current from historical findings.
               set +e
-              docker run --rm --network none -v "$GITHUB_WORKSPACE:/repo:ro" -v "$report:/report" \\
+              docker run --rm --network none -v "$GITHUB_WORKSPACE:/repo:ro" -v "$report:/report" \
                 "$image" dir /repo --redact=100 --no-banner --report-format=json --report-path=/report/current.json --exit-code=42 >/dev/null 2>&1
               current_code=$?
               set -e

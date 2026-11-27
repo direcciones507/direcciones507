@@ -1,3 +1,4 @@
+import {runOptInDatabaseSecurityAudit} from './scripts/postgres-security-audit';
 import {withCoreSecurityHeaders} from './security-headers';
 import {sendRadarAnnualReminders} from './radar/annual-reminders';
 import {verifiedRadarOrdersEnabled} from './radar/verified-orders';
@@ -46,6 +47,7 @@ import {handlePagaditoSandboxQuote} from './pagadito-sandbox-routes';
 import {CERTIFICATION_REQUEST_ID,createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 
 const sql = postgres(process.env.DATABASE_URL!, { max: 2, connect_timeout: 5, idle_timeout: 30, max_lifetime: 1800, connection:{statement_timeout:'15000',lock_timeout:'5000'}, application_name: 'ad507-core-general-auth' });
+void runOptInDatabaseSecurityAudit(sql,process.env);
 const auth = createGeneralAuth(sql, process.env);
 const radarHandler = createRadarIntegration(sql, auth, process.env);
 const coreRadarAdmin=createCoreRadarAdmin(sql,auth,process.env);

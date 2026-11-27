@@ -32,6 +32,22 @@ export async function inspectDatabaseSecurity(sql:Sql) {
  });
 }
 
+/** Run once per service start, only when explicitly enabled. No HTTP routes or recurring timer. */
+export async function runOptInDatabaseSecurityAudit(sql:Sql,env:Record<string,string|undefined>,write:(message:string)=>void=console.log){
+ if(env.AD507_DATABASE_SECURITY_AUDIT_ENABLED!=='true')return;
+ try{
+  let endpoint:'PRIVATE_RAILWAY'|'PUBLIC_PROXY'|'OTHER'|'UNKNOWN'='UNKNOWN';
+  try{
+   const host=new URL(env.DATABASE_URL??'').hostname.toLowerCase();
+   endpoint=host.endsWith('.railway.internal')?'PRIVATE_RAILWAY':host.endsWith('.proxy.rlwy.net')?'PUBLIC_PROXY':'OTHER';
+  }catch{}
+  const report=await inspectDatabaseSecurity(sql);
+  write('AD507_DATABASE_SECURITY_AUDIT '+JSON.stringify({ok:true,endpoint,...report}));
+ }catch{
+  write('AD507_DATABASE_SECURITY_AUDIT '+JSON.stringify({ok:false,error:'DATABASE_SECURITY_NOT_VERIFIED'}));
+ }
+}
+
 if(import.meta.main){
  const url=process.env.DATABASE_URL;
  if(!url){console.error('DATABASE_URL_REQUIRED');process.exitCode=1;}

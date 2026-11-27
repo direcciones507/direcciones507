@@ -3,6 +3,8 @@ import {pagaditoRelayEnabled} from './pagadito-certification-relay';
 import {CERTIFICATION_REQUEST_ID,createPagaditoSandboxOrderBridge} from './pagadito-sandbox-order-bridge';
 
 type Env=Record<string,string|undefined>;
+/** Visibility only: does not change the existing certification authorization. */
+export function pagaditoTestButtonVisible(env:Env){return env.AD507_PAGADITO_TEST_BUTTON_VISIBLE==='true';}
 type User={id:string;email?:string;roles:readonly unknown[]};
 const hosts=['direcciones.lat','direcciones507.com','www.direcciones.lat','www.direcciones507.com'];
 /** Reuse the existing authorized certification purchase, never an event UUID.
@@ -24,7 +26,7 @@ export function isAuthorizedCertificationRequest(req:Request,user:User,env:Env){
 }
 
 export async function temporaryCertificationLink(req:Request,user:User,env:Env,sql:Sql):Promise<{href?:string;unavailable?:boolean}>{
- if(!temporaryCertificationAuthorized(req,user,env))return {};
+ if(!pagaditoTestButtonVisible(env)||!temporaryCertificationAuthorized(req,user,env))return {};
  try{
   // Same ownership/payability check as the destination. No writes or provider calls.
   await createPagaditoSandboxOrderBridge(sql).quote(user.id,CERTIFICATION_REQUEST_ID,'ANNUAL',true);

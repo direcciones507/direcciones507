@@ -7,9 +7,10 @@ import {handlePagaditoSandboxQuote} from '../pagadito-sandbox-routes';
 import {handleSandboxCheckout} from '../pagadito-sandbox-checkout-route';
 import {createPagaditoCertificationRelay} from '../pagadito-certification-relay';
 import {CERTIFICATION_REQUEST_ID,createPagaditoSandboxOrderBridge} from '../pagadito-sandbox-order-bridge';
-import {temporaryCertificationLink} from '../temporary-event-certification';
+import {paymentPage} from '../payment-ui';
+import {temporaryCertificationLink,pagaditoTestButtonVisible} from '../temporary-event-certification';
 
-const env={AD507_PAGADITO_RELAY_ENABLED:'true',AD507_PAGADITO_RELAY_SECRET:'fixture-only-'.repeat(5),AD507_PAGADITO_QUOTE_PREVIEW_ENABLED:'true',AD507_PAGADITO_TEST_EMAIL:'reviewer@example.test'};
+const env={AD507_PAGADITO_TEST_BUTTON_VISIBLE:'true',AD507_PAGADITO_RELAY_ENABLED:'true',AD507_PAGADITO_RELAY_SECRET:'fixture-only-'.repeat(5),AD507_PAGADITO_QUOTE_PREVIEW_ENABLED:'true',AD507_PAGADITO_TEST_EMAIL:'reviewer@example.test'};
 const user={id:'11111111-1111-4111-8111-111111111111',email:env.AD507_PAGADITO_TEST_EMAIL,roles:['CLIENT']};
 const auth={currentUser:async()=>user} as any;
 const pagePath='/panel/pagadito/sandbox/'+CERTIFICATION_REQUEST_ID;
@@ -54,6 +55,21 @@ test('certification fixture exception retains ownership, migration and ordinary 
  const ordinary='22222222-2222-4222-8222-222222222222';
  await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql(row)).quote(user.id,ordinary),/INVALID_PAYMENT_REQUEST/);
  await assert.rejects(createPagaditoSandboxOrderBridge(fixtureSql(row)).quote(user.id,ordinary,'CERTIFICATION_1'),/PAYMENT_NOT_FOUND/);
+});
+
+test('Pagadito button defaults to hidden on both flows and can be restored without touching Yappy',async()=>{
+ const {sql,statements}=database();
+ for(const flag of [undefined,'false']){
+  const settings={...env,AD507_PAGADITO_TEST_BUTTON_VISIBLE:flag};
+  assert.equal(pagaditoTestButtonVisible(settings),false);
+  const response=await handleTemporaryEventRoutes(request('/panel/evento/nuevo'),{enabled:true,sql,auth,certificationEnv:settings,payment:{} as any});
+  const html=await response!.text();assert.doesNotMatch(html,/event-pagadito-test/);assert.match(html,/<btn-yappy/);
+  const payment=paymentPage(CERTIFICATION_REQUEST_ID,'production',pagaditoTestButtonVisible(settings));
+  assert.doesNotMatch(payment,/Pagadito \(Prueba\)/);assert.match(payment,/<btn-yappy/);
+ }
+ assert.equal(statements.length,0);
+ assert.equal(pagaditoTestButtonVisible(env),true);
+ assert.match(paymentPage(CERTIFICATION_REQUEST_ID,'production',pagaditoTestButtonVisible(env)),/Pagadito \(Prueba\)/);
 });
 
 test('missing flags, wrong account/host or role never expose the certification link or query the database',async()=>{

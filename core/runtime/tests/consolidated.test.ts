@@ -515,6 +515,22 @@ test('database security audit is read only and reports actual role and connectio
   await expect(inspectDatabaseSecurity(refused)).rejects.toThrow('READ_ONLY_REQUIRED');
 });
 
+test('opt-in database audit has no default side effects or secret logging',async()=>{
+  const {runOptInDatabaseSecurityAudit}=await import('../scripts/postgres-security-audit');
+  const logs:string[]=[];const write=(v:string)=>logs.push(v);
+  await runOptInDatabaseSecurityAudit({} as any,{},write);
+  await runOptInDatabaseSecurityAudit({} as any,{AD507_DATABASE_SECURITY_AUDIT_ENABLED:'false'},write);
+  expect(logs).toEqual([]);
+  const env={AD507_DATABASE_SECURITY_AUDIT_ENABLED:'true',DATABASE_URL:'postgres://hidden-user:secret-fixture@postgres.railway.internal:5432/private-db'};
+  await runOptInDatabaseSecurityAudit(sql,env,write);
+  expect(logs).toHaveLength(1);
+  const report=JSON.parse(logs[0].replace('AD507_DATABASE_SECURITY_AUDIT ',''));
+  expect(report.ok).toBe(true);expect(report.readOnly).toBe(true);expect(report.endpoint).toBe('PRIVATE_RAILWAY');
+  expect(logs[0]).not.toContain('secret-fixture');expect(logs[0]).not.toContain('hidden-user');expect(logs[0]).not.toContain('private-db');
+  await runOptInDatabaseSecurityAudit({begin:async()=>{throw Error('private-error');}} as any,env,write);
+  expect(logs[1]).toBe('AD507_DATABASE_SECURITY_AUDIT {"ok":false,"error":"DATABASE_SECURITY_NOT_VERIFIED"}');
+});
+
 test('read-only preflight inventories canonical schema and repeated proposals preserve existing codes',async()=>{
   const {inspectCanonicalSchema}=await import('../scripts/integration-preflight');
   const before=await sql.unsafe("SELECT id::text,code,source FROM ad507.addresses WHERE source<>'USER_REQUEST' ORDER BY id");

@@ -56,3 +56,18 @@ test('current annual disconnection terms retain the previously published policy'
  expect(current).toContain('reactiva el mismo enlace y QR');
  expect(archived).toContain('Al finalizar la vigencia queda la ficha básica');
 });
+
+
+test('Lugar Gratis matches the eight-country rollout and previous legal consent remains immutable',async()=>{
+ const {FREE_LAUNCH_COUNTRIES,COUNTRIES}=await import('../country-configuration');
+ for(const key of ['terms','commercial']){
+  const doc=documents.find(d=>d.key===key)!;
+  const available=doc.text.match(/Lugar Gratis está disponible en ([^\.]+), según la oferta vigente del país\./i)?.[1];
+  expect(available).toBeDefined();
+  for(const code of FREE_LAUNCH_COUNTRIES)expect(available).toContain(COUNTRIES[code].name);
+  expect(doc.text).not.toMatch(/Lugar\s+Gratis no disponible/);
+  const previous=await handleLegalRoutes(new Request('https://direcciones.lat/legal/1.3-20261125/'+key))!.text();
+  expect(previous).toContain('Versión 1.3-20261125');
+  expect(previous).toContain('Lugar Gratis no disponible');
+ }
+});

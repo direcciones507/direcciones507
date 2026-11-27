@@ -2,7 +2,7 @@ Política Comercial
 
 Direcciones 507/LATAM
 
-Versión 1.3-20261125 · Vigencia: a partir de su publicación autorizada
+Versión 1.4-20261127 · Vigencia: a partir de su publicación autorizada
 
 1. Alcance
 Esta política regula los planes gratuitos, promocionales y de pago de Direcciones 507/LATAM (la
@@ -30,8 +30,7 @@ Premium Pro Negocios que desean el nivel más completo de funciones
 
 Plan Para quién
 
-Lugar Gratis Lugares de interés no comerciales (iglesias, parques, cascadas, ríos, playas, atractivos turísticos), solo en
-Panamá y Costa Rica, con aprobación previa
+Lugar Gratis Lugares de interés no comerciales (iglesias, parques, cascadas, ríos, playas, atractivos turísticos), en Panamá, Costa Rica, Colombia, Guatemala, El Salvador, Honduras, Nicaragua y México, con aprobación previa
 
 Las funciones incluidas en cada plan, y la lista de planes habilitados en cada país, se publican en la sección Planes del
 sitio web correspondiente. Los negocios deben usar los planes comerciales correspondientes; los comercios no pueden
@@ -40,7 +39,7 @@ usar Lugar Gratis.
 4. Disponibilidad por país
 No todos los planes ni servicios están habilitados en todos los países. Un plan solo se ofrece en un país cuando figura
 habilitado en la oferta visible para el país seleccionado en la Plataforma. Los precios, promociones y condiciones pueden
-variar por país. Lugar Gratis está disponible inicialmente solo en Panamá y Costa Rica.
+variar por país. Lugar Gratis está disponible en Panamá, Costa Rica, Colombia, Guatemala, El Salvador, Honduras, Nicaragua y México, según la oferta vigente del país.
 
 5. Precios e impuestos
 5.1. Los precios vigentes de cada plan, por país, se publican en la sección Planes del sitio web correspondiente, con
@@ -186,20 +185,19 @@ distancia. Usted tiene derecho de retracto dentro de los cinco (5) días hábile
 devolveremos el dinero pagado. El derecho de retracto no aplica a los contratos de servicios cuya prestación haya
 comenzado con su acuerdo; por eso, si solicita la activación inmediata, le pediremos su confirmación expresa antes del
 pago y la conservaremos como constancia. Si prefiere conservar su derecho de retracto, puede solicitar que la activación
-se realice después de ese plazo. Lugar Gratis no disponible.
+se realice después de ese plazo. Lugar Gratis disponible.
 
 Guatemala. Decreto 6-2003. Autoridad: DIACO. Sus normas son derechos mínimos irrenunciables, que prevalecen sobre
-cualquier cláusula de esta política que los limite. Lugar Gratis no disponible.
+cualquier cláusula de esta política que los limite. Lugar Gratis disponible.
 
 El Salvador. Ley de Protección al Consumidor. Autoridad: Defensoría del Consumidor. No se ofrecerán planes de pago
-en este país hasta cumplir las obligaciones locales aplicables al comercio electrónico. Lugar Gratis no disponible.
+en este país hasta cumplir las obligaciones locales aplicables al comercio electrónico. Lugar Gratis disponible.
 
 Honduras. Decreto 24-2008 y sus reformas. Podrá solicitar la terminación de un servicio contratado por medios
-electrónicos por el mismo medio, y le daremos constancia de su solicitud. Lugar Gratis no disponible.
+electrónicos por el mismo medio, y le daremos constancia de su solicitud. Lugar Gratis disponible.
 
-Nicaragua. Ley 842. Sus derechos como consumidor son de orden público e irrenunciables. Lugar Gratis no disponible.
+Nicaragua. Ley 842. Sus derechos como consumidor son de orden público e irrenunciables. Lugar Gratis disponible.
 
 México. Ley Federal de Protección al Consumidor. Autoridad: Profeco. Antes de contratar le informaremos el domicilio,
 teléfono y correo del proveedor, el precio total y las condiciones. Los datos que nos proporcione se tratarán de forma
-confidencial según la Política de Privacidad. No hay cobros recurrentes ni renovaciones automáticas. Lugar
-Gratis no disponible.
+confidencial según la Política de Privacidad. No hay cobros recurrentes ni renovaciones automáticas. Lugar Gratis disponible.

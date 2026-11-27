@@ -1,7 +1,7 @@
 Términos y Condiciones de Uso
 Direcciones 507/LATAM
 
-Versión 1.3-20261125 · Vigencia: a partir de su publicación autorizada
+Versión 1.4-20261127 · Vigencia: a partir de su publicación autorizada
 
 1. Quiénes somos y qué regulan estos términos
 Direcciones507 es una plataforma digital que opera desde Panamá y que permite crear direcciones digitales con códigos
@@ -32,7 +32,7 @@ México. No todos los servicios están habilitados en todos los países. La disp
 y actualiza en la oferta visible para el país seleccionado en la Plataforma. Un servicio no se considera ofrecido en un país
 mientras no figure habilitado en esa tabla.
 
-El producto Lugar Gratis está disponible únicamente en Panamá y Costa Rica.
+El producto Lugar Gratis está disponible en Panamá, Costa Rica, Colombia, Guatemala, El Salvador, Honduras, Nicaragua y México, según la oferta vigente del país.
 
 Las reglas especiales de cada país se encuentran en el Anexo de estos términos.
 
@@ -93,7 +93,7 @@ para quienes vean el perfil. El Titular decide qué contacto publica.
 
 8. Lugar Gratis
 8.1. Lugar Gratis permite registrar iglesias, parques, cascadas, ríos, playas, atractivos turísticos y otros lugares de interés
-no comerciales, inicialmente solo en Panamá y Costa Rica.
+no comerciales, en Panamá, Costa Rica, Colombia, Guatemala, El Salvador, Honduras, Nicaragua y México, según la oferta vigente del país.
 
 8.2. Los comercios no pueden usar Lugar Gratis. Un lugar que ofrezca bienes o servicios con fines comerciales debe
 registrarse como Negocio en el plan que corresponda.
@@ -266,21 +266,21 @@ reglamento. Estos términos pueden constituir un contrato de adhesión y se inte
 Gratis disponible.
 
 Colombia. Autoridad de consumo: Superintendencia de Industria y Comercio (SIC), conforme a la Ley 1480 de 2011. Las
-reglas de retracto aplicables a los planes de pago están en la Política Comercial. Lugar Gratis no disponible.
+reglas de retracto aplicables a los planes de pago están en la Política Comercial. Lugar Gratis disponible.
 
 Guatemala. Autoridad de consumo: Dirección de Atención y Asistencia al Consumidor (DIACO), conforme al Decreto
-6-2003, cuyas disposiciones constituyen derechos mínimos irrenunciables. Lugar Gratis no disponible.
+6-2003, cuyas disposiciones constituyen derechos mínimos irrenunciables. Lugar Gratis disponible.
 
 El Salvador. Autoridad de consumo: Defensoría del Consumidor, conforme a la Ley de Protección al Consumidor. Los
 servicios de pago solo se ofrecerán cuando se hayan cumplido las obligaciones locales aplicables al comercio
-electrónico. Lugar Gratis no disponible.
+electrónico. Lugar Gratis disponible.
 
 Honduras. Se aplica la Ley de Protección al Consumidor (Decreto 24-2008) y sus reformas ante la autoridad de consumo
 competente. Los consumidores pueden terminar un servicio contratado electrónicamente en los términos de esa ley.
-Lugar Gratis no disponible.
+Lugar Gratis disponible.
 
 Nicaragua. Se aplica la Ley 842 de Protección de los Derechos de las Personas Consumidoras y Usuarias, de orden
-público y de derechos irrenunciables, ante la autoridad competente. Lugar Gratis no disponible.
+público y de derechos irrenunciables, ante la autoridad competente. Lugar Gratis disponible.
 México. Autoridad de consumo: Procuraduría Federal del Consumidor (Profeco), conforme a la Ley Federal de Protección
 al Consumidor. Antes de contratar un plan de pago se informará el domicilio, teléfono y correo del proveedor, el precio
-total y las condiciones. Lugar Gratis no disponible.
+total y las condiciones. Lugar Gratis disponible.

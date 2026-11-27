@@ -1,0 +1,65 @@
+name: Security audit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/security-audit.yml"
+      - "core/runtime/package.json"
+      - "core/runtime/bun.lock"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: security-audit-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  dependencies:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.0"
+      - name: Audit locked dependencies (including development)
+        working-directory: core/runtime
+        run: bun audit
+  secrets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan all fetched Git history without publishing secret details
+        shell: bash
+        run: |
+          set -euo pipefail
+          image='ghcr.io/gitleaks/gitleaks@sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb'
+          docker pull "$image"
+          report="$(mktemp -d)"
+          trap 'rm -rf "$report"' EXIT
+          set +e
+          docker run --rm --network none \
+            -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo \
+            -v "$GITHUB_WORKSPACE:/repo:ro" -v "$report:/report" \
+            "$image" git /repo --log-opts="--all" --redact=100 --no-banner \
+            --report-format=json --report-path=/report/findings.json --exit-code=42 \
+            >/dev/null 2>&1
+          code=$?
+          set -e
+          if [ "$code" -eq 42 ]; then
+            echo "::error::Potential secret exposures detected. Review privately; no sensitive details are published."
+            if [ -f "$report/findings.json" ]; then
+              jq -r '"Potential findings: " + (length|tostring)' "$report/findings.json"
+            fi
+            exit 1
+          fi
+          if [ "$code" -ne 0 ]; then
+            echo "::error::Secret scanner did not complete; audit result is inconclusive."
+            exit 1
+          fi
+          echo "Gitleaks completed without detected secrets in fetched Git history."

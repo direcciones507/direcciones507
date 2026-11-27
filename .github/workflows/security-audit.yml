@@ -57,6 +57,20 @@ jobs:
               jq -r '"Potential findings: " + (length|tostring)' "$report/findings.json"
               # Print only rule category and count, never paths, commits, fingerprints or secret values.
               jq -r 'group_by(.RuleID)[] | "Rule: " + (.[0].RuleID | tostring | gsub("[^a-zA-Z0-9_-]"; "_")) + " | count: " + (length|tostring)' "$report/findings.json"
+              jq -r 'group_by(if (.File | test("(^|/)(tests?|fixtures|__tests__)/|\\\\.(test|spec)\\\\.[^/]+$"; "i")) then "test-or-fixture" else "other" end)[] | "Location class: " + (if (.[0].File | test("(^|/)(tests?|fixtures|__tests__)/|\\\\.(test|spec)\\\\.[^/]+$"; "i")) then "test-or-fixture" else "other" end) + " | count: " + (length|tostring)' "$report/findings.json"
+              # Independently scan the checked-out tree to distinguish current from historical findings.
+              set +e
+              docker run --rm --network none -v "$GITHUB_WORKSPACE:/repo:ro" -v "$report:/report" \\
+                "$image" dir /repo --redact=100 --no-banner --report-format=json --report-path=/report/current.json --exit-code=42 >/dev/null 2>&1
+              current_code=$?
+              set -e
+              if [ "$current_code" -eq 0 ]; then
+                echo "Current tree: no findings"
+              elif [ "$current_code" -eq 42 ] && [ -f "$report/current.json" ]; then
+                jq -r '"Current tree findings: " + (length|tostring)' "$report/current.json"
+              else
+                echo "Current tree scan inconclusive"
+              fi
             fi
             exit 1
           fi

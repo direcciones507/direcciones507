@@ -53,7 +53,8 @@ test('public event page never contains private organizer details',async()=>{
  assert.match(policy,/object-src 'none'/);
  const tags=[...html.matchAll(/<script([^>]*)>/g)];
  assert.ok(tags.length>0);
- for(const tag of tags)assert.equal(tag[1],' nonce="'+nonce+'"');
+ for(const tag of tags)assert.equal(tag[1].match(/\bnonce="([^"]+)"/)?.[1],nonce);
+ assert.match(html,/id="continuous-gallery-script" nonce="/);
  assert.doesNotMatch(html,/\sonclick=/i);
  assert.match(html,/data-print-qr/);
  const next=await handleTemporaryEventRoutes(new Request('https://direcciones.lat/evento/fiesta-0123456789abcdef'),{...ctx,sql:fakeSql});

@@ -268,7 +268,18 @@ test('user panel isolates canonical ownership and orders without internal capabi
 });
 
 test('ADMIN and user panel client scripts parse; request submission and payment remain disabled', async () => {
-  const adminHtml = await (await runtimeGet('/admin')).text();
+  const adminResponse = await runtimeGet('/admin');
+  const adminHtml = await adminResponse.text();
+  const policy = adminResponse.headers.get('content-security-policy')!;
+  const nonce = policy.match(/script-src 'nonce-([a-f0-9]+)'/)?.[1];
+  expect(nonce).toBeTruthy();
+  expect(policy).not.toContain("script-src 'unsafe-inline'");
+  expect(policy).toContain("object-src 'none'");
+  let scripts = 0;
+  await new HTMLRewriter().on('script',{element(e){scripts++;expect(e.getAttribute('nonce')).toBe(nonce!);}}).transform(new Response(adminHtml)).text();
+  expect(scripts).toBeGreaterThan(0);
+  const nextPolicy = (await runtimeGet('/admin')).headers.get('content-security-policy')!;
+  expect(nextPolicy).not.toContain("'nonce-"+nonce+"'");
   for (const html of [adminHtml, userPanelHtml]) {
     const script = html.match(/<script[^>]*>([\s\S]*?)<\/script>/)![1];
     expect(() => new Function(script)).not.toThrow();

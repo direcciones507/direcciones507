@@ -170,7 +170,7 @@ startLegacyCore(withCoreSecurityHeaders(async req => {
   if (req.method === 'GET' && url.pathname === '/' && req.headers.get('cookie')?.includes('ad507_session=')) {
     try { const user = await auth.currentUser(req); if (user) return new Response(null, { status: 302, headers: { location: user.roles.includes('ADMIN') ? '/admin' : '/panel', 'cache-control': 'no-store' } }); } catch {}
   }
-  if (req.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin/')) return new Response(withCoreRadarAdmin(adminHtml,process.env), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'", 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } });
+  if (req.method === 'GET' && (url.pathname === '/admin' || url.pathname === '/admin/')) { const nonce=crypto.randomUUID().replaceAll('-',''); return new Response(withCoreRadarAdmin(adminHtml,process.env).replaceAll('<script>','<script nonce="'+nonce+'">'), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': "default-src 'self'; style-src 'unsafe-inline'; script-src 'nonce-"+nonce+"'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'", 'referrer-policy': 'no-referrer', 'x-content-type-options': 'nosniff' } }); }
   if (req.method === 'GET' && url.pathname === '/v1/admin/addresses') {
     try {
       const user = await auth.currentUser(req);

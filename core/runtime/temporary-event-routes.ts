@@ -41,8 +41,9 @@ export async function handleTemporaryEventRoutes(req:Request,ctx:EventServices&{
     if(!photo||!ctx.media)return json(404,'PHOTO_NOT_FOUND');
     return new Response(req.method==='HEAD'?null:await ctx.media.read(photo.object_key),{headers:{'content-type':'image/webp','cache-control':'no-store','x-content-type-options':'nosniff','x-robots-tag':'noindex, nofollow'}});
    }
-   const html=renderTemporaryEventPage({draft:data,slug:event.slug,status:event.status,paymentConfirmedAt:event.paymentConfirmedAt,adminPublishedAt:event.adminPublishedAt,photos:photos.map(x=>base+'/foto/'+x.slot),qrPngDataUrl:await QRCode.toDataURL(base,{width:640,margin:4})});
-   return new Response(req.method==='HEAD'?null:html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; img-src 'self' https: data:; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}});
+   const nonce=crypto.randomUUID().replaceAll('-','');
+   const html=renderTemporaryEventPage({draft:data,slug:event.slug,status:event.status,paymentConfirmedAt:event.paymentConfirmedAt,adminPublishedAt:event.adminPublishedAt,photos:photos.map(x=>base+'/foto/'+x.slot),qrPngDataUrl:await QRCode.toDataURL(base,{width:640,margin:4})}).replaceAll('<script>','<script nonce="'+nonce+'">').replace('<script id="continuous-gallery-script">','<script id="continuous-gallery-script" nonce="'+nonce+'">');
+   return new Response(req.method==='HEAD'?null:html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-robots-tag':'noindex, nofollow','x-content-type-options':'nosniff','referrer-policy':'no-referrer','content-security-policy':"default-src 'none'; img-src 'self' https: data:; script-src 'nonce-"+nonce+"'; object-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}});
   }catch{return json(503,'EVENT_UNAVAILABLE')}
  }
  if(form&&req.method!=='GET'||draft&&!['GET','POST'].includes(req.method))return json(405,'METHOD_NOT_ALLOWED');
